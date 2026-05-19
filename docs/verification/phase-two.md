@@ -26,11 +26,12 @@ Results:
 
 Manual runtime checklist:
 
-- Run `./gradlew runClient`.
-- Confirm the main menu opens.
-- Confirm `Create: Full Steam Ahead` appears in the Mods list.
-- Open a creative world.
-- Confirm the `Create: Full Steam Ahead` creative tab exists.
-- Confirm all nine block items appear in order.
-- Place every block and check for missing models.
-- Place facing and axis blocks in multiple orientations.
+- [x] Run `./gradlew runClient`.
+- [x] Confirm the main menu opens.
+- [x] Confirm `Create: Full Steam Ahead` appears in the Mods list.
+- [x] Open a creative world.
+- [x] Confirm the `Create: Full Steam Ahead` creative tab exists.
+- [x] Confirm all nine block items appear in order.
+- [x] Place every block and confirm placement works.
+- [x] Note placeholder visual quality is acceptable for phase two.
+- [ ] Place facing and axis blocks in multiple orientations.

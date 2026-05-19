@@ -315,47 +315,49 @@ Do not make direct Sable force output part of the main engine until the Create k
 
 ## Development Phases
 
-### Phase 0: Decisions
+### Phase 0: Decisions - Complete
 
 Deliverable: final technical decisions before code.
 
-- Pick mod id, package group, and display name. (create full steam ahead)
-- Decide whether Aeronautics/Sable are optional or required at runtime. Recommended: optional, strongly tested.
-- Decide art direction and block list. (as much as base create as it can manage)
-- Decide default balance constants.
-- Decide max multiblock size for v1. (3x3)
+- [x] Pick mod id, package group, and display name: `full_steam_ahead`, `dev.gustavo.fullsteamahead`, `Create: Full Steam Ahead`.
+- [x] Decide whether Aeronautics/Sable are optional or required at runtime: optional runtime compatibility targets.
+- [x] Decide art direction and block list: base Create-inspired copper/andesite/brass visual direction.
+- [x] Decide default balance constants.
+- [x] Decide max multiblock size for v1: hard `3x3x3`, maximum 27 blocks.
 
-### Phase 1: Project Scaffold
+### Phase 1: Project Scaffold - Complete
 
 Deliverable: bootable NeoForge 1.21.1 addon project.
 
-- Create NeoForge ModDevGradle project.
-- Add Create Maven dependencies from official Create docs.
-- Add optional Sable/Aeronautics dev dependencies for the test run profile.
-- Add Java 21 toolchain.
-- Add `neoforge.mods.toml` dependency on Create.
-- Add client, server, and data run configs.
-- Add basic CI build task.
+- [x] Create NeoForge ModDevGradle project.
+- [x] Add Create Maven dependencies from official Create docs.
+- [x] Add optional Sable/Aeronautics metadata as runtime compatibility targets.
+- [x] Add Java 21 toolchain.
+- [x] Add `neoforge.mods.toml` dependency on Create.
+- [x] Add client, server, and data run configs.
+- [x] Verify `compileJava`, `processResources`, `build`, and `runClient` startup.
 
-### Phase 2: Registration and Minimal Blocks
+### Phase 2: Registration and Minimal Blocks - Complete
 
 Deliverable: blocks appear in-game and can be placed.
 
-- Register controller, casing, cylinder, flywheel, firebox, boiler drum, and output shaft.
-- Add simple block models and item models.
-- Add loot tables, lang, creative tab entries, and recipes.
-- Add wrench rotation where appropriate.
+- [x] Register controller, casing, boiler drum, firebox, steam cylinder, piston rod, flywheel, output coupling, and governor.
+- [x] Add simple Create-texture placeholder block models and item models.
+- [x] Add loot tables, lang entries, mining tags, and creative tab entry.
+- [x] Verify all nine blocks appear in-game and are placeable.
+- [ ] Recipes are intentionally deferred until mechanics and balance exist.
+- [ ] Wrench behavior is deferred until multiblock and kinetic behavior need it.
 
 ### Phase 3: Multiblock Formation
 
 Deliverable: controller can validate a structure.
 
-- Implement scanner and `LargeSteamEngineStructure`.
-- Add validation error messages.
-- Add dirty/revalidate lifecycle.
-- Add controller NBT serialization.
-- Add goggle tooltip showing structure status.
-- Add tests for valid, invalid, too large, duplicate controller, missing output, and unloaded chunk cases.
+- [ ] Implement scanner and `LargeSteamEngineStructure`.
+- [ ] Add validation error messages.
+- [ ] Add dirty/revalidate lifecycle.
+- [ ] Add controller NBT serialization.
+- [ ] Add goggle tooltip showing structure status.
+- [ ] Add tests for valid, invalid, too large, duplicate controller, missing output, and unloaded chunk cases.
 
 ### Phase 4: Steam Pressure Model
 
