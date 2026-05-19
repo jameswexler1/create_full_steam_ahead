@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "axis=x": { "model": "full_steam_ahead:block/output_coupling", "x": 90, "y": 90 },
+    "axis=y": { "model": "full_steam_ahead:block/output_coupling" },
+    "axis=z": { "model": "full_steam_ahead:block/output_coupling", "x": 90 }
+  }
+}

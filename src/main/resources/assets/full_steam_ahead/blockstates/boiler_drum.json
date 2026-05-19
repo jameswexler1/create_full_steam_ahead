@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "axis=x": { "model": "full_steam_ahead:block/boiler_drum", "x": 90, "y": 90 },
+    "axis=y": { "model": "full_steam_ahead:block/boiler_drum" },
+    "axis=z": { "model": "full_steam_ahead:block/boiler_drum", "x": 90 }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "full_steam_ahead:large_steam_engine_controller",
+    "full_steam_ahead:large_engine_casing",
+    "full_steam_ahead:boiler_drum",
+    "full_steam_ahead:firebox",
+    "full_steam_ahead:steam_cylinder",
+    "full_steam_ahead:piston_rod",
+    "full_steam_ahead:flywheel",
+    "full_steam_ahead:output_coupling",
+    "full_steam_ahead:governor"
+  ]
+}
