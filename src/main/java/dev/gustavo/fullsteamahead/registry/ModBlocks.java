@@ -7,6 +7,7 @@ import dev.gustavo.fullsteamahead.content.flywheel.FlywheelBlock;
 import dev.gustavo.fullsteamahead.content.governor.GovernorBlock;
 import dev.gustavo.fullsteamahead.content.piston.SteamPistonBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
+import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -31,6 +32,8 @@ public final class ModBlocks {
             registerBlock("governor", GovernorBlock::new, copperProperties());
     public static final DeferredBlock<BoilerOutletBlock> BOILER_OUTLET =
             registerBlock("boiler_outlet", BoilerOutletBlock::new, copperProperties());
+    public static final DeferredBlock<SteamInletBlock> STEAM_INLET =
+            registerBlock("steam_inlet", SteamInletBlock::new, copperProperties());
 
     private static <T extends Block> DeferredBlock<T> registerBlock(
             String name,

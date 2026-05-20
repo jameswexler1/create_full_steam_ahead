@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "assembled=false": { "model": "full_steam_ahead:block/steam_inlet" },
+    "assembled=true": { "model": "full_steam_ahead:block/steam_inlet_assembled" }
+  }
+}

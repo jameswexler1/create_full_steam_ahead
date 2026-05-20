@@ -5,6 +5,7 @@
     "full_steam_ahead:piston",
     "full_steam_ahead:crankshaft",
     "full_steam_ahead:boiler_outlet",
+    "full_steam_ahead:steam_inlet",
     "full_steam_ahead:flywheel",
     "full_steam_ahead:governor"
   ]

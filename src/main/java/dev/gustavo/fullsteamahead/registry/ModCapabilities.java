@@ -10,6 +10,11 @@ public final class ModCapabilities {
                 ModBlockEntities.BOILER_OUTLET.get(),
                 (blockEntity, side) -> blockEntity.getFluidHandler(side)
         );
+        event.registerBlockEntity(
+                Capabilities.FluidHandler.BLOCK,
+                ModBlockEntities.STEAM_INLET.get(),
+                (blockEntity, side) -> blockEntity.getFluidHandler(side)
+        );
     }
 
     private ModCapabilities() {
