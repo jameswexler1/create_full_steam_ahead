@@ -228,7 +228,7 @@ public final class CylinderConnectivity {
             return;
         }
 
-        level.setBlock(pos, state.setValue(property, assembled), Block.UPDATE_ALL);
+        level.setBlock(pos, state.setValue(property, assembled), Block.UPDATE_CLIENTS);
     }
 
     private static boolean isRingMember(BlockState state) {

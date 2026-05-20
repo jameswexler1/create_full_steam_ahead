@@ -26,6 +26,13 @@ Automated results:
 - `build`: passed
 - JSON validation: passed
 
+Stability follow-up:
+
+- Runtime report: after successful pipe-fed testing, the integrated server became broadly unresponsive. Vanilla falling blocks stopped ticking, engine structures stopped reacting, and `latest.log` reported repeated `Too many chained neighbor updates`.
+- Cause addressed: broad `neighborChanged` handlers were doing immediate multiblock/boiler revalidation, visual assembly state writes were notifying neighbors, and boiler outlet pipe pressure was writing Create pipe pressure every tick across the pipe graph.
+- Fix: visual-only assembly state writes now use client update flags, piston/crankshaft no longer revalidate from unrelated neighbor changes, cylinder/inlet neighbor refreshes ignore external pipe/shaft noise once assembled, boiler outlet only refreshes boiler state from its attached tank side, and pipe pressure refresh is throttled.
+- Automated recheck after fix: `compileJava` passed; `build` passed.
+
 Implementation notes:
 
 - `steam_inlet` is registered as a shell-slot block entity and appears in the creative tab.

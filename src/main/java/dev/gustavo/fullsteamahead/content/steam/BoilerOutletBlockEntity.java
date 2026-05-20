@@ -37,6 +37,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     public static final int PRESSURE_RANGE = 30;
     private static final float PRESSURE_PER_MB = 2.0f;
     private static final int BUFFER_CAPACITY = 4_000;
+    private static final int PRESSURE_REFRESH_TICKS = 20;
     private static final String BOILER_POS_KEY = "BoilerPos";
     private static final String BUFFER_KEY = "SteamBuffer";
     private static final String HEAT_UNITS_KEY = "HeatUnits";
@@ -57,6 +58,9 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     private int productionRate;
     private int pushedRate;
     private int externallyDrainedSteam;
+    private int pipePressureCooldown;
+    private int lastPressureAmount;
+    private PipePressureResult cachedPipePressure = PipePressureResult.NONE;
     private boolean venting;
     private String status = "Missing boiler";
 
@@ -92,6 +96,9 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         String previousStatus = status;
         int networkMovedLastTick = externallyDrainedSteam;
         externallyDrainedSteam = 0;
+        if (pipePressureCooldown > 0) {
+            pipePressureCooldown--;
+        }
         venting = false;
 
         FluidTankBlockEntity boiler = getBoiler();
@@ -104,9 +111,11 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
             pushedRate = networkMovedLastTick + output.moved();
             status = venting ? "Steam venting" : "Boiler producing steam";
         } else if (boiler == null || boiler.boiler == null) {
+            resetPipePressureCache();
             pushedRate = 0;
             status = "Missing boiler";
         } else {
+            resetPipePressureCache();
             pushedRate = 0;
             status = "Needs active heat and water";
         }
@@ -240,7 +249,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
 
         FluidTransportBehaviour startPipe = FluidPropagator.getPipe(level, startPos);
         if (startPipe != null) {
-            PipePressureResult result = applyPipePressure(startPos, facing.getOpposite(), maxAmount);
+            PipePressureResult result = getOrApplyPipePressure(startPos, facing.getOpposite(), maxAmount);
             if (result.openEnd()) {
                 venting = true;
             }
@@ -253,12 +262,28 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
             return ventSteam(worldPosition, facing, remaining);
         }
 
+        resetPipePressureCache();
         int moved = tryFillTarget(startPos, facing.getOpposite(), remaining);
         if (moved > 0) {
             return new SteamOutput(moved, false);
         }
 
         return ventSteam(worldPosition, facing, remaining);
+    }
+
+    private PipePressureResult getOrApplyPipePressure(BlockPos startPos, Direction sourceSide, int maxAmount) {
+        if (pipePressureCooldown <= 0 || lastPressureAmount != maxAmount) {
+            cachedPipePressure = applyPipePressure(startPos, sourceSide, maxAmount);
+            lastPressureAmount = maxAmount;
+            pipePressureCooldown = PRESSURE_REFRESH_TICKS;
+        }
+        return cachedPipePressure;
+    }
+
+    private void resetPipePressureCache() {
+        pipePressureCooldown = 0;
+        lastPressureAmount = 0;
+        cachedPipePressure = PipePressureResult.NONE;
     }
 
     private PipePressureResult applyPipePressure(BlockPos startPos, Direction sourceSide, int maxAmount) {
@@ -458,6 +483,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     }
 
     private record PipePressureResult(boolean hasEndpoint, boolean openEnd) {
+        private static final PipePressureResult NONE = new PipePressureResult(false, false);
     }
 
     private record SteamOutput(int moved, boolean venting) {

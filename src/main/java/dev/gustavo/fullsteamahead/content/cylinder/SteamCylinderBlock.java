@@ -1,11 +1,14 @@
 package dev.gustavo.fullsteamahead.content.cylinder;
 
 import com.mojang.serialization.MapCodec;
+import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
+import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -41,9 +44,37 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
             BlockPos neighborPos,
             boolean movedByPiston
     ) {
-        if (!level.isClientSide()) {
+        if (!level.isClientSide() && shouldRefreshFromNeighbor(level, pos, neighborPos)) {
             CylinderConnectivity.refreshFrom(level, pos);
         }
+    }
+
+    private boolean shouldRefreshFromNeighbor(Level level, BlockPos pos, BlockPos neighborPos) {
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity instanceof SteamCylinderBlockEntity cylinder && cylinder.isCylinderAssembled()) {
+            BlockPos ringOrigin = cylinder.getRingOrigin();
+            return ringOrigin != null && isInsideTrackedStructure(ringOrigin, neighborPos);
+        }
+
+        BlockState neighborState = level.getBlockState(neighborPos);
+        if (neighborState.is(ModBlocks.STEAM_CYLINDER.get())
+                || neighborState.is(ModBlocks.STEAM_INLET.get())
+                || neighborState.is(ModBlocks.PISTON.get())) {
+            return true;
+        }
+
+        return level.getBlockEntity(neighborPos) instanceof FluidTankBlockEntity;
+    }
+
+    private boolean isInsideTrackedStructure(BlockPos ringOrigin, BlockPos neighborPos) {
+        int dx = neighborPos.getX() - ringOrigin.getX();
+        int dy = neighborPos.getY() - ringOrigin.getY();
+        int dz = neighborPos.getZ() - ringOrigin.getZ();
+
+        if (dx < 0 || dx > 2 || dz < 0 || dz > 2) {
+            return false;
+        }
+        return dy >= -1 && dy <= 1;
     }
 
     @Override

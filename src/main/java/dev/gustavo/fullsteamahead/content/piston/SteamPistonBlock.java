@@ -36,20 +36,6 @@ public class SteamPistonBlock extends Block {
     }
 
     @Override
-    protected void neighborChanged(
-            BlockState state,
-            Level level,
-            BlockPos pos,
-            Block neighborBlock,
-            BlockPos neighborPos,
-            boolean movedByPiston
-    ) {
-        if (!level.isClientSide()) {
-            CrankshaftBlockEntity.revalidateNearbyCrankshafts(level, pos);
-        }
-    }
-
-    @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!level.isClientSide() && !state.is(newState.getBlock())) {
             CrankshaftBlockEntity.invalidateNearbyCrankshafts(level, pos, "Piston column changed", pos);

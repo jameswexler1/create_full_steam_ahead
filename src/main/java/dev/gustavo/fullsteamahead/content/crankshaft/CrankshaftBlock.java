@@ -43,20 +43,6 @@ public class CrankshaftBlock extends KineticBlock implements IBE<CrankshaftBlock
     }
 
     @Override
-    protected void neighborChanged(
-            BlockState state,
-            Level level,
-            BlockPos pos,
-            Block neighborBlock,
-            BlockPos neighborPos,
-            boolean movedByPiston
-    ) {
-        if (!level.isClientSide()) {
-            withBlockEntityDo(level, pos, CrankshaftBlockEntity::revalidateStructure);
-        }
-    }
-
-    @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!state.is(newState.getBlock())) {
             if (!level.isClientSide()) {

@@ -431,7 +431,7 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
                 .setValue(SteamPistonBlock.ASSEMBLED, assembled)
                 .setValue(SteamPistonBlock.PISTON_SECTION, section);
         if (newState != state) {
-            level.setBlock(pos, newState, Block.UPDATE_ALL);
+            level.setBlock(pos, newState, Block.UPDATE_CLIENTS);
         }
     }
 

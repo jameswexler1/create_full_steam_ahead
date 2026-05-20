@@ -51,7 +51,7 @@ public class BoilerOutletBlock extends Block implements IBE<BoilerOutletBlockEnt
             BlockPos neighborPos,
             boolean movedByPiston
     ) {
-        if (!level.isClientSide()) {
+        if (!level.isClientSide() && getAttachedTankPos(pos, state).equals(neighborPos)) {
             withBlockEntityDo(level, pos, BoilerOutletBlockEntity::refreshBoilerState);
         }
     }
