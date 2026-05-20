@@ -513,13 +513,13 @@ Implementation notes:
 **Goal**: make Full Steam Ahead engine blocks assemble and move as one coherent Create/Simulated structure without making Aeronautics, Simulated, or Sable required dependencies.
 
 - [x] Keep Aeronautics, Simulated, and Sable optional at runtime; no hard compile dependency
-- [ ] Add optional `simulated` dependency metadata alongside the existing optional Aeronautics/Sable entries
-- [ ] Add `create:safe_nbt` entries for Full Steam Ahead block entities that need saved boiler, inlet, steam, or kinetic state preserved through contraption movement
-- [ ] Register Create `BlockMovementChecks` for all Full Steam Ahead engine blocks
-- [ ] Movement rules: engine blocks are movable, not brittle, supportive, and attached to adjacent Full Steam Ahead engine blocks
-- [ ] Movement rules: bottom cylinder/inlet shell blocks attach downward to Create Fluid Tank boilers; `boiler_outlet` attaches to its tank side and output pipe side
-- [ ] Register Simulated `SimBlockMovementChecks` reflectively when the `simulated` API is present, using the same attachment rules and an additional-block hook for assembly robustness
-- [ ] Verify automated build/resources/JSON checks without Aeronautics, Simulated, or Sable installed
+- [x] Add optional `simulated` dependency metadata alongside the existing optional Aeronautics/Sable entries
+- [x] Add `create:safe_nbt` entries for Full Steam Ahead block entities that need saved boiler, inlet, steam, or kinetic state preserved through contraption movement
+- [x] Register Create `BlockMovementChecks` for all Full Steam Ahead engine blocks
+- [x] Movement rules: engine blocks are movable, not brittle, supportive, and attached to adjacent Full Steam Ahead engine blocks
+- [x] Movement rules: bottom cylinder/inlet shell blocks attach downward to Create Fluid Tank boilers; `boiler_outlet` attaches to its tank side and output pipe side
+- [x] Register Simulated `SimBlockMovementChecks` reflectively when the `simulated` API is present, using the same attachment rules and an additional-block hook for assembly robustness
+- [x] Verify automated build/resources/JSON checks without Aeronautics, Simulated, or Sable installed
 - [ ] Test engine inside a Sable/Aeronautics sublevel powering Aeronautics propellers
 - [ ] Verify NBT, kinetic state, steam buffer state, and boiler/inlet links survive assembly/disassembly and world reload
 

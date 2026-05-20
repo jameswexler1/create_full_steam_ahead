@@ -1,6 +1,8 @@
 package dev.gustavo.fullsteamahead;
 
 import com.mojang.logging.LogUtils;
+import dev.gustavo.fullsteamahead.compat.create.CreateMovementCompat;
+import dev.gustavo.fullsteamahead.compat.simulated.SimulatedMovementCompat;
 import dev.gustavo.fullsteamahead.content.steam.SteamOpenPipeEffectHandler;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
@@ -32,6 +34,10 @@ public final class FullSteamAhead {
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
-        event.enqueueWork(SteamOpenPipeEffectHandler::register);
+        event.enqueueWork(() -> {
+            SteamOpenPipeEffectHandler.register();
+            CreateMovementCompat.register();
+            SimulatedMovementCompat.registerIfPresent();
+        });
     }
 }

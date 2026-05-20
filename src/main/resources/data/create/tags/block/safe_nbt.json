@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "full_steam_ahead:steam_cylinder",
+    "full_steam_ahead:crankshaft",
+    "full_steam_ahead:boiler_outlet",
+    "full_steam_ahead:steam_inlet"
+  ]
+}

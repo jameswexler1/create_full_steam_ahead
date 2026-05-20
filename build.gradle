@@ -98,6 +98,7 @@ def resourceProperties = [
         mod_authors             : mod_authors,
         mod_description         : mod_description,
         create_version_range    : create_version_range,
+        simulated_version_range : simulated_version_range,
         sable_version_range     : sable_version_range,
         aeronautics_version_range: aeronautics_version_range
 ]

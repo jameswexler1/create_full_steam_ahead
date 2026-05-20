@@ -20,10 +20,27 @@ find src/main/resources -name '*.json' -exec jq empty {} +
 
 Automated results:
 
-- `compileJava`: pending
-- `processResources`: pending
-- `build`: pending
-- JSON validation: pending
+- `compileJava`: passed
+- `processResources`: passed
+- `build`: passed
+- JSON validation: passed
+
+Implementation notes:
+
+- `neoforge.mods.toml` now declares `simulated` as an optional dependency alongside optional `sable` and `aeronautics`.
+- Full Steam Ahead registers Create `BlockMovementChecks` during common setup.
+- Engine blocks are marked movable, movement-necessary, non-brittle, supportive, and attached to adjacent Full Steam Ahead engine blocks.
+- Bottom cylinder and inlet shell blocks attach downward to Create Fluid Tank boilers.
+- `boiler_outlet` attaches to its boiler tank side and output pipe side.
+- `steam_inlet` attaches to adjacent Create pipes.
+- Create Fluid Tank and Create pipe checks are symmetric for these Full Steam Ahead connections, so assembly can discover the link from either side.
+- Simulated compatibility uses guarded reflection against `dev.simulated_team.simulated.index.SimBlockMovementChecks`; there are no hard imports from Simulated, Aeronautics, or Sable.
+- `steam_cylinder`, `crankshaft`, `boiler_outlet`, and `steam_inlet` are listed in `create:safe_nbt`.
+
+Runtime status:
+
+- Standalone automated checks pass without Aeronautics, Simulated, or Sable installed.
+- Aeronautics/Sable sublevel runtime testing is still required in a profile that includes those mods.
 
 Manual runtime checklist:
 

@@ -41,6 +41,13 @@ ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.${mod_id}]]
+modId = "simulated"
+type = "optional"
+versionRange = "${simulated_version_range}"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.${mod_id}]]
 modId = "aeronautics"
 type = "optional"
 versionRange = "${aeronautics_version_range}"
