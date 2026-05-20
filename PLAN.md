@@ -468,15 +468,18 @@ Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerD
 - [x] Implement output-only `IFluidHandler` for generated `steam`
 - [x] Implement pressure-assisted output with default 30-block range; prefer Create `FluidTransportBehaviour`/`FluidNetwork` integration, fallback to bounded `IFluidHandler` push if needed
 - [x] Add goggle overlay for boiler link, heat, water, steam production rate, buffer, and output pressure state
-- [ ] Verify: direct compact crankshaft still works exactly as Phase 4
-- [ ] Verify: boiler outlet produces steam only on valid active boilers, fills Create tanks through pipes, and does not auto-pump from stored steam tanks
+- [x] Verify: direct compact crankshaft still works exactly as Phase 4
+- [x] Verify: boiler outlet produces steam only on valid active boilers, fills Create tanks through pipes, and does not auto-pump from stored steam tanks
+- [x] Apply Create `FluidTransportBehaviour` pressure so generated steam is visible in connected Create pipes
+- [x] Register steam open-pipe effect and outlet vent particles for open/unconnected steam leaks
+- [ ] Verify: steam visibly flows through pipes and open pipe ends vent steam particles
 
 Implementation notes:
 
 - Create's `BoilerData.BoilerFluidHandler` records water supply rate; it does not expose a stored steam inventory. Use `BoilerData` as the source of truth.
 - Create's mechanical pump range is exposed through `FluidPropagator.getPumpRange()`, but our outlet should have its own configurable default target of 30 blocks.
 - The outlet is a boiler pressure source, not a general-purpose pump.
-- First implementation uses an isolated bounded traversal over Create pipe blocks and fills reachable `IFluidHandler` targets. Deeper Create pipe pressure visuals/network integration can replace this without changing the outlet's generation model.
+- The outlet applies Create pipe pressure for normal pipe flow rendering and keeps a bounded `IFluidHandler` transfer as a no-drain fallback.
 
 ### Phase 6: Steam Inlet and Pipe-Fed Engine
 

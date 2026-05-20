@@ -12,7 +12,9 @@ Implemented:
 - Valid boiler outlets count as attached boiler devices for Create boiler visuals and compact sizing.
 - Steam generation requires active boiler heat and water supply.
 - Outlet exposes output-only `IFluidHandler`; it does not accept steam input.
-- Outlet pushes generated steam through a bounded Create pipe traversal up to 30 blocks.
+- Outlet applies Create pipe pressure so generated steam can render inside connected pipes.
+- Outlet keeps a bounded direct pipe traversal fallback up to 30 blocks if the Create pipe network does not drain immediately.
+- Open/unconnected steam vents show cloud particles through the outlet and Create open-pipe effect hook.
 - Goggles show outlet status, steam buffer, production, pushed amount, and pressure range.
 
 Automated checks run:
@@ -33,11 +35,20 @@ Results:
 
 Manual runtime checklist:
 
-- [ ] Run `./gradlew runClient`.
-- [ ] Confirm `Boiler Outlet` appears in the creative tab.
-- [ ] Place `boiler_outlet` on a Create Fluid Tank face and confirm it is placeable without crashing.
-- [ ] With no active boiler heat or no water supply, confirm goggles show no steam production.
-- [ ] Fire the boiler with water supply and confirm the outlet buffer fills with `steam`.
-- [ ] Connect Create fluid pipes from the outlet to a Create Fluid Tank and confirm steam arrives without a mechanical pump.
-- [ ] Confirm a normal tank containing stored steam does not auto-pump steam without a valid boiler outlet.
-- [ ] Confirm the existing direct compact crankshaft engine still follows the Phase 4 output table.
+- [x] Run `./gradlew runClient`.
+- [x] Confirm `Boiler Outlet` appears in the creative tab.
+- [x] Place `boiler_outlet` on a Create Fluid Tank face and confirm it is placeable without crashing.
+- [x] With no active boiler heat or no water supply, confirm goggles show no steam production.
+- [x] Fire the boiler with water supply and confirm the outlet buffer fills with `steam`.
+- [x] Connect Create fluid pipes from the outlet to a Create Fluid Tank and confirm steam arrives without a mechanical pump.
+- [x] Confirm a normal tank containing stored steam does not auto-pump steam without a valid boiler outlet.
+- [x] Confirm the existing direct compact crankshaft engine still follows the Phase 4 output table.
+
+User report after initial Phase 5 runtime test: all checklist items above work as expected; only pipe fluid visibility and open-pipe leaking needed follow-up.
+
+Polish runtime checklist:
+
+- [ ] Confirm steam is visible inside Create fluid pipes while the boiler outlet is producing.
+- [ ] Confirm an outlet facing open air vents steam particles instead of silently filling its buffer.
+- [ ] Confirm a pipe connected to the outlet but ending open vents steam particles from the open pipe end.
+- [ ] Confirm a pipe connected to a tank still moves steam without a mechanical pump after the visibility change.

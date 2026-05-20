@@ -37,7 +37,8 @@ Implemented toward the pipe-fed steam architecture while preserving the current 
 4. The outlet must not accept steam input, drain stored steam, or provide free pressure to normal steam tanks. It is a boiler pressure source, not a general pump.
 5. Prefer Create pipe pressure integration through `FluidTransportBehaviour`/`FluidNetwork`; isolate that code and keep a bounded `IFluidHandler` push fallback if needed. Default pressure range target: 30 blocks.
 6. Extend our Create boiler integration so valid boiler outlets count as attached boiler devices for active boiler visuals and compact sizing.
-7. `steam_inlet` and pipe-fed crankshaft consumption are Phase 6 unless explicitly pulled forward.
+7. Apply Create pipe pressure so steam renders in pipes, and use the steam open-pipe effect for visible venting from open ends.
+8. `steam_inlet` and pipe-fed crankshaft consumption are Phase 6 unless explicitly pulled forward.
 
 Before Phase 6 implementation, complete the Phase 5 manual checks in `docs/verification/phase5.md`.
 

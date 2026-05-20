@@ -15,8 +15,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -32,6 +35,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     public static final int STEAM_PER_HEAT_UNIT = 10;
     public static final int MAX_HEAT_UNITS = 18;
     public static final int PRESSURE_RANGE = 30;
+    private static final float PRESSURE_PER_MB = 2.0f;
     private static final int BUFFER_CAPACITY = 4_000;
     private static final String BOILER_POS_KEY = "BoilerPos";
     private static final String BUFFER_KEY = "SteamBuffer";
@@ -52,6 +56,8 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     private int heatUnits;
     private int productionRate;
     private int pushedRate;
+    private int externallyDrainedSteam;
+    private boolean venting;
     private String status = "Missing boiler";
 
     public BoilerOutletBlockEntity(BlockPos pos, BlockState state) {
@@ -82,26 +88,34 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         int previousProduction = productionRate;
         int previousPushed = pushedRate;
         int previousBuffer = steamBuffer.getFluidAmount();
+        boolean previousVenting = venting;
         String previousStatus = status;
+        int networkMovedLastTick = externallyDrainedSteam;
+        externallyDrainedSteam = 0;
+        venting = false;
 
         FluidTankBlockEntity boiler = getBoiler();
         heatUnits = calculateHeatUnits(boiler);
         productionRate = heatUnits * STEAM_PER_HEAT_UNIT;
         if (productionRate > 0) {
             steamBuffer.fill(new FluidStack(ModFluids.STEAM.get(), productionRate), IFluidHandler.FluidAction.EXECUTE);
-            status = "Boiler producing steam";
+            SteamOutput output = pushSteam(productionRate, networkMovedLastTick);
+            venting = output.venting();
+            pushedRate = networkMovedLastTick + output.moved();
+            status = venting ? "Steam venting" : "Boiler producing steam";
         } else if (boiler == null || boiler.boiler == null) {
+            pushedRate = 0;
             status = "Missing boiler";
         } else {
+            pushedRate = 0;
             status = "Needs active heat and water";
         }
-
-        pushedRate = productionRate > 0 ? pushSteam(productionRate) : 0;
 
         if (previousHeatUnits != heatUnits
                 || previousProduction != productionRate
                 || previousPushed != pushedRate
                 || previousBuffer != steamBuffer.getFluidAmount()
+                || previousVenting != venting
                 || !previousStatus.equals(status)) {
             notifyUpdate();
         }
@@ -179,6 +193,10 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                 .withStyle(productionRate > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
         tooltip.add(Component.literal("Pushed: " + pushedRate + " mB/t")
                 .withStyle(pushedRate > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY));
+        if (venting) {
+            tooltip.add(Component.literal("Venting open steam")
+                    .withStyle(ChatFormatting.GOLD));
+        }
         tooltip.add(Component.literal("Pressure range: " + PRESSURE_RANGE + " blocks")
                 .withStyle(ChatFormatting.DARK_GRAY));
         return true;
@@ -207,30 +225,108 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         return Math.min(MAX_HEAT_UNITS, Math.min(data.activeHeat, waterLimitedHeat));
     }
 
-    private int pushSteam(int maxAmount) {
+    private SteamOutput pushSteam(int maxAmount, int networkMovedLastTick) {
         if (level == null || steamBuffer.isEmpty()) {
-            return 0;
+            return SteamOutput.NONE;
         }
 
         Direction facing = BoilerOutletBlock.getFacing(getBlockState());
         BlockPos startPos = worldPosition.relative(facing);
         int remaining = Math.min(maxAmount, steamBuffer.getFluidAmount());
 
-        int moved = tryFillTarget(startPos, facing.getOpposite(), remaining);
-        remaining -= moved;
-        if (remaining <= 0 || !level.isLoaded(startPos)) {
-            return moved;
+        if (!level.isLoaded(startPos)) {
+            return ventSteam(worldPosition, facing, remaining);
         }
 
         FluidTransportBehaviour startPipe = FluidPropagator.getPipe(level, startPos);
-        if (startPipe == null) {
-            return moved;
+        if (startPipe != null) {
+            PipePressureResult result = applyPipePressure(startPos, facing.getOpposite(), maxAmount);
+            if (result.openEnd()) {
+                venting = true;
+            }
+            if (result.hasEndpoint()) {
+                int fallbackMoved = networkMovedLastTick == 0
+                        ? tryFillTargetsThroughPipes(startPos, facing.getOpposite(), remaining)
+                        : 0;
+                return new SteamOutput(fallbackMoved, result.openEnd());
+            }
+            return ventSteam(worldPosition, facing, remaining);
         }
 
+        int moved = tryFillTarget(startPos, facing.getOpposite(), remaining);
+        if (moved > 0) {
+            return new SteamOutput(moved, false);
+        }
+
+        return ventSteam(worldPosition, facing, remaining);
+    }
+
+    private PipePressureResult applyPipePressure(BlockPos startPos, Direction sourceSide, int maxAmount) {
+        float pressure = Math.max(2.0f, maxAmount * PRESSURE_PER_MB);
         Set<BlockPos> visited = new HashSet<>();
         Queue<PipeNode> queue = new ArrayDeque<>();
         visited.add(startPos);
-        queue.add(new PipeNode(startPos, 0));
+        queue.add(new PipeNode(startPos, sourceSide, 0));
+        boolean hasEndpoint = false;
+        boolean openEnd = false;
+
+        while (!queue.isEmpty()) {
+            PipeNode node = queue.remove();
+            if (!level.isLoaded(node.pos())) {
+                continue;
+            }
+
+            FluidTransportBehaviour pipe = FluidPropagator.getPipe(level, node.pos());
+            if (pipe == null) {
+                continue;
+            }
+            pipe.addPressure(node.incomingSide(), true, pressure);
+
+            for (Direction direction : FluidPropagator.getPipeConnections(level.getBlockState(node.pos()), pipe)) {
+                if (direction == node.incomingSide()) {
+                    continue;
+                }
+
+                BlockPos next = node.pos().relative(direction);
+                if (next.equals(worldPosition) || !level.isLoaded(next)) {
+                    continue;
+                }
+
+                FluidTransportBehaviour nextPipe = FluidPropagator.getPipe(level, next);
+                if (nextPipe != null) {
+                    pipe.addPressure(direction, false, pressure);
+                    if (node.distance() + 1 <= PRESSURE_RANGE && visited.add(next)) {
+                        queue.add(new PipeNode(next, direction.getOpposite(), node.distance() + 1));
+                    }
+                    continue;
+                }
+
+                IFluidHandler target = level.getCapability(Capabilities.FluidHandler.BLOCK, next, direction.getOpposite());
+                if (target != null) {
+                    pipe.addPressure(direction, false, pressure);
+                    hasEndpoint = true;
+                    continue;
+                }
+
+                if (FluidPropagator.isOpenEnd(level, node.pos(), direction)) {
+                    pipe.addPressure(direction, false, pressure);
+                    spawnSteamLeakParticles(node.pos(), direction);
+                    hasEndpoint = true;
+                    openEnd = true;
+                }
+            }
+        }
+
+        return new PipePressureResult(hasEndpoint, openEnd);
+    }
+
+    private int tryFillTargetsThroughPipes(BlockPos startPos, Direction sourceSide, int maxAmount) {
+        int remaining = Math.min(maxAmount, steamBuffer.getFluidAmount());
+        int moved = 0;
+        Set<BlockPos> visited = new HashSet<>();
+        Queue<PipeNode> queue = new ArrayDeque<>();
+        visited.add(startPos);
+        queue.add(new PipeNode(startPos, sourceSide, 0));
 
         while (!queue.isEmpty() && remaining > 0) {
             PipeNode node = queue.remove();
@@ -244,6 +340,10 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
             }
 
             for (Direction direction : FluidPropagator.getPipeConnections(level.getBlockState(node.pos()), pipe)) {
+                if (direction == node.incomingSide()) {
+                    continue;
+                }
+
                 BlockPos next = node.pos().relative(direction);
                 if (next.equals(worldPosition) || !level.isLoaded(next)) {
                     continue;
@@ -252,7 +352,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                 FluidTransportBehaviour nextPipe = FluidPropagator.getPipe(level, next);
                 if (nextPipe != null) {
                     if (node.distance() + 1 <= PRESSURE_RANGE && visited.add(next)) {
-                        queue.add(new PipeNode(next, node.distance() + 1));
+                        queue.add(new PipeNode(next, direction.getOpposite(), node.distance() + 1));
                     }
                     continue;
                 }
@@ -297,6 +397,37 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         return filled;
     }
 
+    private SteamOutput ventSteam(BlockPos sourcePos, Direction direction, int maxAmount) {
+        int leaked = steamBuffer.drain(maxAmount, IFluidHandler.FluidAction.EXECUTE).getAmount();
+        if (leaked > 0) {
+            spawnSteamLeakParticles(sourcePos, direction);
+            return new SteamOutput(leaked, true);
+        }
+        return SteamOutput.NONE;
+    }
+
+    private void spawnSteamLeakParticles(BlockPos sourcePos, Direction direction) {
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return;
+        }
+
+        Vec3 normal = Vec3.atLowerCornerOf(direction.getNormal());
+        double x = sourcePos.getX() + 0.5 + normal.x * 0.58;
+        double y = sourcePos.getY() + 0.5 + normal.y * 0.58;
+        double z = sourcePos.getZ() + 0.5 + normal.z * 0.58;
+        serverLevel.sendParticles(
+                ParticleTypes.CLOUD,
+                x,
+                y,
+                z,
+                4,
+                0.08,
+                0.08,
+                0.08,
+                0.025
+        );
+    }
+
     @Override
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
@@ -323,7 +454,14 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         status = tag.contains(STATUS_KEY) ? tag.getString(STATUS_KEY) : "Missing boiler";
     }
 
-    private record PipeNode(BlockPos pos, int distance) {
+    private record PipeNode(BlockPos pos, Direction incomingSide, int distance) {
+    }
+
+    private record PipePressureResult(boolean hasEndpoint, boolean openEnd) {
+    }
+
+    private record SteamOutput(int moved, boolean venting) {
+        private static final SteamOutput NONE = new SteamOutput(0, false);
     }
 
     private class OutputOnlySteamHandler implements IFluidHandler {
@@ -357,12 +495,20 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
             if (!resource.is(ModFluids.STEAM.get())) {
                 return FluidStack.EMPTY;
             }
-            return steamBuffer.drain(resource, action);
+            FluidStack drained = steamBuffer.drain(resource, action);
+            if (!action.simulate() && !drained.isEmpty()) {
+                externallyDrainedSteam += drained.getAmount();
+            }
+            return drained;
         }
 
         @Override
         public FluidStack drain(int maxDrain, FluidAction action) {
-            return steamBuffer.drain(maxDrain, action);
+            FluidStack drained = steamBuffer.drain(maxDrain, action);
+            if (!action.simulate() && !drained.isEmpty()) {
+                externallyDrainedSteam += drained.getAmount();
+            }
+            return drained;
         }
     }
 }
