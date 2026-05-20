@@ -7,6 +7,7 @@ import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import dev.gustavo.fullsteamahead.content.piston.PistonSection;
 import dev.gustavo.fullsteamahead.content.piston.SteamPistonBlock;
+import dev.gustavo.fullsteamahead.content.steam.SteamInletBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.ChatFormatting;
@@ -29,14 +30,18 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
     private static final String RING_ORIGIN_KEY = "RingOrigin";
     private static final String CYLINDER_ROOT_KEY = "CylinderRoot";
     private static final String BOILER_POS_KEY = "BoilerPos";
+    private static final String INLET_POS_KEY = "InletPos";
     private static final String ACTIVE_BURNERS_KEY = "ActiveBurners";
     private static final String HEAT_UNITS_KEY = "HeatUnits";
     private static final String GENERATED_SPEED_KEY = "GeneratedSpeed";
     private static final String GENERATED_CAPACITY_KEY = "GeneratedCapacity";
     private static final String WATER_SUPPLY_KEY = "WaterSupply";
+    private static final String SOURCE_MODE_KEY = "SourceMode";
+    private static final String STEAM_CONSUMED_KEY = "SteamConsumed";
     private static final String LEGACY_STEAM_POWER_KEY = "SteamPower";
     private static final String STATUS_KEY = "Status";
 
+    private static final int STEAM_PER_HEAT_UNIT = 10;
     private static final int MAX_ACTIVE_BURNERS = 9;
     private static final int MAX_HEAT_UNITS = 18;
     private static final float SU_PER_HEAT_UNIT = 16_384.0F;
@@ -47,11 +52,14 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
     private BlockPos ringOrigin;
     private BlockPos cylinderRootPos;
     private BlockPos boilerPos;
+    private BlockPos inletPos;
     private int activeBurners;
     private int heatUnits;
     private float generatedSpeed;
     private float generatedCapacitySu;
     private boolean hasWaterSupply;
+    private SourceMode sourceMode = SourceMode.NONE;
+    private int steamConsumedRate;
     private String status = "Incomplete structure";
 
     public CrankshaftBlockEntity(BlockPos pos, BlockState state) {
@@ -83,13 +91,7 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
             return;
         }
 
-        FluidTankBlockEntity boiler = getBoiler();
-        if (boiler == null || boiler.boiler == null) {
-            markInvalid("Missing Create fluid tank boiler", null);
-            return;
-        }
-
-        SteamOutput output = calculateSteamOutput(boiler);
+        SteamOutput output = calculateBestSteamOutput(true);
         if (applySteamOutput(output)) {
             updateGeneratedRotation();
             notifyUpdate();
@@ -119,12 +121,14 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
                 || !Objects.equals(ringOrigin, result.ringOrigin())
                 || !Objects.equals(cylinderRootPos, result.cylinderRoot())
                 || !Objects.equals(boilerPos, result.boilerPos())
+                || !Objects.equals(inletPos, result.inletPos())
                 || !Objects.equals(status, result.message());
 
         assembled = true;
         ringOrigin = result.ringOrigin();
         cylinderRootPos = result.cylinderRoot();
         boilerPos = result.boilerPos();
+        inletPos = result.inletPos();
         status = result.message();
 
         setPistonsAssembled(result);
@@ -132,7 +136,7 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         FluidTankBlockEntity boiler = getBoiler();
         refreshBoilerState(boiler);
 
-        SteamOutput output = calculateSteamOutput(boiler);
+        SteamOutput output = calculateBestSteamOutput(false);
         boolean outputChanged = applySteamOutput(output);
         if (changed || outputChanged) {
             updateGeneratedRotation();
@@ -155,6 +159,9 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
                 || ringOrigin != null
                 || cylinderRootPos != null
                 || boilerPos != null
+                || inletPos != null
+                || steamConsumedRate != 0
+                || sourceMode != SourceMode.NONE
                 || !Objects.equals(status, reason);
 
         clearPistonStates(skippedPistonPos);
@@ -163,11 +170,14 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         ringOrigin = null;
         cylinderRootPos = null;
         boilerPos = null;
+        inletPos = null;
         activeBurners = 0;
         heatUnits = 0;
         generatedSpeed = 0;
         generatedCapacitySu = 0;
         hasWaterSupply = false;
+        sourceMode = SourceMode.NONE;
+        steamConsumedRate = 0;
         status = reason;
 
         refreshBoilerState(previousBoiler);
@@ -212,12 +222,21 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         }
 
         tooltip.add(Component.literal("Engine assembled").withStyle(ChatFormatting.GREEN));
-        tooltip.add(Component.literal("Active burners: " + activeBurners + "/" + MAX_ACTIVE_BURNERS)
-                .withStyle(activeBurners > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
-        tooltip.add(Component.literal("Heat units: " + heatUnits + "/" + MAX_HEAT_UNITS)
-                .withStyle(heatUnits > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
-        tooltip.add(Component.literal("Water supply: " + (hasWaterSupply ? "available" : "missing"))
-                .withStyle(hasWaterSupply ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
+        tooltip.add(Component.literal("Source: " + sourceMode.displayName())
+                .withStyle(sourceMode == SourceMode.NONE ? ChatFormatting.YELLOW : ChatFormatting.AQUA));
+        if (sourceMode == SourceMode.PIPED_STEAM) {
+            tooltip.add(Component.literal("Steam consumed: " + steamConsumedRate + " mB/t")
+                    .withStyle(steamConsumedRate > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
+            tooltip.add(Component.literal("Steam units: " + heatUnits + "/" + MAX_HEAT_UNITS)
+                    .withStyle(heatUnits > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
+        } else {
+            tooltip.add(Component.literal("Active burners: " + activeBurners + "/" + MAX_ACTIVE_BURNERS)
+                    .withStyle(activeBurners > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
+            tooltip.add(Component.literal("Heat units: " + heatUnits + "/" + MAX_HEAT_UNITS)
+                    .withStyle(heatUnits > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
+            tooltip.add(Component.literal("Water supply: " + (hasWaterSupply ? "available" : "missing"))
+                    .withStyle(hasWaterSupply ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
+        }
         tooltip.add(Component.literal("RPM: " + Math.round(getGeneratedSpeed()))
                 .withStyle(getGeneratedSpeed() > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
         tooltip.add(Component.literal("Capacity: " + Math.round(getTargetCapacitySu()) + " SU")
@@ -226,9 +245,26 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         return true;
     }
 
-    private SteamOutput calculateSteamOutput(FluidTankBlockEntity boiler) {
+    private SteamOutput calculateBestSteamOutput(boolean executePiped) {
+        SteamInletBlockEntity inlet = getInlet();
+        if (inlet != null && inlet.isInletAssembled()) {
+            SteamOutput piped = calculatePipedSteamOutput(inlet, executePiped);
+            if (piped.canRun() || boilerPos == null) {
+                return piped;
+            }
+        }
+
+        FluidTankBlockEntity boiler = getBoiler();
+        if (boiler != null && boiler.boiler != null) {
+            return calculateDirectSteamOutput(boiler);
+        }
+
+        return SteamOutput.none(inlet == null ? SourceMode.NONE : SourceMode.PIPED_STEAM);
+    }
+
+    private SteamOutput calculateDirectSteamOutput(FluidTankBlockEntity boiler) {
         if (boiler == null || boiler.boiler == null) {
-            return SteamOutput.NONE;
+            return SteamOutput.none(SourceMode.NONE);
         }
 
         BoilerData data = boiler.boiler;
@@ -239,7 +275,26 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
 
         BurnerHeat burnerHeat = scanBurners();
         boolean hasWater = data.getMaxHeatLevelForWaterSupply() > 0;
-        return new SteamOutput(burnerHeat.activeBurners(), burnerHeat.heatUnits(), hasWater);
+        return new SteamOutput(SourceMode.DIRECT_BOILER, burnerHeat.activeBurners(), burnerHeat.heatUnits(), hasWater, 0);
+    }
+
+    private SteamOutput calculatePipedSteamOutput(SteamInletBlockEntity inlet, boolean execute) {
+        int availableUnits = Math.min(MAX_HEAT_UNITS, inlet.getSteamAmount() / STEAM_PER_HEAT_UNIT);
+        if (availableUnits <= 0) {
+            return SteamOutput.none(SourceMode.PIPED_STEAM);
+        }
+
+        int targetSteam = availableUnits * STEAM_PER_HEAT_UNIT;
+        int consumed = inlet.consumeSteam(targetSteam, execute).getAmount();
+        int heat = Math.min(MAX_HEAT_UNITS, consumed / STEAM_PER_HEAT_UNIT);
+        int activeEquivalent = Math.min(MAX_ACTIVE_BURNERS, heat);
+        return new SteamOutput(
+                SourceMode.PIPED_STEAM,
+                activeEquivalent,
+                heat,
+                true,
+                heat * STEAM_PER_HEAT_UNIT
+        );
     }
 
     private BurnerHeat scanBurners() {
@@ -275,15 +330,19 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
     private boolean applySteamOutput(SteamOutput output) {
         float speed = output.generatedSpeed();
         float capacity = output.capacitySu();
-        boolean changed = activeBurners != output.activeBurners()
+        boolean changed = sourceMode != output.sourceMode()
+                || activeBurners != output.activeBurners()
                 || heatUnits != output.heatUnits()
                 || hasWaterSupply != output.hasWaterSupply()
+                || steamConsumedRate != output.steamConsumedRate()
                 || !Mth.equal(generatedSpeed, speed)
                 || !Mth.equal(generatedCapacitySu, capacity);
 
+        sourceMode = output.sourceMode();
         activeBurners = output.activeBurners();
         heatUnits = output.heatUnits();
         hasWaterSupply = output.hasWaterSupply();
+        steamConsumedRate = output.steamConsumedRate();
         generatedSpeed = speed;
         generatedCapacitySu = capacity;
         return changed;
@@ -312,6 +371,18 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         if (blockEntity instanceof FluidTankBlockEntity tank) {
             FluidTankBlockEntity controller = tank.getControllerBE();
             return controller == null ? tank : controller;
+        }
+        return null;
+    }
+
+    private SteamInletBlockEntity getInlet() {
+        if (level == null || inletPos == null || !level.isLoaded(inletPos)) {
+            return null;
+        }
+
+        BlockEntity blockEntity = level.getBlockEntity(inletPos);
+        if (blockEntity instanceof SteamInletBlockEntity inlet) {
+            return inlet;
         }
         return null;
     }
@@ -411,11 +482,14 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         writePos(tag, RING_ORIGIN_KEY, ringOrigin);
         writePos(tag, CYLINDER_ROOT_KEY, cylinderRootPos);
         writePos(tag, BOILER_POS_KEY, boilerPos);
+        writePos(tag, INLET_POS_KEY, inletPos);
         tag.putInt(ACTIVE_BURNERS_KEY, activeBurners);
         tag.putInt(HEAT_UNITS_KEY, heatUnits);
         tag.putFloat(GENERATED_SPEED_KEY, generatedSpeed);
         tag.putFloat(GENERATED_CAPACITY_KEY, generatedCapacitySu);
         tag.putBoolean(WATER_SUPPLY_KEY, hasWaterSupply);
+        tag.putString(SOURCE_MODE_KEY, sourceMode.name());
+        tag.putInt(STEAM_CONSUMED_KEY, steamConsumedRate);
         tag.putString(STATUS_KEY, status);
     }
 
@@ -426,15 +500,19 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         ringOrigin = readPos(tag, RING_ORIGIN_KEY);
         cylinderRootPos = readPos(tag, CYLINDER_ROOT_KEY);
         boilerPos = readPos(tag, BOILER_POS_KEY);
+        inletPos = readPos(tag, INLET_POS_KEY);
         activeBurners = tag.getInt(ACTIVE_BURNERS_KEY);
         heatUnits = tag.getInt(HEAT_UNITS_KEY);
         generatedSpeed = tag.getFloat(GENERATED_SPEED_KEY);
         generatedCapacitySu = tag.getFloat(GENERATED_CAPACITY_KEY);
         hasWaterSupply = tag.getBoolean(WATER_SUPPLY_KEY);
+        sourceMode = SourceMode.byName(tag.getString(SOURCE_MODE_KEY));
+        steamConsumedRate = tag.getInt(STEAM_CONSUMED_KEY);
         if (generatedSpeed == 0 && generatedCapacitySu == 0 && tag.contains(LEGACY_STEAM_POWER_KEY)) {
             float legacySteamPower = tag.getFloat(LEGACY_STEAM_POWER_KEY);
             generatedSpeed = MAX_RPM * Math.min(legacySteamPower, 1.0F);
             generatedCapacitySu = REGULAR_MAX_CAPACITY_SU * legacySteamPower;
+            sourceMode = SourceMode.DIRECT_BOILER;
         }
         status = tag.contains(STATUS_KEY) ? tag.getString(STATUS_KEY) : "Incomplete structure";
     }
@@ -455,8 +533,16 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         private static final BurnerHeat NONE = new BurnerHeat(0, 0);
     }
 
-    private record SteamOutput(int activeBurners, int heatUnits, boolean hasWaterSupply) {
-        private static final SteamOutput NONE = new SteamOutput(0, 0, false);
+    private record SteamOutput(
+            SourceMode sourceMode,
+            int activeBurners,
+            int heatUnits,
+            boolean hasWaterSupply,
+            int steamConsumedRate
+    ) {
+        private static SteamOutput none(SourceMode sourceMode) {
+            return new SteamOutput(sourceMode, 0, 0, false, 0);
+        }
 
         private float generatedSpeed() {
             return canRun() ? rpmForActiveBurners(activeBurners) : 0;
@@ -467,7 +553,36 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         }
 
         private boolean canRun() {
-            return hasWaterSupply && activeBurners > 0 && heatUnits > 0;
+            return switch (sourceMode) {
+                case DIRECT_BOILER -> hasWaterSupply && activeBurners > 0 && heatUnits > 0;
+                case PIPED_STEAM -> steamConsumedRate > 0 && heatUnits > 0;
+                case NONE -> false;
+            };
+        }
+    }
+
+    private enum SourceMode {
+        NONE("No steam"),
+        DIRECT_BOILER("Direct boiler"),
+        PIPED_STEAM("Piped steam");
+
+        private final String displayName;
+
+        SourceMode(String displayName) {
+            this.displayName = displayName;
+        }
+
+        private String displayName() {
+            return displayName;
+        }
+
+        private static SourceMode byName(String name) {
+            for (SourceMode mode : values()) {
+                if (mode.name().equals(name)) {
+                    return mode;
+                }
+            }
+            return NONE;
         }
     }
 }

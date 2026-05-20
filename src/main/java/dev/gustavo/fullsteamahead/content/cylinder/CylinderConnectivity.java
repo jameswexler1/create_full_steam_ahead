@@ -2,6 +2,8 @@ package dev.gustavo.fullsteamahead.content.cylinder;
 
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import dev.gustavo.fullsteamahead.content.crankshaft.CrankshaftBlockEntity;
+import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
+import dev.gustavo.fullsteamahead.content.steam.SteamInletBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -30,7 +32,7 @@ public final class CylinderConnectivity {
         refresh(level, removedPos, removedPos);
     }
 
-    private static void refresh(Level level, BlockPos changedPos, BlockPos ignoredCylinderPos) {
+    private static void refresh(Level level, BlockPos changedPos, BlockPos ignoredRingMemberPos) {
         if (level.isClientSide()) {
             return;
         }
@@ -40,7 +42,7 @@ public final class CylinderConnectivity {
         Set<BlockPos> validRingPositions = new LinkedHashSet<>();
 
         for (BlockPos origin : candidates) {
-            if (isValidRing(level, origin, ignoredCylinderPos)) {
+            if (isValidRing(level, origin, ignoredRingMemberPos)) {
                 validOrigins.add(origin);
                 validRingPositions.addAll(ringPositions(origin));
             }
@@ -71,7 +73,9 @@ public final class CylinderConnectivity {
         return origins;
     }
 
-    private static boolean isValidRing(Level level, BlockPos origin, BlockPos ignoredCylinderPos) {
+    private static boolean isValidRing(Level level, BlockPos origin, BlockPos ignoredRingMemberPos) {
+        int inlets = 0;
+
         for (int y = 0; y <= 1; y++) {
             for (int x = 0; x <= 2; x++) {
                 for (int z = 0; z <= 2; z++) {
@@ -88,7 +92,11 @@ public final class CylinderConnectivity {
                         continue;
                     }
 
-                    if (!isCylinderAt(level, pos, ignoredCylinderPos)) {
+                    RingMember member = getRingMemberAt(level, pos, ignoredRingMemberPos);
+                    if (member == RingMember.NONE) {
+                        return false;
+                    }
+                    if (member == RingMember.INLET && ++inlets > 1) {
                         return false;
                     }
                 }
@@ -97,11 +105,19 @@ public final class CylinderConnectivity {
         return true;
     }
 
-    private static boolean isCylinderAt(Level level, BlockPos pos, BlockPos ignoredCylinderPos) {
-        if (pos.equals(ignoredCylinderPos)) {
-            return false;
+    private static RingMember getRingMemberAt(Level level, BlockPos pos, BlockPos ignoredRingMemberPos) {
+        if (pos.equals(ignoredRingMemberPos)) {
+            return RingMember.NONE;
         }
-        return level.getBlockState(pos).is(ModBlocks.STEAM_CYLINDER.get());
+
+        BlockState state = level.getBlockState(pos);
+        if (state.is(ModBlocks.STEAM_CYLINDER.get())) {
+            return RingMember.CYLINDER;
+        }
+        if (state.is(ModBlocks.STEAM_INLET.get())) {
+            return RingMember.INLET;
+        }
+        return RingMember.NONE;
     }
 
     private static boolean isCenter(int x, int z) {
@@ -129,28 +145,39 @@ public final class CylinderConnectivity {
             }
 
             BlockState state = level.getBlockState(pos);
-            if (!state.is(ModBlocks.STEAM_CYLINDER.get())) {
+            if (!isRingMember(state)) {
                 continue;
             }
 
             setAssembled(level, pos, state, false);
             withCylinderBlockEntity(level, pos, SteamCylinderBlockEntity::clearRingState);
+            withInletBlockEntity(level, pos, SteamInletBlockEntity::clearRingState);
         }
     }
 
     private static void assemble(Level level, BlockPos origin) {
         List<BlockPos> positions = ringPositions(origin);
         BlockPos root = positions.stream()
+                .filter(pos -> level.getBlockState(pos).is(ModBlocks.STEAM_CYLINDER.get()))
                 .min(ROOT_ORDER)
                 .orElse(origin);
         BlockPos boilerPos = findBoiler(level, origin).orElse(null);
+        BlockPos inletPos = findInlet(level, positions).orElse(null);
 
         for (BlockPos pos : positions) {
             BlockState state = level.getBlockState(pos);
             setAssembled(level, pos, state, true);
             withCylinderBlockEntity(level, pos,
-                    be -> be.applyRingState(origin, root, boilerPos, pos.equals(root)));
+                    be -> be.applyRingState(origin, root, boilerPos, inletPos, pos.equals(root)));
+            withInletBlockEntity(level, pos,
+                    be -> be.applyRingState(origin, root, boilerPos));
         }
+    }
+
+    private static Optional<BlockPos> findInlet(Level level, List<BlockPos> positions) {
+        return positions.stream()
+                .filter(pos -> level.getBlockState(pos).is(ModBlocks.STEAM_INLET.get()))
+                .findFirst();
     }
 
     private static Optional<BlockPos> findBoiler(Level level, BlockPos origin) {
@@ -183,12 +210,29 @@ public final class CylinderConnectivity {
     }
 
     private static void setAssembled(Level level, BlockPos pos, BlockState state, boolean assembled) {
-        if (!state.hasProperty(SteamCylinderBlock.ASSEMBLED)
-                || state.getValue(SteamCylinderBlock.ASSEMBLED) == assembled) {
+        if (state.is(ModBlocks.STEAM_CYLINDER.get())) {
+            setAssembled(level, pos, state, SteamCylinderBlock.ASSEMBLED, assembled);
+        } else if (state.is(ModBlocks.STEAM_INLET.get())) {
+            setAssembled(level, pos, state, SteamInletBlock.ASSEMBLED, assembled);
+        }
+    }
+
+    private static void setAssembled(
+            Level level,
+            BlockPos pos,
+            BlockState state,
+            net.minecraft.world.level.block.state.properties.BooleanProperty property,
+            boolean assembled
+    ) {
+        if (!state.hasProperty(property) || state.getValue(property) == assembled) {
             return;
         }
 
-        level.setBlock(pos, state.setValue(SteamCylinderBlock.ASSEMBLED, assembled), Block.UPDATE_ALL);
+        level.setBlock(pos, state.setValue(property, assembled), Block.UPDATE_ALL);
+    }
+
+    private static boolean isRingMember(BlockState state) {
+        return state.is(ModBlocks.STEAM_CYLINDER.get()) || state.is(ModBlocks.STEAM_INLET.get());
     }
 
     private static void notifyCrankshafts(Level level, Set<BlockPos> candidateOrigins) {
@@ -210,6 +254,23 @@ public final class CylinderConnectivity {
         if (blockEntity instanceof SteamCylinderBlockEntity cylinder) {
             action.accept(cylinder);
         }
+    }
+
+    private static void withInletBlockEntity(
+            Level level,
+            BlockPos pos,
+            java.util.function.Consumer<SteamInletBlockEntity> action
+    ) {
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity instanceof SteamInletBlockEntity inlet) {
+            action.accept(inlet);
+        }
+    }
+
+    private enum RingMember {
+        NONE,
+        CYLINDER,
+        INLET
     }
 
     private CylinderConnectivity() {

@@ -22,12 +22,14 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
     private static final String ROOT_POS_KEY = "RootPos";
     private static final String RING_ORIGIN_KEY = "RingOrigin";
     private static final String BOILER_POS_KEY = "BoilerPos";
+    private static final String INLET_POS_KEY = "InletPos";
 
     private boolean assembled;
     private boolean root;
     private BlockPos rootPos;
     private BlockPos ringOrigin;
     private BlockPos boilerPos;
+    private BlockPos inletPos;
 
     public SteamCylinderBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STEAM_CYLINDER.get(), pos, state);
@@ -45,18 +47,26 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         }
     }
 
-    public void applyRingState(BlockPos ringOrigin, BlockPos rootPos, BlockPos boilerPos, boolean root) {
+    public void applyRingState(
+            BlockPos ringOrigin,
+            BlockPos rootPos,
+            BlockPos boilerPos,
+            BlockPos inletPos,
+            boolean root
+    ) {
         boolean changed = !assembled
                 || this.root != root
                 || !Objects.equals(this.rootPos, rootPos)
                 || !Objects.equals(this.ringOrigin, ringOrigin)
-                || !Objects.equals(this.boilerPos, boilerPos);
+                || !Objects.equals(this.boilerPos, boilerPos)
+                || !Objects.equals(this.inletPos, inletPos);
 
         this.assembled = true;
         this.root = root;
         this.rootPos = rootPos;
         this.ringOrigin = ringOrigin;
         this.boilerPos = boilerPos;
+        this.inletPos = inletPos;
 
         if (changed) {
             notifyUpdate();
@@ -64,7 +74,7 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
     }
 
     public void clearRingState() {
-        if (!assembled && !root && rootPos == null && ringOrigin == null && boilerPos == null) {
+        if (!assembled && !root && rootPos == null && ringOrigin == null && boilerPos == null && inletPos == null) {
             return;
         }
 
@@ -73,6 +83,7 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         rootPos = null;
         ringOrigin = null;
         boilerPos = null;
+        inletPos = null;
         notifyUpdate();
     }
 
@@ -96,6 +107,10 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         return boilerPos;
     }
 
+    public BlockPos getInletPos() {
+        return inletPos;
+    }
+
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         tooltip.add(Component.literal("Steam Cylinder").withStyle(ChatFormatting.GRAY));
@@ -111,7 +126,11 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
 
         FluidTankBlockEntity boiler = getBoiler();
         if (boiler == null || boiler.boiler == null) {
-            tooltip.add(Component.literal("No steam source").withStyle(ChatFormatting.YELLOW));
+            if (inletPos == null) {
+                tooltip.add(Component.literal("No steam source").withStyle(ChatFormatting.YELLOW));
+            } else {
+                tooltip.add(Component.literal("Steam inlet linked").withStyle(ChatFormatting.AQUA));
+            }
             return true;
         }
 
@@ -140,6 +159,7 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         writePos(tag, ROOT_POS_KEY, rootPos);
         writePos(tag, RING_ORIGIN_KEY, ringOrigin);
         writePos(tag, BOILER_POS_KEY, boilerPos);
+        writePos(tag, INLET_POS_KEY, inletPos);
     }
 
     @Override
@@ -150,6 +170,7 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         rootPos = readPos(tag, ROOT_POS_KEY);
         ringOrigin = readPos(tag, RING_ORIGIN_KEY);
         boilerPos = readPos(tag, BOILER_POS_KEY);
+        inletPos = readPos(tag, INLET_POS_KEY);
     }
 
     private static void writePos(CompoundTag tag, String key, BlockPos pos) {

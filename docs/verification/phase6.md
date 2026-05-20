@@ -19,12 +19,20 @@ env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build
 find src/main/resources -name '*.json' -exec jq empty {} +
 ```
 
-Results:
+Automated results:
 
-- `compileJava`: pending
-- `processResources`: pending
-- `build`: pending
-- JSON validation: pending
+- `compileJava`: passed
+- `processResources`: passed
+- `build`: passed
+- JSON validation: passed
+
+Implementation notes:
+
+- `steam_inlet` is registered as a shell-slot block entity and appears in the creative tab.
+- Cylinder assembly now accepts 16 cylinders or 15 cylinders plus exactly 1 inlet. Multiple inlets are invalid.
+- The inlet exposes an input-only steam capability only while assembled, and invalidates capabilities when assembly changes.
+- Crankshafts prefer usable inlet steam, consuming 10 mB/t per heat unit up to 180 mB/t. If no usable inlet steam exists and a direct boiler is present, direct compact mode remains the fallback.
+- Crankshaft goggles now show direct boiler vs piped steam source mode.
 
 Manual runtime checklist:
 

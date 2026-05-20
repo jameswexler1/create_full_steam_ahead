@@ -2,6 +2,7 @@ package dev.gustavo.fullsteamahead.content.crankshaft;
 
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlock;
+import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -36,39 +37,42 @@ public final class CrankshaftValidator {
 
         BlockPos ringOrigin = crankshaftPos.offset(-1, -4, -1);
         List<BlockPos> ringPositions = ringPositions(ringOrigin);
+        List<BlockPos> cylinderPositions = new ArrayList<>(16);
+        BlockPos inletPos = null;
         for (BlockPos pos : ringPositions) {
             if (!level.isLoaded(pos)) {
                 return Result.invalid("Cylinder ring is unloaded");
             }
 
             BlockState state = level.getBlockState(pos);
-            if (!state.is(ModBlocks.STEAM_CYLINDER.get())) {
-                return Result.invalid("Missing steam cylinder ring");
+            if (state.is(ModBlocks.STEAM_CYLINDER.get())) {
+                if (!isAssembled(state, SteamCylinderBlock.ASSEMBLED)) {
+                    return Result.invalid("Cylinder ring is not assembled");
+                }
+                cylinderPositions.add(pos);
+                continue;
             }
-            if (!state.hasProperty(SteamCylinderBlock.ASSEMBLED)
-                    || !state.getValue(SteamCylinderBlock.ASSEMBLED)) {
-                return Result.invalid("Cylinder ring is not assembled");
+
+            if (state.is(ModBlocks.STEAM_INLET.get())) {
+                if (inletPos != null) {
+                    return Result.invalid("Too many steam inlets");
+                }
+                if (!isAssembled(state, SteamInletBlock.ASSEMBLED)) {
+                    return Result.invalid("Steam inlet is not assembled");
+                }
+                inletPos = pos;
+                continue;
             }
+
+            return Result.invalid("Missing steam cylinder ring");
         }
 
-        BlockPos boilerPos = null;
-        for (BlockPos pos : boilerShellPositions(ringOrigin)) {
-            if (!level.isLoaded(pos)) {
-                return Result.invalid("Boiler layer is unloaded");
-            }
-
-            BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (!(blockEntity instanceof FluidTankBlockEntity tank)) {
-                return Result.invalid("Missing Create fluid tank boiler");
-            }
-
-            if (boilerPos == null) {
-                FluidTankBlockEntity controller = tank.getControllerBE();
-                boilerPos = controller == null ? pos : controller.getBlockPos();
-            }
+        BoilerScan boiler = findDirectBoiler(level, ringOrigin);
+        if (!boiler.valid() && inletPos == null) {
+            return Result.invalid(boiler.message());
         }
 
-        BlockPos cylinderRoot = ringPositions.stream()
+        BlockPos cylinderRoot = cylinderPositions.stream()
                 .min(ROOT_ORDER)
                 .orElse(ringOrigin);
 
@@ -77,7 +81,8 @@ public final class CrankshaftValidator {
                 "Structure assembled",
                 ringOrigin,
                 cylinderRoot,
-                boilerPos,
+                boiler.boilerPos(),
+                inletPos,
                 pistons.insideLow(),
                 pistons.insideHigh(),
                 pistons.protrudeLow(),
@@ -110,6 +115,13 @@ public final class CrankshaftValidator {
         return level.isLoaded(pos) && level.getBlockState(pos).is(ModBlocks.PISTON.get());
     }
 
+    private static boolean isAssembled(
+            BlockState state,
+            net.minecraft.world.level.block.state.properties.BooleanProperty property
+    ) {
+        return state.hasProperty(property) && state.getValue(property);
+    }
+
     private static List<BlockPos> ringPositions(BlockPos origin) {
         List<BlockPos> positions = new ArrayList<>(16);
         for (int y = 0; y <= 1; y++) {
@@ -136,6 +148,27 @@ public final class CrankshaftValidator {
         return positions;
     }
 
+    private static BoilerScan findDirectBoiler(Level level, BlockPos ringOrigin) {
+        BlockPos boilerPos = null;
+        for (BlockPos pos : boilerShellPositions(ringOrigin)) {
+            if (!level.isLoaded(pos)) {
+                return BoilerScan.invalid("Boiler layer is unloaded");
+            }
+
+            BlockEntity blockEntity = level.getBlockEntity(pos);
+            if (!(blockEntity instanceof FluidTankBlockEntity tank)) {
+                return BoilerScan.invalid("Missing Create fluid tank boiler");
+            }
+
+            if (boilerPos == null) {
+                FluidTankBlockEntity controller = tank.getControllerBE();
+                boilerPos = controller == null ? pos : controller.getBlockPos();
+            }
+        }
+
+        return BoilerScan.valid(boilerPos);
+    }
+
     private static boolean isCenter(int x, int z) {
         return x == 1 && z == 1;
     }
@@ -154,13 +187,24 @@ public final class CrankshaftValidator {
             BlockPos ringOrigin,
             BlockPos cylinderRoot,
             BlockPos boilerPos,
+            BlockPos inletPos,
             BlockPos insideLow,
             BlockPos insideHigh,
             BlockPos protrudeLow,
             BlockPos protrudeHigh
     ) {
         public static Result invalid(String message) {
-            return new Result(false, message, null, null, null, null, null, null, null);
+            return new Result(false, message, null, null, null, null, null, null, null, null);
+        }
+    }
+
+    private record BoilerScan(boolean valid, String message, BlockPos boilerPos) {
+        private static BoilerScan valid(BlockPos boilerPos) {
+            return new BoilerScan(true, "Direct boiler linked", boilerPos);
+        }
+
+        private static BoilerScan invalid(String message) {
+            return new BoilerScan(false, message, null);
         }
     }
 

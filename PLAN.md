@@ -493,14 +493,14 @@ Implementation notes:
 
 **Goal**: Let cylinders consume piped `steam` and generate rotation remotely from the boiler room, while preserving direct compact mode as a fallback.
 
-- [ ] Add `steam_inlet` block, item, block entity, blockstate/model/item model/loot/lang/tags/creative entry
-- [ ] Allow a valid cylinder ring to be either 16 `steam_cylinder` blocks or 15 `steam_cylinder` blocks plus exactly 1 `steam_inlet` occupying any shell slot
-- [ ] `SteamInletBlockEntity` accepts only `steam` through an input-only `IFluidHandler` while assembled
-- [ ] Inlet caches assembled ring origin and cylinder root, and clears its link on disassembly
-- [ ] Crankshaft detects the linked steam inlet from the assembled ring
-- [ ] If usable inlet steam is available, crankshaft consumes `steam` and calculates output from steam consumption rate
-- [ ] If no valid inlet is present, existing direct compact boiler mode remains unchanged
-- [ ] Add goggle overlays for source mode: direct boiler vs piped steam
+- [x] Add `steam_inlet` block, item, block entity, blockstate/model/item model/loot/lang/tags/creative entry
+- [x] Allow a valid cylinder ring to be either 16 `steam_cylinder` blocks or 15 `steam_cylinder` blocks plus exactly 1 `steam_inlet` occupying any shell slot
+- [x] `SteamInletBlockEntity` accepts only `steam` through an input-only `IFluidHandler` while assembled
+- [x] Inlet caches assembled ring origin and cylinder root, and clears its link on disassembly
+- [x] Crankshaft detects the linked steam inlet from the assembled ring
+- [x] If usable inlet steam is available, crankshaft consumes `steam` and calculates output from steam consumption rate
+- [x] If no valid inlet is present, existing direct compact boiler mode remains unchanged
+- [x] Add goggle overlays for source mode: direct boiler vs piped steam
 - [ ] Verify: remote boiler outlet → Create pipes → steam inlet → engine rotation
 - [ ] Verify: steam storage buffer can run the engine briefly after boiler output stops
 - [ ] Verify: no steam/no inlet stops pipe-fed output without breaking direct compact mode

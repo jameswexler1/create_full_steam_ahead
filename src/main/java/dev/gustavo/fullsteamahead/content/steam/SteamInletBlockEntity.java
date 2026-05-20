@@ -87,6 +87,7 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         this.boilerPos = boilerPos;
 
         if (changed) {
+            invalidateFluidCapability();
             notifyUpdate();
         }
     }
@@ -100,6 +101,7 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         rootPos = null;
         ringOrigin = null;
         boilerPos = null;
+        invalidateFluidCapability();
         notifyUpdate();
     }
 
@@ -135,6 +137,12 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
 
     public IFluidHandler getFluidHandler(Direction side) {
         return assembled ? inputHandler : null;
+    }
+
+    private void invalidateFluidCapability() {
+        if (level != null) {
+            level.invalidateCapabilities(worldPosition);
+        }
     }
 
     @Override
