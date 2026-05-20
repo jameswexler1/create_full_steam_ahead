@@ -28,6 +28,9 @@ Important source findings:
 - Create's `SteamEngineBlockEntity` reads a neighbouring `FluidTankBlockEntity` boiler and updates a `PoweredShaftBlockEntity`. We follow this same pattern: our `CrankshaftBlockEntity` reads the `FluidTankBlockEntity` boiler below the cylinder via the same `BoilerData` path.
 - Create's `GeneratingKineticBlockEntity` with dynamic `getGeneratedSpeed()` and `calculateAddedStressCapacity()` is the correct base for the crankshaft output. Do not subclass `PoweredShaftBlockEntity` directly.
 - Create exposes `BlockStressValues` for stress tooltip metadata.
+- NeoForge `BaseFlowingFluid`, `FluidType`, `FluidTank`, `IFluidHandler`, and `Capabilities.FluidHandler.BLOCK` are present in the 21.1.230 dev classpath and are the correct baseline for a storable `steam` fluid.
+- Create's fluid pipes ultimately interact with NeoForge `IFluidHandler`; Create also exposes internal pipe pressure helpers through `FluidTransportBehaviour`, `FluidNetwork`, `FluidPropagator.getPumpRange()`, and `PipeConnection`.
+- Create's boiler water path uses `BoilerData.BoilerFluidHandler` to record water supply rate. A steam outlet must read/generate from `BoilerData`; it must not drain stored steam from neighbouring tanks.
 - Sable exposes `BlockEntitySubLevelActor` for per-tick block entity behaviour on sublevels.
 - `SimBlockMovementChecks` (Aeronautics) must be registered so Sable assembly treats engine parts as one connected structure.
 
@@ -51,33 +54,55 @@ The engine auto-assembles. There is no block the player right-clicks to "form" t
 
 ### The boiler is Create's vanilla Fluid Tank
 
-We do not add a custom boiler block. The player builds a standard Create Fluid Tank structure (minimum 3×3×1 at the base of the engine), heats it with Create's Blaze Burners placed below it, and pipes water in using Create's own pumps and pipes. Create's own heat and water indicators appear on the tank. Our cylinder reads that tank's `BoilerData` the same way `SteamEngineBlockEntity` does — we are a different kind of steam engine consumer, not a replacement boiler system.
+We do not add a custom boiler block. The player builds a standard Create Fluid Tank structure, heats it with Create's Blaze Burners placed below it, and pipes water in using Create's own pumps and pipes. Create's own heat and water indicators appear on the tank.
 
-The boiler must be at least 3×3×1 (9 fluid tank blocks) to support a full cylinder frame above it.
+Two boiler connection modes are supported in the plan:
+
+1. **Direct compact mode** — the current Phase 4 engine still works with the cylinder sitting directly on a 3×3×1 Create Fluid Tank boiler.
+2. **Pipe-fed mode** — planned Phase 5+ adds a `boiler_outlet` block that converts valid Create boiler output into storable `steam` fluid and pushes that steam into Create fluid pipes.
+
+The direct compact boiler must be at least 3×3×1 (9 fluid tank blocks) to support a full cylinder frame above it.
+
+### Steam is a storable fluid
+
+`steam` becomes a real NeoForge/Create-compatible fluid. It can be stored in Create Fluid Tanks and moved through Create Fluid Pipes. It is not a replacement for water, and it is not produced by ordinary tanks full of stored steam.
+
+The only automatic pressure source for steam is the planned `boiler_outlet`, and it must only generate/push steam when attached to a valid active Create boiler. Stored steam in normal tanks may be moved by normal Create logistics, but it must not get free boiler-outlet pressure.
+
+For v1, `steam` should be non-placeable and should not need a bucket. It exists for tanks, pipes, gauges, and engine consumption.
+
+### Flywheel and governor are parked
+
+The already-registered `flywheel` and `governor` blocks remain inert placeholders for now, but no gameplay mechanics should be added for them. They are no longer Phase 5 scope. Before release, decide whether to keep them hidden/inert, remove them, or reintroduce them in a later feature pass.
 
 ### Engine orientation: vertical only in v1
 
-Blaze Burners heat upward. The engine is always vertical:
+The cylinder, piston column, and crankshaft remain vertical in v1:
 
-- Blaze Burners at the bottom (player-placed, Create blocks)
-- Create Fluid Tank layer(s) above them (the boiler)
-- Steam Cylinder frame on top of the boiler
+- Steam Cylinder frame
 - Piston column rising through the cylinder
 - Crankshaft at the top of the piston
 
+In direct compact mode, the Create Fluid Tank boiler still sits directly below the cylinder and Blaze Burners still heat upward below the tank. In pipe-fed mode, the boiler can be remote, but the engine assembly itself is still vertical.
+
 Other orientations (horizontal, inverted) are deferred to a future version.
 
-### Block list (v1)
-
-Five blocks. No more, no less for v1.
+### Block list
 
 | Block | Class base | Role |
 |---|---|---|
-| `steam_cylinder` | `SmartBlock` | Forms the 3×3×2 hollow casing ring around the piston. Self-assembles. |
-| `piston` | `SmartBlock` | Physical piston block. 4 blocks per engine: 2 inside the cylinder, 2 protruding above. Animated when running. |
+| `steam_cylinder` | `Block + IBE<SteamCylinderBlockEntity>` | Forms the 3×3×2 hollow casing ring around the piston. Self-assembles. |
+| `piston` | `Block` | Physical piston block. 4 blocks per engine: 2 inside the cylinder, 2 protruding above. Animated when running. |
 | `crankshaft` | `KineticBlock` | Sits at the tip of the piston. The kinetic output. Triggers full structure validation. |
-| `flywheel` | `SmartBlock` | Attaches axially to the crankshaft. Deferred balance/rendering role. |
-| `governor` | `SmartBlock` | Attaches to the crankshaft. Controls target RPM. Deferred to Phase 5. |
+| `boiler_outlet` | `Block + SmartBlockEntity` | Planned Phase 5 block. Attaches to a Create Fluid Tank boiler, generates `steam`, and provides pressure into pipes. |
+| `steam_inlet` | `Block + SmartBlockEntity` | Planned Phase 6 block. Attaches to an assembled cylinder ring and accepts `steam` from pipes. |
+
+Existing parked placeholders:
+
+| Block | Status |
+|---|---|
+| `flywheel` | Inert placeholder. No mechanics for now. |
+| `governor` | Inert placeholder. No mechanics for now. |
 
 Removed from the old plan (do not re-add without discussion):
 
@@ -118,6 +143,23 @@ Block counts for a minimal engine:
 - At least 9 × Create `fluid_tank` (3×3×1 minimum)
 - At least 1 × Create `blaze_burner`
 
+Pipe-fed ship/airship layout (planned):
+
+```
+[Boiler Room]
+[Blaze Burners] → [Create Fluid Tank Boiler] → [Boiler Outlet]
+                                                ||
+                                                || steam fluid, pressure-assisted
+                                                \/
+                                          [Create Fluid Pipes]
+                                                ||
+                                                \/
+[Engine Room]
+[Steam Inlet] → [Steam Cylinder + Pistons + Crankshaft] → Create shafts/gearboxes/propellers
+```
+
+The current direct compact stack remains valid while the pipe-fed path is added.
+
 ---
 
 ## Three-Layer Assembly
@@ -126,7 +168,11 @@ Assembly is layered. Each layer has its own validity and its own visual state.
 
 ### Layer 1 — The Boiler (Create's system, untouched)
 
-The player builds a Create Fluid Tank structure and heats it with Blaze Burners. Create handles everything: heat indicator, water indicator, steam generation. We do not touch this layer. Our cylinder reads from it.
+The player builds a Create Fluid Tank structure and heats it with Blaze Burners. Create handles heat indicator, water indicator, water supply tracking, and boiler visuals.
+
+In direct compact mode, our crankshaft reads this boiler's `BoilerData` directly.
+
+In pipe-fed mode, `boiler_outlet` reads this boiler's `BoilerData`, creates `steam` fluid from valid active heat and water supply, and pushes that steam into Create pipes. This still does not replace Create's boiler; it is an outlet/valve attached to it.
 
 ### Layer 2 — The Cylinder Ring (our auto-assembly)
 
@@ -151,7 +197,7 @@ When the `Crankshaft` block is placed, it scans downward along its Y axis:
 1. Expects exactly 2 `piston` blocks immediately below it (the protruding column)
 2. Expects a valid assembled `SteamCylinder` ring below those 2 piston blocks
 3. Expects exactly 2 `piston` blocks inside the hollow centre of that ring
-4. Expects a valid Create fluid tank layer directly below the ring's bottom layer
+4. Current direct mode expects a valid Create fluid tank layer directly below the ring's bottom layer
 
 If all four checks pass: the crankshaft block entity stores references to the cylinder root and begins receiving steam data. It calls `updateGeneratedRotation()` and begins generating RPM/SU proportional to active fired heat and water supply.
 
@@ -163,13 +209,15 @@ If any check fails: the crankshaft sits inert and shows a "incomplete structure"
 - Any Create fluid tank block placed or removed directly below the cylinder's bottom ring
 - Crankshaft block entity loads from disk
 
+Pipe-fed mode changes this only after `steam_inlet` exists: the crankshaft should accept either the direct boiler below the ring or a valid steam inlet attached to the assembled cylinder. Direct mode must remain working during the transition.
+
 ---
 
 ## Block Details
 
 ### `SteamCylinder`
 
-- Extends `SmartBlock` (Create's base, not vanilla `Block`)
+- Extends vanilla `Block` and implements Create `IBE<SteamCylinderBlockEntity>` because Create 6.0.10-280 does not expose `SmartBlock`
 - Block entity: `SteamCylinderBlockEntity extends SmartBlockEntity`
 - Blockstate properties:
   - `ASSEMBLED: BooleanProperty` (default false)
@@ -181,7 +229,7 @@ If any check fails: the crankshaft sits inert and shows a "incomplete structure"
 
 ### `SteamPiston` (registered as `piston`)
 
-- Extends `SmartBlock`
+- Extends vanilla `Block`
 - No block entity in v1 (purely structural and visual)
 - Blockstate properties:
   - `ASSEMBLED: BooleanProperty` (default false)
@@ -195,26 +243,38 @@ If any check fails: the crankshaft sits inert and shows a "incomplete structure"
 - Block entity: `CrankshaftBlockEntity extends GeneratingKineticBlockEntity`
 - Axis: always `Direction.Axis.Y` (vertical only, v1)
 - Shaft ports: N, S, E, W faces (horizontal). Top face is capped (piston connection). Bottom face is capped.
-- `getGeneratedSpeed()`: returns configured governor RPM when assembled and steam is available; 0 otherwise.
-- `calculateAddedStressCapacity()`: returns capacity proportional to active steam power; 0 when not assembled or only passively heated.
-- Holds reference to `SteamCylinderBlockEntity` root position. On each server tick, reads the cylinder root's cached boiler data to update speed and capacity.
-- Implements `IHaveGoggleInformation`: shows assembly status, boiler link, heat, water, current RPM, SU capacity.
+- `getGeneratedSpeed()`: returns the active burner-count RPM tier when assembled and steam is available; 0 otherwise.
+- `calculateAddedStressCapacity()`: returns capacity proportional to available direct boiler heat or consumed `steam`.
+- Holds reference to `SteamCylinderBlockEntity` root position. On each server tick, reads direct boiler data for compact mode. After pipe-fed mode is implemented, it should prefer valid steam inlet consumption when present and fall back to direct boiler mode otherwise.
+- Implements `IHaveGoggleInformation`: shows assembly status, source mode, active burners or steam rate, water/source state, current RPM, and SU capacity.
 
-### `Flywheel`
+### `BoilerOutlet` (planned as `boiler_outlet`)
 
-- Extends `SmartBlock`
-- Attaches axially to the crankshaft (placed on the N, S, E, or W face where a shaft port exists)
-- Current Phase 4 behaviour: inert placeholder, no output effect
-- Future role: smoothing/balance bonus to be redesigned after baseline output is stable
-- Deferred: animated spinning disk (Phase 7)
+- Block entity: `BoilerOutletBlockEntity extends SmartBlockEntity`
+- Placed on a Create Fluid Tank block face. The block's back side must touch a `FluidTankBlockEntity`; the front side outputs steam.
+- Validates the attached tank's controller and reads its `BoilerData`.
+- Counts as an attached boiler device in our Create boiler integration so Create's own tank visuals and compact boiler sizing still activate.
+- Generates `steam` fluid only from valid boiler heat and water supply. It must never drain or re-pressurize steam from normal storage tanks.
+- Exposes an output-only `IFluidHandler` for `steam`.
+- Applies pressure to the connected Create pipe network so the player does not need a mechanical pump directly at the boiler outlet.
+- Default pressure range target: 30 blocks. This must become a server config value.
+- Goggle overlay: boiler linked/missing, active heat, water supply, steam production rate, internal buffer, output pressure state.
 
-### `Governor`
+### `SteamInlet` (planned as `steam_inlet`)
 
-- Extends `SmartBlock`
-- Deferred to Phase 5
-- Attaches to crankshaft's remaining shaft port faces
-- Scroll wheel cycles RPM: 16 → 32 → 48 → 64
-- Default RPM when no governor present: 32
+- Block entity: `SteamInletBlockEntity extends SmartBlockEntity`
+- Attaches to an assembled `steam_cylinder` ring and accepts only `steam`.
+- Exposes an input-only `IFluidHandler` so Create pipes can insert steam.
+- Caches the linked cylinder root/crankshaft and reports available steam rate.
+- The crankshaft consumes steam from linked inlets and converts that consumption into RPM/SU using the same SU scale as direct compact mode and steam-rate RPM tiers.
+- Multiple inlets are deferred. v1 starts with one inlet per engine unless implementation proves simple.
+- Goggle overlay: linked cylinder status, steam buffer, accepted steam rate, crankshaft link.
+
+### Parked `Flywheel` and `Governor`
+
+- Both existing blocks are inert placeholders.
+- Do not add mechanics, recipes, balance effects, or required validation for them during the steam-fluid pivot.
+- Decide later whether they remain decorative, become future mechanics, or are removed before release.
 
 ---
 
@@ -226,6 +286,7 @@ src/main/java/dev/gustavo/fullsteamahead/
   registry/
     ModBlocks.java
     ModBlockEntities.java
+    ModFluids.java                     ← planned Phase 5
     ModItems.java
     ModCreativeTabs.java
   content/
@@ -238,14 +299,20 @@ src/main/java/dev/gustavo/fullsteamahead/
       PistonSection.java               ← enum: INSIDE_LOW, INSIDE_HIGH, PROTRUDE_LOW, PROTRUDE_HIGH
     crankshaft/
       CrankshaftBlock.java
-      CrankshaftBlockEntity.java       ← GeneratingKineticBlockEntity, reads cylinder root
+      CrankshaftBlockEntity.java       ← GeneratingKineticBlockEntity, reads direct boiler or steam inlet
+    steam/
+      BoilerOutletBlock.java           ← planned Phase 5
+      BoilerOutletBlockEntity.java
+      SteamInletBlock.java             ← planned Phase 6
+      SteamInletBlockEntity.java
     flywheel/
-      FlywheelBlock.java
+      FlywheelBlock.java               ← parked inert placeholder
     governor/
-      GovernorBlock.java               ← deferred
+      GovernorBlock.java               ← parked inert placeholder
   compat/
     create/
       CreateStressRegistration.java
+      FullSteamBoilerIntegration.java
     simulated/
       SimulatedMovementCompat.java
 ```
@@ -258,14 +325,14 @@ Boiler reference: vanilla Create steam engine baseline.
 
 | Parameter | Value |
 |---|---|
-| Governor RPM options | 16, 32, 48, 64 |
-| Default/max RPM before governor implementation | 64 |
+| RPM tiers | 16, 32, 48, 64 |
+| Default/max RPM | 64 |
 | Active burner count | 0-9 fired Blaze Burners under the 3x3 boiler footprint |
 | Heat units | 1 per normal fired burner, 2 per Blaze Cake burner |
 | Full engine at regular max heat | 147,456 SU at 64 RPM |
 | Full engine at full Blaze Cake heat | 294,912 SU at 64 RPM |
 
-Steam formula (v1):
+Direct compact formula:
 
 ```
 active_burners   = count of Blaze Burners with heat >= FADING under the 3x3 boiler
@@ -274,6 +341,21 @@ heat_units       = active_burners + cake_burners
 capacity_su      = heat_units * 16384
 output_speed_rpm = tier_by_active_burner_count(active_burners)
 ```
+
+Steam fluid formula (planned):
+
+```
+boiler_heat_units     = min(active_heat, water_limited_heat, size_limited_heat)
+steam_production_mbpt = boiler_heat_units * 10
+steam_consumed_mbpt   = min(available_steam_rate, engine_max_consumption)
+engine_heat_units     = floor(steam_consumed_mbpt / 10)
+capacity_su           = engine_heat_units * 16384
+output_speed_rpm      = tier_by_steam_consumption(steam_consumed_mbpt)
+```
+
+The `10 mB/t per heat unit` value intentionally mirrors Create's boiler water-supply threshold (`BoilerData.getMaxHeatLevelForWaterSupply()` is based on 10 mB/t per heat level). It keeps direct and pipe-fed output comparable: 9 normal heat units produce 90 mB/t steam and 147,456 SU; 18 Blaze Cake heat units produce 180 mB/t steam and 294,912 SU.
+
+Important balance distinction: stored steam does not remember how many burners produced it. Direct compact mode keeps the exact active-burner RPM table. Pipe-fed mode should start by tiering RPM from delivered steam rate, treating pipes and tanks like a pressure manifold. If this feels wrong in testing, add a pressure/quality layer later rather than encoding source metadata into the fluid.
 
 RPM tiers:
 
@@ -285,7 +367,19 @@ RPM tiers:
 | 5-8 | 48 |
 | 9 | 64 |
 
-Unfired Blaze Burners only provide passive heat in Create and must produce `0` output for this engine. Blaze Cakes double the SU contribution of each individual burner without increasing RPM above the active-burner-count tier. Water supply remains required for output, but v1 output is not capped by Create's vanilla water-limited heat tier because this engine owns its exact balance table.
+Planned pipe-fed RPM tiers should map equivalent steam rate to the same feel:
+
+| Delivered steam | RPM |
+|---:|---:|
+| 0-9 mB/t | 0 |
+| 10-29 mB/t | 16 |
+| 30-49 mB/t | 32 |
+| 50-89 mB/t | 48 |
+| 90+ mB/t | 64 |
+
+Unfired Blaze Burners only provide passive heat in Create and must produce `0` output for this engine. Blaze Cakes double the SU contribution of each individual burner without increasing RPM above the active-burner-count tier. Water supply remains required for output.
+
+Pipe-fed mode must not produce more power than the same boiler would produce in direct compact mode. Steam storage is a buffer/logistics feature, not a free multiplier.
 
 All constants must become server config values before release.
 
@@ -336,7 +430,7 @@ Tasks:
 
 Implementation note: Phase 3 uses `Block implements IBE<SteamCylinderBlockEntity>` plus `SmartBlockEntity`, matching Create 6.0.10's available API. `SmartBlock` is still not used because it is not present in this classpath.
 
-### Phase 4: Crankshaft Validation and Kinetic Output — Current
+### Phase 4: Crankshaft Validation and Kinetic Output — Complete
 
 **Goal**: Crankshaft placed at top of piston column validates full structure and generates rotation.
 
@@ -356,41 +450,69 @@ Tasks:
 - [x] Add revalidation on neighbour changes
 - [x] Add goggle overlay: assembly status, active burners, heat units, water supply, RPM, SU, flywheel placeholder
 - [x] Verify exact output tiers: no passive output, 1-9 normal fired burners match SU/RPM table, and Blaze Cake burners double SU individually
-- [ ] Verify: built correctly → shaft turns; break piston → shaft stops; break boiler → shaft stops
+- [ ] Optional hardening verify: break piston → shaft stops; break boiler → shaft stops; restore/reload → state recovers
 
-Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerData.evaluate()` recognizes valid Full Steam Ahead crankshafts as attached steam engines. This lets Create's own Fluid Tank switch to active boiler visuals/capabilities and lets the compact 3x3x1 boiler footprint behave as the intended v1 boiler size. The flywheel remains an inert placeholder until Phase 5 and currently does not change output.
+Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerData.evaluate()` recognizes valid Full Steam Ahead crankshafts as attached steam engines. This lets Create's own Fluid Tank switch to active boiler visuals/capabilities and lets the compact 3x3x1 boiler footprint behave as the intended v1 boiler size. The flywheel and governor are parked inert placeholders and currently do not change output.
 
-### Phase 5: Flywheel and Governor
+### Phase 5: Steam Fluid and Boiler Outlet
 
-**Goal**: Flywheel role is finalized. Governor controls RPM.
+**Goal**: Add storable `steam` fluid and a boiler-attached outlet that generates and pressure-feeds steam into Create pipes. The current direct compact engine must continue working.
 
-- [ ] Flywheel attaches to crankshaft horizontal shaft port; crankshaft detects presence
-- [ ] Decide final flywheel bonus after Phase 4 heat scaling is verified
-- [ ] Governor scroll wheel cycles RPM 16/32/48/64; crankshaft reads governor RPM
-- [ ] Verify capacity and RPM change in real time on goggle overlay
+- [ ] Add `ModFluids.java` and register `steam` as a storable NeoForge fluid compatible with `FluidStack`, Create tanks, and Create pipes
+- [ ] Keep `steam` non-placeable and no-bucket unless a later gameplay reason requires otherwise
+- [ ] Add `boiler_outlet` block, item, block entity, blockstate/model/item model/loot/lang/tags/creative entry
+- [ ] `boiler_outlet` placement: back side must touch a Create `FluidTankBlockEntity`; front side outputs to pipes/tanks
+- [ ] `BoilerOutletBlockEntity` validates the attached tank controller and reads `BoilerData`
+- [ ] Extend `FullSteamBoilerIntegration`/mixin logic so boiler outlets count as attached boiler devices and keep Create boiler visuals active
+- [ ] Generate steam only from active Create boiler heat and water supply; do not drain or pump stored steam from normal tanks
+- [ ] Implement output-only `IFluidHandler` for generated `steam`
+- [ ] Implement pressure-assisted output with default 30-block range; prefer Create `FluidTransportBehaviour`/`FluidNetwork` integration, fallback to bounded `IFluidHandler` push if needed
+- [ ] Add goggle overlay for boiler link, heat, water, steam production rate, buffer, and output pressure state
+- [ ] Verify: direct compact crankshaft still works exactly as Phase 4
+- [ ] Verify: boiler outlet produces steam only on valid active boilers, fills Create tanks through pipes, and does not auto-pump from stored steam tanks
 
-### Phase 6: Aeronautics/Sable Compatibility
+Implementation notes:
+
+- Create's `BoilerData.BoilerFluidHandler` records water supply rate; it does not expose a stored steam inventory. Use `BoilerData` as the source of truth.
+- Create's mechanical pump range is exposed through `FluidPropagator.getPumpRange()`, but our outlet should have its own configurable default target of 30 blocks.
+- The outlet is a boiler pressure source, not a general-purpose pump.
+
+### Phase 6: Steam Inlet and Pipe-Fed Engine
+
+**Goal**: Let cylinders consume piped `steam` and generate rotation remotely from the boiler room, while preserving direct compact mode as a fallback.
+
+- [ ] Add `steam_inlet` block, item, block entity, blockstate/model/item model/loot/lang/tags/creative entry
+- [ ] `SteamInletBlockEntity` accepts only `steam` through an input-only `IFluidHandler`
+- [ ] Inlet attaches to an assembled `steam_cylinder` ring and caches the cylinder root/crankshaft
+- [ ] Crankshaft detects linked steam inlet(s)
+- [ ] If valid inlet steam is available, crankshaft consumes `steam` and calculates output from steam consumption rate
+- [ ] If no valid inlet is present, existing direct compact boiler mode remains unchanged
+- [ ] Add goggle overlays for source mode: direct boiler vs piped steam
+- [ ] Verify: remote boiler outlet → Create pipes → steam inlet → engine rotation
+- [ ] Verify: steam storage buffer can run the engine briefly after boiler output stops
+- [ ] Verify: no steam/no inlet stops pipe-fed output without breaking direct compact mode
+
+### Phase 7: Aeronautics/Sable Compatibility
 
 - [ ] Register `BlockMovementChecks` for all engine blocks
 - [ ] Register `SimBlockMovementChecks` when Aeronautics present
 - [ ] Test engine inside Sable sublevel powering Aeronautics propellers
 - [ ] Verify NBT, kinetic state, and boiler link survive assembly/disassembly and reload
 
-### Phase 7: Rendering and Ponder
+### Phase 8: Rendering and Ponder
 
 - [ ] Animated piston reciprocation via Flywheel renderer (driven by crankshaft rotation angle)
-- [ ] Animated flywheel spinning disc
 - [ ] Steam particles from cylinder top when running
 - [ ] Sound: rhythmic chuffing tied to piston animation
-- [ ] Ponder scenes: how to build, water/heat, connecting shafts, aircraft use
+- [ ] Ponder scenes: direct compact engine, boiler outlet, steam pipes, steam inlet, water/heat, connecting shafts, aircraft use
 
-### Phase 8: Balance, Config, Recipes
+### Phase 9: Balance, Config, Recipes
 
-- [ ] Server config for: base capacity, flywheel bonus, RPM options, max piston height
-- [ ] Recipes for all 5 blocks balanced against vanilla Create steam engine
+- [ ] Server config for: base capacity, steam production rate, boiler outlet pressure range, direct mode enablement, max piston height
+- [ ] Recipes for active blocks balanced against vanilla Create steam engine
 - [ ] JEI/EMI display
 
-### Phase 9: Hardening and Release
+### Phase 10: Hardening and Release
 
 - [ ] Dedicated server startup test
 - [ ] World reload test
@@ -406,10 +528,13 @@ Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerD
 | Risk | Mitigation |
 |---|---|
 | Create `BoilerData` API changes | Read through `FluidTankBlockEntity`; isolate in one method |
+| Create pipe pressure internals are brittle | Keep boiler outlet pressure code isolated; fallback to bounded `IFluidHandler` push |
+| Steam storage becomes an exploit | `boiler_outlet` only generates from valid active boilers and never auto-pumps stored steam |
+| Pipe-fed mode loses burner-count metadata | Treat steam as a pressure manifold in pipe-fed mode; keep exact burner-count RPM table for direct compact mode |
 | Cylinder ring scan too expensive | Run only on placement/removal, not every tick; cache result |
 | Piston animation desync | Drive animation entirely from crankshaft rotation angle on client |
 | Sable assembly splits engine parts | Register Create and Simulated movement checks early |
-| No flywheel required makes balance trivial | Re-evaluate flywheel as smoothing/bonus after the 147,456 SU baseline is verified |
+| Parked flywheel/governor confuse players | Hide/remove or clearly mark before release if they remain inert |
 
 ---
 
