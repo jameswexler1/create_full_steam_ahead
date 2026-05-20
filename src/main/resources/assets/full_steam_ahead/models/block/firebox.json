@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "create:block/blaze_heater_brazier",
-    "side": "create:block/industrial_iron_block",
-    "top": "create:block/industrial_iron_block"
-  }
-}

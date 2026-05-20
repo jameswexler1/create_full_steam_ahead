@@ -1,13 +1,9 @@
 {
   "modmenu.nameTranslation.full_steam_ahead": "Create: Full Steam Ahead",
   "itemGroup.full_steam_ahead.main": "Create: Full Steam Ahead",
-  "block.full_steam_ahead.large_steam_engine_controller": "Large Steam Engine Controller",
-  "block.full_steam_ahead.large_engine_casing": "Large Engine Casing",
-  "block.full_steam_ahead.boiler_drum": "Boiler Drum",
-  "block.full_steam_ahead.firebox": "Firebox",
   "block.full_steam_ahead.steam_cylinder": "Steam Cylinder",
-  "block.full_steam_ahead.piston_rod": "Piston Rod",
+  "block.full_steam_ahead.piston": "Steam Piston",
+  "block.full_steam_ahead.crankshaft": "Crankshaft",
   "block.full_steam_ahead.flywheel": "Flywheel",
-  "block.full_steam_ahead.output_coupling": "Output Coupling",
   "block.full_steam_ahead.governor": "Governor"
 }

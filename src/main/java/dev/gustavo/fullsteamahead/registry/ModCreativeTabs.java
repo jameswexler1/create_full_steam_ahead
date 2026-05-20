@@ -16,16 +16,12 @@ public final class ModCreativeTabs {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN = CREATIVE_TABS.register("main",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.full_steam_ahead.main"))
-                    .icon(() -> new ItemStack(ModBlocks.LARGE_STEAM_ENGINE_CONTROLLER.get()))
+                    .icon(() -> new ItemStack(ModBlocks.STEAM_CYLINDER.get()))
                     .displayItems((parameters, output) -> {
-                        output.accept(ModBlocks.LARGE_STEAM_ENGINE_CONTROLLER.get());
-                        output.accept(ModBlocks.LARGE_ENGINE_CASING.get());
-                        output.accept(ModBlocks.BOILER_DRUM.get());
-                        output.accept(ModBlocks.FIREBOX.get());
                         output.accept(ModBlocks.STEAM_CYLINDER.get());
-                        output.accept(ModBlocks.PISTON_ROD.get());
+                        output.accept(ModBlocks.PISTON.get());
+                        output.accept(ModBlocks.CRANKSHAFT.get());
                         output.accept(ModBlocks.FLYWHEEL.get());
-                        output.accept(ModBlocks.OUTPUT_COUPLING.get());
                         output.accept(ModBlocks.GOVERNOR.get());
                     })
                     .build());

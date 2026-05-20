@@ -1,9 +1,11 @@
 package dev.gustavo.fullsteamahead.registry;
 
 import dev.gustavo.fullsteamahead.FullSteamAhead;
-import dev.gustavo.fullsteamahead.content.engine.block.AxialEnginePartBlock;
-import dev.gustavo.fullsteamahead.content.engine.block.EnginePartBlock;
-import dev.gustavo.fullsteamahead.content.engine.block.HorizontalEnginePartBlock;
+import dev.gustavo.fullsteamahead.content.crankshaft.CrankshaftBlock;
+import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlock;
+import dev.gustavo.fullsteamahead.content.flywheel.FlywheelBlock;
+import dev.gustavo.fullsteamahead.content.governor.GovernorBlock;
+import dev.gustavo.fullsteamahead.content.piston.SteamPistonBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -16,24 +18,16 @@ import java.util.function.Function;
 public final class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(FullSteamAhead.MOD_ID);
 
-    public static final DeferredBlock<HorizontalEnginePartBlock> LARGE_STEAM_ENGINE_CONTROLLER =
-            registerBlock("large_steam_engine_controller", HorizontalEnginePartBlock::new, copperProperties());
-    public static final DeferredBlock<EnginePartBlock> LARGE_ENGINE_CASING =
-            registerBlock("large_engine_casing", EnginePartBlock::new, casingProperties());
-    public static final DeferredBlock<AxialEnginePartBlock> BOILER_DRUM =
-            registerBlock("boiler_drum", AxialEnginePartBlock::new, copperProperties());
-    public static final DeferredBlock<HorizontalEnginePartBlock> FIREBOX =
-            registerBlock("firebox", HorizontalEnginePartBlock::new, metalProperties());
-    public static final DeferredBlock<HorizontalEnginePartBlock> STEAM_CYLINDER =
-            registerBlock("steam_cylinder", HorizontalEnginePartBlock::new, copperProperties());
-    public static final DeferredBlock<AxialEnginePartBlock> PISTON_ROD =
-            registerBlock("piston_rod", AxialEnginePartBlock::new, metalProperties());
-    public static final DeferredBlock<AxialEnginePartBlock> FLYWHEEL =
-            registerBlock("flywheel", AxialEnginePartBlock::new, metalProperties());
-    public static final DeferredBlock<AxialEnginePartBlock> OUTPUT_COUPLING =
-            registerBlock("output_coupling", AxialEnginePartBlock::new, metalProperties());
-    public static final DeferredBlock<HorizontalEnginePartBlock> GOVERNOR =
-            registerBlock("governor", HorizontalEnginePartBlock::new, copperProperties());
+    public static final DeferredBlock<SteamCylinderBlock> STEAM_CYLINDER =
+            registerBlock("steam_cylinder", SteamCylinderBlock::new, cylinderProperties());
+    public static final DeferredBlock<SteamPistonBlock> PISTON =
+            registerBlock("piston", SteamPistonBlock::new, metalProperties());
+    public static final DeferredBlock<CrankshaftBlock> CRANKSHAFT =
+            registerBlock("crankshaft", CrankshaftBlock::new, metalProperties());
+    public static final DeferredBlock<FlywheelBlock> FLYWHEEL =
+            registerBlock("flywheel", FlywheelBlock::new, metalProperties());
+    public static final DeferredBlock<GovernorBlock> GOVERNOR =
+            registerBlock("governor", GovernorBlock::new, copperProperties());
 
     private static <T extends Block> DeferredBlock<T> registerBlock(
             String name,
@@ -45,11 +39,11 @@ public final class ModBlocks {
         return block;
     }
 
-    private static BlockBehaviour.Properties casingProperties() {
+    private static BlockBehaviour.Properties cylinderProperties() {
         return BlockBehaviour.Properties.of()
-                .strength(3.0F, 6.0F)
+                .strength(4.0F, 8.0F)
                 .requiresCorrectToolForDrops()
-                .sound(SoundType.STONE);
+                .sound(SoundType.COPPER);
     }
 
     private static BlockBehaviour.Properties copperProperties() {
@@ -61,7 +55,7 @@ public final class ModBlocks {
 
     private static BlockBehaviour.Properties metalProperties() {
         return BlockBehaviour.Properties.of()
-                .strength(3.0F, 6.0F)
+                .strength(3.5F, 7.0F)
                 .requiresCorrectToolForDrops()
                 .sound(SoundType.METAL);
     }

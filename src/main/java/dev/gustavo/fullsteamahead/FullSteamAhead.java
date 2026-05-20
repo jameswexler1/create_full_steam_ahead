@@ -1,6 +1,7 @@
 package dev.gustavo.fullsteamahead;
 
 import com.mojang.logging.LogUtils;
+import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import dev.gustavo.fullsteamahead.registry.ModCreativeTabs;
 import dev.gustavo.fullsteamahead.registry.ModItems;
@@ -16,6 +17,7 @@ public final class FullSteamAhead {
 
     public FullSteamAhead(IEventBus modEventBus, ModContainer modContainer) {
         ModBlocks.register(modEventBus);
+        ModBlockEntities.register(modEventBus);
         ModItems.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
 

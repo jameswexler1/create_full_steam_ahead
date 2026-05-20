@@ -1,7 +1,0 @@
-{
-  "variants": {
-    "axis=x": { "model": "full_steam_ahead:block/piston_rod", "x": 90, "y": 90 },
-    "axis=y": { "model": "full_steam_ahead:block/piston_rod" },
-    "axis=z": { "model": "full_steam_ahead:block/piston_rod", "x": 90 }
-  }
-}

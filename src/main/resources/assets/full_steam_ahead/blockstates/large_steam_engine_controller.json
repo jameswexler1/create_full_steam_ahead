@@ -1,8 +1,0 @@
-{
-  "variants": {
-    "facing=north": { "model": "full_steam_ahead:block/large_steam_engine_controller" },
-    "facing=east": { "model": "full_steam_ahead:block/large_steam_engine_controller", "y": 90 },
-    "facing=south": { "model": "full_steam_ahead:block/large_steam_engine_controller", "y": 180 },
-    "facing=west": { "model": "full_steam_ahead:block/large_steam_engine_controller", "y": 270 }
-  }
-}

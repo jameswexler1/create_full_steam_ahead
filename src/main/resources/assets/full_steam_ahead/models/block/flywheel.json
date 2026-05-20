@@ -1,7 +1,6 @@
 {
-  "parent": "minecraft:block/cube_column",
+  "parent": "minecraft:block/cube_all",
   "textures": {
-    "end": "create:block/flywheel",
-    "side": "create:block/industrial_iron_block"
+    "all": "create:block/andesite_casing_connected"
   }
 }

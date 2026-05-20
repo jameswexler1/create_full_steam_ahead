@@ -7,10 +7,10 @@
         { "condition": "minecraft:survives_explosion" }
       ],
       "entries": [
-        { "type": "minecraft:item", "name": "full_steam_ahead:large_engine_casing" }
+        { "type": "minecraft:item", "name": "full_steam_ahead:piston" }
       ],
       "rolls": 1.0
     }
   ],
-  "random_sequence": "full_steam_ahead:blocks/large_engine_casing"
+  "random_sequence": "full_steam_ahead:blocks/piston"
 }

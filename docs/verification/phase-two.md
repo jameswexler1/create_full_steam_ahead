@@ -2,7 +2,11 @@
 
 Date: 2026-05-19
 
-Implemented:
+This file records the original nine-block Phase 2 verification. That design has been superseded by the Phase 2 remodel.
+
+Current verification is tracked in `docs/verification/phase2_remodel.md`.
+
+Superseded implementation:
 
 - Block/item/creative tab registry infrastructure.
 - Nine inert engine blocks.

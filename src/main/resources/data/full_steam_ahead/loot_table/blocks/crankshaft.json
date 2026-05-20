@@ -7,10 +7,10 @@
         { "condition": "minecraft:survives_explosion" }
       ],
       "entries": [
-        { "type": "minecraft:item", "name": "full_steam_ahead:large_steam_engine_controller" }
+        { "type": "minecraft:item", "name": "full_steam_ahead:crankshaft" }
       ],
       "rolls": 1.0
     }
   ],
-  "random_sequence": "full_steam_ahead:blocks/large_steam_engine_controller"
+  "random_sequence": "full_steam_ahead:blocks/crankshaft"
 }

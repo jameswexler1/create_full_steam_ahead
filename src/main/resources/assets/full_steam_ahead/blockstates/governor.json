@@ -1,8 +1,5 @@
 {
   "variants": {
-    "facing=north": { "model": "full_steam_ahead:block/governor" },
-    "facing=east": { "model": "full_steam_ahead:block/governor", "y": 90 },
-    "facing=south": { "model": "full_steam_ahead:block/governor", "y": 180 },
-    "facing=west": { "model": "full_steam_ahead:block/governor", "y": 270 }
+    "": { "model": "full_steam_ahead:block/governor" }
   }
 }

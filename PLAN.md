@@ -1,504 +1,401 @@
-# Large Steam Engine Create Addon Plan
+# Create: Full Steam Ahead — Design Plan
 
-Last updated: 2026-05-19
+Last updated: 2026-05-20
 
 ## Goal
 
-Build a NeoForge Minecraft 1.21.1 Create addon that adds a large, player-customizable, multiblock steam engine. The engine should feel like a believable ship or aircraft power plant: visually large, mechanically configurable, compatible with Create shaft networks, and usable on Create Aeronautics/Sable moving sublevels.
+Build a NeoForge 1.21.1 Create addon that adds a large, multiblock reciprocating steam engine. The engine should feel like a believable ship or aircraft power plant: visually large, mechanically grounded in how real steam engines work, and fully compatible with Create shaft networks and Create Aeronautics/Sable moving sublevels.
 
-The first implementation should produce Create rotational power. It should not directly push aircraft or ships in v1. Aeronautics propellers already consume Create rotation and apply Sable point forces, so the strongest compatibility path is:
+The engine produces Create rotational power. It does not directly push aircraft or ships in v1. Aeronautics propellers already consume Create rotation and apply Sable point forces:
 
-`large steam engine -> Create shaft network -> Aeronautics propeller/thruster/other kinetic consumers -> Sable physics`
+`large steam engine → Create shaft network → Aeronautics propeller/thruster → Sable physics`
 
-Direct Sable force output can be added later for turbine/thruster variants, but it is not required for the core steam engine.
+---
 
 ## Research Snapshot
-
-The workspace currently has no mod scaffold or existing source tree. It only contains Codex metadata, so the next development phase must begin by creating a NeoForge addon project.
 
 Verified target stack:
 
 - Minecraft: `1.21.1`
 - Loader: `NeoForge`
 - Java: `21`
-- Create: current 1.21.1 release is `6.0.10`; Create's developer docs map the Maven dev dependency to `6.0.10-280`.
-- Create dependency companions: Ponder, Flywheel, and Registrate are required in the dev classpath.
-- Create Aeronautics: current Modrinth release checked is `1.2.1+mc1.21.1`, published 2026-04-28.
-- Sable: required by Aeronautics; it provides interactive moving block sublevels and the physics pipeline.
+- Create: `6.0.10` (Maven dev dep: `6.0.10-280`)
+- Create Aeronautics: `1.2.1+mc1.21.1`
+- Sable: required by Aeronautics; provides moving block sublevels and physics pipeline.
 
 Important source findings:
 
-- Create's vanilla steam engine is not a normal large generator. `SteamEngineBlockEntity` reads a neighboring `FluidTankBlockEntity` boiler and updates a `PoweredShaftBlockEntity`.
-- Create's `PoweredShaftBlockEntity` is a `GeneratingKineticBlockEntity` with dynamic speed and dynamic stress capacity. This is the right pattern to copy, not a class to reuse directly.
-- Create's `BoilerData` only counts vanilla `SteamEngineBlock` attachments. Treating our large engine as a vanilla boiler attachment would require mixins into Create internals, so v1 should avoid depending on that path.
-- Create exposes `BlockStressValues` for stress capacity, impact, and generated RPM tooltip metadata. Dynamic generator output can still override `calculateAddedStressCapacity()`.
-- Sable exposes `BlockEntitySubLevelActor` for per-tick and per-physics-tick block entity behavior on sublevels.
-- Sable/Aeronautics propellers implement `BlockEntitySubLevelPropellerActor`, which applies point forces through `QueuedForceGroup.applyAndRecordPointForce(...)`. We should let those blocks handle physics thrust.
-- Simulated/Aeronautics has `SimBlockMovementChecks` in addition to Create's `BlockMovementChecks`. We need register assembly attachment behavior for our engine parts so the multiblock stays together when assembled into a ship or aircraft.
+- Create's `SteamEngineBlockEntity` reads a neighbouring `FluidTankBlockEntity` boiler and updates a `PoweredShaftBlockEntity`. We follow this same pattern: our `CrankshaftBlockEntity` reads the `FluidTankBlockEntity` boiler below the cylinder via the same `BoilerData` path.
+- Create's `GeneratingKineticBlockEntity` with dynamic `getGeneratedSpeed()` and `calculateAddedStressCapacity()` is the correct base for the crankshaft output. Do not subclass `PoweredShaftBlockEntity` directly.
+- Create exposes `BlockStressValues` for stress tooltip metadata.
+- Sable exposes `BlockEntitySubLevelActor` for per-tick block entity behaviour on sublevels.
+- `SimBlockMovementChecks` (Aeronautics) must be registered so Sable assembly treats engine parts as one connected structure.
 
 Primary references:
 
-- Create developer dependency docs: https://wiki.createmod.net/developers/depend-on-create/neoforge-1.21.1
+- Create developer docs: https://wiki.createmod.net/developers/depend-on-create/neoforge-1.21.1
 - Create source: https://github.com/Creators-of-Create/Create
-- Create Aeronautics Modrinth: https://modrinth.com/mod/create-aeronautics
+- Create Aeronautics: https://modrinth.com/mod/create-aeronautics
 - Simulated Project source: https://github.com/Creators-of-Aeronautics/Simulated-Project
-- Sable Modrinth: https://modrinth.com/mod/sable
-- Sable source and wiki: https://github.com/ryanhcode/sable and https://github.com/ryanhcode/sable/wiki
+- Sable: https://github.com/ryanhcode/sable
 
-## Viability
+---
 
-This addon is viable.
+## Core Design Decisions (locked)
 
-The low-risk part is the Create integration: Create's kinetic system already supports custom generators through `GeneratingKineticBlockEntity`, dynamic speed, and dynamic stress capacity. A large engine output shaft can behave like Create's powered shaft while using our own controller and multiblock state.
+These are final and must not be revisited without updating this document.
 
-The medium-risk part is the multiblock design. Minecraft block entities, chunk loading, block updates, schematics, and moving sublevels make large arbitrary structures harder than fixed-size machines. This is manageable if the engine uses one authoritative controller, cached scan results, strict size limits, and clear invalidation rules.
+### No controller block
 
-The highest-risk part is direct use of Create's vanilla boiler internals. `BoilerData` is not designed as a public addon extension point for non-Create engines. The v1 plan should implement our own pressure/steam model using NeoForge fluid capabilities and Create's public heat lookup API, while visually and mechanically matching Create's boiler expectations. A later optional adapter can integrate with vanilla Create boilers after a separate compatibility spike.
+The engine auto-assembles. There is no block the player right-clicks to "form" the structure. Assembly is triggered automatically when blocks are placed, exactly as Create's fluid tanks connect when placed adjacent to each other. This is the Create philosophy: machines emerge from block placement, not from explicit activation.
 
-Aeronautics compatibility is viable if we stay inside Create's shaft network. Sable supports block entities inside sublevels, and Aeronautics already applies propeller forces from kinetic speed. We only need to ensure our blocks are movable, stay connected during assembly, tick correctly on sublevels, and do not duplicate generated stress through multiple outputs.
+### The boiler is Create's vanilla Fluid Tank
 
-## Product Design
+We do not add a custom boiler block. The player builds a standard Create Fluid Tank structure (minimum 3×3×1 at the base of the engine), heats it with Create's Blaze Burners placed below it, and pipes water in using Create's own pumps and pipes. Create's own heat and water indicators appear on the tank. Our cylinder reads that tank's `BoilerData` the same way `SteamEngineBlockEntity` does — we are a different kind of steam engine consumer, not a replacement boiler system.
 
-## Phase One Decisions
+The boiler must be at least 3×3×1 (9 fluid tank blocks) to support a full cylinder frame above it.
 
-These choices are locked for the initial implementation scaffold:
+### Engine orientation: vertical only in v1
 
-- Display name: `Create: Full Steam Ahead`
-- Mod id: `full_steam_ahead`
-- Java package/group: `dev.gustavo.fullsteamahead`
-- Root project/artifact name: `create-full-steam-ahead` / `full_steam_ahead`
-- License: `MIT`
-- Runtime dependency model: Create is required; Sable and Create Aeronautics are optional runtime compatibility targets.
-- Art direction: stay as close as practical to base Create, using copper, andesite, brass, exposed shafts, gauges, riveted casings, and steam engine visual language.
-- v1 max multiblock size: hard `3x3x3`, maximum `27` blocks.
-- Phase one implementation scope: bootable scaffold only; no gameplay block registrations yet.
+Blaze Burners heat upward. The engine is always vertical:
 
-Default balance constants to carry into later phases:
+- Blaze Burners at the bottom (player-placed, Create blocks)
+- Create Fluid Tank layer(s) above them (the boiler)
+- Steam Cylinder frame on top of the boiler
+- Piston column rising through the cylinder
+- Crankshaft at the top of the piston
 
-- Governor RPM options: `16`, `32`, `48`, `64`.
-- Default RPM: `32`.
-- Base capacity reference: Create steam engine default capacity, `1024` SU.
-- Target maximum v1 capacity before balance testing: `4096` SU per assembled engine.
-- Maximum counted output couplings: `2`.
-- Maximum counted cylinders: `4`.
+Other orientations (horizontal, inverted) are deferred to a future version.
 
-### Player Experience
+### Block list (v1)
 
-Players build a large engine from modular blocks:
+Five blocks. No more, no less for v1.
 
-- Engine Controller: forms and manages the multiblock.
-- Engine Casing: structural valid blocks.
-- Boiler Drum / Steam Chamber: stores water and pressure.
-- Firebox / Heat Interface: reads heat from Blaze Burners and other Create-compatible heaters.
-- Cylinder Block: increases torque/capacity.
-- Piston Rod / Crank Block: visual and structural engine parts.
-- Flywheel: stabilizes output and increases efficiency.
-- Output Shaft Coupling: the actual kinetic generator output.
-- Gauge / Governor: optional control/readout block.
+| Block | Class base | Role |
+|---|---|---|
+| `steam_cylinder` | `SmartBlock` | Forms the 3×3×2 hollow casing ring around the piston. Self-assembles. |
+| `piston` | `SmartBlock` | Physical piston block. 4 blocks per engine: 2 inside the cylinder, 2 protruding above. Animated when running. |
+| `crankshaft` | `KineticBlock` | Sits at the tip of the piston. The kinetic output. Triggers full structure validation. |
+| `flywheel` | `SmartBlock` | Attaches axially to the crankshaft. Required for full efficiency. |
+| `governor` | `SmartBlock` | Attaches to the crankshaft. Controls target RPM. Deferred to Phase 5. |
 
-The player right-clicks the controller with a wrench to assemble or refresh the engine. Goggles show pressure, water input, heat, cylinders, flywheels, output RPM, total SU capacity, and per-output allocation.
+Removed from the old plan (do not re-add without discussion):
 
-The multiblock should be customizable rather than a rigid structure. It should use a graph/scoring model:
+- `large_steam_engine_controller` — no controller
+- `firebox` — Blaze Burners go directly under Create's fluid tank
+- `large_engine_casing` — cylinder block handles casing
+- `boiler_drum` — Create's fluid tank is the boiler
+- `output_coupling` — crankshaft is the kinetic output
+- `piston_rod` — renamed and redesigned as `piston`
 
-- All parts must be connected to the controller through valid engine blocks.
-- At least one boiler/steam chamber, one cylinder, one flywheel, and one output coupling are required.
-- More cylinders increase torque.
-- More steam chamber volume increases pressure reserve.
-- More heat and water increase pressure generation.
-- More output couplings divide total available capacity; they must not duplicate it.
+---
 
-### Initial Balance Direction
+## Engine Structure
 
-Use vanilla Create steam engines as the reference, not as a hard mechanical clone.
+A minimal working engine (vertical, default orientation):
 
-Baseline Create behavior found in source:
-
-- Steam engine generated RPM effectively ranges from 16 to 64.
-- Boiler heat is capped by boiler size, water supply, and heat.
-- Stress capacity is dynamic and depends on engine efficiency.
-
-Large engine v1 should keep default RPM in Create-friendly ranges:
-
-- Governor options: `16`, `32`, `48`, `64` RPM.
-- Optional config can unlock `96` or `128` RPM for servers that want stronger aircraft engines.
-- Generated capacity should scale with validated structure score, pressure, and RPM.
-- Total power must be conserved across outputs.
-
-Suggested first formula:
-
-```text
-pressure_limit = min(heat_score, water_score, steam_chamber_score)
-mechanical_score = cylinder_score * flywheel_efficiency
-total_capacity_su = base_capacity_per_cylinder * mechanical_score * pressure_efficiency
-output_speed = governor_rpm * direction
-capacity_per_output = total_capacity_su * output_weight / total_output_weight
+```
+        [Crankshaft]              ← KineticBlock; shaft ports on N/S/E/W faces
+        [  Piston  ]              ← protrusion block 2 (top, assembled texture: connector pin)
+        [  Piston  ]              ← protrusion block 1 (assembled texture: stuffing box seal)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ← top of cylinder frame (assembled texture: cylinder head cap)
+[Cyl]   [  Piston  ]   [Cyl]
+[Cyl]   [          ]   [Cyl]     ← upper cylinder layer (inner face texture active)
+[Cyl]   [  Piston  ]   [Cyl]
+[Cyl]   [          ]   [Cyl]     ← lower cylinder layer
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ← top of Create Fluid Tank (boiler)
+[Tank]  [  Tank    ]   [Tank]
+[Tank]  [  Tank    ]   [Tank]    ← Create Fluid Tank blocks (player-placed, not our blocks)
+[Tank]  [  Tank    ]   [Tank]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[BB  ]  [   BB     ]   [BB  ]    ← Blaze Burners (player-placed, Create blocks)
 ```
 
-All constants must be server config values.
+Block counts for a minimal engine:
+- 16 × `steam_cylinder` (8 per layer × 2 layers)
+- 4 × `piston` (2 inside cylinder hollow + 2 above)
+- 1 × `crankshaft`
+- At least 9 × Create `fluid_tank` (3×3×1 minimum)
+- At least 1 × Create `blaze_burner`
 
-## Architecture
+---
 
-### Dependency Strategy
+## Three-Layer Assembly
 
-Required runtime dependency:
+Assembly is layered. Each layer has its own validity and its own visual state.
 
-- Create `[6.0.10,6.1.0)`
+### Layer 1 — The Boiler (Create's system, untouched)
 
-Strongly tested optional dependencies:
+The player builds a Create Fluid Tank structure and heats it with Blaze Burners. Create handles everything: heat indicator, water indicator, steam generation. We do not touch this layer. Our cylinder reads from it.
 
-- Sable `[1.2.1,1.3.0)`
-- Create Aeronautics `[1.2.1,1.3.0)`
+### Layer 2 — The Cylinder Ring (our auto-assembly)
 
-The base mod should work in a Create-only pack. Aeronautics/Sable compatibility should be conditionally registered when those mods are present. This avoids hard classloading failures for players who want the engine outside Aeronautics.
+The 3×3×2 ring of `SteamCylinder` blocks self-assembles when all 16 positions are filled correctly. The moment the 16th block is placed and the ring is complete:
 
-If direct Sable APIs become necessary, isolate them in a dedicated compat package and load them only behind a mod-present check. Do not put Sable interfaces on core block entity classes unless Sable becomes a required dependency.
+- All 16 blocks flip `ASSEMBLED = true`
+- Connected textures activate (inner bore faces appear, top ring shows cylinder head cap)
+- The cylinder block entity designated as root scans the 9 blocks directly below the bottom ring layer for Create `FluidTankBlockEntity` instances
+- If a valid boiler is found, the cylinder root caches the boiler position and starts reading `BoilerData`
+- If no valid boiler is below, the cylinder assembles visually but shows a "no steam source" indicator (goggle overlay, no particles)
 
-### Proposed Package Layout
+The cylinder ring also disassembles visually if any of the 16 blocks is removed, even if it has a valid boiler.
 
-```text
-src/main/java/<group>/largesteam/
-  LargeSteam.java
+**Shape constraint**: The ring must be exactly 3×3 in cross-section with the centre 1×1 column hollow. No other shape is accepted in v1.
+
+**Boiler detection**: The bottom ring layer checks positions (0,−1,0) through (2,−1,2) relative to its south-west corner for `FluidTankBlockEntity`. It needs at least the 8 positions directly below the ring blocks (positions matching the cylinder shell footprint) to be valid fluid tanks. The boiler does not need to be assembled in any Create-specific sense; it just needs to be fluid tanks with Blaze Burners below.
+
+### Layer 3 — The Crankshaft (kinetic assembly)
+
+When the `Crankshaft` block is placed, it scans downward along its Y axis:
+
+1. Expects exactly 2 `piston` blocks immediately below it (the protruding column)
+2. Expects a valid assembled `SteamCylinder` ring below those 2 piston blocks
+3. Expects exactly 2 `piston` blocks inside the hollow centre of that ring
+4. Expects a valid Create fluid tank layer directly below the ring's bottom layer
+
+If all four checks pass: the crankshaft block entity stores references to the cylinder root and begins receiving steam data. It calls `updateGeneratedRotation()` and begins generating RPM proportional to the boiler's current efficiency.
+
+If any check fails: the crankshaft sits inert and shows a "incomplete structure" goggle overlay.
+
+**Revalidation triggers:**
+- Any `piston` block placed or removed
+- Any `steam_cylinder` block placed or removed within the expected positions
+- Any Create fluid tank block placed or removed directly below the cylinder's bottom ring
+- Crankshaft block entity loads from disk
+
+---
+
+## Block Details
+
+### `SteamCylinder`
+
+- Extends `SmartBlock` (Create's base, not vanilla `Block`)
+- Block entity: `SteamCylinderBlockEntity extends SmartBlockEntity`
+- Blockstate properties:
+  - `ASSEMBLED: BooleanProperty` (default false)
+  - `INNER_FACE: EnumProperty<Direction>` — which face is the inner bore face (used for rendering the bore texture on the correct face toward the hollow centre)
+- On placement: triggers connectivity scan among adjacent `SteamCylinder` blocks. If a complete 3×3×2 ring with hollow centre is detected, assembly fires.
+- On removal: broadcasts disassembly to all cylinder blocks sharing the same ring; they all flip `ASSEMBLED = false`.
+- One cylinder block is designated the ring root (deterministically: lowest BlockPos by Y then X then Z). The root block entity holds: boiler position cache, steam data cache, assembled flag.
+- Implements `IHaveGoggleInformation`: shows boiler link status, heat level, water level.
+
+### `SteamPiston` (registered as `piston`)
+
+- Extends `SmartBlock`
+- No block entity in v1 (purely structural and visual)
+- Blockstate properties:
+  - `ASSEMBLED: BooleanProperty` (default false)
+  - `PISTON_SECTION: EnumProperty<PistonSection>` where `PistonSection` has values `INSIDE_LOW`, `INSIDE_HIGH`, `PROTRUDE_LOW`, `PROTRUDE_HIGH` — determines which texture variant and animation offset to use
+- When the crankshaft validates the structure, it sets the assembled state and piston section on all 4 piston blocks.
+- Animation: when `ASSEMBLED = true` and the crankshaft is generating, the piston renders an animated reciprocating motion driven by the crankshaft's current rotation angle. The visual piston stroke covers the 2 protruding block heights. No block actually moves; the animation is purely rendered via Flywheel.
+
+### `Crankshaft`
+
+- Extends `KineticBlock` (Create)
+- Block entity: `CrankshaftBlockEntity extends GeneratingKineticBlockEntity`
+- Axis: always `Direction.Axis.Y` (vertical only, v1)
+- Shaft ports: N, S, E, W faces (horizontal). Top face is capped (piston connection). Bottom face is capped.
+- `getGeneratedSpeed()`: returns configured governor RPM when assembled and steam is available; 0 otherwise.
+- `calculateAddedStressCapacity()`: returns capacity proportional to boiler efficiency score; 0 when not assembled.
+- Holds reference to `SteamCylinderBlockEntity` root position. On each server tick, reads the cylinder root's cached boiler data to update speed and capacity.
+- Implements `IHaveGoggleInformation`: shows assembly status, boiler link, heat, water, current RPM, SU capacity.
+
+### `Flywheel`
+
+- Extends `SmartBlock`
+- Attaches axially to the crankshaft (placed on the N, S, E, or W face where a shaft port exists)
+- When attached to a valid crankshaft, registers its presence and grants +40% stress capacity bonus
+- Without a flywheel: engine runs at 60% of calculated capacity
+- With one flywheel: 100% capacity
+- Deferred: animated spinning disk (Phase 7)
+
+### `Governor`
+
+- Extends `SmartBlock`
+- Deferred to Phase 5
+- Attaches to crankshaft's remaining shaft port faces
+- Scroll wheel cycles RPM: 16 → 32 → 48 → 64
+- Default RPM when no governor present: 32
+
+---
+
+## Package Layout
+
+```
+src/main/java/dev/gustavo/fullsteamahead/
+  FullSteamAhead.java
   registry/
     ModBlocks.java
     ModBlockEntities.java
     ModItems.java
     ModCreativeTabs.java
-    ModConfigs.java
-  content/engine/
-    LargeSteamEngineControllerBlock.java
-    LargeSteamEngineControllerBlockEntity.java
-    LargeSteamEnginePartBlock.java
-    LargeSteamOutputShaftBlock.java
-    LargeSteamOutputShaftBlockEntity.java
-    LargeSteamEngineStructure.java
-    LargeSteamEngineScanner.java
-    LargeSteamPressureModel.java
-    LargeSteamOutputAllocator.java
-    LargeSteamGoggleTooltip.java
-  compat/create/
-    CreateStressRegistration.java
-    CreatePonderPlugin.java
-  compat/simulated/
-    SimulatedMovementCompat.java
-  data/
-    recipes/
-    lang/
-    models/
+  content/
+    cylinder/
+      SteamCylinderBlock.java
+      SteamCylinderBlockEntity.java
+      CylinderConnectivity.java        ← ring detection and root election logic
+    piston/
+      SteamPistonBlock.java
+      PistonSection.java               ← enum: INSIDE_LOW, INSIDE_HIGH, PROTRUDE_LOW, PROTRUDE_HIGH
+    crankshaft/
+      CrankshaftBlock.java
+      CrankshaftBlockEntity.java       ← GeneratingKineticBlockEntity, reads cylinder root
+    flywheel/
+      FlywheelBlock.java
+    governor/
+      GovernorBlock.java               ← deferred
+  compat/
+    create/
+      CreateStressRegistration.java
+    simulated/
+      SimulatedMovementCompat.java
 ```
 
-### Core Block Entity Model
+---
 
-Use one authoritative controller.
+## Balance
 
-`LargeSteamEngineControllerBlockEntity`
+Boiler reference: vanilla Create steam engine baseline.
 
-- Owns the multiblock state.
-- Caches part positions, dimensions, output couplings, and scores.
-- Stores water/steam/pressure data.
-- Exposes NeoForge fluid capability for water input.
-- Reads heat through Create-compatible heat APIs.
-- Allocates total generated capacity across outputs.
-- Sends compact sync packets or uses `SmartBlockEntity` sync.
-- Invalidates on neighbor/part changes, chunk unload, disassembly, or wrench refresh.
+| Parameter | Value |
+|---|---|
+| Governor RPM options | 16, 32, 48, 64 |
+| Default RPM (no governor) | 32 |
+| Base SU per cylinder pair | 1024 SU |
+| Full engine (1 boiler, 1 cylinder ring, 1 flywheel) | 1024 SU at 100% boiler efficiency |
+| Without flywheel | 614 SU (60%) |
+| Maximum v1 capacity (balance testing target) | 4096 SU |
 
-`LargeSteamOutputShaftBlockEntity`
+Steam formula (v1):
 
-- Extends `GeneratingKineticBlockEntity`.
-- Acts as the only kinetic source block in the structure.
-- Receives speed and capacity allocation from the controller.
-- Implements `getGeneratedSpeed()`.
-- Overrides `calculateAddedStressCapacity()`.
-- Calls `updateGeneratedRotation()` when speed/capacity changes.
-- Returns zero output when the controller is invalid, unpressurized, unloaded, or broken.
+```
+boiler_efficiency  = min(heat_score, water_score)        ← from Create BoilerData
+flywheel_bonus     = flywheel_present ? 1.0 : 0.6
+capacity_su        = BASE_CAPACITY * boiler_efficiency * flywheel_bonus
+output_speed_rpm   = governor_rpm                         ← when efficiency > 0
+```
 
-Do not replace vanilla shafts with powered shafts. Add a dedicated output coupling block that visually and mechanically behaves like a shaft. This avoids fragile interactions with Create's own `PoweredShaftBlock`.
+All constants must be server config values.
 
-### Multiblock Scanner
-
-Use a graph scanner rather than a fixed pattern.
-
-Rules:
-
-- Scan starts at controller.
-- Accept only blocks tagged as our engine parts plus explicitly allowed Create blocks if needed.
-- Limit max blocks and max radius through server config.
-- Require all output couplings to be within the validated graph.
-- Reject multiple controllers in one graph.
-- Reject unloaded chunks.
-- Reject structures crossing dimensions or sublevel boundaries.
-- Cache a version/hash of block states to avoid expensive full rescans every tick.
-
-Revalidation triggers:
-
-- Controller wrench interaction.
-- Neighbor update on engine parts.
-- Part placed/broken.
-- Output coupling added/removed.
-- Lazy tick if dirty.
-- Server load of controller block entity.
-
-### Steam and Heat Model
-
-Do not depend on Create `BoilerData` in v1.
-
-Implement our own pressure model:
-
-- Fluid storage: water only.
-- Input: NeoForge `Capabilities.FluidHandler.BLOCK`.
-- Heat: read blocks below fireboxes/boilers using Create's public boiler heater lookup path where possible.
-- Pressure: generated from heat and water, consumed by kinetic load.
-- Reserve: steam chamber volume increases buffer size.
-- Safety: if pressure exceeds configured limit, vent steam and reduce efficiency rather than explode in v1.
-
-Later compatibility spike:
-
-- Investigate an adapter for Create fluid tanks/boilers.
-- Only ship this if it can be done without unstable mixins or if the mixin surface is small and covered by tests.
-
-### Kinetic Output
-
-The output shaft must be a real Create kinetic generator.
-
-Behavior:
-
-- If controller is valid and pressure is sufficient, each output generates the selected RPM.
-- If the attached network overpowers the output, follow Create generator rules and avoid sign conflicts.
-- Direction is set by controller scroll behavior or wrench interaction.
-- Capacity is allocated so the sum of all outputs equals the controller's calculated total.
-- Breaking an output removes its allocation and refreshes the controller.
-- Breaking the controller immediately sets all outputs to zero.
-
-Anti-exploit rules:
-
-- Total capacity is calculated once on the controller.
-- Outputs receive shares from a deterministic allocator.
-- Adding more output shafts cannot multiply SU.
-- Output BEs persist their controller position but revalidate it before generating.
-- If the controller is missing, unloaded, or not assembled, output speed and capacity are zero.
-
-### Create Integration
-
-Use Create APIs and conventions:
-
-- `GeneratingKineticBlockEntity` for generator output.
-- `IRotate`/shaft-facing behavior for output blocks.
-- `IHaveGoggleInformation` for controller and output diagnostics.
-- `BlockStressValues` registration for baseline tooltip metadata.
-- Create's wrench behavior for assembly, rotation, and disassembly.
-- Ponder scenes for player education.
-- Datagen for recipes, blockstates, models, tags, loot tables, and lang.
-
-Avoid:
-
-- Direct mutation of Create kinetic networks outside documented Create patterns.
-- Reusing Create's `PoweredShaftBlockEntity` directly.
-- Mixin changes to Create's steam engine or boiler in v1.
-
-### Aeronautics and Sable Compatibility
-
-Required v1 compatibility work:
-
-- Ensure every engine block is movable unless intentionally config-disabled.
-- Do not add blocks to `#simulated:non_movable`.
-- Register Create `BlockMovementChecks` so engine parts attach to each other during normal Create movement.
-- If Simulated/Aeronautics is present, register `SimBlockMovementChecks` so Sable assembly treats engine parts as one connected structure.
-- Test the engine inside a Sable sublevel with Aeronautics propellers attached through shafts.
-- Verify block entity NBT, kinetic state, pressure state, and output allocation survive assembly/disassembly and world reload.
-
-Optional future Sable work:
-
-- A turbine exhaust block that implements a Sable actor and applies a small point force.
-- A force debug integration using Sable force groups.
-- A sublevel-aware gauge using Sable position transforms.
-
-Do not make direct Sable force output part of the main engine until the Create kinetic path is stable.
+---
 
 ## Development Phases
 
-### Phase 0: Decisions - Complete
+### Phase 0: Decisions — Complete
+### Phase 1: Project Scaffold — Complete
 
-Deliverable: final technical decisions before code.
+### Phase 2: Block Registration Remodel — Current
 
-- [x] Pick mod id, package group, and display name: `full_steam_ahead`, `dev.gustavo.fullsteamahead`, `Create: Full Steam Ahead`.
-- [x] Decide whether Aeronautics/Sable are optional or required at runtime: optional runtime compatibility targets.
-- [x] Decide art direction and block list: base Create-inspired copper/andesite/brass visual direction.
-- [x] Decide default balance constants.
-- [x] Decide max multiblock size for v1: hard `3x3x3`, maximum 27 blocks.
+**Goal**: Replace the old block set with the new design. Bootable with correct blocks in-game.
 
-### Phase 1: Project Scaffold - Complete
+Tasks:
+- [x] Delete: `large_steam_engine_controller`, `firebox`, `large_engine_casing`, `boiler_drum`, `output_coupling`, `piston_rod` — all Java classes, blockstates, models (block + item), loot tables, lang entries
+- [x] Delete: `EnginePartBlock.java`, `HorizontalEnginePartBlock.java`, `AxialEnginePartBlock.java`
+- [x] Add: `SteamCylinderBlock` with `ASSEMBLED` BooleanProperty blockstate
+- [x] Add: `SteamPistonBlock` with `ASSEMBLED` BooleanProperty and `PISTON_SECTION` EnumProperty blockstate
+- [x] Add: `CrankshaftBlock extends KineticBlock` with Y-axis orientation and horizontal shaft ports
+- [x] Add: `FlywheelBlock` inert stub
+- [x] Add: `GovernorBlock` inert stub
+- [x] Add: `PistonSection.java` enum
+- [x] Add: `ModBlockEntities.java` stub register, no block entity types yet
+- [x] Rewrite `ModBlocks.java` to register only the 5 new blocks with correct base classes
+- [x] Add placeholder blockstates, models, loot tables, lang for all 5 blocks
+- [x] Update creative tab
+- [x] Update mining tags
+- [x] Verify `./gradlew build` passes
+- [ ] Verify all 5 blocks appear in-game
 
-Deliverable: bootable NeoForge 1.21.1 addon project.
+Implementation note: Create `6.0.10-280` for NeoForge 1.21.1 does not expose `com.simibubi.create.foundation.block.SmartBlock`; the non-kinetic Phase 2 stubs currently extend vanilla `Block`. Phase 3 should introduce the Create block entity interfaces directly when cylinder behaviour is added.
 
-- [x] Create NeoForge ModDevGradle project.
-- [x] Add Create Maven dependencies from official Create docs.
-- [x] Add optional Sable/Aeronautics metadata as runtime compatibility targets.
-- [x] Add Java 21 toolchain.
-- [x] Add `neoforge.mods.toml` dependency on Create.
-- [x] Add client, server, and data run configs.
-- [x] Verify `compileJava`, `processResources`, `build`, and `runClient` startup.
+### Phase 3: Cylinder Ring Auto-Assembly
 
-### Phase 2: Registration and Minimal Blocks - Complete
+**Goal**: Placing 16 `SteamCylinder` blocks in the correct 3×3×2 hollow ring shape triggers visual assembly.
 
-Deliverable: blocks appear in-game and can be placed.
+Tasks:
+- [ ] Implement `CylinderConnectivity` — scans from placed block, validates ring shape, elects root
+- [ ] Implement `SteamCylinderBlockEntity` — holds assembled state, boiler cache, root flag
+- [ ] On assembly: flip all 16 blocks to `ASSEMBLED = true`, fire connected texture update
+- [ ] On disassembly (any block removed): flip all back to `ASSEMBLED = false`
+- [ ] Boiler detection: root block entity checks 9 positions below bottom ring layer for `FluidTankBlockEntity`
+- [ ] Add goggle overlay: assembly status, boiler link, heat level, water level
+- [ ] Add "no steam source" particle/overlay when assembled but no boiler below
+- [ ] Verify: place ring → assembles; remove one block → disassembles; place on boiler → boiler detected
 
-- [x] Register controller, casing, boiler drum, firebox, steam cylinder, piston rod, flywheel, output coupling, and governor.
-- [x] Add simple Create-texture placeholder block models and item models.
-- [x] Add loot tables, lang entries, mining tags, and creative tab entry.
-- [x] Verify all nine blocks appear in-game and are placeable.
-- [ ] Recipes are intentionally deferred until mechanics and balance exist.
-- [ ] Wrench behavior is deferred until multiblock and kinetic behavior need it.
+### Phase 4: Crankshaft Validation and Kinetic Output
 
-### Phase 3: Multiblock Formation
+**Goal**: Crankshaft placed at top of piston column validates full structure and generates rotation.
 
-Deliverable: controller can validate a structure.
+Tasks:
+- [ ] Implement `CrankshaftBlockEntity extends GeneratingKineticBlockEntity`
+- [ ] Downward scan on placement: 2 piston blocks → assembled cylinder ring → boiler below ring
+- [ ] If valid: store cylinder root ref, call `updateGeneratedRotation()`
+- [ ] `getGeneratedSpeed()`: governor RPM when assembled and boiler efficiency > 0, else 0
+- [ ] `calculateAddedStressCapacity()`: `BASE_CAPACITY * boiler_efficiency * flywheel_bonus`
+- [ ] Read `BoilerData` from the `FluidTankBlockEntity` at boiler position each server tick
+- [ ] Add piston block state updates: set `ASSEMBLED` and `PISTON_SECTION` on all 4 piston blocks when crankshaft validates
+- [ ] Add revalidation on neighbour changes
+- [ ] Add goggle overlay: assembly status, RPM, SU, boiler efficiency, flywheel present
+- [ ] Verify: built correctly → shaft turns; break piston → shaft stops; break boiler → shaft stops
 
-- [ ] Implement scanner and `LargeSteamEngineStructure`.
-- [ ] Add validation error messages.
-- [ ] Add dirty/revalidate lifecycle.
-- [ ] Add controller NBT serialization.
-- [ ] Add goggle tooltip showing structure status.
-- [ ] Add tests for valid, invalid, too large, duplicate controller, missing output, and unloaded chunk cases.
+### Phase 5: Flywheel and Governor
 
-### Phase 4: Steam Pressure Model
+**Goal**: Flywheel grants capacity bonus. Governor controls RPM.
 
-Deliverable: formed engine has water, heat, pressure, and efficiency.
-
-- Add water tank capability.
-- Add heat scanning.
-- Add pressure generation and decay.
-- Add pressure consumption under load.
-- Add config for capacities, heat scaling, water use, and pressure limits.
-- Add goggles and particles/sounds for active/venting states.
-
-### Phase 5: Kinetic Output
-
-Deliverable: engine powers Create shafts.
-
-- Implement `LargeSteamOutputShaftBlockEntity`.
-- Connect controller allocation to output BEs.
-- Add speed and direction controls.
-- Add dynamic stress capacity.
-- Add network update handling.
-- Test with shafts, gearboxes, belts, stressometers, and standard Create consumers.
+- [ ] Flywheel attaches to crankshaft horizontal shaft port; crankshaft detects presence
+- [ ] Without flywheel: 60% capacity. With flywheel: 100%.
+- [ ] Governor scroll wheel cycles RPM 16/32/48/64; crankshaft reads governor RPM
+- [ ] Verify capacity and RPM change in real time on goggle overlay
 
 ### Phase 6: Aeronautics/Sable Compatibility
 
-Deliverable: engine works on a moving aircraft/ship.
+- [ ] Register `BlockMovementChecks` for all engine blocks
+- [ ] Register `SimBlockMovementChecks` when Aeronautics present
+- [ ] Test engine inside Sable sublevel powering Aeronautics propellers
+- [ ] Verify NBT, kinetic state, and boiler link survive assembly/disassembly and reload
 
-- Register movement checks.
-- Test assembly into Sable sublevel.
-- Test engine powering Aeronautics propellers.
-- Test save/load while assembled.
-- Test disassembly and reassembly.
-- Test multiple engines on one craft.
-- Profile large craft tick cost.
+### Phase 7: Rendering and Ponder
 
-### Phase 7: UX, Rendering, and Ponder
+- [ ] Animated piston reciprocation via Flywheel renderer (driven by crankshaft rotation angle)
+- [ ] Animated flywheel spinning disc
+- [ ] Steam particles from cylinder top when running
+- [ ] Sound: rhythmic chuffing tied to piston animation
+- [ ] Ponder scenes: how to build, water/heat, connecting shafts, aircraft use
 
-Deliverable: polished player-facing feature.
+### Phase 8: Balance, Config, Recipes
 
-- Add animated flywheel/piston visuals.
-- Add pressure gauge model/overlay.
-- Add steam particles and sounds.
-- Add Ponder scenes: basic build, water/heat, output shafts, aircraft use.
-- Add JEI/EMI-friendly recipes and tags.
-- Add clear tooltips for every component.
+- [ ] Server config for: base capacity, flywheel bonus, RPM options, max piston height
+- [ ] Recipes for all 5 blocks balanced against vanilla Create steam engine
+- [ ] JEI/EMI display
 
-### Phase 8: Balance and Server Config
+### Phase 9: Hardening and Release
 
-Deliverable: configurable and multiplayer-safe behavior.
+- [ ] Dedicated server startup test
+- [ ] World reload test
+- [ ] Schematic placement test
+- [ ] Save/load with kinetic state
+- [ ] Performance: no rescan every tick; scan bounded and cached
+- [ ] Crash audit: null levels, unloaded chunks, missing optional mods, invalid NBT
 
-- Add server config for size limits, capacity, water use, heat scaling, RPM caps, output limits, and optional failure behavior.
-- Add client config for particles/sounds.
-- Add default recipes balanced against Create steam engines.
-- Test with common Create addon packs.
+---
 
-### Phase 9: Hardening
+## Risks and Mitigations
 
-Deliverable: release candidate.
+| Risk | Mitigation |
+|---|---|
+| Create `BoilerData` API changes | Read through `FluidTankBlockEntity`; isolate in one method |
+| Cylinder ring scan too expensive | Run only on placement/removal, not every tick; cache result |
+| Piston animation desync | Drive animation entirely from crankshaft rotation angle on client |
+| Sable assembly splits engine parts | Register Create and Simulated movement checks early |
+| No flywheel required makes balance trivial | Flywheel mandatory for 100% output; 60% without is still useful |
 
-- Dedicated server startup test.
-- Client/server sync test.
-- World reload test.
-- Schematic placement test.
-- Create contraption movement test.
-- Sable/Aeronautics sublevel assembly test.
-- Performance test with many engines and one very large craft.
-- Crash audit for null levels, unloaded chunks, missing optional mods, and invalid NBT.
+---
 
-### Phase 10: Release
+## Art Direction
 
-Deliverable: published addon.
+Stay as close as possible to base Create's visual language:
 
-- Build release jar.
-- Publish source and license.
-- Publish Modrinth/CurseForge metadata.
-- Include tested version matrix.
-- Document known incompatibilities.
-- Include example builds and Ponder scenes.
-
-## Test Matrix
-
-Minimum automated tests:
-
-- Valid small engine forms.
-- Valid large engine forms.
-- Missing controller fails.
-- Duplicate controller fails.
-- Missing output fails.
-- Too-large engine fails.
-- Output capacity does not duplicate when adding outputs.
-- Output stops when controller breaks.
-- Output resumes after save/load.
-- Water input changes pressure.
-- Heat input changes pressure.
-- No water means no sustained output.
-- Direction reversal does not destroy networks unless Create's generator conflict rules require it.
-
-Manual compatibility tests:
-
-- Create shafts and gearboxes.
-- Create stressometer/speedometer.
-- Create belts and mechanical crafters.
-- Aeronautics wooden/andesite/smart propellers.
-- Assembled Sable sublevel ship.
-- Assembled Sable aircraft.
-- Dedicated server with no client-only classes loaded server-side.
-- Optional dependency absent: Create-only instance must still start.
-
-Performance targets:
-
-- Controller does not rescan every tick.
-- A 200-block engine should not cause measurable server spikes after validation.
-- Multiple outputs should not add more than O(outputs) work per tick.
-- Structure scan should be bounded by config and fail gracefully.
-
-## Main Risks and Mitigations
-
-| Risk | Impact | Mitigation |
-| --- | --- | --- |
-| Create boiler internals change | Breaks integration | Avoid in v1; own pressure model |
-| Multiple outputs duplicate SU | Severe exploit | Controller-owned total capacity allocator |
-| Large scans lag servers | Server TPS drop | Dirty cache, max size/radius, lazy validation |
-| Sable classloading if absent | Startup crash | Optional compat isolation |
-| Sable assembly misses engine parts | Engine splits on ship assembly | Register Create and Simulated movement checks |
-| Kinetic network conflicts | Shafts break or detach | Follow `GeneratingKineticBlockEntity` patterns |
-| Block entities lose state on sublevels | Engine stops on craft | Save/load and assembly tests early |
-| Rendering too expensive | Client FPS drop | Simple v1 renderer, Flywheel visuals after logic is stable |
-
-## Definition of Done for v1
-
-- The addon starts on NeoForge 1.21.1 with Create 6.0.10.
-- A player can build a large multiblock steam engine with at least 20 blocks.
-- The engine forms, stores water, reads heat, builds pressure, and outputs Create rotation.
-- The output shaft powers normal Create kinetic networks.
-- The engine can power Aeronautics propellers through shafts.
-- The engine works on an assembled Sable/Aeronautics craft.
-- Breaking parts invalidates safely.
-- Adding output shafts never duplicates total generated SU.
-- Save/load works on singleplayer and dedicated server.
-- Ponder or in-game tooltips explain construction without requiring external docs.
-
-## Recommended Next Step
-
-Create the NeoForge addon scaffold and implement a minimal controller plus one output shaft. Do not start with full rendering or direct Sable physics. The first proof must be: a formed multiblock generates rotational power, a shaft turns, and an Aeronautics propeller receives that rotation on a Sable craft.
+- Copper and brass for the cylinder casing (warm, industrial)
+- Dark iron/steel for the piston rod
+- Exposed shaft geometry on the crankshaft ends
+- Riveted panel texture language on the cylinder outer faces
+- Goggle overlays follow Create's own overlay style exactly

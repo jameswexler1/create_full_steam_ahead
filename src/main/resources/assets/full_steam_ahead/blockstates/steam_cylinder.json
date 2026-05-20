@@ -1,8 +1,6 @@
 {
   "variants": {
-    "facing=north": { "model": "full_steam_ahead:block/steam_cylinder" },
-    "facing=east": { "model": "full_steam_ahead:block/steam_cylinder", "y": 90 },
-    "facing=south": { "model": "full_steam_ahead:block/steam_cylinder", "y": 180 },
-    "facing=west": { "model": "full_steam_ahead:block/steam_cylinder", "y": 270 }
+    "assembled=false": { "model": "full_steam_ahead:block/steam_cylinder" },
+    "assembled=true": { "model": "full_steam_ahead:block/steam_cylinder", "y": 0 }
   }
 }
