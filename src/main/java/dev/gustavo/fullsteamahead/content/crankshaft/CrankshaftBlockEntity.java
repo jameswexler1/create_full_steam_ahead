@@ -28,18 +28,19 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
     private static final String RING_ORIGIN_KEY = "RingOrigin";
     private static final String CYLINDER_ROOT_KEY = "CylinderRoot";
     private static final String BOILER_POS_KEY = "BoilerPos";
-    private static final String BOILER_EFFICIENCY_KEY = "BoilerEfficiency";
+    private static final String STEAM_POWER_KEY = "SteamPower";
     private static final String STATUS_KEY = "Status";
 
-    private static final float DEFAULT_RPM = 32.0F;
-    private static final float BASE_CAPACITY = 1024.0F;
-    private static final float NO_FLYWHEEL_CAPACITY = 0.6F;
+    private static final float MAX_RPM = 64.0F;
+    private static final float BASE_CAPACITY_SU = 147_456.0F;
+    private static final float REGULAR_MAX_HEAT = 9.0F;
+    private static final float MAX_STEAM_POWER = 2.0F;
 
     private boolean assembled;
     private BlockPos ringOrigin;
     private BlockPos cylinderRootPos;
     private BlockPos boilerPos;
-    private float boilerEfficiency;
+    private float steamPower;
     private String status = "Incomplete structure";
 
     public CrankshaftBlockEntity(BlockPos pos, BlockState state) {
@@ -77,9 +78,9 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
             return;
         }
 
-        float previousEfficiency = boilerEfficiency;
-        boilerEfficiency = calculateBoilerEfficiency(boiler);
-        if (!Mth.equal(previousEfficiency, boilerEfficiency)) {
+        float previousPower = steamPower;
+        steamPower = calculateSteamPower(boiler);
+        if (!Mth.equal(previousPower, steamPower)) {
             updateGeneratedRotation();
             notifyUpdate();
         }
@@ -121,9 +122,9 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         FluidTankBlockEntity boiler = getBoiler();
         refreshBoilerState(boiler);
 
-        float previousEfficiency = boilerEfficiency;
-        boilerEfficiency = calculateBoilerEfficiency(boiler);
-        if (changed || !Mth.equal(previousEfficiency, boilerEfficiency)) {
+        float previousPower = steamPower;
+        steamPower = calculateSteamPower(boiler);
+        if (changed || !Mth.equal(previousPower, steamPower)) {
             updateGeneratedRotation();
             notifyUpdate();
         }
@@ -135,7 +136,7 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
 
     private void markInvalid(String reason, BlockPos skippedPistonPos) {
         FluidTankBlockEntity previousBoiler = getBoiler();
-        boolean changed = assembled || boilerEfficiency != 0
+        boolean changed = assembled || steamPower != 0
                 || ringOrigin != null
                 || cylinderRootPos != null
                 || boilerPos != null
@@ -147,7 +148,7 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         ringOrigin = null;
         cylinderRootPos = null;
         boilerPos = null;
-        boilerEfficiency = 0;
+        steamPower = 0;
         status = reason;
 
         refreshBoilerState(previousBoiler);
@@ -160,7 +161,11 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
 
     @Override
     public float getGeneratedSpeed() {
-        return assembled && boilerEfficiency > 0 ? DEFAULT_RPM : 0;
+        if (!assembled || steamPower <= 0) {
+            return 0;
+        }
+
+        return MAX_RPM * Math.min(steamPower, 1.0F);
     }
 
     @Override
@@ -192,17 +197,17 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         }
 
         tooltip.add(Component.literal("Engine assembled").withStyle(ChatFormatting.GREEN));
-        tooltip.add(Component.literal("Boiler efficiency: " + Math.round(boilerEfficiency * 100.0F) + "%")
-                .withStyle(boilerEfficiency > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
+        tooltip.add(Component.literal("Steam power: " + Math.round(steamPower * 100.0F) + "%")
+                .withStyle(steamPower > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
         tooltip.add(Component.literal("RPM: " + Math.round(getGeneratedSpeed()))
                 .withStyle(getGeneratedSpeed() > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
         tooltip.add(Component.literal("Capacity: " + Math.round(getTargetCapacitySu()) + " SU")
                 .withStyle(ChatFormatting.AQUA));
-        tooltip.add(Component.literal("Flywheel: absent (60% capacity)").withStyle(ChatFormatting.YELLOW));
+        tooltip.add(Component.literal("Flywheel: deferred").withStyle(ChatFormatting.DARK_GRAY));
         return true;
     }
 
-    private float calculateBoilerEfficiency(FluidTankBlockEntity boiler) {
+    private float calculateSteamPower(FluidTankBlockEntity boiler) {
         if (boiler == null || boiler.boiler == null) {
             return 0;
         }
@@ -213,12 +218,17 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
             data.updateTemperature(boiler);
         }
 
-        int tankSize = Math.max(1, boiler.getTotalTankSize());
-        return Mth.clamp(data.getEngineEfficiency(tankSize), 0, 1);
+        if (data.activeHeat <= 0) {
+            return 0;
+        }
+
+        int waterLimitedHeat = data.getMaxHeatLevelForWaterSupply();
+        int effectiveHeat = Math.min(data.activeHeat, waterLimitedHeat);
+        return Mth.clamp(effectiveHeat / REGULAR_MAX_HEAT, 0, MAX_STEAM_POWER);
     }
 
     private float getTargetCapacitySu() {
-        return BASE_CAPACITY * boilerEfficiency * NO_FLYWHEEL_CAPACITY;
+        return BASE_CAPACITY_SU * steamPower;
     }
 
     private FluidTankBlockEntity getBoiler() {
@@ -329,7 +339,7 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         writePos(tag, RING_ORIGIN_KEY, ringOrigin);
         writePos(tag, CYLINDER_ROOT_KEY, cylinderRootPos);
         writePos(tag, BOILER_POS_KEY, boilerPos);
-        tag.putFloat(BOILER_EFFICIENCY_KEY, boilerEfficiency);
+        tag.putFloat(STEAM_POWER_KEY, steamPower);
         tag.putString(STATUS_KEY, status);
     }
 
@@ -340,7 +350,9 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         ringOrigin = readPos(tag, RING_ORIGIN_KEY);
         cylinderRootPos = readPos(tag, CYLINDER_ROOT_KEY);
         boilerPos = readPos(tag, BOILER_POS_KEY);
-        boilerEfficiency = tag.getFloat(BOILER_EFFICIENCY_KEY);
+        steamPower = tag.contains(STEAM_POWER_KEY)
+                ? tag.getFloat(STEAM_POWER_KEY)
+                : tag.getFloat("BoilerEfficiency");
         status = tag.contains(STATUS_KEY) ? tag.getString(STATUS_KEY) : "Incomplete structure";
     }
 

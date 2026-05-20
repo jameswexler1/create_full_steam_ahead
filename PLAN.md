@@ -76,7 +76,7 @@ Five blocks. No more, no less for v1.
 | `steam_cylinder` | `SmartBlock` | Forms the 3×3×2 hollow casing ring around the piston. Self-assembles. |
 | `piston` | `SmartBlock` | Physical piston block. 4 blocks per engine: 2 inside the cylinder, 2 protruding above. Animated when running. |
 | `crankshaft` | `KineticBlock` | Sits at the tip of the piston. The kinetic output. Triggers full structure validation. |
-| `flywheel` | `SmartBlock` | Attaches axially to the crankshaft. Required for full efficiency. |
+| `flywheel` | `SmartBlock` | Attaches axially to the crankshaft. Deferred balance/rendering role. |
 | `governor` | `SmartBlock` | Attaches to the crankshaft. Controls target RPM. Deferred to Phase 5. |
 
 Removed from the old plan (do not re-add without discussion):
@@ -153,7 +153,7 @@ When the `Crankshaft` block is placed, it scans downward along its Y axis:
 3. Expects exactly 2 `piston` blocks inside the hollow centre of that ring
 4. Expects a valid Create fluid tank layer directly below the ring's bottom layer
 
-If all four checks pass: the crankshaft block entity stores references to the cylinder root and begins receiving steam data. It calls `updateGeneratedRotation()` and begins generating RPM proportional to the boiler's current efficiency.
+If all four checks pass: the crankshaft block entity stores references to the cylinder root and begins receiving steam data. It calls `updateGeneratedRotation()` and begins generating RPM/SU proportional to active fired heat and water supply.
 
 If any check fails: the crankshaft sits inert and shows a "incomplete structure" goggle overlay.
 
@@ -196,7 +196,7 @@ If any check fails: the crankshaft sits inert and shows a "incomplete structure"
 - Axis: always `Direction.Axis.Y` (vertical only, v1)
 - Shaft ports: N, S, E, W faces (horizontal). Top face is capped (piston connection). Bottom face is capped.
 - `getGeneratedSpeed()`: returns configured governor RPM when assembled and steam is available; 0 otherwise.
-- `calculateAddedStressCapacity()`: returns capacity proportional to boiler efficiency score; 0 when not assembled.
+- `calculateAddedStressCapacity()`: returns capacity proportional to active steam power; 0 when not assembled or only passively heated.
 - Holds reference to `SteamCylinderBlockEntity` root position. On each server tick, reads the cylinder root's cached boiler data to update speed and capacity.
 - Implements `IHaveGoggleInformation`: shows assembly status, boiler link, heat, water, current RPM, SU capacity.
 
@@ -204,9 +204,8 @@ If any check fails: the crankshaft sits inert and shows a "incomplete structure"
 
 - Extends `SmartBlock`
 - Attaches axially to the crankshaft (placed on the N, S, E, or W face where a shaft port exists)
-- When attached to a valid crankshaft, registers its presence and grants +40% stress capacity bonus
-- Without a flywheel: engine runs at 60% of calculated capacity
-- With one flywheel: 100% capacity
+- Current Phase 4 behaviour: inert placeholder, no output effect
+- Future role: smoothing/balance bonus to be redesigned after baseline output is stable
 - Deferred: animated spinning disk (Phase 7)
 
 ### `Governor`
@@ -260,22 +259,24 @@ Boiler reference: vanilla Create steam engine baseline.
 | Parameter | Value |
 |---|---|
 | Governor RPM options | 16, 32, 48, 64 |
-| Default RPM (no governor) | 32 |
-| Base SU per cylinder pair | 1024 SU |
-| Full engine (1 boiler, 1 cylinder ring, 1 flywheel) | 1024 SU at 100% boiler efficiency |
-| Without flywheel | 614 SU (60%) |
-| Maximum v1 capacity (balance testing target) | 4096 SU |
+| Default/max RPM before governor implementation | 64 |
+| Regular max heat | 9 active heat from 9 lit Blaze Burners |
+| Superheated max heat | 18 active heat from 9 Blaze Burners fed Blaze Cakes |
+| Full engine at regular max heat | 147,456 SU at 64 RPM |
+| Full engine at superheated max heat | 294,912 SU at 64 RPM |
 
 Steam formula (v1):
 
 ```
-boiler_efficiency  = min(heat_score, water_score)        ← from Create BoilerData
-flywheel_bonus     = flywheel_present ? 1.0 : 0.6
-capacity_su        = BASE_CAPACITY * boiler_efficiency * flywheel_bonus
-output_speed_rpm   = governor_rpm                         ← when efficiency > 0
+effective_heat     = min(active_heat, water_limited_heat) ← from Create BoilerData
+steam_power        = clamp(effective_heat / 9, 0, 2)
+capacity_su        = 147456 * steam_power
+output_speed_rpm   = 64 * min(steam_power, 1)
 ```
 
-All constants must be server config values.
+Unfired Blaze Burners only provide passive heat in Create and must produce `steam_power = 0` for this engine. Blaze Cakes raise active heat above the regular 9-heat maximum and double SU output without increasing RPM above 64.
+
+All constants must become server config values before release.
 
 ---
 
@@ -332,25 +333,26 @@ Tasks:
 - [x] Implement `CrankshaftBlockEntity extends GeneratingKineticBlockEntity`
 - [x] Downward scan on placement: 2 piston blocks → assembled cylinder ring → boiler below ring
 - [x] If valid: store cylinder root ref, call `updateGeneratedRotation()`
-- [x] `getGeneratedSpeed()`: governor RPM when assembled and boiler efficiency > 0, else 0
-- [x] `calculateAddedStressCapacity()`: `BASE_CAPACITY * boiler_efficiency * flywheel_bonus`
+- [x] `getGeneratedSpeed()`: scales from 0 to 64 RPM from active heat/water; 0 when only passive heat is present
+- [x] `calculateAddedStressCapacity()`: scales from 0 to 147,456 SU at regular heat, and 294,912 SU with full Blaze Cake heat
 - [x] Read `BoilerData` from the `FluidTankBlockEntity` at boiler position each server tick
 - [x] Make Create's own `BoilerData.evaluate()` count assembled Full Steam Ahead engines
 - [x] Treat 3x3x1 tank boilers as the compact optimal size when a Full Steam Ahead engine is attached
+- [x] Require active fired Blaze Burner heat; passive/unfired heat produces no rotation
 - [x] Add piston block state updates: set `ASSEMBLED` and `PISTON_SECTION` on all 4 piston blocks when crankshaft validates
 - [x] Add visible placeholder models for assembled piston section states
 - [x] Add revalidation on neighbour changes
-- [x] Add goggle overlay: assembly status, RPM, SU, boiler efficiency, flywheel present
+- [x] Add goggle overlay: assembly status, steam power, RPM, SU, flywheel placeholder
 - [ ] Verify: built correctly → shaft turns; break piston → shaft stops; break boiler → shaft stops
 
-Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerData.evaluate()` recognizes valid Full Steam Ahead crankshafts as attached steam engines. This lets Create's own Fluid Tank switch to active boiler visuals/capabilities and lets the compact 3x3x1 boiler footprint behave as the intended v1 boiler size. The flywheel remains an absent placeholder, so output capacity is intentionally capped at 60% until Phase 5.
+Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerData.evaluate()` recognizes valid Full Steam Ahead crankshafts as attached steam engines. This lets Create's own Fluid Tank switch to active boiler visuals/capabilities and lets the compact 3x3x1 boiler footprint behave as the intended v1 boiler size. The flywheel remains an inert placeholder until Phase 5 and currently does not change output.
 
 ### Phase 5: Flywheel and Governor
 
-**Goal**: Flywheel grants capacity bonus. Governor controls RPM.
+**Goal**: Flywheel role is finalized. Governor controls RPM.
 
 - [ ] Flywheel attaches to crankshaft horizontal shaft port; crankshaft detects presence
-- [ ] Without flywheel: 60% capacity. With flywheel: 100%.
+- [ ] Decide final flywheel bonus after Phase 4 heat scaling is verified
 - [ ] Governor scroll wheel cycles RPM 16/32/48/64; crankshaft reads governor RPM
 - [ ] Verify capacity and RPM change in real time on goggle overlay
 
@@ -394,7 +396,7 @@ Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerD
 | Cylinder ring scan too expensive | Run only on placement/removal, not every tick; cache result |
 | Piston animation desync | Drive animation entirely from crankshaft rotation angle on client |
 | Sable assembly splits engine parts | Register Create and Simulated movement checks early |
-| No flywheel required makes balance trivial | Flywheel mandatory for 100% output; 60% without is still useful |
+| No flywheel required makes balance trivial | Re-evaluate flywheel as smoothing/bonus after the 147,456 SU baseline is verified |
 
 ---
 
