@@ -354,7 +354,8 @@ Tasks:
 - [x] Add piston block state updates: set `ASSEMBLED` and `PISTON_SECTION` on all 4 piston blocks when crankshaft validates
 - [x] Add visible placeholder models for assembled piston section states
 - [x] Add revalidation on neighbour changes
-- [x] Add goggle overlay: assembly status, steam power, RPM, SU, flywheel placeholder
+- [x] Add goggle overlay: assembly status, active burners, heat units, water supply, RPM, SU, flywheel placeholder
+- [x] Verify exact output tiers: no passive output, 1-9 normal fired burners match SU/RPM table, and Blaze Cake burners double SU individually
 - [ ] Verify: built correctly → shaft turns; break piston → shaft stops; break boiler → shaft stops
 
 Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerData.evaluate()` recognizes valid Full Steam Ahead crankshafts as attached steam engines. This lets Create's own Fluid Tank switch to active boiler visuals/capabilities and lets the compact 3x3x1 boiler footprint behave as the intended v1 boiler size. The flywheel remains an inert placeholder until Phase 5 and currently does not change output.

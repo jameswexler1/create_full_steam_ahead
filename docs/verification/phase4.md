@@ -44,25 +44,25 @@ Manual runtime checklist:
 - [x] Build boiler, cylinder ring, four piston blocks, and crankshaft in the documented vertical order.
 - [x] Confirm piston blocks switch to assembled section variants.
 - [x] Look at the tank boiler and confirm it switches to Create's active boiler visual state.
-- [ ] Pump water into the active boiler and confirm the water supply indicator rises after the latest heat scaling fix.
+- [x] Pump water into the active boiler and confirm the water supply indicator rises after the latest heat scaling fix.
 - [x] Add heat and water to the boiler and confirm the crankshaft/attached shaft turns.
-- [ ] Confirm unfired/smouldering Blaze Burners do not produce crankshaft rotation.
-- [ ] Confirm 1 normal fired Blaze Burner produces 16,384 SU at 16 RPM.
-- [ ] Confirm 2 normal fired Blaze Burners produce 32,768 SU at 16 RPM.
-- [ ] Confirm 3 normal fired Blaze Burners produce 49,152 SU at 32 RPM.
-- [ ] Confirm 4 normal fired Blaze Burners produce 65,536 SU at 32 RPM.
-- [ ] Confirm 5 normal fired Blaze Burners produce 81,920 SU at 48 RPM.
-- [ ] Confirm 6 normal fired Blaze Burners produce 98,304 SU at 48 RPM.
-- [ ] Confirm 7 normal fired Blaze Burners produce 114,688 SU at 48 RPM.
-- [ ] Confirm 8 normal fired Blaze Burners produce 131,072 SU at 48 RPM.
-- [ ] Confirm 9 normal fired Blaze Burners produce 147,456 SU at 64 RPM.
-- [ ] Confirm 1 Blaze Cake burner produces 32,768 SU while RPM still follows active burner count.
-- [ ] Confirm 9 Blaze Cake burners produce 294,912 SU at 64 RPM.
-- [ ] Check goggles show assembled status, active burners, heat units, water supply, RPM, SU capacity, and flywheel placeholder state.
+- [x] Confirm unfired/smouldering Blaze Burners do not produce crankshaft rotation.
+- [x] Confirm 1 normal fired Blaze Burner produces 16,384 SU at 16 RPM.
+- [x] Confirm 2 normal fired Blaze Burners produce 32,768 SU at 16 RPM.
+- [x] Confirm 3 normal fired Blaze Burners produce 49,152 SU at 32 RPM.
+- [x] Confirm 4 normal fired Blaze Burners produce 65,536 SU at 32 RPM.
+- [x] Confirm 5 normal fired Blaze Burners produce 81,920 SU at 48 RPM.
+- [x] Confirm 6 normal fired Blaze Burners produce 98,304 SU at 48 RPM.
+- [x] Confirm 7 normal fired Blaze Burners produce 114,688 SU at 48 RPM.
+- [x] Confirm 8 normal fired Blaze Burners produce 131,072 SU at 48 RPM.
+- [x] Confirm 9 normal fired Blaze Burners produce 147,456 SU at 64 RPM.
+- [x] Confirm 1 Blaze Cake burner produces 32,768 SU while RPM still follows active burner count.
+- [x] Confirm 9 Blaze Cake burners produce 294,912 SU at 64 RPM.
+- [x] Check goggles show assembled status, active burners, heat units, water supply, RPM, SU capacity, and flywheel placeholder state.
 - [ ] Break one piston and confirm the crankshaft stops and piston states clear.
 - [ ] Break one cylinder and confirm the crankshaft stops.
 - [ ] Break or remove one boiler tank below the ring and confirm the crankshaft stops within one lazy revalidation interval.
 - [ ] Restore the structure and confirm generation resumes.
 - [ ] Save and reload the world and confirm the crankshaft revalidates.
 
-Manual result reported by Gustavo on 2026-05-20: boiler texture changed, pistons visibly changed when assembled, and the crankshaft generated rotation. Gradual output worked before exact tiering; exact burner-count SU/RPM tiers and individual Blaze Cake doubling still need retesting after this fix.
+Manual result reported by Gustavo on 2026-05-20: boiler texture changed, pistons visibly changed when assembled, the crankshaft generated rotation, passive heat rejection worked, the exact 1-9 normal burner output table matched, and individual Blaze Cake SU doubling reached 294,912 SU at 9 burners.
