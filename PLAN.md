@@ -260,21 +260,32 @@ Boiler reference: vanilla Create steam engine baseline.
 |---|---|
 | Governor RPM options | 16, 32, 48, 64 |
 | Default/max RPM before governor implementation | 64 |
-| Regular max heat | 9 active heat from 9 lit Blaze Burners |
-| Superheated max heat | 18 active heat from 9 Blaze Burners fed Blaze Cakes |
+| Active burner count | 0-9 fired Blaze Burners under the 3x3 boiler footprint |
+| Heat units | 1 per normal fired burner, 2 per Blaze Cake burner |
 | Full engine at regular max heat | 147,456 SU at 64 RPM |
-| Full engine at superheated max heat | 294,912 SU at 64 RPM |
+| Full engine at full Blaze Cake heat | 294,912 SU at 64 RPM |
 
 Steam formula (v1):
 
 ```
-effective_heat     = min(active_heat, water_limited_heat) ← from Create BoilerData
-steam_power        = clamp(effective_heat / 9, 0, 2)
-capacity_su        = 147456 * steam_power
-output_speed_rpm   = 64 * min(steam_power, 1)
+active_burners   = count of Blaze Burners with heat >= FADING under the 3x3 boiler
+cake_burners     = count of those burners with heat >= SEETHING
+heat_units       = active_burners + cake_burners
+capacity_su      = heat_units * 16384
+output_speed_rpm = tier_by_active_burner_count(active_burners)
 ```
 
-Unfired Blaze Burners only provide passive heat in Create and must produce `steam_power = 0` for this engine. Blaze Cakes raise active heat above the regular 9-heat maximum and double SU output without increasing RPM above 64.
+RPM tiers:
+
+| Active fired burners | RPM |
+|---:|---:|
+| 0 | 0 |
+| 1-2 | 16 |
+| 3-4 | 32 |
+| 5-8 | 48 |
+| 9 | 64 |
+
+Unfired Blaze Burners only provide passive heat in Create and must produce `0` output for this engine. Blaze Cakes double the SU contribution of each individual burner without increasing RPM above the active-burner-count tier. Water supply remains required for output, but v1 output is not capped by Create's vanilla water-limited heat tier because this engine owns its exact balance table.
 
 All constants must become server config values before release.
 
@@ -333,12 +344,13 @@ Tasks:
 - [x] Implement `CrankshaftBlockEntity extends GeneratingKineticBlockEntity`
 - [x] Downward scan on placement: 2 piston blocks → assembled cylinder ring → boiler below ring
 - [x] If valid: store cylinder root ref, call `updateGeneratedRotation()`
-- [x] `getGeneratedSpeed()`: scales from 0 to 64 RPM from active heat/water; 0 when only passive heat is present
-- [x] `calculateAddedStressCapacity()`: scales from 0 to 147,456 SU at regular heat, and 294,912 SU with full Blaze Cake heat
+- [x] `getGeneratedSpeed()`: follows exact active-burner RPM tiers: 1-2 = 16 RPM, 3-4 = 32 RPM, 5-8 = 48 RPM, 9 = 64 RPM
+- [x] `calculateAddedStressCapacity()`: follows exact SU output: 16,384 SU per normal fired burner, doubled per Blaze Cake burner, up to 294,912 SU
 - [x] Read `BoilerData` from the `FluidTankBlockEntity` at boiler position each server tick
 - [x] Make Create's own `BoilerData.evaluate()` count assembled Full Steam Ahead engines
 - [x] Treat 3x3x1 tank boilers as the compact optimal size when a Full Steam Ahead engine is attached
 - [x] Require active fired Blaze Burner heat; passive/unfired heat produces no rotation
+- [x] Scan the 3x3 Blaze Burner footprint directly so mixed normal/Blaze Cake burners contribute exact per-burner SU
 - [x] Add piston block state updates: set `ASSEMBLED` and `PISTON_SECTION` on all 4 piston blocks when crankshaft validates
 - [x] Add visible placeholder models for assembled piston section states
 - [x] Add revalidation on neighbour changes

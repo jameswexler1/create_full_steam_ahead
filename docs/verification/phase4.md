@@ -8,13 +8,15 @@ Implemented:
 - The crankshaft validates the fixed vertical v1 engine shape: four pistons, assembled 3x3x2 cylinder ring, and Create fluid tanks below the ring.
 - Valid structures mark all four piston blocks as assembled and assign `piston_section` values.
 - Invalid structures clear piston assembly states and stop generated rotation.
-- Steam power is read from the linked Create `FluidTankBlockEntity` through `BoilerData` active heat and water supply.
+- Steam output is gated by the linked Create `FluidTankBlockEntity` boiler and its water supply.
+- Fired Blaze Burners are counted directly from the 3x3 footprint under the compact boiler.
 - Create's `BoilerData.evaluate()` now counts valid Full Steam Ahead crankshafts as attached steam engines.
 - Attached Full Steam Ahead engines make 3x3x1 tank boilers use compact boiler sizing instead of vanilla tank-size scaling.
 - Crankshaft output now requires active heat: unfired Blaze Burners/passive heat produce no rotation.
-- Crankshaft output scales with active heat and water supply: regular max is 147,456 SU at 64 RPM, full Blaze Cake heat is 294,912 SU at 64 RPM.
+- Crankshaft RPM now follows active burner count exactly: 1-2 burners = 16 RPM, 3-4 = 32 RPM, 5-8 = 48 RPM, 9 = 64 RPM.
+- Crankshaft SU now follows exact heat units: each normal fired burner adds 16,384 SU, each Blaze Cake burner adds 32,768 SU, up to 294,912 SU at 9 Blaze Cake burners.
 - Assembled piston sections now use distinct placeholder models for visible testing.
-- Goggles show crankshaft assembly status, steam power, RPM, SU capacity, and current flywheel placeholder state.
+- Goggles show crankshaft assembly status, active burners, heat units, water supply, RPM, SU capacity, and current flywheel placeholder state.
 
 Automated checks to run:
 
@@ -34,6 +36,8 @@ Results:
 - JSON validation: passed
 - Removed-name scan under `src/main`: passed, no matches
 
+Latest automated run after exact burner-tier fix on 2026-05-20: all checks above passed again.
+
 Manual runtime checklist:
 
 - [x] Run `./gradlew runClient`.
@@ -42,15 +46,23 @@ Manual runtime checklist:
 - [x] Look at the tank boiler and confirm it switches to Create's active boiler visual state.
 - [ ] Pump water into the active boiler and confirm the water supply indicator rises after the latest heat scaling fix.
 - [x] Add heat and water to the boiler and confirm the crankshaft/attached shaft turns.
-- [ ] Confirm unfired Blaze Burners do not produce crankshaft rotation.
-- [ ] Confirm fewer fired Blaze Burners produce lower RPM and lower SU than 9 fired Blaze Burners.
-- [ ] Confirm 9 fired Blaze Burners produce roughly 147,456 SU at 64 RPM.
-- [ ] Confirm 9 Blaze Burners fed Blaze Cakes produce roughly 294,912 SU at 64 RPM.
-- [ ] Check goggles show assembled status, steam power, RPM, SU capacity, and flywheel placeholder state.
+- [ ] Confirm unfired/smouldering Blaze Burners do not produce crankshaft rotation.
+- [ ] Confirm 1 normal fired Blaze Burner produces 16,384 SU at 16 RPM.
+- [ ] Confirm 2 normal fired Blaze Burners produce 32,768 SU at 16 RPM.
+- [ ] Confirm 3 normal fired Blaze Burners produce 49,152 SU at 32 RPM.
+- [ ] Confirm 4 normal fired Blaze Burners produce 65,536 SU at 32 RPM.
+- [ ] Confirm 5 normal fired Blaze Burners produce 81,920 SU at 48 RPM.
+- [ ] Confirm 6 normal fired Blaze Burners produce 98,304 SU at 48 RPM.
+- [ ] Confirm 7 normal fired Blaze Burners produce 114,688 SU at 48 RPM.
+- [ ] Confirm 8 normal fired Blaze Burners produce 131,072 SU at 48 RPM.
+- [ ] Confirm 9 normal fired Blaze Burners produce 147,456 SU at 64 RPM.
+- [ ] Confirm 1 Blaze Cake burner produces 32,768 SU while RPM still follows active burner count.
+- [ ] Confirm 9 Blaze Cake burners produce 294,912 SU at 64 RPM.
+- [ ] Check goggles show assembled status, active burners, heat units, water supply, RPM, SU capacity, and flywheel placeholder state.
 - [ ] Break one piston and confirm the crankshaft stops and piston states clear.
 - [ ] Break one cylinder and confirm the crankshaft stops.
 - [ ] Break or remove one boiler tank below the ring and confirm the crankshaft stops within one lazy revalidation interval.
 - [ ] Restore the structure and confirm generation resumes.
 - [ ] Save and reload the world and confirm the crankshaft revalidates.
 
-Manual result reported by Gustavo on 2026-05-20 before the latest heat-scaling fix: boiler texture changed, pistons visibly changed when assembled, and the crankshaft generated rotation. Heat scaling and passive-heat rejection still need retesting.
+Manual result reported by Gustavo on 2026-05-20: boiler texture changed, pistons visibly changed when assembled, and the crankshaft generated rotation. Gradual output worked before exact tiering; exact burner-count SU/RPM tiers and individual Blaze Cake doubling still need retesting after this fix.
