@@ -95,7 +95,7 @@ Other orientations (horizontal, inverted) are deferred to a future version.
 | `piston` | `Block` | Physical piston block. 4 blocks per engine: 2 inside the cylinder, 2 protruding above. Animated when running. |
 | `crankshaft` | `KineticBlock` | Sits at the tip of the piston. The kinetic output. Triggers full structure validation. |
 | `boiler_outlet` | `Block + SmartBlockEntity` | Attaches to a Create Fluid Tank boiler, generates `steam`, and provides pressure into pipes. |
-| `steam_inlet` | `Block + SmartBlockEntity` | Planned Phase 6 block. Attaches to an assembled cylinder ring and accepts `steam` from pipes. |
+| `steam_inlet` | `Block + SmartBlockEntity` | Phase 6 block. Replaces one cylinder shell block in the 3×3×2 ring and accepts `steam` from pipes. |
 
 Existing parked placeholders:
 
@@ -137,7 +137,8 @@ A minimal working engine (vertical, default orientation):
 ```
 
 Block counts for a minimal engine:
-- 16 × `steam_cylinder` (8 per layer × 2 layers)
+- Direct compact mode: 16 × `steam_cylinder` (8 per layer × 2 layers)
+- Pipe-fed mode: 15 × `steam_cylinder` + 1 × `steam_inlet` occupying any cylinder shell slot
 - 4 × `piston` (2 inside cylinder hollow + 2 above)
 - 1 × `crankshaft`
 - At least 9 × Create `fluid_tank` (3×3×1 minimum)
@@ -155,7 +156,7 @@ Pipe-fed ship/airship layout (planned):
                                                 ||
                                                 \/
 [Engine Room]
-[Steam Inlet] → [Steam Cylinder + Pistons + Crankshaft] → Create shafts/gearboxes/propellers
+[Steam Cylinder Ring with one Steam Inlet] → [Pistons + Crankshaft] → Create shafts/gearboxes/propellers
 ```
 
 The current direct compact stack remains valid while the pipe-fed path is added.
@@ -176,17 +177,17 @@ In pipe-fed mode, `boiler_outlet` reads this boiler's `BoilerData`, creates `ste
 
 ### Layer 2 — The Cylinder Ring (our auto-assembly)
 
-The 3×3×2 ring of `SteamCylinder` blocks self-assembles when all 16 positions are filled correctly. The moment the 16th block is placed and the ring is complete:
+The 3×3×2 ring self-assembles when all 16 shell positions are filled correctly. In direct compact mode all 16 positions are `steam_cylinder`. In pipe-fed mode exactly one shell position may be `steam_inlet`, with the other 15 positions being `steam_cylinder`. The inlet can occupy any of the 16 shell slots. The moment the 16th shell block is placed and the ring is complete:
 
-- All 16 blocks flip `ASSEMBLED = true`
+- All 16 shell blocks flip `ASSEMBLED = true`
 - Connected textures activate (inner bore faces appear, top ring shows cylinder head cap)
 - The cylinder block entity designated as root scans the 9 blocks directly below the bottom ring layer for Create `FluidTankBlockEntity` instances
 - If a valid boiler is found, the cylinder root caches the boiler position and starts reading `BoilerData`
 - If no valid boiler is below, the cylinder assembles visually but shows a "no steam source" indicator (goggle overlay, no particles)
 
-The cylinder ring also disassembles visually if any of the 16 blocks is removed, even if it has a valid boiler.
+The cylinder ring also disassembles visually if any of the 16 shell blocks is removed, even if it has a valid boiler or inlet.
 
-**Shape constraint**: The ring must be exactly 3×3 in cross-section with the centre 1×1 column hollow. No other shape is accepted in v1.
+**Shape constraint**: The ring must be exactly 3×3 in cross-section with the centre 1×1 column hollow. No other shape is accepted in v1. Multiple inlets in one ring are invalid for v1.
 
 **Boiler detection**: The bottom ring layer checks positions (0,−1,0) through (2,−1,2) relative to its south-west corner for `FluidTankBlockEntity`. It needs at least the 8 positions directly below the ring blocks (positions matching the cylinder shell footprint) to be valid fluid tanks. The boiler does not need to be assembled in any Create-specific sense; it just needs to be fluid tanks with Blaze Burners below.
 
@@ -197,9 +198,9 @@ When the `Crankshaft` block is placed, it scans downward along its Y axis:
 1. Expects exactly 2 `piston` blocks immediately below it (the protruding column)
 2. Expects a valid assembled `SteamCylinder` ring below those 2 piston blocks
 3. Expects exactly 2 `piston` blocks inside the hollow centre of that ring
-4. Current direct mode expects a valid Create fluid tank layer directly below the ring's bottom layer
+4. Expects either a valid Create fluid tank layer directly below the ring's bottom layer, or one assembled `steam_inlet` occupying a cylinder shell slot
 
-If all four checks pass: the crankshaft block entity stores references to the cylinder root and begins receiving steam data. It calls `updateGeneratedRotation()` and begins generating RPM/SU proportional to active fired heat and water supply.
+If all four checks pass: the crankshaft block entity stores references to the cylinder root and begins receiving steam data. Direct compact mode reads boiler heat/water. Pipe-fed mode consumes stored `steam` from the inlet. If both sources exist, piped steam is preferred while available, with direct boiler output as fallback.
 
 If any check fails: the crankshaft sits inert and shows a "incomplete structure" goggle overlay.
 
@@ -209,7 +210,7 @@ If any check fails: the crankshaft sits inert and shows a "incomplete structure"
 - Any Create fluid tank block placed or removed directly below the cylinder's bottom ring
 - Crankshaft block entity loads from disk
 
-Pipe-fed mode changes this only after `steam_inlet` exists: the crankshaft should accept either the direct boiler below the ring or a valid steam inlet attached to the assembled cylinder. Direct mode must remain working during the transition.
+Pipe-fed mode accepts either the direct boiler below the ring or a valid steam inlet occupying one assembled cylinder shell slot. Direct compact mode must remain working during the transition.
 
 ---
 
@@ -260,15 +261,22 @@ Pipe-fed mode changes this only after `steam_inlet` exists: the crankshaft shoul
 - Default pressure range target: 30 blocks. This must become a server config value.
 - Goggle overlay: boiler linked/missing, active heat, water supply, steam production rate, internal buffer, output pressure state.
 
-### `SteamInlet` (planned as `steam_inlet`)
+### `SteamInlet` (`steam_inlet`)
 
 - Block entity: `SteamInletBlockEntity extends SmartBlockEntity`
-- Attaches to an assembled `steam_cylinder` ring and accepts only `steam`.
-- Exposes an input-only `IFluidHandler` so Create pipes can insert steam.
-- Caches the linked cylinder root/crankshaft and reports available steam rate.
-- The crankshaft consumes steam from linked inlets and converts that consumption into RPM/SU using the same SU scale as direct compact mode and steam-rate RPM tiers.
-- Multiple inlets are deferred. v1 starts with one inlet per engine unless implementation proves simple.
-- Goggle overlay: linked cylinder status, steam buffer, accepted steam rate, crankshaft link.
+- Occupies one shell slot in the assembled cylinder ring, replacing one `steam_cylinder` block. It can be placed in any of the 16 shell positions.
+- A v1 ring accepts either 0 inlets (direct compact mode) or exactly 1 inlet (pipe-fed mode). Multiple inlets are invalid.
+- Blockstate properties:
+  - `ASSEMBLED: BooleanProperty` (default false)
+- Accepts only `steam` through an input-only `IFluidHandler`.
+- Stores a small local steam buffer. The buffer is not a pressure source and cannot be drained by external blocks.
+- When the ring assembles, the inlet caches the ring origin and cylinder root. When the ring disassembles, it clears that link and stops accepting steam.
+- The crankshaft prefers consuming steam from the linked inlet. If no usable inlet steam exists and a direct boiler is present, direct compact mode remains the fallback.
+- Pipe-fed balance maps consumed steam rate to output:
+  - 10 mB/t consumed steam = 1 heat unit = 16,384 SU
+  - Maximum consumed steam for one engine = 180 mB/t = 18 heat units = 294,912 SU
+  - RPM uses burner-equivalent tiers from consumed steam units, clamped to 9 equivalents: 1-2 = 16 rpm, 3-4 = 32 rpm, 5-8 = 48 rpm, 9+ = 64 rpm
+- Goggle overlay: ring link status, steam buffer, accepted steam rate, crankshaft link.
 
 ### Parked `Flywheel` and `Governor`
 
@@ -303,7 +311,7 @@ src/main/java/dev/gustavo/fullsteamahead/
     steam/
       BoilerOutletBlock.java
       BoilerOutletBlockEntity.java
-      SteamInletBlock.java             ← planned Phase 6
+      SteamInletBlock.java
       SteamInletBlockEntity.java
     flywheel/
       FlywheelBlock.java               ← parked inert placeholder
@@ -486,10 +494,11 @@ Implementation notes:
 **Goal**: Let cylinders consume piped `steam` and generate rotation remotely from the boiler room, while preserving direct compact mode as a fallback.
 
 - [ ] Add `steam_inlet` block, item, block entity, blockstate/model/item model/loot/lang/tags/creative entry
-- [ ] `SteamInletBlockEntity` accepts only `steam` through an input-only `IFluidHandler`
-- [ ] Inlet attaches to an assembled `steam_cylinder` ring and caches the cylinder root/crankshaft
-- [ ] Crankshaft detects linked steam inlet(s)
-- [ ] If valid inlet steam is available, crankshaft consumes `steam` and calculates output from steam consumption rate
+- [ ] Allow a valid cylinder ring to be either 16 `steam_cylinder` blocks or 15 `steam_cylinder` blocks plus exactly 1 `steam_inlet` occupying any shell slot
+- [ ] `SteamInletBlockEntity` accepts only `steam` through an input-only `IFluidHandler` while assembled
+- [ ] Inlet caches assembled ring origin and cylinder root, and clears its link on disassembly
+- [ ] Crankshaft detects the linked steam inlet from the assembled ring
+- [ ] If usable inlet steam is available, crankshaft consumes `steam` and calculates output from steam consumption rate
 - [ ] If no valid inlet is present, existing direct compact boiler mode remains unchanged
 - [ ] Add goggle overlays for source mode: direct boiler vs piped steam
 - [ ] Verify: remote boiler outlet → Create pipes → steam inlet → engine rotation
