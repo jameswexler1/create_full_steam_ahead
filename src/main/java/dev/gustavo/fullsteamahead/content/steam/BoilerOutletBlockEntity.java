@@ -249,7 +249,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
 
         FluidTransportBehaviour startPipe = FluidPropagator.getPipe(level, startPos);
         if (startPipe != null) {
-            PipePressureResult result = getOrApplyPipePressure(startPos, facing.getOpposite(), maxAmount);
+            PipePressureResult result = getOrApplyPipePressure(startPos, facing.getOpposite(), startPipe, maxAmount);
             if (result.openEnd()) {
                 venting = true;
             }
@@ -271,8 +271,38 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         return ventSteam(worldPosition, facing, remaining);
     }
 
-    private PipePressureResult getOrApplyPipePressure(BlockPos startPos, Direction sourceSide, int maxAmount) {
-        if (pipePressureCooldown <= 0 || lastPressureAmount != maxAmount) {
+    public void forcePipePressureRefresh() {
+        if (level == null || level.isClientSide() || productionRate <= 0) {
+            resetPipePressureCache();
+            return;
+        }
+
+        Direction facing = BoilerOutletBlock.getFacing(getBlockState());
+        BlockPos startPos = worldPosition.relative(facing);
+        if (!level.isLoaded(startPos)) {
+            resetPipePressureCache();
+            return;
+        }
+
+        FluidTransportBehaviour startPipe = FluidPropagator.getPipe(level, startPos);
+        if (startPipe == null) {
+            resetPipePressureCache();
+            return;
+        }
+
+        cachedPipePressure = applyPipePressure(startPos, facing.getOpposite(), productionRate);
+        lastPressureAmount = productionRate;
+        pipePressureCooldown = PRESSURE_REFRESH_TICKS;
+        venting = cachedPipePressure.openEnd();
+    }
+
+    private PipePressureResult getOrApplyPipePressure(
+            BlockPos startPos,
+            Direction sourceSide,
+            FluidTransportBehaviour startPipe,
+            int maxAmount
+    ) {
+        if (pipePressureCooldown <= 0 || lastPressureAmount != maxAmount || !startPipe.hasAnyPressure()) {
             cachedPipePressure = applyPipePressure(startPos, sourceSide, maxAmount);
             lastPressureAmount = maxAmount;
             pipePressureCooldown = PRESSURE_REFRESH_TICKS;

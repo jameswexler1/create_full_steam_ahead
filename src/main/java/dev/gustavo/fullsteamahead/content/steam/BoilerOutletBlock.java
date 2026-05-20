@@ -79,6 +79,10 @@ public class BoilerOutletBlock extends Block implements IBE<BoilerOutletBlockEnt
         return outletPos.relative(getFacing(state).getOpposite());
     }
 
+    public static BlockPos getOutputPipePos(BlockPos outletPos, BlockState state) {
+        return outletPos.relative(getFacing(state));
+    }
+
     public static boolean isBackAttachedTo(LevelReader level, BlockPos outletPos, BlockState state, BlockPos tankPos) {
         return getAttachedTankPos(outletPos, state).equals(tankPos);
     }

@@ -33,6 +33,13 @@ Stability follow-up:
 - Fix: visual-only assembly state writes now use client update flags, piston/crankshaft no longer revalidate from unrelated neighbor changes, cylinder/inlet neighbor refreshes ignore external pipe/shaft noise once assembled, boiler outlet only refreshes boiler state from its attached tank side, and pipe pressure refresh is throttled.
 - Automated recheck after fix: `compileJava` passed; `build` passed.
 
+Pipe animation follow-up:
+
+- Runtime report: wrenching a Create fluid pipe between regular and glass form made visible steam flow restart from the boiler outlet.
+- Cause addressed: Create preserves pipe flow during the block conversion, but the conversion also wipes pipe pressure. If the outlet's pressure cache stayed warm, the next pipe tick could clear the preserved flow before pressure was reapplied.
+- Fix: steam outlets now reapply pressure when cached pipe pressure has been wiped, and a targeted mixin refreshes connected steam outlet pressure immediately after Create pipe wrench conversions.
+- Automated recheck after fix: `compileJava` passed; `build` passed; JSON validation passed.
+
 Implementation notes:
 
 - `steam_inlet` is registered as a shell-slot block entity and appears in the creative tab.
