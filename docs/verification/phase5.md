@@ -48,7 +48,9 @@ User report after initial Phase 5 runtime test: all checklist items above work a
 
 Polish runtime checklist:
 
-- [ ] Confirm steam is visible inside Create fluid pipes while the boiler outlet is producing.
-- [ ] Confirm an outlet facing open air vents steam particles instead of silently filling its buffer.
-- [ ] Confirm a pipe connected to the outlet but ending open vents steam particles from the open pipe end.
-- [ ] Confirm a pipe connected to a tank still moves steam without a mechanical pump after the visibility change.
+- [x] Confirm steam is visible inside Create fluid pipes while the boiler outlet is producing.
+- [x] Confirm an outlet facing open air vents steam particles instead of silently filling its buffer.
+- [x] Confirm a pipe connected to the outlet but ending open vents steam particles from the open pipe end.
+- [x] Confirm a pipe connected to a tank still moves steam without a mechanical pump after the visibility change.
+
+User report after polish runtime test: everything works.

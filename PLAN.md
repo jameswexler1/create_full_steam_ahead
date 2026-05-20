@@ -472,7 +472,7 @@ Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerD
 - [x] Verify: boiler outlet produces steam only on valid active boilers, fills Create tanks through pipes, and does not auto-pump from stored steam tanks
 - [x] Apply Create `FluidTransportBehaviour` pressure so generated steam is visible in connected Create pipes
 - [x] Register steam open-pipe effect and outlet vent particles for open/unconnected steam leaks
-- [ ] Verify: steam visibly flows through pipes and open pipe ends vent steam particles
+- [x] Verify: steam visibly flows through pipes and open pipe ends vent steam particles
 
 Implementation notes:
 
