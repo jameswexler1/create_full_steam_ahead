@@ -319,7 +319,8 @@ Tasks:
 - [x] Boiler detection: root block entity checks shell positions below bottom ring layer for `FluidTankBlockEntity`
 - [x] Add goggle overlay: assembly status, boiler link, heat level, water level
 - [x] Add "no steam source" goggle overlay when assembled but no boiler below
-- [ ] Verify: place ring → assembles; remove one block → disassembles; place on boiler → boiler detected
+- [x] Verify: place ring → assembles; remove one block → disassembles; place on boiler → boiler detected; reload preserves assembled state
+- [ ] Verify negative cases: incomplete ring stays unassembled; blocked center prevents assembly; assembled ring without boiler shows no steam source
 
 Implementation note: Phase 3 uses `Block implements IBE<SteamCylinderBlockEntity>` plus `SmartBlockEntity`, matching Create 6.0.10's available API. `SmartBlock` is still not used because it is not present in this classpath.
 
