@@ -116,7 +116,7 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         }
 
         tooltip.add(Component.literal("Boiler linked").withStyle(ChatFormatting.AQUA));
-        boiler.boiler.addToGoggleTooltip(tooltip, isPlayerSneaking, 0);
+        boiler.boiler.addToGoggleTooltip(tooltip, isPlayerSneaking, boiler.getTotalTankSize());
         return true;
     }
 

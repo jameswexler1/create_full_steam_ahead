@@ -1,6 +1,7 @@
 package dev.gustavo.fullsteamahead.content.cylinder;
 
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
+import dev.gustavo.fullsteamahead.content.crankshaft.CrankshaftBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -54,6 +55,8 @@ public final class CylinderConnectivity {
         for (BlockPos origin : validOrigins) {
             assemble(level, origin);
         }
+
+        notifyCrankshafts(level, candidates);
     }
 
     private static Set<BlockPos> candidateOrigins(BlockPos pos) {
@@ -186,6 +189,16 @@ public final class CylinderConnectivity {
         }
 
         level.setBlock(pos, state.setValue(SteamCylinderBlock.ASSEMBLED, assembled), Block.UPDATE_ALL);
+    }
+
+    private static void notifyCrankshafts(Level level, Set<BlockPos> candidateOrigins) {
+        Set<BlockPos> notified = new LinkedHashSet<>();
+        for (BlockPos origin : candidateOrigins) {
+            BlockPos crankshaftPos = origin.offset(1, 4, 1);
+            if (notified.add(crankshaftPos)) {
+                CrankshaftBlockEntity.revalidateAt(level, crankshaftPos);
+            }
+        }
     }
 
     private static void withCylinderBlockEntity(

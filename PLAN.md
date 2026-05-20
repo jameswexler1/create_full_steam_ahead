@@ -307,7 +307,7 @@ Tasks:
 
 Implementation note: Create `6.0.10-280` for NeoForge 1.21.1 does not expose `com.simibubi.create.foundation.block.SmartBlock`; the correct Phase 3 integration is vanilla `Block` plus Create's `IBE<T>` interface and `SmartBlockEntity`.
 
-### Phase 3: Cylinder Ring Auto-Assembly — Current
+### Phase 3: Cylinder Ring Auto-Assembly — Complete
 
 **Goal**: Placing 16 `SteamCylinder` blocks in the correct 3×3×2 hollow ring shape triggers visual assembly.
 
@@ -320,25 +320,27 @@ Tasks:
 - [x] Add goggle overlay: assembly status, boiler link, heat level, water level
 - [x] Add "no steam source" goggle overlay when assembled but no boiler below
 - [x] Verify: place ring → assembles; remove one block → disassembles; place on boiler → boiler detected; reload preserves assembled state
-- [ ] Verify negative cases: incomplete ring stays unassembled; blocked center prevents assembly; assembled ring without boiler shows no steam source
+- [x] Verify negative cases: incomplete ring stays unassembled; blocked center prevents assembly; assembled ring without boiler shows no steam source
 
 Implementation note: Phase 3 uses `Block implements IBE<SteamCylinderBlockEntity>` plus `SmartBlockEntity`, matching Create 6.0.10's available API. `SmartBlock` is still not used because it is not present in this classpath.
 
-### Phase 4: Crankshaft Validation and Kinetic Output
+### Phase 4: Crankshaft Validation and Kinetic Output — Current
 
 **Goal**: Crankshaft placed at top of piston column validates full structure and generates rotation.
 
 Tasks:
-- [ ] Implement `CrankshaftBlockEntity extends GeneratingKineticBlockEntity`
-- [ ] Downward scan on placement: 2 piston blocks → assembled cylinder ring → boiler below ring
-- [ ] If valid: store cylinder root ref, call `updateGeneratedRotation()`
-- [ ] `getGeneratedSpeed()`: governor RPM when assembled and boiler efficiency > 0, else 0
-- [ ] `calculateAddedStressCapacity()`: `BASE_CAPACITY * boiler_efficiency * flywheel_bonus`
-- [ ] Read `BoilerData` from the `FluidTankBlockEntity` at boiler position each server tick
-- [ ] Add piston block state updates: set `ASSEMBLED` and `PISTON_SECTION` on all 4 piston blocks when crankshaft validates
-- [ ] Add revalidation on neighbour changes
-- [ ] Add goggle overlay: assembly status, RPM, SU, boiler efficiency, flywheel present
+- [x] Implement `CrankshaftBlockEntity extends GeneratingKineticBlockEntity`
+- [x] Downward scan on placement: 2 piston blocks → assembled cylinder ring → boiler below ring
+- [x] If valid: store cylinder root ref, call `updateGeneratedRotation()`
+- [x] `getGeneratedSpeed()`: governor RPM when assembled and boiler efficiency > 0, else 0
+- [x] `calculateAddedStressCapacity()`: `BASE_CAPACITY * boiler_efficiency * flywheel_bonus`
+- [x] Read `BoilerData` from the `FluidTankBlockEntity` at boiler position each server tick
+- [x] Add piston block state updates: set `ASSEMBLED` and `PISTON_SECTION` on all 4 piston blocks when crankshaft validates
+- [x] Add revalidation on neighbour changes
+- [x] Add goggle overlay: assembly status, RPM, SU, boiler efficiency, flywheel present
 - [ ] Verify: built correctly → shaft turns; break piston → shaft stops; break boiler → shaft stops
+
+Implementation note: Phase 4 treats the current engine as one custom boiler consumer because Create's boiler scan only counts vanilla Create steam engines. The flywheel remains an absent placeholder, so output capacity is intentionally capped at 60% until Phase 5.
 
 ### Phase 5: Flywheel and Governor
 

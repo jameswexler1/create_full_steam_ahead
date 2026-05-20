@@ -33,12 +33,12 @@ Results:
 Manual runtime checklist:
 
 - [x] Run `./gradlew runClient`.
-- [ ] Build fewer than 16 cylinder blocks and confirm no assembly.
+- [x] Build fewer than 16 cylinder blocks and confirm no assembly.
 - [x] Complete a 3x3x2 hollow cylinder ring and confirm all 16 blocks change to the assembled placeholder model.
 - [x] Break one cylinder block and confirm the remaining ring disassembles.
-- [ ] Fill a center position with a non-piston block and confirm the ring does not assemble.
+- [x] Fill a center position with a non-piston block and confirm the ring does not assemble.
 - [x] Build the ring above a 3x3 Create Fluid Tank layer and confirm goggles show boiler linked.
-- [ ] Build the ring without tanks below and confirm goggles show no steam source.
+- [x] Build the ring without tanks below and confirm goggles show no steam source.
 - [x] Save and reload the world and confirm the ring revalidates.
 
-Manual result reported by Gustavo on 2026-05-20.
+Manual result reported by Gustavo on 2026-05-20. Negative cases were confirmed in-world after the initial Phase 3 build.
