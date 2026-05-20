@@ -335,12 +335,15 @@ Tasks:
 - [x] `getGeneratedSpeed()`: governor RPM when assembled and boiler efficiency > 0, else 0
 - [x] `calculateAddedStressCapacity()`: `BASE_CAPACITY * boiler_efficiency * flywheel_bonus`
 - [x] Read `BoilerData` from the `FluidTankBlockEntity` at boiler position each server tick
+- [x] Make Create's own `BoilerData.evaluate()` count assembled Full Steam Ahead engines
+- [x] Treat 3x3x1 tank boilers as the compact optimal size when a Full Steam Ahead engine is attached
 - [x] Add piston block state updates: set `ASSEMBLED` and `PISTON_SECTION` on all 4 piston blocks when crankshaft validates
+- [x] Add visible placeholder models for assembled piston section states
 - [x] Add revalidation on neighbour changes
 - [x] Add goggle overlay: assembly status, RPM, SU, boiler efficiency, flywheel present
 - [ ] Verify: built correctly → shaft turns; break piston → shaft stops; break boiler → shaft stops
 
-Implementation note: Phase 4 treats the current engine as one custom boiler consumer because Create's boiler scan only counts vanilla Create steam engines. The flywheel remains an absent placeholder, so output capacity is intentionally capped at 60% until Phase 5.
+Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerData.evaluate()` recognizes valid Full Steam Ahead crankshafts as attached steam engines. This lets Create's own Fluid Tank switch to active boiler visuals/capabilities and lets the compact 3x3x1 boiler footprint behave as the intended v1 boiler size. The flywheel remains an absent placeholder, so output capacity is intentionally capped at 60% until Phase 5.
 
 ### Phase 5: Flywheel and Governor
 

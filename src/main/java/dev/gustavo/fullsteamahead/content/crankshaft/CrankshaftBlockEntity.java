@@ -30,8 +30,6 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
     private static final String BOILER_POS_KEY = "BoilerPos";
     private static final String BOILER_EFFICIENCY_KEY = "BoilerEfficiency";
     private static final String STATUS_KEY = "Status";
-    private static final String COUNTED_BOILER_POS_KEY = "CountedBoilerPos";
-    private static final String COUNTED_ENGINE_COUNT_KEY = "CountedEngineCount";
 
     private static final float DEFAULT_RPM = 32.0F;
     private static final float BASE_CAPACITY = 1024.0F;
@@ -43,8 +41,6 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
     private BlockPos boilerPos;
     private float boilerEfficiency;
     private String status = "Incomplete structure";
-    private BlockPos countedBoilerPos;
-    private int countedEngineCount;
 
     public CrankshaftBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CRANKSHAFT.get(), pos, state);
@@ -122,8 +118,11 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
 
         setPistonsAssembled(result);
 
+        FluidTankBlockEntity boiler = getBoiler();
+        refreshBoilerState(boiler);
+
         float previousEfficiency = boilerEfficiency;
-        boilerEfficiency = calculateBoilerEfficiency(getBoiler());
+        boilerEfficiency = calculateBoilerEfficiency(boiler);
         if (changed || !Mth.equal(previousEfficiency, boilerEfficiency)) {
             updateGeneratedRotation();
             notifyUpdate();
@@ -135,6 +134,7 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
     }
 
     private void markInvalid(String reason, BlockPos skippedPistonPos) {
+        FluidTankBlockEntity previousBoiler = getBoiler();
         boolean changed = assembled || boilerEfficiency != 0
                 || ringOrigin != null
                 || cylinderRootPos != null
@@ -142,7 +142,6 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
                 || !Objects.equals(status, reason);
 
         clearPistonStates(skippedPistonPos);
-        releaseCountedBoiler();
 
         assembled = false;
         ringOrigin = null;
@@ -150,6 +149,8 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         boilerPos = null;
         boilerEfficiency = 0;
         status = reason;
+
+        refreshBoilerState(previousBoiler);
 
         if (changed) {
             updateGeneratedRotation();
@@ -207,60 +208,13 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         }
 
         BoilerData data = boiler.boiler;
-        data.updateTemperature(boiler);
+        boiler.updateBoilerTemperature();
+        if (data.needsHeatLevelUpdate) {
+            data.updateTemperature(boiler);
+        }
 
         int tankSize = Math.max(1, boiler.getTotalTankSize());
-        int consumers = countThisEngine(data);
-        if (data.isPassive(tankSize)) {
-            return 0.125F / consumers;
-        }
-        if (data.activeHeat <= 0) {
-            return 0;
-        }
-
-        int effectiveHeat = Math.min(
-                data.activeHeat,
-                Math.min(data.getMaxHeatLevelForBoilerSize(tankSize), data.getMaxHeatLevelForWaterSupply())
-        );
-        return Mth.clamp(effectiveHeat / (float) consumers, 0, 1);
-    }
-
-    private int countThisEngine(BoilerData data) {
-        int currentConsumers = Math.max(0, data.attachedEngines);
-        if (countedBoilerPos != null
-                && Objects.equals(countedBoilerPos, boilerPos)
-                && countedEngineCount > 0
-                && currentConsumers >= countedEngineCount) {
-            return currentConsumers;
-        }
-
-        int consumers = currentConsumers + 1;
-        data.attachedEngines = consumers;
-        data.needsHeatLevelUpdate = true;
-        countedBoilerPos = boilerPos;
-        countedEngineCount = consumers;
-        return consumers;
-    }
-
-    private void releaseCountedBoiler() {
-        if (level == null || countedBoilerPos == null) {
-            countedBoilerPos = null;
-            countedEngineCount = 0;
-            return;
-        }
-
-        BlockEntity blockEntity = level.getBlockEntity(countedBoilerPos);
-        if (blockEntity instanceof FluidTankBlockEntity tank && tank.boiler != null) {
-            FluidTankBlockEntity controller = tank.getControllerBE();
-            FluidTankBlockEntity boiler = controller == null ? tank : controller;
-            if (boiler.boiler.attachedEngines == countedEngineCount && countedEngineCount > 0) {
-                boiler.boiler.attachedEngines = Math.max(0, countedEngineCount - 1);
-            }
-            boiler.boiler.evaluate(boiler);
-        }
-
-        countedBoilerPos = null;
-        countedEngineCount = 0;
+        return Mth.clamp(data.getEngineEfficiency(tankSize), 0, 1);
     }
 
     private float getTargetCapacitySu() {
@@ -278,6 +232,14 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
             return controller == null ? tank : controller;
         }
         return null;
+    }
+
+    private void refreshBoilerState(FluidTankBlockEntity boiler) {
+        if (boiler == null || boiler.isRemoved()) {
+            return;
+        }
+
+        boiler.updateBoilerState();
     }
 
     private void setPistonsAssembled(CrankshaftValidator.Result result) {
@@ -369,8 +331,6 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         writePos(tag, BOILER_POS_KEY, boilerPos);
         tag.putFloat(BOILER_EFFICIENCY_KEY, boilerEfficiency);
         tag.putString(STATUS_KEY, status);
-        writePos(tag, COUNTED_BOILER_POS_KEY, countedBoilerPos);
-        tag.putInt(COUNTED_ENGINE_COUNT_KEY, countedEngineCount);
     }
 
     @Override
@@ -382,8 +342,6 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         boilerPos = readPos(tag, BOILER_POS_KEY);
         boilerEfficiency = tag.getFloat(BOILER_EFFICIENCY_KEY);
         status = tag.contains(STATUS_KEY) ? tag.getString(STATUS_KEY) : "Incomplete structure";
-        countedBoilerPos = readPos(tag, COUNTED_BOILER_POS_KEY);
-        countedEngineCount = tag.getInt(COUNTED_ENGINE_COUNT_KEY);
     }
 
     private static void writePos(CompoundTag tag, String key, BlockPos pos) {

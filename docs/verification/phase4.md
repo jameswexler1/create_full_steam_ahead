@@ -9,6 +9,9 @@ Implemented:
 - Valid structures mark all four piston blocks as assembled and assign `piston_section` values.
 - Invalid structures clear piston assembly states and stop generated rotation.
 - Boiler efficiency is read from the linked Create `FluidTankBlockEntity` through `BoilerData`.
+- Create's `BoilerData.evaluate()` now counts valid Full Steam Ahead crankshafts as attached steam engines.
+- Attached Full Steam Ahead engines make 3x3x1 tank boilers use compact boiler sizing instead of vanilla tank-size scaling.
+- Assembled piston sections now use distinct placeholder models for visible testing.
 - Goggles show crankshaft assembly status, boiler efficiency, RPM, SU capacity, and current flywheel placeholder state.
 
 Automated checks to run:
@@ -34,6 +37,9 @@ Manual runtime checklist:
 - [ ] Run `./gradlew runClient`.
 - [ ] Build boiler, cylinder ring, four piston blocks, and crankshaft in the documented vertical order.
 - [ ] Confirm piston blocks switch to assembled section variants.
+- [ ] Look at the tank boiler and confirm it switches to Create's active boiler visual state.
+- [ ] Confirm the boiler size indicator no longer treats the 3x3x1 boiler as undersized for this engine.
+- [ ] Pump water into the active boiler and confirm the water supply indicator rises.
 - [ ] Add heat and water to the boiler and confirm the crankshaft/attached shaft turns.
 - [ ] Check goggles show assembled status, boiler efficiency, RPM, SU capacity, and flywheel absent.
 - [ ] Break one piston and confirm the crankshaft stops and piston states clear.
