@@ -2,9 +2,14 @@ package dev.gustavo.fullsteamahead.compat.create;
 
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import dev.gustavo.fullsteamahead.content.crankshaft.CrankshaftValidator;
+import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
+import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -48,7 +53,43 @@ public final class FullSteamBoilerIntegration {
             }
         }
 
-        return crankshafts.size();
+        return crankshafts.size() + countAttachedOutlets(controller);
+    }
+
+    private static int countAttachedOutlets(FluidTankBlockEntity controller) {
+        Level level = controller.getLevel();
+        BlockPos controllerPos = controller.getBlockPos();
+        int width = controller.getWidth();
+        int height = controller.getHeight();
+
+        Set<BlockPos> outlets = new HashSet<>();
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                for (int z = 0; z < width; z++) {
+                    BlockPos tankPos = controllerPos.offset(x, y, z);
+                    for (Direction direction : Direction.values()) {
+                        BlockPos outletPos = tankPos.relative(direction);
+                        if (!level.isLoaded(outletPos)) {
+                            continue;
+                        }
+
+                        BlockState state = level.getBlockState(outletPos);
+                        if (!state.is(ModBlocks.BOILER_OUTLET.get())
+                                || BoilerOutletBlock.getFacing(state) != direction) {
+                            continue;
+                        }
+
+                        BlockEntity blockEntity = level.getBlockEntity(outletPos);
+                        if (blockEntity instanceof BoilerOutletBlockEntity outlet
+                                && outlet.isAttachedToBoiler(controller)) {
+                            outlets.add(outletPos);
+                        }
+                    }
+                }
+            }
+        }
+
+        return outlets.size();
     }
 
     public static int compactBoilerHeatLimit(int tankSize) {

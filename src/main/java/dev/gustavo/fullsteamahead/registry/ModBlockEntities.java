@@ -3,6 +3,7 @@ package dev.gustavo.fullsteamahead.registry;
 import dev.gustavo.fullsteamahead.FullSteamAhead;
 import dev.gustavo.fullsteamahead.content.crankshaft.CrankshaftBlockEntity;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlockEntity;
+import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
@@ -25,6 +26,13 @@ public final class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             CrankshaftBlockEntity::new,
                             ModBlocks.CRANKSHAFT.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BoilerOutletBlockEntity>> BOILER_OUTLET =
+            BLOCK_ENTITY_TYPES.register("boiler_outlet",
+                    () -> BlockEntityType.Builder.of(
+                            BoilerOutletBlockEntity::new,
+                            ModBlocks.BOILER_OUTLET.get()
                     ).build(null));
 
     public static void register(IEventBus modEventBus) {

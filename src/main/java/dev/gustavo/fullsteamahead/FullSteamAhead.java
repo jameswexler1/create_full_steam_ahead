@@ -3,7 +3,9 @@ package dev.gustavo.fullsteamahead;
 import com.mojang.logging.LogUtils;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
+import dev.gustavo.fullsteamahead.registry.ModCapabilities;
 import dev.gustavo.fullsteamahead.registry.ModCreativeTabs;
+import dev.gustavo.fullsteamahead.registry.ModFluids;
 import dev.gustavo.fullsteamahead.registry.ModItems;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -16,10 +18,12 @@ public final class FullSteamAhead {
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public FullSteamAhead(IEventBus modEventBus, ModContainer modContainer) {
+        ModFluids.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModItems.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
+        modEventBus.addListener(ModCapabilities::register);
 
         LOGGER.info("Initializing Create: Full Steam Ahead");
     }

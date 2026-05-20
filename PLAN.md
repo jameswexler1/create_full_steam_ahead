@@ -59,7 +59,7 @@ We do not add a custom boiler block. The player builds a standard Create Fluid T
 Two boiler connection modes are supported in the plan:
 
 1. **Direct compact mode** — the current Phase 4 engine still works with the cylinder sitting directly on a 3×3×1 Create Fluid Tank boiler.
-2. **Pipe-fed mode** — planned Phase 5+ adds a `boiler_outlet` block that converts valid Create boiler output into storable `steam` fluid and pushes that steam into Create fluid pipes.
+2. **Pipe-fed mode** — Phase 5 adds a `boiler_outlet` block that converts valid Create boiler output into storable `steam` fluid and pushes that steam into Create fluid pipes.
 
 The direct compact boiler must be at least 3×3×1 (9 fluid tank blocks) to support a full cylinder frame above it.
 
@@ -67,7 +67,7 @@ The direct compact boiler must be at least 3×3×1 (9 fluid tank blocks) to supp
 
 `steam` becomes a real NeoForge/Create-compatible fluid. It can be stored in Create Fluid Tanks and moved through Create Fluid Pipes. It is not a replacement for water, and it is not produced by ordinary tanks full of stored steam.
 
-The only automatic pressure source for steam is the planned `boiler_outlet`, and it must only generate/push steam when attached to a valid active Create boiler. Stored steam in normal tanks may be moved by normal Create logistics, but it must not get free boiler-outlet pressure.
+The only automatic pressure source for steam is `boiler_outlet`, and it must only generate/push steam when attached to a valid active Create boiler. Stored steam in normal tanks may be moved by normal Create logistics, but it must not get free boiler-outlet pressure.
 
 For v1, `steam` should be non-placeable and should not need a bucket. It exists for tanks, pipes, gauges, and engine consumption.
 
@@ -94,7 +94,7 @@ Other orientations (horizontal, inverted) are deferred to a future version.
 | `steam_cylinder` | `Block + IBE<SteamCylinderBlockEntity>` | Forms the 3×3×2 hollow casing ring around the piston. Self-assembles. |
 | `piston` | `Block` | Physical piston block. 4 blocks per engine: 2 inside the cylinder, 2 protruding above. Animated when running. |
 | `crankshaft` | `KineticBlock` | Sits at the tip of the piston. The kinetic output. Triggers full structure validation. |
-| `boiler_outlet` | `Block + SmartBlockEntity` | Planned Phase 5 block. Attaches to a Create Fluid Tank boiler, generates `steam`, and provides pressure into pipes. |
+| `boiler_outlet` | `Block + SmartBlockEntity` | Attaches to a Create Fluid Tank boiler, generates `steam`, and provides pressure into pipes. |
 | `steam_inlet` | `Block + SmartBlockEntity` | Planned Phase 6 block. Attaches to an assembled cylinder ring and accepts `steam` from pipes. |
 
 Existing parked placeholders:
@@ -286,7 +286,7 @@ src/main/java/dev/gustavo/fullsteamahead/
   registry/
     ModBlocks.java
     ModBlockEntities.java
-    ModFluids.java                     ← planned Phase 5
+    ModFluids.java
     ModItems.java
     ModCreativeTabs.java
   content/
@@ -301,7 +301,7 @@ src/main/java/dev/gustavo/fullsteamahead/
       CrankshaftBlock.java
       CrankshaftBlockEntity.java       ← GeneratingKineticBlockEntity, reads direct boiler or steam inlet
     steam/
-      BoilerOutletBlock.java           ← planned Phase 5
+      BoilerOutletBlock.java
       BoilerOutletBlockEntity.java
       SteamInletBlock.java             ← planned Phase 6
       SteamInletBlockEntity.java
@@ -458,16 +458,16 @@ Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerD
 
 **Goal**: Add storable `steam` fluid and a boiler-attached outlet that generates and pressure-feeds steam into Create pipes. The current direct compact engine must continue working.
 
-- [ ] Add `ModFluids.java` and register `steam` as a storable NeoForge fluid compatible with `FluidStack`, Create tanks, and Create pipes
-- [ ] Keep `steam` non-placeable and no-bucket unless a later gameplay reason requires otherwise
-- [ ] Add `boiler_outlet` block, item, block entity, blockstate/model/item model/loot/lang/tags/creative entry
-- [ ] `boiler_outlet` placement: back side must touch a Create `FluidTankBlockEntity`; front side outputs to pipes/tanks
-- [ ] `BoilerOutletBlockEntity` validates the attached tank controller and reads `BoilerData`
-- [ ] Extend `FullSteamBoilerIntegration`/mixin logic so boiler outlets count as attached boiler devices and keep Create boiler visuals active
-- [ ] Generate steam only from active Create boiler heat and water supply; do not drain or pump stored steam from normal tanks
-- [ ] Implement output-only `IFluidHandler` for generated `steam`
-- [ ] Implement pressure-assisted output with default 30-block range; prefer Create `FluidTransportBehaviour`/`FluidNetwork` integration, fallback to bounded `IFluidHandler` push if needed
-- [ ] Add goggle overlay for boiler link, heat, water, steam production rate, buffer, and output pressure state
+- [x] Add `ModFluids.java` and register `steam` as a storable NeoForge fluid compatible with `FluidStack`, Create tanks, and Create pipes
+- [x] Keep `steam` non-placeable and no-bucket unless a later gameplay reason requires otherwise
+- [x] Add `boiler_outlet` block, item, block entity, blockstate/model/item model/loot/lang/tags/creative entry
+- [x] `boiler_outlet` placement: back side must touch a Create `FluidTankBlockEntity`; front side outputs to pipes/tanks
+- [x] `BoilerOutletBlockEntity` validates the attached tank controller and reads `BoilerData`
+- [x] Extend `FullSteamBoilerIntegration`/mixin logic so boiler outlets count as attached boiler devices and keep Create boiler visuals active
+- [x] Generate steam only from active Create boiler heat and water supply; do not drain or pump stored steam from normal tanks
+- [x] Implement output-only `IFluidHandler` for generated `steam`
+- [x] Implement pressure-assisted output with default 30-block range; prefer Create `FluidTransportBehaviour`/`FluidNetwork` integration, fallback to bounded `IFluidHandler` push if needed
+- [x] Add goggle overlay for boiler link, heat, water, steam production rate, buffer, and output pressure state
 - [ ] Verify: direct compact crankshaft still works exactly as Phase 4
 - [ ] Verify: boiler outlet produces steam only on valid active boilers, fills Create tanks through pipes, and does not auto-pump from stored steam tanks
 
@@ -476,6 +476,7 @@ Implementation notes:
 - Create's `BoilerData.BoilerFluidHandler` records water supply rate; it does not expose a stored steam inventory. Use `BoilerData` as the source of truth.
 - Create's mechanical pump range is exposed through `FluidPropagator.getPumpRange()`, but our outlet should have its own configurable default target of 30 blocks.
 - The outlet is a boiler pressure source, not a general-purpose pump.
+- First implementation uses an isolated bounded traversal over Create pipe blocks and fills reachable `IFluidHandler` targets. Deeper Create pipe pressure visuals/network integration can replace this without changing the outlet's generation model.
 
 ### Phase 6: Steam Inlet and Pipe-Fed Engine
 

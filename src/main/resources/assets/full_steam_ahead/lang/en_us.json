@@ -4,6 +4,9 @@
   "block.full_steam_ahead.steam_cylinder": "Steam Cylinder",
   "block.full_steam_ahead.piston": "Steam Piston",
   "block.full_steam_ahead.crankshaft": "Crankshaft",
+  "block.full_steam_ahead.boiler_outlet": "Boiler Outlet",
   "block.full_steam_ahead.flywheel": "Flywheel",
-  "block.full_steam_ahead.governor": "Governor"
+  "block.full_steam_ahead.governor": "Governor",
+  "fluid_type.full_steam_ahead.steam": "Steam",
+  "fluid.full_steam_ahead.steam": "Steam"
 }

@@ -25,11 +25,11 @@ Use `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew ...` when matching the curr
 
 Use Java 21 and four-space indentation. Keep packages under `dev.gustavo.fullsteamahead`. Use `FullSteamAhead.MOD_ID` instead of repeating `"full_steam_ahead"`. Classes use `PascalCase`, methods/fields use `camelCase`, constants use `UPPER_SNAKE_CASE`, and resource paths use `lower_snake_case`.
 
-## Current Task — Phase 5 Steam Fluid Architecture
+## Current State — Phase 5 Steam Fluid Architecture
 
 Phase 5 is no longer flywheel/governor work. Those blocks are parked inert placeholders. Do not add mechanics, recipes, requirements, or output effects for them unless `PLAN.md` is changed first.
 
-Implement toward the pipe-fed steam architecture while preserving the current direct compact engine:
+Implemented toward the pipe-fed steam architecture while preserving the current direct compact engine:
 
 1. Keep the Phase 4 direct stack working: 3x3x1 Create boiler below cylinder, exact burner SU/RPM table, no passive heat output.
 2. Add a storable `steam` fluid via NeoForge fluid APIs. It should be compatible with `FluidStack`, Create tanks, and Create pipes. For now it should be non-placeable and no-bucket.
@@ -38,6 +38,8 @@ Implement toward the pipe-fed steam architecture while preserving the current di
 5. Prefer Create pipe pressure integration through `FluidTransportBehaviour`/`FluidNetwork`; isolate that code and keep a bounded `IFluidHandler` push fallback if needed. Default pressure range target: 30 blocks.
 6. Extend our Create boiler integration so valid boiler outlets count as attached boiler devices for active boiler visuals and compact sizing.
 7. `steam_inlet` and pipe-fed crankshaft consumption are Phase 6 unless explicitly pulled forward.
+
+Before Phase 6 implementation, complete the Phase 5 manual checks in `docs/verification/phase5.md`.
 
 ## Testing Guidelines
 
