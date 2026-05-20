@@ -31,8 +31,9 @@ Important source findings:
 - NeoForge `BaseFlowingFluid`, `FluidType`, `FluidTank`, `IFluidHandler`, and `Capabilities.FluidHandler.BLOCK` are present in the 21.1.230 dev classpath and are the correct baseline for a storable `steam` fluid.
 - Create's fluid pipes ultimately interact with NeoForge `IFluidHandler`; Create also exposes internal pipe pressure helpers through `FluidTransportBehaviour`, `FluidNetwork`, `FluidPropagator.getPumpRange()`, and `PipeConnection`.
 - Create's boiler water path uses `BoilerData.BoilerFluidHandler` to record water supply rate. A steam outlet must read/generate from `BoilerData`; it must not drain stored steam from neighbouring tanks.
-- Sable exposes `BlockEntitySubLevelActor` for per-tick block entity behaviour on sublevels.
-- `SimBlockMovementChecks` (Aeronautics) must be registered so Sable assembly treats engine parts as one connected structure.
+- Create 6.0.10 exposes `com.simibubi.create.api.contraption.BlockMovementChecks` for movement permission, brittleness, support, and attached-block checks.
+- The current Simulated Project source exposes `dev.simulated_team.simulated.index.SimBlockMovementChecks` with attached-block and additional-block registration hooks. Aeronautics uses that API from `AeroBlockMovementChecks`.
+- The local dev classpath intentionally does not include Aeronautics, Simulated, or Sable jars. Compatibility must therefore remain optional at compile time and guarded at runtime.
 
 Primary references:
 
@@ -319,8 +320,10 @@ src/main/java/dev/gustavo/fullsteamahead/
       GovernorBlock.java               ← parked inert placeholder
   compat/
     create/
-      CreateStressRegistration.java
       FullSteamBoilerIntegration.java
+      CreateMovementCompat.java
+    movement/
+      FullSteamMovementRules.java
     simulated/
       SimulatedMovementCompat.java
 ```
@@ -501,16 +504,24 @@ Implementation notes:
 - [x] If usable inlet steam is available, crankshaft consumes `steam` and calculates output from steam consumption rate
 - [x] If no valid inlet is present, existing direct compact boiler mode remains unchanged
 - [x] Add goggle overlays for source mode: direct boiler vs piped steam
-- [ ] Verify: remote boiler outlet → Create pipes → steam inlet → engine rotation
-- [ ] Verify: steam storage buffer can run the engine briefly after boiler output stops
-- [ ] Verify: no steam/no inlet stops pipe-fed output without breaking direct compact mode
+- [x] Verify: remote boiler outlet → Create pipes → steam inlet → engine rotation
+- [x] Verify: steam storage buffer can run the engine briefly after boiler output stops
+- [x] Verify: no steam/no inlet stops pipe-fed output without breaking direct compact mode
 
 ### Phase 7: Aeronautics/Sable Compatibility
 
-- [ ] Register `BlockMovementChecks` for all engine blocks
-- [ ] Register `SimBlockMovementChecks` when Aeronautics present
-- [ ] Test engine inside Sable sublevel powering Aeronautics propellers
-- [ ] Verify NBT, kinetic state, and boiler link survive assembly/disassembly and reload
+**Goal**: make Full Steam Ahead engine blocks assemble and move as one coherent Create/Simulated structure without making Aeronautics, Simulated, or Sable required dependencies.
+
+- [x] Keep Aeronautics, Simulated, and Sable optional at runtime; no hard compile dependency
+- [ ] Add optional `simulated` dependency metadata alongside the existing optional Aeronautics/Sable entries
+- [ ] Add `create:safe_nbt` entries for Full Steam Ahead block entities that need saved boiler, inlet, steam, or kinetic state preserved through contraption movement
+- [ ] Register Create `BlockMovementChecks` for all Full Steam Ahead engine blocks
+- [ ] Movement rules: engine blocks are movable, not brittle, supportive, and attached to adjacent Full Steam Ahead engine blocks
+- [ ] Movement rules: bottom cylinder/inlet shell blocks attach downward to Create Fluid Tank boilers; `boiler_outlet` attaches to its tank side and output pipe side
+- [ ] Register Simulated `SimBlockMovementChecks` reflectively when the `simulated` API is present, using the same attachment rules and an additional-block hook for assembly robustness
+- [ ] Verify automated build/resources/JSON checks without Aeronautics, Simulated, or Sable installed
+- [ ] Test engine inside a Sable/Aeronautics sublevel powering Aeronautics propellers
+- [ ] Verify NBT, kinetic state, steam buffer state, and boiler/inlet links survive assembly/disassembly and world reload
 
 ### Phase 8: Rendering and Ponder
 

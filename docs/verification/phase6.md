@@ -50,10 +50,12 @@ Implementation notes:
 
 Manual runtime checklist:
 
-- [ ] `Steam Inlet` appears in the creative tab.
-- [ ] A 15 cylinder + 1 inlet ring assembles visually with the inlet in any shell slot.
-- [ ] More than one inlet prevents assembly.
-- [ ] The inlet accepts steam from Create pipes only when assembled.
-- [ ] Remote boiler outlet -> pipes -> inlet runs the crankshaft without a direct boiler below.
-- [ ] Stored steam in the inlet buffer runs the engine briefly after boiler output stops.
-- [ ] Direct compact boiler mode still works without an inlet.
+- [x] `Steam Inlet` appears in the creative tab.
+- [x] A 15 cylinder + 1 inlet ring assembles visually with the inlet in any shell slot.
+- [x] More than one inlet prevents assembly.
+- [x] The inlet accepts steam from Create pipes only when assembled.
+- [x] Remote boiler outlet -> pipes -> inlet runs the crankshaft without a direct boiler below.
+- [x] Stored steam in the inlet buffer runs the engine briefly after boiler output stops.
+- [x] Direct compact boiler mode still works without an inlet.
+
+User report after Phase 6 runtime testing: all inlet behaviours work as expected.
