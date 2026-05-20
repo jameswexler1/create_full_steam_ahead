@@ -284,7 +284,7 @@ All constants must be server config values.
 ### Phase 0: Decisions — Complete
 ### Phase 1: Project Scaffold — Complete
 
-### Phase 2: Block Registration Remodel — Current
+### Phase 2: Block Registration Remodel — Complete
 
 **Goal**: Replace the old block set with the new design. Bootable with correct blocks in-game.
 
@@ -303,23 +303,25 @@ Tasks:
 - [x] Update creative tab
 - [x] Update mining tags
 - [x] Verify `./gradlew build` passes
-- [ ] Verify all 5 blocks appear in-game
+- [x] Verify all 5 blocks appear in-game
 
-Implementation note: Create `6.0.10-280` for NeoForge 1.21.1 does not expose `com.simibubi.create.foundation.block.SmartBlock`; the non-kinetic Phase 2 stubs currently extend vanilla `Block`. Phase 3 should introduce the Create block entity interfaces directly when cylinder behaviour is added.
+Implementation note: Create `6.0.10-280` for NeoForge 1.21.1 does not expose `com.simibubi.create.foundation.block.SmartBlock`; the correct Phase 3 integration is vanilla `Block` plus Create's `IBE<T>` interface and `SmartBlockEntity`.
 
-### Phase 3: Cylinder Ring Auto-Assembly
+### Phase 3: Cylinder Ring Auto-Assembly — Current
 
 **Goal**: Placing 16 `SteamCylinder` blocks in the correct 3×3×2 hollow ring shape triggers visual assembly.
 
 Tasks:
-- [ ] Implement `CylinderConnectivity` — scans from placed block, validates ring shape, elects root
-- [ ] Implement `SteamCylinderBlockEntity` — holds assembled state, boiler cache, root flag
-- [ ] On assembly: flip all 16 blocks to `ASSEMBLED = true`, fire connected texture update
-- [ ] On disassembly (any block removed): flip all back to `ASSEMBLED = false`
-- [ ] Boiler detection: root block entity checks 9 positions below bottom ring layer for `FluidTankBlockEntity`
-- [ ] Add goggle overlay: assembly status, boiler link, heat level, water level
-- [ ] Add "no steam source" particle/overlay when assembled but no boiler below
+- [x] Implement `CylinderConnectivity` — scans from placed block, validates ring shape, elects root
+- [x] Implement `SteamCylinderBlockEntity` — holds assembled state, boiler cache, root flag
+- [x] On assembly: flip all 16 blocks to `ASSEMBLED = true`, fire connected texture update
+- [x] On disassembly (any block removed): flip all back to `ASSEMBLED = false`
+- [x] Boiler detection: root block entity checks shell positions below bottom ring layer for `FluidTankBlockEntity`
+- [x] Add goggle overlay: assembly status, boiler link, heat level, water level
+- [x] Add "no steam source" goggle overlay when assembled but no boiler below
 - [ ] Verify: place ring → assembles; remove one block → disassembles; place on boiler → boiler detected
+
+Implementation note: Phase 3 uses `Block implements IBE<SteamCylinderBlockEntity>` plus `SmartBlockEntity`, matching Create 6.0.10's available API. `SmartBlock` is still not used because it is not present in this classpath.
 
 ### Phase 4: Crankshaft Validation and Kinetic Output
 

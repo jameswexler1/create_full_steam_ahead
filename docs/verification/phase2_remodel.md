@@ -31,11 +31,13 @@ Results:
 
 Manual runtime checklist:
 
-- [ ] Run `./gradlew runClient`.
-- [ ] Confirm the main menu opens.
-- [ ] Confirm `Create: Full Steam Ahead` appears in the Mods list.
-- [ ] Open a creative world.
-- [ ] Confirm the `Create: Full Steam Ahead` creative tab exists.
-- [ ] Confirm exactly five block items appear in order: Steam Cylinder, Steam Piston, Crankshaft, Flywheel, Governor.
-- [ ] Place all five blocks and confirm placement works without crashes.
-- [ ] Confirm none of the removed old blocks appear.
+- [x] Run `./gradlew runClient`.
+- [x] Confirm the main menu opens.
+- [x] Confirm `Create: Full Steam Ahead` appears in the Mods list.
+- [x] Open a creative world.
+- [x] Confirm the `Create: Full Steam Ahead` creative tab exists.
+- [x] Confirm exactly five block items appear in order: Steam Cylinder, Steam Piston, Crankshaft, Flywheel, Governor.
+- [x] Place all five blocks and confirm placement works without crashes.
+- [x] Confirm none of the removed old blocks appear.
+
+Manual result reported by Gustavo on 2026-05-20.
