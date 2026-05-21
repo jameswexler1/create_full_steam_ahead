@@ -1,6 +1,47 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/block",
   "textures": {
-    "all": "create:block/andesite_casing_piston"
-  }
+    "particle": "create:block/andesite_casing_piston",
+    "guide": "create:block/andesite_casing_piston",
+    "brass": "create:block/brass_casing",
+    "copper": "create:block/copper_casing"
+  },
+  "elements": [
+    {
+      "from": [4, 0, 4],
+      "to": [12, 16, 12],
+      "faces": {
+        "down": { "texture": "#guide" },
+        "up": { "texture": "#guide" },
+        "north": { "texture": "#guide" },
+        "south": { "texture": "#guide" },
+        "west": { "texture": "#guide" },
+        "east": { "texture": "#guide" }
+      }
+    },
+    {
+      "from": [2, 0, 2],
+      "to": [14, 4, 14],
+      "faces": {
+        "down": { "texture": "#copper" },
+        "up": { "texture": "#copper" },
+        "north": { "texture": "#copper" },
+        "south": { "texture": "#copper" },
+        "west": { "texture": "#copper" },
+        "east": { "texture": "#copper" }
+      }
+    },
+    {
+      "from": [3, 12, 3],
+      "to": [13, 16, 13],
+      "faces": {
+        "down": { "texture": "#brass" },
+        "up": { "texture": "#brass" },
+        "north": { "texture": "#brass" },
+        "south": { "texture": "#brass" },
+        "west": { "texture": "#brass" },
+        "east": { "texture": "#brass" }
+      }
+    }
+  ]
 }

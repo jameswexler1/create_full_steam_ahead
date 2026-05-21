@@ -1,6 +1,47 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/block",
   "textures": {
-    "all": "create:block/andesite_casing_connected"
-  }
+    "particle": "create:block/andesite_casing_connected",
+    "sleeve": "create:block/andesite_casing_connected",
+    "rod": "create:block/andesite_casing_piston",
+    "brass": "create:block/brass_casing"
+  },
+  "elements": [
+    {
+      "from": [5, 0, 5],
+      "to": [11, 16, 11],
+      "faces": {
+        "down": { "texture": "#rod" },
+        "up": { "texture": "#rod" },
+        "north": { "texture": "#rod" },
+        "south": { "texture": "#rod" },
+        "west": { "texture": "#rod" },
+        "east": { "texture": "#rod" }
+      }
+    },
+    {
+      "from": [3, 0, 3],
+      "to": [13, 3, 13],
+      "faces": {
+        "down": { "texture": "#sleeve" },
+        "up": { "texture": "#sleeve" },
+        "north": { "texture": "#sleeve" },
+        "south": { "texture": "#sleeve" },
+        "west": { "texture": "#sleeve" },
+        "east": { "texture": "#sleeve" }
+      }
+    },
+    {
+      "from": [3, 13, 3],
+      "to": [13, 16, 13],
+      "faces": {
+        "down": { "texture": "#brass" },
+        "up": { "texture": "#brass" },
+        "north": { "texture": "#brass" },
+        "south": { "texture": "#brass" },
+        "west": { "texture": "#brass" },
+        "east": { "texture": "#brass" }
+      }
+    }
+  ]
 }

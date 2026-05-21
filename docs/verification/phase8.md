@@ -9,6 +9,7 @@ Planned scope:
 - Add running steam particles and rhythmic chuff sound.
 - Add Ponder scenes after visuals are stable.
 - Preserve all Phase 7 mechanics and Aeronautics compatibility.
+- Exclude `flywheel` from this phase; leave its placeholder code and assets untouched.
 
 Automated checks to run:
 
@@ -18,6 +19,20 @@ env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew processResources
 env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build
 find src/main/resources -name '*.json' -exec jq empty {} +
 ```
+
+Completed first slice:
+
+- [x] Excluded `flywheel` from Phase 8 code and asset work.
+- [x] Added client-only event bootstrap under `dev.gustavo.fullsteamahead.client`.
+- [x] Replaced active engine cube placeholders with Create-style multipart JSON models.
+- [x] Updated static piston models to read more like guide/sleeve blocks.
+
+Automated results:
+
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-21.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-21.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew processResources` passed on 2026-05-21.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-21.
 
 Manual runtime checklist:
 

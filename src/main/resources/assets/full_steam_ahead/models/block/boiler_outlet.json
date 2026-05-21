@@ -1,6 +1,60 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/block",
   "textures": {
-    "all": "create:block/copper_casing_connected"
-  }
+    "particle": "create:block/copper_casing_connected",
+    "copper": "create:block/copper_casing_connected",
+    "brass": "create:block/brass_casing",
+    "pipe": "create:block/pipes_connected",
+    "dark": "create:block/railway_casing"
+  },
+  "elements": [
+    {
+      "from": [2, 0, 2],
+      "to": [14, 6, 14],
+      "faces": {
+        "down": { "texture": "#dark" },
+        "up": { "texture": "#copper" },
+        "north": { "texture": "#copper" },
+        "south": { "texture": "#copper" },
+        "west": { "texture": "#copper" },
+        "east": { "texture": "#copper" }
+      }
+    },
+    {
+      "from": [4, 5, 4],
+      "to": [12, 9, 12],
+      "faces": {
+        "down": { "texture": "#brass" },
+        "up": { "texture": "#brass" },
+        "north": { "texture": "#brass" },
+        "south": { "texture": "#brass" },
+        "west": { "texture": "#brass" },
+        "east": { "texture": "#brass" }
+      }
+    },
+    {
+      "from": [5, 8, 5],
+      "to": [11, 16, 11],
+      "faces": {
+        "down": { "texture": "#pipe" },
+        "up": { "texture": "#pipe" },
+        "north": { "texture": "#pipe" },
+        "south": { "texture": "#pipe" },
+        "west": { "texture": "#pipe" },
+        "east": { "texture": "#pipe" }
+      }
+    },
+    {
+      "from": [3, 12, 3],
+      "to": [13, 14, 13],
+      "faces": {
+        "down": { "texture": "#brass" },
+        "up": { "texture": "#brass" },
+        "north": { "texture": "#brass" },
+        "south": { "texture": "#brass" },
+        "west": { "texture": "#brass" },
+        "east": { "texture": "#brass" }
+      }
+    }
+  ]
 }

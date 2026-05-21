@@ -27,17 +27,18 @@ Use Java 21 and four-space indentation. Keep packages under `dev.gustavo.fullste
 
 ## Current Task — Phase 8 Rendering and Ponder
 
-Flywheel/governor blocks are parked inert placeholders. Do not add mechanics, recipes, requirements, or output effects for them unless `PLAN.md` is changed first.
+Flywheel/governor blocks are parked inert placeholders. Do not add mechanics, recipes, requirements, output effects, textures, model work, or rendering work for them unless `PLAN.md` is changed first. The `flywheel` block is explicitly excluded from Phase 8.
 
 Implement visual presentation while preserving all current gameplay:
 
 1. Do not change steam generation, SU/RPM output, multiblock validation, Aeronautics movement rules, recipes, or config in Phase 8.
-2. Keep all Flywheel, renderer, and Ponder code client-only under `dev.gustavo.fullsteamahead.client`.
-3. Register the crankshaft Flywheel visual and a vanilla fallback block entity renderer.
-4. Reuse Create textures and visual language where possible; add local textures only when Create does not provide a suitable part.
-5. Static piston blocks should become visual guides/sleeves; dynamic piston motion should be rendered from the crankshaft.
-6. Steam particles and chuff sounds must be tied to running state and crank phase, not emitted every tick blindly.
-7. Ponder scenes come after the visual models are stable.
+2. Do not touch `flywheel` code/assets during Phase 8.
+3. Keep all Flywheel, renderer, and Ponder code client-only under `dev.gustavo.fullsteamahead.client`.
+4. Register the crankshaft Flywheel visual and a vanilla fallback block entity renderer.
+5. Reuse Create textures and visual language where possible; add local textures only when Create does not provide a suitable part.
+6. Static piston blocks should become visual guides/sleeves; dynamic piston motion should be rendered from the crankshaft.
+7. Steam particles and chuff sounds must be tied to running state and crank phase, not emitted every tick blindly.
+8. Ponder scenes come after the visual models are stable.
 
 Record automated and manual results in `docs/verification/phase8.md`.
 
