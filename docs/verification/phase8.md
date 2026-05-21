@@ -37,13 +37,14 @@ Completed animation proxy slice:
 - [x] Exposed client-safe crankshaft state getters for rendering.
 - [x] Fixed early partial-model initialization that caused a startup crash before the title screen.
 - [x] Corrected placeholder inlet/outlet pipe texture references to `create:block/pipes`.
+- [x] Converted the crankshaft from four-way horizontal output to one axial horizontal shaft axis.
 
 Automated results:
 
-- [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-21 after proxy partials were added.
-- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-21 after renderer/visual code was added.
-- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew processResources` passed on 2026-05-21 after proxy partials were added.
-- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-21 after renderer/visual code was added.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-21 after proxy partials and the axial crankshaft fix.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-21 after renderer/visual code and the axial crankshaft fix.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew processResources` passed on 2026-05-21 after proxy partials and the axial crankshaft fix.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-21 after renderer/visual code and the axial crankshaft fix.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` reached an integrated world on 2026-05-21 after lazy partial registration.
 
 Manual runtime checklist:
@@ -52,6 +53,7 @@ Manual runtime checklist:
 - [ ] Existing pipe-fed engines still assemble and run.
 - [ ] Old worlds with existing engines load without blockstate/model errors.
 - [ ] Piston motion is synchronized with crankshaft rotation at 16, 32, 48, and 64 RPM.
+- [ ] Crankshaft only connects and transfers rotation through the two opposite faces on its selected axis.
 - [ ] Piston motion stops when the engine has no steam.
 - [ ] Steam particles appear only while running and scale reasonably with speed.
 - [ ] Chuff sound is audible but not spammy or overlapping harshly.

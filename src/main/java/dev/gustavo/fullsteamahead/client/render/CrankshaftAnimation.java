@@ -1,9 +1,11 @@
 package dev.gustavo.fullsteamahead.client.render;
 
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
+import com.simibubi.create.content.kinetics.base.IRotate;
 import dev.gustavo.fullsteamahead.content.crankshaft.CrankshaftBlockEntity;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.state.BlockState;
 
 public final class CrankshaftAnimation {
     public static final int ROD_SEGMENTS = 4;
@@ -13,8 +15,12 @@ public final class CrankshaftAnimation {
 
     public static State state(CrankshaftBlockEntity crankshaft) {
         boolean visible = crankshaft.isEngineRunning();
+        BlockState blockState = crankshaft.getBlockState();
+        Direction.Axis axis = blockState.getBlock() instanceof IRotate rotating
+                ? rotating.getRotationAxis(blockState)
+                : Direction.Axis.X;
         float angle = visible
-                ? KineticBlockEntityRenderer.getAngleForBe(crankshaft, crankshaft.getBlockPos(), Direction.Axis.Y)
+                ? KineticBlockEntityRenderer.getAngleForBe(crankshaft, crankshaft.getBlockPos(), axis)
                 : 0;
         return state(visible, angle);
     }

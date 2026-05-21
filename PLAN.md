@@ -97,7 +97,7 @@ Other orientations (horizontal, inverted) are deferred to a future version.
 |---|---|---|
 | `steam_cylinder` | `Block + IBE<SteamCylinderBlockEntity>` | Forms the 3×3×2 hollow casing ring around the piston. Self-assembles. |
 | `piston` | `Block` | Physical piston block. 4 blocks per engine: 2 inside the cylinder, 2 protruding above. Animated when running. |
-| `crankshaft` | `KineticBlock` | Sits at the tip of the piston. The kinetic output. Triggers full structure validation. |
+| `crankshaft` | `HorizontalAxisKineticBlock` | Sits at the tip of the piston. The axial kinetic output. Triggers full structure validation. |
 | `boiler_outlet` | `Block + SmartBlockEntity` | Attaches to a Create Fluid Tank boiler, generates `steam`, and provides pressure into pipes. |
 | `steam_inlet` | `Block + SmartBlockEntity` | Phase 6 block. Replaces one cylinder shell block in the 3×3×2 ring and accepts `steam` from pipes. |
 
@@ -424,7 +424,7 @@ Tasks:
 - [x] Delete: `EnginePartBlock.java`, `HorizontalEnginePartBlock.java`, `AxialEnginePartBlock.java`
 - [x] Add: `SteamCylinderBlock` with `ASSEMBLED` BooleanProperty blockstate
 - [x] Add: `SteamPistonBlock` with `ASSEMBLED` BooleanProperty and `PISTON_SECTION` EnumProperty blockstate
-- [x] Add: `CrankshaftBlock extends KineticBlock` with Y-axis orientation and horizontal shaft ports
+- [x] Add: `CrankshaftBlock extends HorizontalAxisKineticBlock` with one horizontal shaft axis and two opposite shaft ports
 - [x] Add: `FlywheelBlock` inert stub
 - [x] Add: `GovernorBlock` inert stub
 - [x] Add: `PistonSection.java` enum
@@ -554,6 +554,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Add a `CrankshaftAnimation` math helper shared by Flywheel and fallback renderer
 - [x] Add `CrankshaftVisual` using Flywheel `SimpleBlockEntityVisualizer`, `TransformedInstance`, and `PartialModel`; drive it from `KineticBlockEntityRenderer.getAngleForBe(...)`
 - [x] Add `CrankshaftRenderer` fallback for non-visualized rendering so piston motion is still visible if Flywheel visualization is disabled
+- [x] Make the crankshaft axial: one horizontal rotation axis, two opposite shaft ports, no four-way output
 - [x] Expose minimal client-safe getters on `CrankshaftBlockEntity`: assembled state, source mode/running state, active speed, ring origin, inlet position, and piston positions
 - [x] Hide or simplify static assembled piston block geometry so it does not fight the moving visual
 - [ ] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
