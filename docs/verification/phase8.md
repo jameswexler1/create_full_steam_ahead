@@ -29,12 +29,19 @@ Completed first slice:
 - [x] Replaced flickering multipart placeholders with stable non-overlapping proxy models.
 - [x] Added `docs/blockbench_phase8.md` for final art handoff.
 
+Completed animation proxy slice:
+
+- [x] Added proxy partial models for piston rod, piston head, and crank pin.
+- [x] Added `CrankshaftAnimation`, Flywheel `CrankshaftVisual`, and fallback `CrankshaftRenderer`.
+- [x] Registered the crankshaft block entity renderer and Flywheel visual from client-only code.
+- [x] Exposed client-safe crankshaft state getters for rendering.
+
 Automated results:
 
-- [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-21.
-- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-21.
-- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew processResources` passed on 2026-05-21.
-- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-21.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-21 after proxy partials were added.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-21 after renderer/visual code was added.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew processResources` passed on 2026-05-21 after proxy partials were added.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-21 after renderer/visual code was added.
 
 Manual runtime checklist:
 

@@ -193,6 +193,34 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         return assembled ? generatedSpeed : 0;
     }
 
+    public boolean isEngineAssembled() {
+        return assembled;
+    }
+
+    public boolean isEngineRunning() {
+        return assembled && generatedSpeed != 0;
+    }
+
+    public float getGeneratedCapacitySu() {
+        return getTargetCapacitySu();
+    }
+
+    public String getSourceModeName() {
+        return sourceMode.name();
+    }
+
+    public BlockPos getRingOrigin() {
+        return ringOrigin;
+    }
+
+    public BlockPos getInletPos() {
+        return inletPos;
+    }
+
+    public CrankshaftValidator.PistonPositions getPistonPositions() {
+        return CrankshaftValidator.pistonPositions(worldPosition);
+    }
+
     @Override
     public float calculateAddedStressCapacity() {
         float speed = Math.abs(getGeneratedSpeed());

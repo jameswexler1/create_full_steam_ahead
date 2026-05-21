@@ -1,0 +1,21 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "create:block/engine",
+    "head": "create:block/engine"
+  },
+  "elements": [
+    {
+      "from": [4, 4, 4],
+      "to": [12, 12, 12],
+      "faces": {
+        "down": { "texture": "#head" },
+        "up": { "texture": "#head" },
+        "north": { "texture": "#head" },
+        "south": { "texture": "#head" },
+        "west": { "texture": "#head" },
+        "east": { "texture": "#head" }
+      }
+    }
+  ]
+}

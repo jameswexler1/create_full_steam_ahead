@@ -545,17 +545,17 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 
 - [x] Exclude `flywheel` from Phase 8 work; leave existing placeholder code/assets untouched until a later removal or redesign pass
 - [x] Add client-only bootstrap under `dev.gustavo.fullsteamahead.client`; never load client/Flywheel/Ponder classes from dedicated-server common code
-- [ ] Add `FullSteamPartialModels` for dynamic piston/crank partials under `assets/full_steam_ahead/models/block/partial/`
-- [x] Replace placeholder cube models with Create-style multipart JSON models using Create copper/brass/andesite/shaft textures where possible
+- [x] Add `FullSteamPartialModels` for dynamic piston/crank partials under `assets/full_steam_ahead/models/block/partial/`
+- [x] Initial Create-style model pass using Create copper/brass/andesite/shaft textures where possible
 - [x] Replace flickering multipart placeholders with stable non-overlapping proxy models
 - [x] Add Blockbench handoff guide for final static models and animated partials
 - [ ] Add cylinder visual states that identify ring position clearly: unassembled shell, assembled lower shell, assembled upper cap, inlet face, and bore-facing side pieces
 - [x] Add piston static models that read as guides/sleeves while assembled; the actual moving rod/crosshead should be rendered dynamically from the crankshaft
-- [ ] Add a `CrankshaftAnimation` math helper shared by Flywheel and fallback renderer
-- [ ] Add `CrankshaftVisual` using Flywheel `SimpleBlockEntityVisualizer`, `TransformedInstance`, and `PartialModel`; drive it from `KineticBlockEntityRenderer.getAngleForBe(...)`
-- [ ] Add `CrankshaftRenderer` fallback for non-visualized rendering so piston motion is still visible if Flywheel visualization is disabled
-- [ ] Expose minimal client-safe getters on `CrankshaftBlockEntity`: assembled state, source mode/running state, active speed, ring origin, inlet position, and piston positions
-- [ ] Hide or simplify static assembled piston block geometry so it does not fight the moving visual
+- [x] Add a `CrankshaftAnimation` math helper shared by Flywheel and fallback renderer
+- [x] Add `CrankshaftVisual` using Flywheel `SimpleBlockEntityVisualizer`, `TransformedInstance`, and `PartialModel`; drive it from `KineticBlockEntityRenderer.getAngleForBe(...)`
+- [x] Add `CrankshaftRenderer` fallback for non-visualized rendering so piston motion is still visible if Flywheel visualization is disabled
+- [x] Expose minimal client-safe getters on `CrankshaftBlockEntity`: assembled state, source mode/running state, active speed, ring origin, inlet position, and piston positions
+- [x] Hide or simplify static assembled piston block geometry so it does not fight the moving visual
 - [ ] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
 - [ ] Add rhythmic chuff sound using Create sound events (`STEAM`/`WHISTLE_CHIFF`) or a local `sound_events.json` entry if existing sounds do not fit
 - [ ] Add Ponder plugin and scenes after visual models settle: direct compact engine, boiler outlet pressure, steam storage/pipes, steam inlet, Aeronautics ship use
