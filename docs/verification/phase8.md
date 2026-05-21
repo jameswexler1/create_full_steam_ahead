@@ -49,11 +49,11 @@ Automated results:
 
 Manual runtime checklist:
 
-- [ ] Existing direct compact engines still assemble and run.
+- [x] Existing direct compact engines still assemble and run.
 - [ ] Existing pipe-fed engines still assemble and run.
 - [ ] Old worlds with existing engines load without blockstate/model errors.
 - [ ] Piston motion is synchronized with crankshaft rotation at 16, 32, 48, and 64 RPM.
-- [ ] Crankshaft only connects and transfers rotation through the two opposite faces on its selected axis.
+- [x] Crankshaft only connects and transfers rotation through the two opposite faces on its selected axis.
 - [ ] Piston motion stops when the engine has no steam.
 - [ ] Steam particles appear only while running and scale reasonably with speed.
 - [ ] Chuff sound is audible but not spammy or overlapping harshly.
@@ -61,3 +61,5 @@ Manual runtime checklist:
 - [ ] Dedicated server starts without client-class loading errors.
 - [ ] Aeronautics/Sable assembled sublevel still moves and powers propellers with visuals active.
 - [ ] Ponder entries appear and teach direct compact and pipe-fed setups.
+
+Manual result reported by Gustavo on 2026-05-21: after the axial crankshaft fix, the engine still worked and the crankshaft output behaved correctly.
