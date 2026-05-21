@@ -53,7 +53,7 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
     private static final float SU_PER_HEAT_UNIT = 16_384.0F;
     private static final float REGULAR_MAX_CAPACITY_SU = 147_456.0F;
     private static final float MAX_RPM = 64.0F;
-    private static final int MIN_CHUFF_INTERVAL_TICKS = 5;
+    private static final int MIN_STEAM_SOUND_INTERVAL_TICKS = 5;
 
     private boolean assembled;
     private BlockPos ringOrigin;
@@ -69,7 +69,7 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
     private int steamConsumedRate;
     private String status = "Incomplete structure";
     private float previousEffectAngle = Float.NaN;
-    private int chuffCooldown;
+    private int steamSoundCooldown;
 
     public CrankshaftBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CRANKSHAFT.get(), pos, state);
@@ -560,8 +560,8 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
     }
 
     private void tickClientEffects() {
-        if (chuffCooldown > 0) {
-            chuffCooldown--;
+        if (steamSoundCooldown > 0) {
+            steamSoundCooldown--;
         }
 
         if (!isEngineRunning()) {
@@ -571,10 +571,10 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
 
         float angle = getCurrentEffectAngle();
         if (!Float.isNaN(previousEffectAngle)
-                && chuffCooldown <= 0
+                && steamSoundCooldown <= 0
                 && crossedCrankPhase(previousEffectAngle, angle)) {
             emitSteamEffects();
-            chuffCooldown = MIN_CHUFF_INTERVAL_TICKS;
+            steamSoundCooldown = MIN_STEAM_SOUND_INTERVAL_TICKS;
         }
         previousEffectAngle = angle;
     }
@@ -645,9 +645,9 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
             );
         }
 
-        float volume = 0.12F + 0.12F * intensity;
-        float pitch = 0.82F + 0.18F * intensity + (level.random.nextFloat() - 0.5F) * 0.05F;
-        AllSoundEvents.WHISTLE_CHIFF.playAt(level, origin, volume, pitch, false);
+        float volume = 0.34F + 0.18F * intensity;
+        float pitch = 0.8F + (level.random.nextFloat() - 0.5F) * 0.04F;
+        AllSoundEvents.STEAM.playAt(level, origin, volume, pitch, false);
     }
 
     private float getEffectIntensity() {

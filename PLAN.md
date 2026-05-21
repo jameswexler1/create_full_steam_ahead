@@ -558,7 +558,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Expose minimal client-safe getters on `CrankshaftBlockEntity`: assembled state, source mode/running state, active speed, ring origin, inlet position, and piston positions
 - [x] Hide or simplify static assembled piston block geometry so it does not fight the moving visual
 - [x] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
-- [x] Add rhythmic chuff sound using Create sound events (`STEAM`/`WHISTLE_CHIFF`) or a local `sound_events.json` entry if existing sounds do not fit
+- [x] Add rhythmic steam sound using Create's normal `STEAM` sound event, slightly louder than the vanilla Create steam engine
 - [ ] Add Ponder plugin and scenes after visual models settle: direct compact engine, boiler outlet pressure, steam storage/pipes, steam inlet, Aeronautics ship use
 - [ ] Verify visuals on standalone world, pipe-fed world, and Aeronautics assembled sublevel
 - [ ] Verify dedicated server startup remains clean with no client-class loading
