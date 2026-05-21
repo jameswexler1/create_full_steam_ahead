@@ -25,21 +25,21 @@ Use `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew ...` when matching the curr
 
 Use Java 21 and four-space indentation. Keep packages under `dev.gustavo.fullsteamahead`. Use `FullSteamAhead.MOD_ID` instead of repeating `"full_steam_ahead"`. Classes use `PascalCase`, methods/fields use `camelCase`, constants use `UPPER_SNAKE_CASE`, and resource paths use `lower_snake_case`.
 
-## Current Task — Phase 7 Aeronautics/Sable Compatibility
+## Current Task — Phase 8 Rendering and Ponder
 
 Flywheel/governor blocks are parked inert placeholders. Do not add mechanics, recipes, requirements, or output effects for them unless `PLAN.md` is changed first.
 
-Implement movement compatibility while preserving normal standalone play:
+Implement visual presentation while preserving all current gameplay:
 
-1. Aeronautics, Simulated, and Sable stay optional runtime dependencies. Do not add hard Java imports for their classes.
-2. Register Create `BlockMovementChecks` for all Full Steam Ahead engine blocks.
-3. Full Steam Ahead engine blocks should be movable, non-brittle, supportive, and attached to adjacent Full Steam Ahead engine blocks.
-4. Bottom cylinder/inlet blocks attach downward to Create Fluid Tank boilers.
-5. `boiler_outlet` attaches to its tank side and output pipe side.
-6. Register Simulated `SimBlockMovementChecks` only through guarded reflection when the API is present.
-7. Add `create:safe_nbt` tags for block entities whose saved state must survive contraption movement.
+1. Do not change steam generation, SU/RPM output, multiblock validation, Aeronautics movement rules, recipes, or config in Phase 8.
+2. Keep all Flywheel, renderer, and Ponder code client-only under `dev.gustavo.fullsteamahead.client`.
+3. Register the crankshaft Flywheel visual and a vanilla fallback block entity renderer.
+4. Reuse Create textures and visual language where possible; add local textures only when Create does not provide a suitable part.
+5. Static piston blocks should become visual guides/sleeves; dynamic piston motion should be rendered from the crankshaft.
+6. Steam particles and chuff sounds must be tied to running state and crank phase, not emitted every tick blindly.
+7. Ponder scenes come after the visual models are stable.
 
-Record automated and manual results in `docs/verification/phase7.md`.
+Record automated and manual results in `docs/verification/phase8.md`.
 
 ## Testing Guidelines
 

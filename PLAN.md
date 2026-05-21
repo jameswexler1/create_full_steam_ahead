@@ -1,6 +1,6 @@
 # Create: Full Steam Ahead — Design Plan
 
-Last updated: 2026-05-20
+Last updated: 2026-05-21
 
 ## Goal
 
@@ -34,6 +34,9 @@ Important source findings:
 - Create 6.0.10 exposes `com.simibubi.create.api.contraption.BlockMovementChecks` for movement permission, brittleness, support, and attached-block checks.
 - The current Simulated Project source exposes `dev.simulated_team.simulated.index.SimBlockMovementChecks` with attached-block and additional-block registration hooks. Aeronautics uses that API from `AeroBlockMovementChecks`.
 - The local dev classpath intentionally does not include Aeronautics, Simulated, or Sable jars. Compatibility must therefore remain optional at compile time and guarded at runtime.
+- Flywheel 1.0.6 exposes `VisualizerRegistry`, `SimpleBlockEntityVisualizer`, `AbstractBlockEntityVisual`, `TransformedInstance`, and `PartialModel`. Create's own `SteamEngineVisual` uses this stack for piston/linkage animation.
+- Create exposes `KineticBlockEntityRenderer.getAngleForBe(...)`, which should drive the crankshaft visual phase so our piston animation stays synchronized with Create kinetic rotation.
+- Ponder 1.0.82 exposes `PonderPlugin`, `PonderSceneRegistrationHelper`, and `PonderIndex.addPlugin(...)`. Ponder scenes should be registered from a client-side plugin after the visual models are stable.
 
 Primary references:
 
@@ -326,6 +329,17 @@ src/main/java/dev/gustavo/fullsteamahead/
       FullSteamMovementRules.java
     simulated/
       SimulatedMovementCompat.java
+  client/
+    FullSteamAheadClient.java
+    FullSteamPartialModels.java
+    render/
+      CrankshaftVisual.java
+      CrankshaftRenderer.java
+      CrankshaftAnimation.java
+    ponder/
+      FullSteamPonderPlugin.java
+      FullSteamPonderScenes.java
+      FullSteamPonderTags.java
 ```
 
 ---
@@ -521,14 +535,31 @@ Implementation notes:
 - [x] Register Simulated `SimBlockMovementChecks` reflectively when the `simulated` API is present, using the same attachment rules and an additional-block hook for assembly robustness
 - [x] Verify automated build/resources/JSON checks without Aeronautics, Simulated, or Sable installed
 - [x] Test engine inside a Sable/Aeronautics sublevel powering Aeronautics propellers
-- [ ] Verify NBT, kinetic state, steam buffer state, and boiler/inlet links survive assembly/disassembly and world reload
+- [x] Verify NBT, kinetic state, steam buffer state, and boiler/inlet links survive assembly/disassembly and world reload
 
 ### Phase 8: Rendering and Ponder
 
-- [ ] Animated piston reciprocation via Flywheel renderer (driven by crankshaft rotation angle)
-- [ ] Steam particles from cylinder top when running
-- [ ] Sound: rhythmic chuffing tied to piston animation
-- [ ] Ponder scenes: direct compact engine, boiler outlet, steam pipes, steam inlet, water/heat, connecting shafts, aircraft use
+**Goal**: turn the working machine into a readable Create-style machine without changing balance or mechanics.
+
+Phase 8 is visual/presentation only. It must not change steam generation, output tables, multiblock rules, movement compatibility, recipes, or config.
+
+- [ ] Add client-only bootstrap under `dev.gustavo.fullsteamahead.client`; never load client/Flywheel/Ponder classes from dedicated-server common code
+- [ ] Add `FullSteamPartialModels` for dynamic piston/crank partials under `assets/full_steam_ahead/models/block/partial/`
+- [ ] Replace placeholder cube models with Create-style multipart JSON models using Create copper/brass/andesite/shaft textures where possible
+- [ ] Add cylinder visual states that identify ring position clearly: unassembled shell, assembled lower shell, assembled upper cap, inlet face, and bore-facing side pieces
+- [ ] Add piston static models that read as guides/sleeves while assembled; the actual moving rod/crosshead should be rendered dynamically from the crankshaft
+- [ ] Add a `CrankshaftAnimation` math helper shared by Flywheel and fallback renderer
+- [ ] Add `CrankshaftVisual` using Flywheel `SimpleBlockEntityVisualizer`, `TransformedInstance`, and `PartialModel`; drive it from `KineticBlockEntityRenderer.getAngleForBe(...)`
+- [ ] Add `CrankshaftRenderer` fallback for non-visualized rendering so piston motion is still visible if Flywheel visualization is disabled
+- [ ] Expose minimal client-safe getters on `CrankshaftBlockEntity`: assembled state, source mode/running state, active speed, ring origin, inlet position, and piston positions
+- [ ] Hide or simplify static assembled piston block geometry so it does not fight the moving visual
+- [ ] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
+- [ ] Add rhythmic chuff sound using Create sound events (`STEAM`/`WHISTLE_CHIFF`) or a local `sound_events.json` entry if existing sounds do not fit
+- [ ] Add Ponder plugin and scenes after visual models settle: direct compact engine, boiler outlet pressure, steam storage/pipes, steam inlet, Aeronautics ship use
+- [ ] Verify visuals on standalone world, pipe-fed world, and Aeronautics assembled sublevel
+- [ ] Verify dedicated server startup remains clean with no client-class loading
+- [ ] Verify resource reload/F3+T does not break partial models or visuals
+- [ ] Verify old worlds with existing engines still load and animate
 
 Deferred idea after visuals: inline shared-wall cylinder banks, where adjacent cylinders can share one cylinder wall block instead of requiring independent 3x3 rings.
 

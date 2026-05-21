@@ -41,7 +41,7 @@ Runtime status:
 
 - Standalone automated checks pass without Aeronautics, Simulated, or Sable installed.
 - Aeronautics/Sable sublevel runtime testing passed in a profile that includes those mods.
-- Save/reload verification inside an assembled Aeronautics/Sable sublevel is still required.
+- Save/reload verification inside an assembled Aeronautics/Sable sublevel passed.
 
 Manual runtime checklist:
 
@@ -49,7 +49,9 @@ Manual runtime checklist:
 - [ ] Confirm direct compact and pipe-fed engines still assemble and run normally.
 - [x] In an Aeronautics/Sable test profile, assemble a ship/sublevel containing a Full Steam Ahead engine.
 - [x] Confirm cylinder, inlet, piston, crankshaft, boiler outlet, and attached boiler/pipe connections move together.
-- [ ] Confirm engine NBT/state survives assembly, disassembly, world reload, and sublevel reload.
+- [x] Confirm engine NBT/state survives assembly, disassembly, world reload, and sublevel reload.
 - [x] Confirm Create shafts connected to the crankshaft can power Aeronautics propellers while assembled on the sublevel.
 
 User report on 2026-05-21: Create Aeronautics was added to the dev runtime, a simulated contraption containing the engine and components was assembled in-game, and the engine worked correctly while assembled.
+
+User report after reload test: the Aeronautics contraption reload test works.
