@@ -26,6 +26,8 @@ Completed first slice:
 - [x] Added client-only event bootstrap under `dev.gustavo.fullsteamahead.client`.
 - [x] Replaced active engine cube placeholders with Create-style multipart JSON models.
 - [x] Updated static piston models to read more like guide/sleeve blocks.
+- [x] Replaced flickering multipart placeholders with stable non-overlapping proxy models.
+- [x] Added `docs/blockbench_phase8.md` for final art handoff.
 
 Automated results:
 

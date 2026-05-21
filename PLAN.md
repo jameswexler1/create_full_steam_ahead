@@ -547,6 +547,8 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Add client-only bootstrap under `dev.gustavo.fullsteamahead.client`; never load client/Flywheel/Ponder classes from dedicated-server common code
 - [ ] Add `FullSteamPartialModels` for dynamic piston/crank partials under `assets/full_steam_ahead/models/block/partial/`
 - [x] Replace placeholder cube models with Create-style multipart JSON models using Create copper/brass/andesite/shaft textures where possible
+- [x] Replace flickering multipart placeholders with stable non-overlapping proxy models
+- [x] Add Blockbench handoff guide for final static models and animated partials
 - [ ] Add cylinder visual states that identify ring position clearly: unassembled shell, assembled lower shell, assembled upper cap, inlet face, and bore-facing side pieces
 - [x] Add piston static models that read as guides/sleeves while assembled; the actual moving rod/crosshead should be rendered dynamically from the crankshaft
 - [ ] Add a `CrankshaftAnimation` math helper shared by Flywheel and fallback renderer
