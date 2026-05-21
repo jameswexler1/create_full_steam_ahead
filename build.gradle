@@ -30,6 +30,17 @@ repositories {
         name = 'Registrate'
         url = 'https://maven.ithundxr.dev/snapshots'
     }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Modrinth'
+                url = 'https://api.modrinth.com/maven'
+            }
+        }
+        filter {
+            includeGroup 'maven.modrinth'
+        }
+    }
 }
 
 neoForge {
@@ -79,6 +90,11 @@ dependencies {
     compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
     runtimeOnly("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}")
     implementation("com.tterrag.registrate:Registrate:${registrate_version}")
+
+    // Create Aeronautics bundled jar (includes Simulated, Aeronautics, and Offroad) for runtime testing.
+    runtimeOnly("maven.modrinth:create-aeronautics:1.2.1+mc1.21.1")
+    // Sable is required by Aeronautics and remains a separate runtime-only test dependency.
+    runtimeOnly("maven.modrinth:sable:1.2.2+mc1.21.1")
 }
 
 tasks.withType(JavaCompile).configureEach {
