@@ -37,10 +37,10 @@ public class CrankshaftRenderer extends SafeBlockEntityRenderer<CrankshaftBlockE
         }
 
         for (int segment = 0; segment < CrankshaftAnimation.ROD_SEGMENTS; segment++) {
-            renderTranslated(FullSteamPartialModels.PISTON_ROD_PROXY, state, poseStack, solid, light, overlay,
+            renderTranslated(FullSteamPartialModels.pistonRodProxy(), state, poseStack, solid, light, overlay,
                     animation.rodY(segment));
         }
-        renderTranslated(FullSteamPartialModels.PISTON_HEAD_PROXY, state, poseStack, solid, light, overlay,
+        renderTranslated(FullSteamPartialModels.pistonHeadProxy(), state, poseStack, solid, light, overlay,
                 animation.headY());
         renderCrankPin(state, poseStack, solid, light, overlay, animation.angle());
     }
@@ -74,7 +74,7 @@ public class CrankshaftRenderer extends SafeBlockEntityRenderer<CrankshaftBlockE
             int overlay,
             float angle
     ) {
-        SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.CRANK_PIN_PROXY, state);
+        SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.crankPinProxy(), state);
         buffer.center()
                 .rotateY(angle)
                 .uncenter()

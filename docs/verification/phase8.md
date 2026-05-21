@@ -35,6 +35,8 @@ Completed animation proxy slice:
 - [x] Added `CrankshaftAnimation`, Flywheel `CrankshaftVisual`, and fallback `CrankshaftRenderer`.
 - [x] Registered the crankshaft block entity renderer and Flywheel visual from client-only code.
 - [x] Exposed client-safe crankshaft state getters for rendering.
+- [x] Fixed early partial-model initialization that caused a startup crash before the title screen.
+- [x] Corrected placeholder inlet/outlet pipe texture references to `create:block/pipes`.
 
 Automated results:
 
@@ -42,6 +44,7 @@ Automated results:
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-21 after renderer/visual code was added.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew processResources` passed on 2026-05-21 after proxy partials were added.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-21 after renderer/visual code was added.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` reached an integrated world on 2026-05-21 after lazy partial registration.
 
 Manual runtime checklist:
 

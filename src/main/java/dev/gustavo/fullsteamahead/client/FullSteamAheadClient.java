@@ -10,18 +10,20 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.ModelEvent;
 
 @SuppressWarnings("removal")
 @EventBusSubscriber(modid = FullSteamAhead.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public final class FullSteamAheadClient {
-    static {
-        FullSteamPartialModels.init();
-    }
-
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         FullSteamAhead.LOGGER.info("Initializing Create: Full Steam Ahead client");
         event.enqueueWork(CrankshaftVisual::register);
+    }
+
+    @SubscribeEvent
+    public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
+        FullSteamPartialModels.registerAdditional(event);
     }
 
     @SubscribeEvent

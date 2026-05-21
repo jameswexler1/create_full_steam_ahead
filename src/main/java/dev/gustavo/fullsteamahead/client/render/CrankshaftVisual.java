@@ -26,10 +26,10 @@ public class CrankshaftVisual extends AbstractBlockEntityVisual<CrankshaftBlockE
     public CrankshaftVisual(VisualizationContext context, CrankshaftBlockEntity blockEntity, float partialTick) {
         super(context, blockEntity, partialTick);
         for (int segment = 0; segment < rods.length; segment++) {
-            rods[segment] = transformed(FullSteamPartialModels.PISTON_ROD_PROXY);
+            rods[segment] = transformed(FullSteamPartialModels.pistonRodProxy());
         }
-        head = transformed(FullSteamPartialModels.PISTON_HEAD_PROXY);
-        crankPin = transformed(FullSteamPartialModels.CRANK_PIN_PROXY);
+        head = transformed(FullSteamPartialModels.pistonHeadProxy());
+        crankPin = transformed(FullSteamPartialModels.crankPinProxy());
         animate();
     }
 
