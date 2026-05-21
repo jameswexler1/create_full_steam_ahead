@@ -520,7 +520,7 @@ Implementation notes:
 - [x] Movement rules: bottom cylinder/inlet shell blocks attach downward to Create Fluid Tank boilers; `boiler_outlet` attaches to its tank side and output pipe side
 - [x] Register Simulated `SimBlockMovementChecks` reflectively when the `simulated` API is present, using the same attachment rules and an additional-block hook for assembly robustness
 - [x] Verify automated build/resources/JSON checks without Aeronautics, Simulated, or Sable installed
-- [ ] Test engine inside a Sable/Aeronautics sublevel powering Aeronautics propellers
+- [x] Test engine inside a Sable/Aeronautics sublevel powering Aeronautics propellers
 - [ ] Verify NBT, kinetic state, steam buffer state, and boiler/inlet links survive assembly/disassembly and world reload
 
 ### Phase 8: Rendering and Ponder
@@ -529,6 +529,8 @@ Implementation notes:
 - [ ] Steam particles from cylinder top when running
 - [ ] Sound: rhythmic chuffing tied to piston animation
 - [ ] Ponder scenes: direct compact engine, boiler outlet, steam pipes, steam inlet, water/heat, connecting shafts, aircraft use
+
+Deferred idea after visuals: inline shared-wall cylinder banks, where adjacent cylinders can share one cylinder wall block instead of requiring independent 3x3 rings.
 
 ### Phase 9: Balance, Config, Recipes
 
