@@ -124,7 +124,7 @@ Removed from the old plan (do not re-add without discussion):
 A minimal working engine (vertical, default orientation):
 
 ```
-        [Crankshaft]              ← KineticBlock; shaft ports on N/S/E/W faces
+        [Crankshaft]              ← KineticBlock; two opposite shaft ports on one horizontal axis
         [  Piston  ]              ← protrusion block 2 (top, assembled texture: connector pin)
         [  Piston  ]              ← protrusion block 1 (assembled texture: stuffing box seal)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ← top of cylinder frame (assembled texture: cylinder head cap)
@@ -244,10 +244,10 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 
 ### `Crankshaft`
 
-- Extends `KineticBlock` (Create)
+- Extends `HorizontalAxisKineticBlock` (Create)
 - Block entity: `CrankshaftBlockEntity extends GeneratingKineticBlockEntity`
-- Axis: always `Direction.Axis.Y` (vertical only, v1)
-- Shaft ports: N, S, E, W faces (horizontal). Top face is capped (piston connection). Bottom face is capped.
+- Axis: one horizontal shaft axis, selected like Create shafts
+- Shaft ports: the two opposite faces on the selected horizontal axis. Perpendicular horizontal faces, top, and bottom do not transmit rotation.
 - `getGeneratedSpeed()`: returns the active burner-count RPM tier when assembled and steam is available; 0 otherwise.
 - `calculateAddedStressCapacity()`: returns capacity proportional to available direct boiler heat or consumed `steam`.
 - Holds reference to `SteamCylinderBlockEntity` root position. On each server tick, reads direct boiler data for compact mode. After pipe-fed mode is implemented, it should prefer valid steam inlet consumption when present and fall back to direct boiler mode otherwise.
@@ -557,8 +557,8 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Make the crankshaft axial: one horizontal rotation axis, two opposite shaft ports, no four-way output
 - [x] Expose minimal client-safe getters on `CrankshaftBlockEntity`: assembled state, source mode/running state, active speed, ring origin, inlet position, and piston positions
 - [x] Hide or simplify static assembled piston block geometry so it does not fight the moving visual
-- [ ] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
-- [ ] Add rhythmic chuff sound using Create sound events (`STEAM`/`WHISTLE_CHIFF`) or a local `sound_events.json` entry if existing sounds do not fit
+- [x] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
+- [x] Add rhythmic chuff sound using Create sound events (`STEAM`/`WHISTLE_CHIFF`) or a local `sound_events.json` entry if existing sounds do not fit
 - [ ] Add Ponder plugin and scenes after visual models settle: direct compact engine, boiler outlet pressure, steam storage/pipes, steam inlet, Aeronautics ship use
 - [ ] Verify visuals on standalone world, pipe-fed world, and Aeronautics assembled sublevel
 - [ ] Verify dedicated server startup remains clean with no client-class loading

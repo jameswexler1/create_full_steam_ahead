@@ -1,8 +1,12 @@
 package dev.gustavo.fullsteamahead.content.crankshaft;
 
+import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.fluids.tank.BoilerData;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
+import com.simibubi.create.content.kinetics.base.IRotate;
+import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
+import com.simibubi.create.content.kinetics.steamEngine.SteamJetParticleData;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import dev.gustavo.fullsteamahead.content.piston.PistonSection;
@@ -13,6 +17,7 @@ import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -20,6 +25,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 import java.util.Objects;
@@ -47,6 +53,7 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
     private static final float SU_PER_HEAT_UNIT = 16_384.0F;
     private static final float REGULAR_MAX_CAPACITY_SU = 147_456.0F;
     private static final float MAX_RPM = 64.0F;
+    private static final int MIN_CHUFF_INTERVAL_TICKS = 5;
 
     private boolean assembled;
     private BlockPos ringOrigin;
@@ -61,6 +68,8 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
     private SourceMode sourceMode = SourceMode.NONE;
     private int steamConsumedRate;
     private String status = "Incomplete structure";
+    private float previousEffectAngle = Float.NaN;
+    private int chuffCooldown;
 
     public CrankshaftBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.CRANKSHAFT.get(), pos, state);
@@ -83,7 +92,12 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
     @Override
     public void tick() {
         super.tick();
-        if (level == null || level.isClientSide()) {
+        if (level == null) {
+            return;
+        }
+
+        if (level.isClientSide()) {
+            tickClientEffects();
             return;
         }
 
@@ -543,6 +557,107 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
             sourceMode = SourceMode.DIRECT_BOILER;
         }
         status = tag.contains(STATUS_KEY) ? tag.getString(STATUS_KEY) : "Incomplete structure";
+    }
+
+    private void tickClientEffects() {
+        if (chuffCooldown > 0) {
+            chuffCooldown--;
+        }
+
+        if (!isEngineRunning()) {
+            previousEffectAngle = Float.NaN;
+            return;
+        }
+
+        float angle = getCurrentEffectAngle();
+        if (!Float.isNaN(previousEffectAngle)
+                && chuffCooldown <= 0
+                && crossedCrankPhase(previousEffectAngle, angle)) {
+            emitSteamEffects();
+            chuffCooldown = MIN_CHUFF_INTERVAL_TICKS;
+        }
+        previousEffectAngle = angle;
+    }
+
+    private float getCurrentEffectAngle() {
+        Direction.Axis axis = getRotationAxis();
+        float radians = KineticBlockEntityRenderer.getAngleForBe(this, worldPosition, axis);
+        return Mth.positiveModulo((float) Math.toDegrees(radians), 360.0F);
+    }
+
+    private Direction.Axis getRotationAxis() {
+        BlockState state = getBlockState();
+        if (state.getBlock() instanceof IRotate rotating) {
+            return rotating.getRotationAxis(state);
+        }
+        return Direction.Axis.X;
+    }
+
+    private static boolean crossedCrankPhase(float previousAngle, float angle) {
+        float delta = angle - previousAngle;
+        return delta > 180.0F || delta < -180.0F;
+    }
+
+    private void emitSteamEffects() {
+        if (level == null) {
+            return;
+        }
+
+        float intensity = getEffectIntensity();
+        Direction exhaustDirection = getExhaustDirection(getRotationAxis());
+        Vec3 normal = Vec3.atLowerCornerOf(exhaustDirection.getNormal());
+        Vec3 origin = Vec3.atCenterOf(worldPosition)
+                .add(0.0D, -2.05D, 0.0D)
+                .add(normal.scale(0.68D));
+        Vec3 jitter = new Vec3(
+                (level.random.nextDouble() - 0.5D) * 0.08D,
+                (level.random.nextDouble() - 0.5D) * 0.04D,
+                (level.random.nextDouble() - 0.5D) * 0.08D
+        );
+        Vec3 motion = normal.scale(0.26D + 0.12D * intensity)
+                .add(0.0D, 0.05D + 0.04D * intensity, 0.0D)
+                .add(jitter);
+
+        level.addParticle(
+                new SteamJetParticleData(0.65F + 0.35F * intensity),
+                origin.x,
+                origin.y,
+                origin.z,
+                motion.x,
+                motion.y,
+                motion.z
+        );
+
+        if (intensity >= 0.75F) {
+            Vec3 secondaryOrigin = origin.add(
+                    (level.random.nextDouble() - 0.5D) * 0.16D,
+                    (level.random.nextDouble() - 0.5D) * 0.08D,
+                    (level.random.nextDouble() - 0.5D) * 0.16D
+            );
+            level.addParticle(
+                    new SteamJetParticleData(0.45F + 0.25F * intensity),
+                    secondaryOrigin.x,
+                    secondaryOrigin.y,
+                    secondaryOrigin.z,
+                    motion.x * 0.8D,
+                    motion.y * 0.8D,
+                    motion.z * 0.8D
+            );
+        }
+
+        float volume = 0.12F + 0.12F * intensity;
+        float pitch = 0.82F + 0.18F * intensity + (level.random.nextFloat() - 0.5F) * 0.05F;
+        AllSoundEvents.WHISTLE_CHIFF.playAt(level, origin, volume, pitch, false);
+    }
+
+    private float getEffectIntensity() {
+        float speedFactor = Math.abs(getGeneratedSpeed()) / MAX_RPM;
+        float heatFactor = heatUnits / (float) MAX_HEAT_UNITS;
+        return Mth.clamp(Math.max(speedFactor, heatFactor), 0.25F, 1.0F);
+    }
+
+    private static Direction getExhaustDirection(Direction.Axis shaftAxis) {
+        return shaftAxis == Direction.Axis.X ? Direction.SOUTH : Direction.EAST;
     }
 
     private static void writePos(CompoundTag tag, String key, BlockPos pos) {

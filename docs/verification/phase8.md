@@ -38,13 +38,14 @@ Completed animation proxy slice:
 - [x] Fixed early partial-model initialization that caused a startup crash before the title screen.
 - [x] Corrected placeholder inlet/outlet pipe texture references to `create:block/pipes`.
 - [x] Converted the crankshaft from four-way horizontal output to one axial horizontal shaft axis.
+- [x] Added Create steam jet particles and quiet Create chuff sounds, emitted only on crank phase while the engine is running.
 
 Automated results:
 
-- [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-21 after proxy partials and the axial crankshaft fix.
-- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-21 after renderer/visual code and the axial crankshaft fix.
-- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew processResources` passed on 2026-05-21 after proxy partials and the axial crankshaft fix.
-- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-21 after renderer/visual code and the axial crankshaft fix.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-21 after proxy partials, the axial crankshaft fix, and crank-phase steam effects.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-21 after renderer/visual code, the axial crankshaft fix, and crank-phase steam effects.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew processResources` passed on 2026-05-21 after proxy partials, the axial crankshaft fix, and crank-phase steam effects.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-21 after renderer/visual code, the axial crankshaft fix, and crank-phase steam effects.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` reached an integrated world on 2026-05-21 after lazy partial registration.
 
 Manual runtime checklist:
@@ -56,7 +57,7 @@ Manual runtime checklist:
 - [x] Crankshaft only connects and transfers rotation through the two opposite faces on its selected axis.
 - [ ] Piston motion stops when the engine has no steam.
 - [ ] Steam particles appear only while running and scale reasonably with speed.
-- [ ] Chuff sound is audible but not spammy or overlapping harshly.
+- [ ] Chuff sound is audible only while running, rhythmic with crank phase, and not spammy or overlapping harshly.
 - [ ] Resource reload (`F3+T`) keeps partial models and textures intact.
 - [ ] Dedicated server starts without client-class loading errors.
 - [ ] Aeronautics/Sable assembled sublevel still moves and powers propellers with visuals active.
