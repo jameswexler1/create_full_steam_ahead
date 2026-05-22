@@ -56,11 +56,13 @@ Manual runtime checklist:
 - [ ] Piston motion is synchronized with crankshaft rotation at 16, 32, 48, and 64 RPM.
 - [x] Crankshaft only connects and transfers rotation through the two opposite faces on its selected axis.
 - [ ] Piston motion stops when the engine has no steam.
-- [ ] Steam particles appear only while running and scale reasonably with speed.
-- [ ] Steam sound matches Create's vanilla steam-engine style, is slightly louder, and only plays while running.
+- [x] Steam particles appear only while running and scale reasonably with speed.
+- [x] Steam sound matches Create's vanilla steam-engine style, is slightly louder, and only plays while running.
 - [ ] Resource reload (`F3+T`) keeps partial models and textures intact.
 - [ ] Dedicated server starts without client-class loading errors.
 - [ ] Aeronautics/Sable assembled sublevel still moves and powers propellers with visuals active.
 - [ ] Ponder entries appear and teach direct compact and pipe-fed setups.
 
 Manual result reported by Gustavo on 2026-05-21: after the axial crankshaft fix, the engine still worked and the crankshaft output behaved correctly.
+
+Manual result reported by Gustavo on 2026-05-22: crank-phase steam particles worked, and the corrected Create-style steam sound worked perfectly.
