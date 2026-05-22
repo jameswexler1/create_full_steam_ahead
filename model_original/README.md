@@ -9,7 +9,9 @@ Use Create's steam engine assets as visual reference in Blockbench, then build o
 ## Create Assets To Study
 
 Open these from the local Create jar, Create's source repository, or the ignored local `create_reference/`
-folder for visual inspection only:
+folder for visual inspection only. In Blockbench, prefer the resource-pack layout copies under
+`model_original/create_reference/assets/create/...`; the Minecraft texture IDs in the JSON need that
+`assets/create/textures/...` namespace layout to resolve automatically.
 
 - `assets/create/models/block/steam_engine/block.json`
 - `assets/create/models/block/steam_engine/piston.json`
