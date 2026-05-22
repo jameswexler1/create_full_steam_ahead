@@ -51,18 +51,20 @@ Automated results:
 Manual runtime checklist:
 
 - [x] Existing direct compact engines still assemble and run.
-- [ ] Existing pipe-fed engines still assemble and run.
-- [ ] Old worlds with existing engines load without blockstate/model errors.
-- [ ] Piston motion is synchronized with crankshaft rotation at 16, 32, 48, and 64 RPM.
+- [x] Existing pipe-fed engines still assemble and run.
+- [x] Old worlds with existing engines load without blockstate/model errors.
+- [x] Piston motion is synchronized with crankshaft rotation at 16, 32, 48, and 64 RPM.
 - [x] Crankshaft only connects and transfers rotation through the two opposite faces on its selected axis.
-- [ ] Piston motion stops when the engine has no steam.
+- [x] Piston motion stops when the engine has no steam.
 - [x] Steam particles appear only while running and scale reasonably with speed.
 - [x] Steam sound matches Create's vanilla steam-engine style, is slightly louder, and only plays while running.
-- [ ] Resource reload (`F3+T`) keeps partial models and textures intact.
+- [x] Resource reload (`F3+T`) keeps partial models and textures intact.
 - [ ] Dedicated server starts without client-class loading errors.
-- [ ] Aeronautics/Sable assembled sublevel still moves and powers propellers with visuals active.
+- [x] Aeronautics/Sable assembled sublevel still moves and powers propellers with visuals active.
 - [ ] Ponder entries appear and teach direct compact and pipe-fed setups.
 
 Manual result reported by Gustavo on 2026-05-21: after the axial crankshaft fix, the engine still worked and the crankshaft output behaved correctly.
 
 Manual result reported by Gustavo on 2026-05-22: crank-phase steam particles worked, and the corrected Create-style steam sound worked perfectly.
+
+Manual result reported by Gustavo on 2026-05-22: remaining in-world Phase 8 runtime checks worked.
