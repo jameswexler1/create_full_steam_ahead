@@ -1,14 +1,15 @@
 # Steam Engine Reference Notes
 
-This folder is for reference notes only. Do not copy, edit, or commit Create's original asset files here.
-Create's code is MIT, but its models and textures under `assets/create/` are All Rights Reserved.
+This folder is for reference notes and local-only study files. Do not commit Create's original asset files.
+Create's code is MIT, but its models and textures under `assets/create/` are not assets we should redistribute.
 
 Use Create's steam engine assets as visual reference in Blockbench, then build our own models from a blank
 `Java Block/Item` project.
 
 ## Create Assets To Study
 
-Open these from the local Create jar or from Create's source repository for visual inspection only:
+Open these from the local Create jar, Create's source repository, or the ignored local `create_reference/`
+folder for visual inspection only:
 
 - `assets/create/models/block/steam_engine/block.json`
 - `assets/create/models/block/steam_engine/piston.json`
