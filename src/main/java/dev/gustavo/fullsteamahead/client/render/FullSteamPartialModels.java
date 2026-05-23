@@ -7,22 +7,22 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.event.ModelEvent;
 
 public final class FullSteamPartialModels {
-    private static final ResourceLocation PISTON_ROD_PROXY_LOCATION = location("piston_rod_proxy");
-    private static final ResourceLocation PISTON_HEAD_PROXY_LOCATION = location("piston_head_proxy");
+    private static final ResourceLocation PISTON_BODY_LOCATION = location("piston_body");
+    private static final ResourceLocation PISTON_HEAD_LOCATION = location("piston_head");
     private static final ResourceLocation CRANK_PIN_PROXY_LOCATION = location("crank_pin_proxy");
 
     public static void registerAdditional(ModelEvent.RegisterAdditional event) {
-        event.register(ModelResourceLocation.standalone(PISTON_ROD_PROXY_LOCATION));
-        event.register(ModelResourceLocation.standalone(PISTON_HEAD_PROXY_LOCATION));
+        event.register(ModelResourceLocation.standalone(PISTON_BODY_LOCATION));
+        event.register(ModelResourceLocation.standalone(PISTON_HEAD_LOCATION));
         event.register(ModelResourceLocation.standalone(CRANK_PIN_PROXY_LOCATION));
     }
 
-    public static PartialModel pistonRodProxy() {
-        return PartialModel.of(PISTON_ROD_PROXY_LOCATION);
+    public static PartialModel pistonBody() {
+        return PartialModel.of(PISTON_BODY_LOCATION);
     }
 
-    public static PartialModel pistonHeadProxy() {
-        return PartialModel.of(PISTON_HEAD_PROXY_LOCATION);
+    public static PartialModel pistonHead() {
+        return PartialModel.of(PISTON_HEAD_LOCATION);
     }
 
     public static PartialModel crankPinProxy() {

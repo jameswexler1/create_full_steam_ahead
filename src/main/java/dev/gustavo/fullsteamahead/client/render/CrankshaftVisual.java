@@ -19,16 +19,16 @@ import net.minecraft.core.BlockPos;
 import java.util.function.Consumer;
 
 public class CrankshaftVisual extends AbstractBlockEntityVisual<CrankshaftBlockEntity> implements SimpleDynamicVisual {
-    private final TransformedInstance[] rods = new TransformedInstance[CrankshaftAnimation.ROD_SEGMENTS];
+    private final TransformedInstance[] pistons = new TransformedInstance[CrankshaftAnimation.PISTON_BLOCKS];
     private final TransformedInstance head;
     private final TransformedInstance crankPin;
 
     public CrankshaftVisual(VisualizationContext context, CrankshaftBlockEntity blockEntity, float partialTick) {
         super(context, blockEntity, partialTick);
-        for (int segment = 0; segment < rods.length; segment++) {
-            rods[segment] = transformed(FullSteamPartialModels.pistonRodProxy());
+        for (int blockIndex = 0; blockIndex < pistons.length; blockIndex++) {
+            pistons[blockIndex] = transformed(FullSteamPartialModels.pistonBody());
         }
-        head = transformed(FullSteamPartialModels.pistonHeadProxy());
+        head = transformed(FullSteamPartialModels.pistonHead());
         crankPin = transformed(FullSteamPartialModels.crankPinProxy());
         animate();
     }
@@ -50,17 +50,17 @@ public class CrankshaftVisual extends AbstractBlockEntityVisual<CrankshaftBlockE
 
     @Override
     public void updateLight(float partialTick) {
-        FlatLit[] instances = new FlatLit[rods.length + 2];
-        System.arraycopy(rods, 0, instances, 0, rods.length);
-        instances[rods.length] = head;
-        instances[rods.length + 1] = crankPin;
+        FlatLit[] instances = new FlatLit[pistons.length + 2];
+        System.arraycopy(pistons, 0, instances, 0, pistons.length);
+        instances[pistons.length] = head;
+        instances[pistons.length + 1] = crankPin;
         relight(instances);
     }
 
     @Override
     protected void _delete() {
-        for (TransformedInstance rod : rods) {
-            rod.delete();
+        for (TransformedInstance piston : pistons) {
+            piston.delete();
         }
         head.delete();
         crankPin.delete();
@@ -68,8 +68,8 @@ public class CrankshaftVisual extends AbstractBlockEntityVisual<CrankshaftBlockE
 
     @Override
     public void collectCrumblingInstances(Consumer<Instance> consumer) {
-        for (TransformedInstance rod : rods) {
-            consumer.accept(rod);
+        for (TransformedInstance piston : pistons) {
+            consumer.accept(piston);
         }
         consumer.accept(head);
         consumer.accept(crankPin);
@@ -77,11 +77,11 @@ public class CrankshaftVisual extends AbstractBlockEntityVisual<CrankshaftBlockE
 
     private void animate() {
         CrankshaftAnimation.State animation = CrankshaftAnimation.state(blockEntity);
-        for (int segment = 0; segment < rods.length; segment++) {
-            setVisible(rods[segment], animation.visible());
+        for (int blockIndex = 0; blockIndex < pistons.length; blockIndex++) {
+            setVisible(pistons[blockIndex], animation.visible());
             if (animation.visible()) {
-                base(rods[segment])
-                        .translate(0, animation.rodY(segment), 0)
+                base(pistons[blockIndex])
+                        .translate(0, animation.pistonY(blockIndex), 0)
                         .setChanged();
             }
         }

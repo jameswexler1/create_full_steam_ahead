@@ -4,9 +4,9 @@
     "assembled=false,piston_section=inside_high": { "model": "full_steam_ahead:block/piston" },
     "assembled=false,piston_section=protrude_low": { "model": "full_steam_ahead:block/piston" },
     "assembled=false,piston_section=protrude_high": { "model": "full_steam_ahead:block/piston" },
-    "assembled=true,piston_section=inside_low": { "model": "full_steam_ahead:block/piston_inside_low" },
-    "assembled=true,piston_section=inside_high": { "model": "full_steam_ahead:block/piston_inside_high" },
-    "assembled=true,piston_section=protrude_low": { "model": "full_steam_ahead:block/piston_protrude_low" },
-    "assembled=true,piston_section=protrude_high": { "model": "full_steam_ahead:block/piston_protrude_high" }
+    "assembled=true,piston_section=inside_low": { "model": "full_steam_ahead:block/empty" },
+    "assembled=true,piston_section=inside_high": { "model": "full_steam_ahead:block/empty" },
+    "assembled=true,piston_section=protrude_low": { "model": "full_steam_ahead:block/empty" },
+    "assembled=true,piston_section=protrude_high": { "model": "full_steam_ahead:block/empty" }
   }
 }

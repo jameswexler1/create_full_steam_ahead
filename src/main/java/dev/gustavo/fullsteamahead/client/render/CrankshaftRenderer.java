@@ -36,12 +36,12 @@ public class CrankshaftRenderer extends SafeBlockEntityRenderer<CrankshaftBlockE
             return;
         }
 
-        for (int segment = 0; segment < CrankshaftAnimation.ROD_SEGMENTS; segment++) {
-            renderTranslated(FullSteamPartialModels.pistonRodProxy(), state, poseStack, solid, light, overlay,
-                    animation.rodY(segment));
-        }
-        renderTranslated(FullSteamPartialModels.pistonHeadProxy(), state, poseStack, solid, light, overlay,
+        renderTranslated(FullSteamPartialModels.pistonHead(), state, poseStack, solid, light, overlay,
                 animation.headY());
+        for (int blockIndex = 0; blockIndex < CrankshaftAnimation.PISTON_BLOCKS; blockIndex++) {
+            renderTranslated(FullSteamPartialModels.pistonBody(), state, poseStack, solid, light, overlay,
+                    animation.pistonY(blockIndex));
+        }
         renderCrankPin(state, poseStack, solid, light, overlay, animation.angle());
     }
 

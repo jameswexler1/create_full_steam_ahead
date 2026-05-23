@@ -23,13 +23,13 @@ folder for visual inspection only. In Blockbench, prefer the resource-pack layou
 ## What To Recreate For Full Steam Ahead
 
 - `piston`: unassembled static piston model used by all piston section variants when `assembled=false`.
-- `piston_head`: separate block for the lower center of the cylinder bore; it will later move with the animated piston assembly.
+- `piston_head`: separate block for the lower center of the cylinder bore; also used as the moving piston-head partial while assembled.
 - `piston_inside_low`: assembled lower piston guide inside the cylinder bore.
 - `piston_inside_high`: assembled upper piston guide inside the cylinder bore.
 - `piston_protrude_low`: assembled lower exposed piston guide above the cylinder.
 - `piston_protrude_high`: assembled upper exposed piston guide below the crankshaft.
-- `piston_head_proxy`: larger, heavier piston head inspired by Create's steam engine piston, centered on X/Z.
-- `piston_rod_proxy`: slim vertical rod using Create-like dark linkage language.
+- `piston_body`: moving piston body partial, centered on X/Z.
+- `piston_head`: moving piston-head partial, centered on X/Z.
 - `crank_pin_proxy`: offset crank pin/cam piece that reads as the rotating crank connection.
 - `crankshaft`: static axial shaft body with one horizontal axis and visible end ports.
 
@@ -50,7 +50,7 @@ folder for visual inspection only. In Blockbench, prefer the resource-pack layou
 - `src/main/resources/assets/full_steam_ahead/models/block/piston_inside_high.json`
 - `src/main/resources/assets/full_steam_ahead/models/block/piston_protrude_low.json`
 - `src/main/resources/assets/full_steam_ahead/models/block/piston_protrude_high.json`
-- `src/main/resources/assets/full_steam_ahead/models/block/partial/piston_rod_proxy.json`
-- `src/main/resources/assets/full_steam_ahead/models/block/partial/piston_head_proxy.json`
+- `src/main/resources/assets/full_steam_ahead/models/block/partial/piston_body.json`
+- `src/main/resources/assets/full_steam_ahead/models/block/partial/piston_head.json`
 - `src/main/resources/assets/full_steam_ahead/models/block/partial/crank_pin_proxy.json`
 - `src/main/resources/assets/full_steam_ahead/models/block/crankshaft.json`

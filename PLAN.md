@@ -240,7 +240,7 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - Blockstate properties:
   - `ASSEMBLED: BooleanProperty` (default false)
 - Required at the lower center of the cylinder bore, directly below the two normal piston extension blocks.
-- Animation: later this block will move with the piston assembly. The Phase 8 technical pass only adds the block, validation, placeholder model, and assembled state.
+- Animation: when `ASSEMBLED = true`, the static block model is hidden and the crankshaft renders the piston head as a dynamic partial. It remains visible at rest and reciprocates while the crankshaft is running.
 
 ### `SteamPiston` (registered as `piston`)
 
@@ -250,7 +250,7 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
   - `ASSEMBLED: BooleanProperty` (default false)
   - `PISTON_SECTION: EnumProperty<PistonSection>` where `PistonSection` has values `INSIDE_LOW`, `INSIDE_HIGH`, `PROTRUDE_LOW`, `PROTRUDE_HIGH` — determines which texture variant and animation offset to use
 - When the crankshaft validates the structure, it sets the assembled state and piston section on the 2 normal piston extension blocks.
-- Animation: when `ASSEMBLED = true` and the crankshaft is generating, the piston renders an animated reciprocating motion driven by the crankshaft's current rotation angle. One piston block sits in the upper cylinder bore and one protrudes above the cylinder. No block actually moves; the animation is purely rendered via Flywheel.
+- Animation: when `ASSEMBLED = true`, the static piston block models are hidden and the crankshaft renders two dynamic piston body partials. They remain visible at rest and reciprocate while the crankshaft is running. One piston block sits in the upper cylinder bore and one protrudes above the cylinder. No block actually moves; the animation is purely rendered via Flywheel/fallback block entity rendering.
 
 ### `Crankshaft`
 
@@ -561,14 +561,15 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Replace flickering multipart placeholders with stable non-overlapping proxy models
 - [x] Add Blockbench handoff guide for final static models and animated partials
 - [ ] Add cylinder visual states that identify ring position clearly: unassembled shell, assembled lower shell, assembled upper cap, inlet face, and bore-facing side pieces
-- [x] Add piston static models that read as guides/sleeves while assembled; the actual moving rod/crosshead should be rendered dynamically from the crankshaft
+- [x] Add piston static models for unassembled placement; assembled piston/head block geometry is rendered dynamically from the crankshaft
 - [x] Add a `CrankshaftAnimation` math helper shared by Flywheel and fallback renderer
 - [x] Add `CrankshaftVisual` using Flywheel `SimpleBlockEntityVisualizer`, `TransformedInstance`, and `PartialModel`; drive it from `KineticBlockEntityRenderer.getAngleForBe(...)`
 - [x] Add `CrankshaftRenderer` fallback for non-visualized rendering so piston motion is still visible if Flywheel visualization is disabled
 - [x] Make the crankshaft axial: one horizontal rotation axis, two opposite shaft ports, no four-way output
 - [x] Expose minimal client-safe getters on `CrankshaftBlockEntity`: assembled state, source mode/running state, active speed, ring origin, inlet position, and piston positions
 - [x] Hide or simplify static assembled piston block geometry so it does not fight the moving visual
-- [x] Add `piston_head` as a separate structural block in the lower cylinder bore, ready for final model and later animation
+- [x] Add `piston_head` as a separate structural block in the lower cylinder bore
+- [x] Animate the actual `piston_head` and two `piston` bodies up and down from crankshaft phase, using Flywheel and fallback rendering
 - [x] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
 - [x] Add rhythmic steam sound using Create's normal `STEAM` sound event, slightly louder than the vanilla Create steam engine
 - [ ] Add Ponder plugin and scenes after visual models settle: direct compact engine, boiler outlet pressure, steam storage/pipes, steam inlet, Aeronautics ship use

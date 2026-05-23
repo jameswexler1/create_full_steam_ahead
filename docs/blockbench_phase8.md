@@ -1,6 +1,6 @@
 # Phase 8 Blockbench Guide
 
-Use Blockbench to make final art after the proxy animation is working. The current files are technical placeholders, so they are allowed to be simple, but the exported paths should stay stable.
+Use Blockbench to make final art after the technical animation is working. The current files are technical placeholders, so they are allowed to be simple, but the exported paths should stay stable.
 
 ## Static Block Models
 
@@ -22,23 +22,23 @@ Create these as Java Block/Item models and export them over the existing files i
 Keep every static block inside the normal 16x16x16 block cube. Do not create faces that sit exactly on top of another face. If two cubes touch, let them meet edge-to-edge; do not let them occupy the same space.
 
 The unassembled `piston.json` is used for all four piston section variants while `assembled=false`.
-The four assembled piston files are distinct section models and should remain separate exports even if
-their first pass looks similar.
+The four assembled piston files are retained as section model targets, but the active assembled render
+path currently hides static piston/head block geometry and draws the moving parts from the crankshaft.
 The `piston_head.json` model is a separate block from `piston`; it sits in the lower center of the
-cylinder bore and will later join the dynamic piston animation.
+cylinder bore and is also used as the dynamic piston-head partial.
 
 ## Animated Partial Models
 
 Animated parts live in:
 
-- `src/main/resources/assets/full_steam_ahead/models/block/partial/piston_rod_proxy.json`
-- `src/main/resources/assets/full_steam_ahead/models/block/partial/piston_head_proxy.json`
+- `src/main/resources/assets/full_steam_ahead/models/block/partial/piston_body.json`
+- `src/main/resources/assets/full_steam_ahead/models/block/partial/piston_head.json`
 - `src/main/resources/assets/full_steam_ahead/models/block/partial/crank_pin_proxy.json`
 
 The animation code moves these parts, so their origin matters:
 
 - Model with the engine centered on X/Z at `8, 8`.
-- Keep the piston rod vertical.
+- Keep the piston body and piston head vertical.
 - Keep the crank pin centered around the crankshaft block.
 - Avoid baked rotations unless the code explicitly needs them.
 

@@ -31,7 +31,7 @@ Completed first slice:
 
 Completed animation proxy slice:
 
-- [x] Added proxy partial models for piston rod, piston head, and crank pin.
+- [x] Added technical partial models for piston animation and crank pin rendering.
 - [x] Added `CrankshaftAnimation`, Flywheel `CrankshaftVisual`, and fallback `CrankshaftRenderer`.
 - [x] Registered the crankshaft block entity renderer and Flywheel visual from client-only code.
 - [x] Exposed client-safe crankshaft state getters for rendering.
@@ -43,12 +43,14 @@ Completed animation proxy slice:
 - [x] Corrected the moving-column stack to `piston_head -> piston -> piston -> crankshaft`.
 - [x] Applied the v2 `piston_head` model and matched the block outline/collision shape to its cuboids.
 - [x] Applied the v1 `piston` body model to base and assembled piston section models, with matching 6x16x6 outline/collision shape.
+- [x] Replaced piston/head proxy animation with dynamic rendering of the actual `piston` and `piston_head` models.
+- [x] Hid assembled static piston/head block models so the moving dynamic visuals do not overlap fixed geometry.
 
 Automated results:
 
-- [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-21 after proxy partials, the axial crankshaft fix, crank-phase steam effects, and the steam sound correction.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-21 after technical partials, the axial crankshaft fix, crank-phase steam effects, and the steam sound correction.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-21 after renderer/visual code, the axial crankshaft fix, crank-phase steam effects, and the steam sound correction.
-- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew processResources` passed on 2026-05-21 after proxy partials, the axial crankshaft fix, crank-phase steam effects, and the steam sound correction.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew processResources` passed on 2026-05-21 after technical partials, the axial crankshaft fix, crank-phase steam effects, and the steam sound correction.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-21 after renderer/visual code, the axial crankshaft fix, crank-phase steam effects, and the steam sound correction.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-23 after adding `piston_head`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-23 after adding `piston_head`.
@@ -58,15 +60,17 @@ Automated results:
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-23 after correcting the piston-head stack and applying the v2 model.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after correcting the piston-head stack and applying the v2 model.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after applying the piston body v1 model and hitbox.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after replacing proxy piston animation with dynamic actual piston/head partials.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` reached an integrated world on 2026-05-21 after lazy partial registration.
 
 Manual runtime checklist:
 
 - [x] Existing direct compact engines still assemble and run.
-- [ ] `piston_head` appears in the creative tab and is placeable.
-- [ ] New stack assembles as `piston_head -> piston -> piston -> crankshaft`.
-- [ ] `piston_head` v2 model renders correctly and uses the stepped non-full-block hitbox.
-- [ ] `piston` v1 body model renders correctly in unassembled and assembled states and uses the narrow 6x16x6 hitbox.
+- [x] `piston_head` appears in the creative tab and is placeable.
+- [x] New stack assembles as `piston_head -> piston -> piston -> crankshaft`.
+- [x] `piston_head` v2 model renders correctly and uses the stepped non-full-block hitbox.
+- [x] `piston` v1 body model renders correctly in unassembled placement and uses the narrow 6x16x6 hitbox.
+- [ ] Assembled `piston_head` and both `piston` bodies remain visible at rest and reciprocate while the crankshaft is running.
 - [x] Existing pipe-fed engines still assemble and run.
 - [x] Old worlds with existing engines load without blockstate/model errors.
 - [x] Piston motion is synchronized with crankshaft rotation at 16, 32, 48, and 64 RPM.
