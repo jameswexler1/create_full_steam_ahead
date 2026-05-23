@@ -22,20 +22,17 @@ public final class CrankshaftValidator {
     public static Result validate(Level level, BlockPos crankshaftPos) {
         PistonPositions pistons = pistonPositions(crankshaftPos);
 
-        if (!isCenterClear(level, pistons.lowerBore())) {
-            return Result.invalid("Lower cylinder bore must be empty");
-        }
         if (!isPistonHead(level, pistons.pistonHead())) {
             return Result.invalid("Missing piston head");
-        }
-        if (!isPiston(level, pistons.upperPiston())) {
-            return Result.invalid("Missing upper protruding piston");
         }
         if (!isPiston(level, pistons.lowerPiston())) {
             return Result.invalid("Missing lower protruding piston");
         }
+        if (!isPiston(level, pistons.upperPiston())) {
+            return Result.invalid("Missing upper protruding piston");
+        }
 
-        BlockPos ringOrigin = crankshaftPos.offset(-1, -4, -1);
+        BlockPos ringOrigin = crankshaftPos.offset(-1, -3, -1);
         List<BlockPos> ringPositions = ringPositions(ringOrigin);
         List<BlockPos> cylinderPositions = new ArrayList<>(16);
         BlockPos inletPos = null;
@@ -91,7 +88,6 @@ public final class CrankshaftValidator {
 
     public static PistonPositions pistonPositions(BlockPos crankshaftPos) {
         return new PistonPositions(
-                crankshaftPos.below(4),
                 crankshaftPos.below(3),
                 crankshaftPos.below(2),
                 crankshaftPos.below(1)
@@ -116,10 +112,6 @@ public final class CrankshaftValidator {
 
     private static boolean isPistonHead(Level level, BlockPos pos) {
         return level.isLoaded(pos) && level.getBlockState(pos).is(ModBlocks.PISTON_HEAD.get());
-    }
-
-    private static boolean isCenterClear(Level level, BlockPos pos) {
-        return level.isLoaded(pos) && level.getBlockState(pos).isAir();
     }
 
     private static boolean isAssembled(
@@ -181,7 +173,6 @@ public final class CrankshaftValidator {
     }
 
     public record PistonPositions(
-            BlockPos lowerBore,
             BlockPos pistonHead,
             BlockPos lowerPiston,
             BlockPos upperPiston

@@ -23,7 +23,7 @@ folder for visual inspection only. In Blockbench, prefer the resource-pack layou
 ## What To Recreate For Full Steam Ahead
 
 - `piston`: unassembled static piston model used by all piston section variants when `assembled=false`.
-- `piston_head`: separate block for the upper center of the cylinder bore; it will later move with the animated piston assembly.
+- `piston_head`: separate block for the lower center of the cylinder bore; it will later move with the animated piston assembly.
 - `piston_inside_low`: assembled lower piston guide inside the cylinder bore.
 - `piston_inside_high`: assembled upper piston guide inside the cylinder bore.
 - `piston_protrude_low`: assembled lower exposed piston guide above the cylinder.

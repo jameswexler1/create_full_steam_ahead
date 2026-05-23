@@ -1,6 +1,6 @@
 # Create: Full Steam Ahead — Design Plan
 
-Last updated: 2026-05-21
+Last updated: 2026-05-23
 
 ## Goal
 
@@ -96,7 +96,7 @@ Other orientations (horizontal, inverted) are deferred to a future version.
 | Block | Class base | Role |
 |---|---|---|
 | `steam_cylinder` | `Block + IBE<SteamCylinderBlockEntity>` | Forms the 3×3×2 hollow casing ring around the piston. Self-assembles. |
-| `piston_head` | `Block` | Physical piston head. Sits in the upper center of the cylinder bore and is part of the moving piston assembly. |
+| `piston_head` | `Block` | Physical piston head. Sits in the lower center of the cylinder bore and is part of the moving piston assembly. |
 | `piston` | `Block` | Physical piston extension block. 2 blocks per engine above the cylinder head. Animated when running. |
 | `crankshaft` | `HorizontalAxisKineticBlock` | Sits at the tip of the piston. The axial kinetic output. Triggers full structure validation. |
 | `boiler_outlet` | `Block + SmartBlockEntity` | Attaches to a Create Fluid Tank boiler, generates `steam`, and provides pressure into pipes. |
@@ -126,13 +126,12 @@ A minimal working engine (vertical, default orientation):
 
 ```
         [Crankshaft]              ← KineticBlock; two opposite shaft ports on one horizontal axis
-        [  Piston  ]              ← protrusion block 2
-        [  Piston  ]              ← protrusion block 1
+        [  Piston  ]              ← protruding piston block
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ← top of cylinder frame (assembled texture: cylinder head cap)
-[Cyl]   [PistonHead]   [Cyl]
-[Cyl]   [          ]   [Cyl]     ← upper cylinder layer (inner face texture active)
+[Cyl]   [  Piston  ]   [Cyl]     ← upper cylinder layer (inner face texture active)
 [Cyl]   [          ]   [Cyl]
-[Cyl]   [          ]   [Cyl]     ← lower cylinder layer
+[Cyl]   [PistonHead]   [Cyl]     ← lower cylinder layer
+[Cyl]   [          ]   [Cyl]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ← top of Create Fluid Tank (boiler)
 [Tank]  [  Tank    ]   [Tank]
 [Tank]  [  Tank    ]   [Tank]    ← Create Fluid Tank blocks (player-placed, not our blocks)
@@ -144,8 +143,8 @@ A minimal working engine (vertical, default orientation):
 Block counts for a minimal engine:
 - Direct compact mode: 16 × `steam_cylinder` (8 per layer × 2 layers)
 - Pipe-fed mode: 15 × `steam_cylinder` + 1 × `steam_inlet` occupying any cylinder shell slot
-- 1 × `piston_head` in the upper cylinder bore center
-- 2 × `piston` above the cylinder
+- 1 × `piston_head` in the lower cylinder bore center
+- 2 × `piston` above it: one in the upper cylinder bore and one protruding above the cylinder
 - 1 × `crankshaft`
 - At least 9 × Create `fluid_tank` (3×3×1 minimum)
 - At least 1 × Create `blaze_burner`
@@ -202,10 +201,9 @@ The cylinder ring also disassembles visually if any of the 16 shell blocks is re
 When the `Crankshaft` block is placed, it scans downward along its Y axis:
 
 1. Expects exactly 2 `piston` blocks immediately below it
-2. Expects one `piston_head` block below those pistons, in the upper center of the cylinder bore
-3. Expects the lower center of the cylinder bore to remain empty
-4. Expects a valid assembled `SteamCylinder` ring around the bore
-5. Expects either a valid Create fluid tank layer directly below the ring's bottom layer, or one assembled `steam_inlet` occupying a cylinder shell slot
+2. Expects one `piston_head` block below those pistons, in the lower center of the cylinder bore
+3. Expects a valid assembled `SteamCylinder` ring around the bore
+4. Expects either a valid Create fluid tank layer directly below the ring's bottom layer, or one assembled `steam_inlet` occupying a cylinder shell slot
 
 If all checks pass: the crankshaft block entity stores references to the cylinder root and begins receiving steam data. Direct compact mode reads boiler heat/water. Pipe-fed mode consumes stored `steam` from the inlet. If both sources exist, piped steam is preferred while available, with direct boiler output as fallback.
 
@@ -241,7 +239,7 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - No block entity in v1
 - Blockstate properties:
   - `ASSEMBLED: BooleanProperty` (default false)
-- Required at the upper center of the cylinder bore, directly below the two normal piston extension blocks.
+- Required at the lower center of the cylinder bore, directly below the two normal piston extension blocks.
 - Animation: later this block will move with the piston assembly. The Phase 8 technical pass only adds the block, validation, placeholder model, and assembled state.
 
 ### `SteamPiston` (registered as `piston`)
@@ -252,7 +250,7 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
   - `ASSEMBLED: BooleanProperty` (default false)
   - `PISTON_SECTION: EnumProperty<PistonSection>` where `PistonSection` has values `INSIDE_LOW`, `INSIDE_HIGH`, `PROTRUDE_LOW`, `PROTRUDE_HIGH` — determines which texture variant and animation offset to use
 - When the crankshaft validates the structure, it sets the assembled state and piston section on the 2 normal piston extension blocks.
-- Animation: when `ASSEMBLED = true` and the crankshaft is generating, the piston renders an animated reciprocating motion driven by the crankshaft's current rotation angle. The visual piston stroke covers the 2 protruding block heights. No block actually moves; the animation is purely rendered via Flywheel.
+- Animation: when `ASSEMBLED = true` and the crankshaft is generating, the piston renders an animated reciprocating motion driven by the crankshaft's current rotation angle. One piston block sits in the upper cylinder bore and one protrudes above the cylinder. No block actually moves; the animation is purely rendered via Flywheel.
 
 ### `Crankshaft`
 
@@ -570,7 +568,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Make the crankshaft axial: one horizontal rotation axis, two opposite shaft ports, no four-way output
 - [x] Expose minimal client-safe getters on `CrankshaftBlockEntity`: assembled state, source mode/running state, active speed, ring origin, inlet position, and piston positions
 - [x] Hide or simplify static assembled piston block geometry so it does not fight the moving visual
-- [x] Add `piston_head` as a separate structural block in the upper cylinder bore, ready for final model and later animation
+- [x] Add `piston_head` as a separate structural block in the lower cylinder bore, ready for final model and later animation
 - [x] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
 - [x] Add rhythmic steam sound using Create's normal `STEAM` sound event, slightly louder than the vanilla Create steam engine
 - [ ] Add Ponder plugin and scenes after visual models settle: direct compact engine, boiler outlet pressure, steam storage/pipes, steam inlet, Aeronautics ship use

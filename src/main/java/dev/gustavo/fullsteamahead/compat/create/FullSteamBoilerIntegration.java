@@ -40,7 +40,7 @@ public final class FullSteamBoilerIntegration {
         for (int x = 0; x <= width - 3; x++) {
             for (int z = 0; z <= width - 3; z++) {
                 BlockPos ringOrigin = controllerPos.offset(x, height, z);
-                BlockPos crankshaftPos = ringOrigin.offset(1, 4, 1);
+                BlockPos crankshaftPos = ringOrigin.offset(1, 3, 1);
                 if (!level.isLoaded(crankshaftPos)
                         || !level.getBlockState(crankshaftPos).is(ModBlocks.CRANKSHAFT.get())) {
                     continue;

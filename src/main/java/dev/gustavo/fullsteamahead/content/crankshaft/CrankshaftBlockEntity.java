@@ -440,16 +440,19 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
 
     private void setPistonsAssembled(CrankshaftValidator.Result result) {
         setPistonHead(result.pistonHead(), true);
-        setPiston(result.lowerPiston(), true, PistonSection.PROTRUDE_LOW);
-        setPiston(result.upperPiston(), true, PistonSection.PROTRUDE_HIGH);
+        setPiston(result.lowerPiston(), true, PistonSection.INSIDE_HIGH);
+        setPiston(result.upperPiston(), true, PistonSection.PROTRUDE_LOW);
     }
 
     private void clearPistonStates(BlockPos skippedPistonPos) {
         CrankshaftValidator.PistonPositions pistons = CrankshaftValidator.pistonPositions(worldPosition);
-        clearPiston(pistons.lowerBore(), skippedPistonPos);
         clearPistonHead(pistons.pistonHead(), skippedPistonPos);
         clearPiston(pistons.lowerPiston(), skippedPistonPos);
         clearPiston(pistons.upperPiston(), skippedPistonPos);
+
+        BlockPos legacyLowerBore = worldPosition.below(4);
+        clearPiston(legacyLowerBore, skippedPistonPos);
+        clearPistonHead(legacyLowerBore, skippedPistonPos);
     }
 
     private void clearPiston(BlockPos pos, BlockPos skippedPistonPos) {

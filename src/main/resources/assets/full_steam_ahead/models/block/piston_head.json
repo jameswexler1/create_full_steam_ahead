@@ -1,5 +1,5 @@
 {
-  "credit": "Converted from piston_head_for_testing.bbmodel for local testing.",
+  "credit": "Converted from piston_head_for_testing_v2.bbmodel for local testing.",
   "ambientocclusion": true,
   "textures": {
     "continuity_of_head_texture": "full_steam_ahead:block/piston_head/continuity_of_head_texture",
@@ -215,12 +215,12 @@
     },
     {
       "from": [
-        3,
+        5,
         4,
         5
       ],
       "to": [
-        13,
+        11,
         16,
         11
       ],

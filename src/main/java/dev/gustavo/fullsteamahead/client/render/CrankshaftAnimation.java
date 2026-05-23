@@ -8,10 +8,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class CrankshaftAnimation {
-    public static final int ROD_SEGMENTS = 4;
+    public static final int ROD_SEGMENTS = 3;
 
     private static final float STROKE_BLOCKS = 1.25F;
-    private static final float ROD_BASE_Y = -4.0F;
+    private static final float ROD_BASE_Y = -3.0F;
 
     public static State state(CrankshaftBlockEntity crankshaft) {
         boolean visible = crankshaft.isEngineRunning();

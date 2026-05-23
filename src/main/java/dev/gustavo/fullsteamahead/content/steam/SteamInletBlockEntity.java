@@ -118,7 +118,7 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     public BlockPos getCrankshaftPos() {
-        return ringOrigin == null ? null : ringOrigin.offset(1, 4, 1);
+        return ringOrigin == null ? null : ringOrigin.offset(1, 3, 1);
     }
 
     public int getSteamAmount() {

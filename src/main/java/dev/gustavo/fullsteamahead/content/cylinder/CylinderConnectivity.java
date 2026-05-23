@@ -240,7 +240,7 @@ public final class CylinderConnectivity {
     private static void notifyCrankshafts(Level level, Set<BlockPos> candidateOrigins) {
         Set<BlockPos> notified = new LinkedHashSet<>();
         for (BlockPos origin : candidateOrigins) {
-            BlockPos crankshaftPos = origin.offset(1, 4, 1);
+            BlockPos crankshaftPos = origin.offset(1, 3, 1);
             if (notified.add(crankshaftPos)) {
                 CrankshaftBlockEntity.revalidateAt(level, crankshaftPos);
             }

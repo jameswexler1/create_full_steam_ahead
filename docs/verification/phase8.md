@@ -40,6 +40,8 @@ Completed animation proxy slice:
 - [x] Converted the crankshaft from four-way horizontal output to one axial horizontal shaft axis.
 - [x] Added Create steam jet particles and Create `STEAM` sounds, emitted only on crank phase while the engine is running.
 - [x] Added `piston_head` technical block and updated the crankshaft validator for the new moving-column stack.
+- [x] Corrected the moving-column stack to `piston_head -> piston -> piston -> crankshaft`.
+- [x] Applied the v2 `piston_head` model and matched the block outline/collision shape to its cuboids.
 
 Automated results:
 
@@ -51,13 +53,17 @@ Automated results:
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-23 after adding `piston_head`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew processResources` passed on 2026-05-23 after adding `piston_head`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after adding `piston_head`.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-23 after correcting the piston-head stack and applying the v2 model.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-23 after correcting the piston-head stack and applying the v2 model.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after correcting the piston-head stack and applying the v2 model.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` reached an integrated world on 2026-05-21 after lazy partial registration.
 
 Manual runtime checklist:
 
 - [x] Existing direct compact engines still assemble and run.
 - [ ] `piston_head` appears in the creative tab and is placeable.
-- [ ] New stack assembles as `empty lower bore -> piston_head -> piston -> piston -> crankshaft`.
+- [ ] New stack assembles as `piston_head -> piston -> piston -> crankshaft`.
+- [ ] `piston_head` v2 model renders correctly and uses the stepped non-full-block hitbox.
 - [x] Existing pipe-fed engines still assemble and run.
 - [x] Old worlds with existing engines load without blockstate/model errors.
 - [x] Piston motion is synchronized with crankshaft rotation at 16, 32, 48, and 64 RPM.
