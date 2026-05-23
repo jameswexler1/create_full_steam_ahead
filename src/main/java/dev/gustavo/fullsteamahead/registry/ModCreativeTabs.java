@@ -20,6 +20,7 @@ public final class ModCreativeTabs {
                     .displayItems((parameters, output) -> {
                         output.accept(ModBlocks.STEAM_CYLINDER.get());
                         output.accept(ModBlocks.PISTON.get());
+                        output.accept(ModBlocks.PISTON_HEAD.get());
                         output.accept(ModBlocks.CRANKSHAFT.get());
                         output.accept(ModBlocks.BOILER_OUTLET.get());
                         output.accept(ModBlocks.STEAM_INLET.get());

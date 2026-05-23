@@ -86,7 +86,9 @@ public final class CylinderConnectivity {
 
                     if (isCenter(x, z)) {
                         BlockState centerState = level.getBlockState(pos);
-                        if (!centerState.isAir() && !centerState.is(ModBlocks.PISTON.get())) {
+                        if (!centerState.isAir()
+                                && !centerState.is(ModBlocks.PISTON.get())
+                                && !centerState.is(ModBlocks.PISTON_HEAD.get())) {
                             return false;
                         }
                         continue;

@@ -140,6 +140,7 @@ public final class FullSteamMovementRules {
         return state.is(ModBlocks.STEAM_CYLINDER.get())
                 || state.is(ModBlocks.STEAM_INLET.get())
                 || state.is(ModBlocks.PISTON.get())
+                || state.is(ModBlocks.PISTON_HEAD.get())
                 || state.is(ModBlocks.CRANKSHAFT.get())
                 || state.is(ModBlocks.BOILER_OUTLET.get())
                 || state.is(ModBlocks.FLYWHEEL.get())

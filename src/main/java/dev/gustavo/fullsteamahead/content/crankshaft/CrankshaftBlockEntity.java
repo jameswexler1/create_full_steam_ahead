@@ -9,6 +9,7 @@ import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import com.simibubi.create.content.kinetics.steamEngine.SteamJetParticleData;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlock;
 import dev.gustavo.fullsteamahead.content.piston.PistonSection;
 import dev.gustavo.fullsteamahead.content.piston.SteamPistonBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlockEntity;
@@ -438,18 +439,17 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
     }
 
     private void setPistonsAssembled(CrankshaftValidator.Result result) {
-        setPiston(result.insideLow(), true, PistonSection.INSIDE_LOW);
-        setPiston(result.insideHigh(), true, PistonSection.INSIDE_HIGH);
-        setPiston(result.protrudeLow(), true, PistonSection.PROTRUDE_LOW);
-        setPiston(result.protrudeHigh(), true, PistonSection.PROTRUDE_HIGH);
+        setPistonHead(result.pistonHead(), true);
+        setPiston(result.lowerPiston(), true, PistonSection.PROTRUDE_LOW);
+        setPiston(result.upperPiston(), true, PistonSection.PROTRUDE_HIGH);
     }
 
     private void clearPistonStates(BlockPos skippedPistonPos) {
         CrankshaftValidator.PistonPositions pistons = CrankshaftValidator.pistonPositions(worldPosition);
-        clearPiston(pistons.insideLow(), skippedPistonPos);
-        clearPiston(pistons.insideHigh(), skippedPistonPos);
-        clearPiston(pistons.protrudeLow(), skippedPistonPos);
-        clearPiston(pistons.protrudeHigh(), skippedPistonPos);
+        clearPiston(pistons.lowerBore(), skippedPistonPos);
+        clearPistonHead(pistons.pistonHead(), skippedPistonPos);
+        clearPiston(pistons.lowerPiston(), skippedPistonPos);
+        clearPiston(pistons.upperPiston(), skippedPistonPos);
     }
 
     private void clearPiston(BlockPos pos, BlockPos skippedPistonPos) {
@@ -457,6 +457,13 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
             return;
         }
         setPiston(pos, false, PistonSection.INSIDE_LOW);
+    }
+
+    private void clearPistonHead(BlockPos pos, BlockPos skippedPistonPos) {
+        if (pos.equals(skippedPistonPos)) {
+            return;
+        }
+        setPistonHead(pos, false);
     }
 
     private void setPiston(BlockPos pos, boolean assembled, PistonSection section) {
@@ -472,6 +479,22 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         BlockState newState = state
                 .setValue(SteamPistonBlock.ASSEMBLED, assembled)
                 .setValue(SteamPistonBlock.PISTON_SECTION, section);
+        if (newState != state) {
+            level.setBlock(pos, newState, Block.UPDATE_CLIENTS);
+        }
+    }
+
+    private void setPistonHead(BlockPos pos, boolean assembled) {
+        if (level == null || pos == null || !level.isLoaded(pos)) {
+            return;
+        }
+
+        BlockState state = level.getBlockState(pos);
+        if (!state.is(ModBlocks.PISTON_HEAD.get())) {
+            return;
+        }
+
+        BlockState newState = state.setValue(PistonHeadBlock.ASSEMBLED, assembled);
         if (newState != state) {
             level.setBlock(pos, newState, Block.UPDATE_CLIENTS);
         }

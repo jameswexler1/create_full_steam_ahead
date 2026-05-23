@@ -22,17 +22,17 @@ public final class CrankshaftValidator {
     public static Result validate(Level level, BlockPos crankshaftPos) {
         PistonPositions pistons = pistonPositions(crankshaftPos);
 
-        if (!isPiston(level, pistons.protrudeHigh())) {
+        if (!isCenterClear(level, pistons.lowerBore())) {
+            return Result.invalid("Lower cylinder bore must be empty");
+        }
+        if (!isPistonHead(level, pistons.pistonHead())) {
+            return Result.invalid("Missing piston head");
+        }
+        if (!isPiston(level, pistons.upperPiston())) {
             return Result.invalid("Missing upper protruding piston");
         }
-        if (!isPiston(level, pistons.protrudeLow())) {
+        if (!isPiston(level, pistons.lowerPiston())) {
             return Result.invalid("Missing lower protruding piston");
-        }
-        if (!isPiston(level, pistons.insideHigh())) {
-            return Result.invalid("Missing upper internal piston");
-        }
-        if (!isPiston(level, pistons.insideLow())) {
-            return Result.invalid("Missing lower internal piston");
         }
 
         BlockPos ringOrigin = crankshaftPos.offset(-1, -4, -1);
@@ -83,10 +83,9 @@ public final class CrankshaftValidator {
                 cylinderRoot,
                 boiler.boilerPos(),
                 inletPos,
-                pistons.insideLow(),
-                pistons.insideHigh(),
-                pistons.protrudeLow(),
-                pistons.protrudeHigh()
+                pistons.pistonHead(),
+                pistons.lowerPiston(),
+                pistons.upperPiston()
         );
     }
 
@@ -113,6 +112,14 @@ public final class CrankshaftValidator {
 
     private static boolean isPiston(Level level, BlockPos pos) {
         return level.isLoaded(pos) && level.getBlockState(pos).is(ModBlocks.PISTON.get());
+    }
+
+    private static boolean isPistonHead(Level level, BlockPos pos) {
+        return level.isLoaded(pos) && level.getBlockState(pos).is(ModBlocks.PISTON_HEAD.get());
+    }
+
+    private static boolean isCenterClear(Level level, BlockPos pos) {
+        return level.isLoaded(pos) && level.getBlockState(pos).isAir();
     }
 
     private static boolean isAssembled(
@@ -174,10 +181,10 @@ public final class CrankshaftValidator {
     }
 
     public record PistonPositions(
-            BlockPos insideLow,
-            BlockPos insideHigh,
-            BlockPos protrudeLow,
-            BlockPos protrudeHigh
+            BlockPos lowerBore,
+            BlockPos pistonHead,
+            BlockPos lowerPiston,
+            BlockPos upperPiston
     ) {
     }
 
@@ -188,13 +195,12 @@ public final class CrankshaftValidator {
             BlockPos cylinderRoot,
             BlockPos boilerPos,
             BlockPos inletPos,
-            BlockPos insideLow,
-            BlockPos insideHigh,
-            BlockPos protrudeLow,
-            BlockPos protrudeHigh
+            BlockPos pistonHead,
+            BlockPos lowerPiston,
+            BlockPos upperPiston
     ) {
         public static Result invalid(String message) {
-            return new Result(false, message, null, null, null, null, null, null, null, null);
+            return new Result(false, message, null, null, null, null, null, null, null);
         }
     }
 

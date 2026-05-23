@@ -5,6 +5,7 @@ import dev.gustavo.fullsteamahead.content.crankshaft.CrankshaftBlock;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlock;
 import dev.gustavo.fullsteamahead.content.flywheel.FlywheelBlock;
 import dev.gustavo.fullsteamahead.content.governor.GovernorBlock;
+import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlock;
 import dev.gustavo.fullsteamahead.content.piston.SteamPistonBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
@@ -24,6 +25,8 @@ public final class ModBlocks {
             registerBlock("steam_cylinder", SteamCylinderBlock::new, cylinderProperties());
     public static final DeferredBlock<SteamPistonBlock> PISTON =
             registerBlock("piston", SteamPistonBlock::new, metalProperties());
+    public static final DeferredBlock<PistonHeadBlock> PISTON_HEAD =
+            registerBlock("piston_head", PistonHeadBlock::new, metalProperties());
     public static final DeferredBlock<CrankshaftBlock> CRANKSHAFT =
             registerBlock("crankshaft", CrankshaftBlock::new, metalProperties());
     public static final DeferredBlock<FlywheelBlock> FLYWHEEL =
