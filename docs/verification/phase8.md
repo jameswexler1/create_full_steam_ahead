@@ -42,6 +42,7 @@ Completed animation proxy slice:
 - [x] Added `piston_head` technical block and updated the crankshaft validator for the new moving-column stack.
 - [x] Corrected the moving-column stack to `piston_head -> piston -> piston -> crankshaft`.
 - [x] Applied the v2 `piston_head` model and matched the block outline/collision shape to its cuboids.
+- [x] Applied the v1 `piston` body model to base and assembled piston section models, with matching 6x16x6 outline/collision shape.
 
 Automated results:
 
@@ -56,6 +57,7 @@ Automated results:
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-23 after correcting the piston-head stack and applying the v2 model.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-23 after correcting the piston-head stack and applying the v2 model.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after correcting the piston-head stack and applying the v2 model.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after applying the piston body v1 model and hitbox.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` reached an integrated world on 2026-05-21 after lazy partial registration.
 
 Manual runtime checklist:
@@ -64,6 +66,7 @@ Manual runtime checklist:
 - [ ] `piston_head` appears in the creative tab and is placeable.
 - [ ] New stack assembles as `piston_head -> piston -> piston -> crankshaft`.
 - [ ] `piston_head` v2 model renders correctly and uses the stepped non-full-block hitbox.
+- [ ] `piston` v1 body model renders correctly in unassembled and assembled states and uses the narrow 6x16x6 hitbox.
 - [x] Existing pipe-fed engines still assemble and run.
 - [x] Old worlds with existing engines load without blockstate/model errors.
 - [x] Piston motion is synchronized with crankshaft rotation at 16, 32, 48, and 64 RPM.

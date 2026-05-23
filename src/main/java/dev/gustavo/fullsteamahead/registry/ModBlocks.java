@@ -24,7 +24,7 @@ public final class ModBlocks {
     public static final DeferredBlock<SteamCylinderBlock> STEAM_CYLINDER =
             registerBlock("steam_cylinder", SteamCylinderBlock::new, cylinderProperties());
     public static final DeferredBlock<SteamPistonBlock> PISTON =
-            registerBlock("piston", SteamPistonBlock::new, metalProperties());
+            registerBlock("piston", SteamPistonBlock::new, metalProperties().noOcclusion());
     public static final DeferredBlock<PistonHeadBlock> PISTON_HEAD =
             registerBlock("piston_head", PistonHeadBlock::new, metalProperties().noOcclusion());
     public static final DeferredBlock<CrankshaftBlock> CRANKSHAFT =

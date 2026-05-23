@@ -1,7 +1,78 @@
 {
-  "parent": "minecraft:block/cube_column",
+  "credit": "Converted from piston_body_v1.bbmodel for local testing.",
+  "ambientocclusion": true,
   "textures": {
-    "end": "create:block/cam_linkage",
-    "side": "create:block/andesite_casing_piston"
-  }
+    "piston_body": "full_steam_ahead:block/piston/piston_body",
+    "particle": "full_steam_ahead:block/piston/piston_body"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        0,
+        5
+      ],
+      "to": [
+        11,
+        16,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3,
+            3,
+            6,
+            11
+          ],
+          "texture": "#piston_body"
+        },
+        "east": {
+          "uv": [
+            0,
+            3,
+            3,
+            11
+          ],
+          "texture": "#piston_body"
+        },
+        "south": {
+          "uv": [
+            9,
+            3,
+            12,
+            11
+          ],
+          "texture": "#piston_body"
+        },
+        "west": {
+          "uv": [
+            6,
+            3,
+            9,
+            11
+          ],
+          "texture": "#piston_body"
+        },
+        "up": {
+          "uv": [
+            6,
+            3,
+            3,
+            0
+          ],
+          "texture": "#piston_body"
+        },
+        "down": {
+          "uv": [
+            9,
+            0,
+            6,
+            3
+          ],
+          "texture": "#piston_body"
+        }
+      }
+    }
+  ]
 }
