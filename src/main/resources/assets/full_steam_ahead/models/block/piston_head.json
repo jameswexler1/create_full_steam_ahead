@@ -1,6 +1,285 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "credit": "Converted from piston_head_for_testing.bbmodel for local testing.",
+  "ambientocclusion": true,
   "textures": {
-    "all": "create:block/engine"
-  }
+    "continuity_of_head_texture": "full_steam_ahead:block/piston_head/continuity_of_head_texture",
+    "shaft_base_texture": "full_steam_ahead:block/piston_head/shaft_base_texture",
+    "head_shaft": "full_steam_ahead:block/piston_head/head_shaft",
+    "base_head_texture": "full_steam_ahead:block/piston_head/base_head_texture",
+    "particle": "full_steam_ahead:block/piston_head/base_head_texture"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        1,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            4,
+            8,
+            4.25
+          ],
+          "texture": "#base_head_texture"
+        },
+        "east": {
+          "uv": [
+            0,
+            4,
+            4,
+            4.25
+          ],
+          "texture": "#base_head_texture"
+        },
+        "south": {
+          "uv": [
+            12,
+            4,
+            16,
+            4.25
+          ],
+          "texture": "#base_head_texture"
+        },
+        "west": {
+          "uv": [
+            8,
+            4,
+            12,
+            4.25
+          ],
+          "texture": "#base_head_texture"
+        },
+        "up": {
+          "uv": [
+            8,
+            4,
+            4,
+            0
+          ],
+          "texture": "#base_head_texture"
+        },
+        "down": {
+          "uv": [
+            12,
+            0,
+            8,
+            4
+          ],
+          "texture": "#base_head_texture"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        1,
+        1
+      ],
+      "to": [
+        15,
+        3,
+        15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            0,
+            14,
+            1
+          ],
+          "texture": "#continuity_of_head_texture"
+        },
+        "east": {
+          "uv": [
+            7,
+            1,
+            14,
+            2
+          ],
+          "texture": "#continuity_of_head_texture"
+        },
+        "south": {
+          "uv": [
+            7,
+            2,
+            14,
+            3
+          ],
+          "texture": "#continuity_of_head_texture"
+        },
+        "west": {
+          "uv": [
+            7,
+            3,
+            14,
+            4
+          ],
+          "texture": "#continuity_of_head_texture"
+        },
+        "up": {
+          "uv": [
+            7,
+            7,
+            0,
+            0
+          ],
+          "texture": "#continuity_of_head_texture"
+        },
+        "down": {
+          "uv": [
+            7,
+            7,
+            0,
+            14
+          ],
+          "texture": "#continuity_of_head_texture"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        3,
+        3
+      ],
+      "to": [
+        14,
+        4,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            0,
+            12,
+            0.5
+          ],
+          "texture": "#shaft_base_texture"
+        },
+        "east": {
+          "uv": [
+            6,
+            1,
+            11,
+            1.5
+          ],
+          "texture": "#shaft_base_texture"
+        },
+        "south": {
+          "uv": [
+            6,
+            0.5,
+            12,
+            1
+          ],
+          "texture": "#shaft_base_texture"
+        },
+        "west": {
+          "uv": [
+            6,
+            1.5,
+            11,
+            2
+          ],
+          "texture": "#shaft_base_texture"
+        },
+        "up": {
+          "uv": [
+            6,
+            5,
+            0,
+            0
+          ],
+          "texture": "#shaft_base_texture"
+        },
+        "down": {
+          "uv": [
+            6,
+            5,
+            0,
+            10
+          ],
+          "texture": "#shaft_base_texture"
+        }
+      }
+    },
+    {
+      "from": [
+        3,
+        4,
+        5
+      ],
+      "to": [
+        13,
+        16,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            5,
+            6
+          ],
+          "texture": "#head_shaft"
+        },
+        "east": {
+          "uv": [
+            0,
+            6,
+            3,
+            12
+          ],
+          "texture": "#head_shaft"
+        },
+        "south": {
+          "uv": [
+            5,
+            0,
+            10,
+            6
+          ],
+          "texture": "#head_shaft"
+        },
+        "west": {
+          "uv": [
+            3,
+            6,
+            6,
+            12
+          ],
+          "texture": "#head_shaft"
+        },
+        "up": {
+          "uv": [
+            11,
+            9,
+            6,
+            6
+          ],
+          "texture": "#head_shaft"
+        },
+        "down": {
+          "uv": [
+            11,
+            9,
+            6,
+            12
+          ],
+          "texture": "#head_shaft"
+        }
+      }
+    }
+  ]
 }
