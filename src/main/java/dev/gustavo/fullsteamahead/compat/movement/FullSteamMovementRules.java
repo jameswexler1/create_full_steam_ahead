@@ -3,6 +3,7 @@ package dev.gustavo.fullsteamahead.compat.movement;
 import com.simibubi.create.api.contraption.BlockMovementChecks;
 import com.simibubi.create.content.fluids.FluidPropagator;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
+import dev.gustavo.fullsteamahead.content.piston.EngineValidator;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
@@ -122,6 +123,24 @@ public final class FullSteamMovementRules {
             return additional;
         }
 
+        if (state.is(ModBlocks.PISTON_HEAD.get())) {
+            EngineValidator.Result result = EngineValidator.validate(level, pos);
+            if (result.valid() && !visited.contains(result.shaft())) {
+                additional.add(result.shaft());
+            }
+        } else if (state.is(ModBlocks.POWERED_SHAFT.get())) {
+            for (BlockPos headPos : EngineValidator.candidatePistonHeadsNear(pos)) {
+                if (visited.contains(headPos) || !level.isLoaded(headPos)) {
+                    continue;
+                }
+
+                EngineValidator.Result result = EngineValidator.validate(level, headPos);
+                if (result.valid() && pos.equals(result.shaft())) {
+                    additional.add(headPos);
+                }
+            }
+        }
+
         for (Direction direction : Direction.values()) {
             BlockPos neighborPos = pos.relative(direction);
             if (visited.contains(neighborPos)) {
@@ -141,7 +160,7 @@ public final class FullSteamMovementRules {
                 || state.is(ModBlocks.STEAM_INLET.get())
                 || state.is(ModBlocks.PISTON.get())
                 || state.is(ModBlocks.PISTON_HEAD.get())
-                || state.is(ModBlocks.CRANKSHAFT.get())
+                || state.is(ModBlocks.POWERED_SHAFT.get())
                 || state.is(ModBlocks.BOILER_OUTLET.get())
                 || state.is(ModBlocks.FLYWHEEL.get())
                 || state.is(ModBlocks.GOVERNOR.get());

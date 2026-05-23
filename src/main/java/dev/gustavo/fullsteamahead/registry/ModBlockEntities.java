@@ -1,8 +1,9 @@
 package dev.gustavo.fullsteamahead.registry;
 
 import dev.gustavo.fullsteamahead.FullSteamAhead;
-import dev.gustavo.fullsteamahead.content.crankshaft.CrankshaftBlockEntity;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlockEntity;
+import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
+import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlockEntity;
 import net.minecraft.core.registries.Registries;
@@ -22,11 +23,18 @@ public final class ModBlockEntities {
                             ModBlocks.STEAM_CYLINDER.get()
                     ).build(null));
 
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<CrankshaftBlockEntity>> CRANKSHAFT =
-            BLOCK_ENTITY_TYPES.register("crankshaft",
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<PistonHeadBlockEntity>> PISTON_HEAD =
+            BLOCK_ENTITY_TYPES.register("piston_head",
                     () -> BlockEntityType.Builder.of(
-                            CrankshaftBlockEntity::new,
-                            ModBlocks.CRANKSHAFT.get()
+                            PistonHeadBlockEntity::new,
+                            ModBlocks.PISTON_HEAD.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FullSteamPoweredShaftBlockEntity>> POWERED_SHAFT =
+            BLOCK_ENTITY_TYPES.register("powered_shaft",
+                    () -> BlockEntityType.Builder.of(
+                            FullSteamPoweredShaftBlockEntity::new,
+                            ModBlocks.POWERED_SHAFT.get()
                     ).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BoilerOutletBlockEntity>> BOILER_OUTLET =

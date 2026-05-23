@@ -35,7 +35,7 @@ Implementation notes:
 - `steam_inlet` attaches to adjacent Create pipes.
 - Create Fluid Tank and Create pipe checks are symmetric for these Full Steam Ahead connections, so assembly can discover the link from either side.
 - Simulated compatibility uses guarded reflection against `dev.simulated_team.simulated.index.SimBlockMovementChecks`; there are no hard imports from Simulated, Aeronautics, or Sable.
-- `steam_cylinder`, `crankshaft`, `boiler_outlet`, and `steam_inlet` are listed in `create:safe_nbt`.
+- `steam_cylinder`, `piston_head`, `powered_shaft`, `boiler_outlet`, and `steam_inlet` are listed in `create:safe_nbt`.
 
 Runtime status:
 
@@ -48,9 +48,9 @@ Manual runtime checklist:
 - [ ] Run without Aeronautics, Simulated, or Sable installed and confirm the game still opens.
 - [ ] Confirm direct compact and pipe-fed engines still assemble and run normally.
 - [x] In an Aeronautics/Sable test profile, assemble a ship/sublevel containing a Full Steam Ahead engine.
-- [x] Confirm cylinder, inlet, piston, crankshaft, boiler outlet, and attached boiler/pipe connections move together.
+- [x] Confirm cylinder, inlet, piston, piston head, powered shaft, boiler outlet, and attached boiler/pipe connections move together.
 - [x] Confirm engine NBT/state survives assembly, disassembly, world reload, and sublevel reload.
-- [x] Confirm Create shafts connected to the crankshaft can power Aeronautics propellers while assembled on the sublevel.
+- [x] Confirm Create shafts linked to the engine output can power Aeronautics propellers while assembled on the sublevel.
 
 User report on 2026-05-21: Create Aeronautics was added to the dev runtime, a simulated contraption containing the engine and components was assembled in-game, and the engine worked correctly while assembled.
 

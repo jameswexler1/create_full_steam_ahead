@@ -5,7 +5,7 @@ Date: 2026-05-21
 Planned scope:
 
 - Replace placeholder block models with Create-style visual models.
-- Add crankshaft-driven piston animation through Flywheel plus a fallback renderer.
+- Add linked-shaft-driven piston animation through Flywheel plus a fallback renderer.
 - Add running steam particles and Create-style steam-engine sound.
 - Add Ponder scenes after visuals are stable.
 - Preserve all Phase 7 mechanics and Aeronautics compatibility.
@@ -32,9 +32,9 @@ Completed first slice:
 Completed animation proxy slice:
 
 - [x] Added technical partial models for piston animation and crank pin rendering.
-- [x] Added `CrankshaftAnimation`, Flywheel `CrankshaftVisual`, and fallback `CrankshaftRenderer`.
-- [x] Registered the crankshaft block entity renderer and Flywheel visual from client-only code.
-- [x] Exposed client-safe crankshaft state getters for rendering.
+- [x] Added `CrankshaftAnimation`, Flywheel `CrankshaftVisual`, and fallback `CrankshaftRenderer` for the first animation slice.
+- [x] Registered the crankshaft block entity renderer and Flywheel visual from client-only code for the first animation slice.
+- [x] Exposed client-safe crankshaft state getters for rendering in the first animation slice.
 - [x] Fixed early partial-model initialization that caused a startup crash before the title screen.
 - [x] Corrected placeholder inlet/outlet pipe texture references to `create:block/pipes`.
 - [x] Converted the crankshaft from four-way horizontal output to one axial horizontal shaft axis.
@@ -45,6 +45,15 @@ Completed animation proxy slice:
 - [x] Applied the v1 `piston` body model to base and assembled piston section models, with matching 6x16x6 outline/collision shape.
 - [x] Replaced piston/head proxy animation with dynamic rendering of the actual `piston` and `piston_head` models.
 - [x] Hid assembled static piston/head block models so the moving dynamic visuals do not overlap fixed geometry.
+
+Completed shaft-link remodel slice:
+
+- [x] Removed the custom `crankshaft` block from registration, creative tab, loot, blockstates, item models, mining tags, and lang.
+- [x] Added hidden `powered_shaft`, which replaces a player-placed Create shaft when the piston head validates the engine.
+- [x] Moved validation and steam output ownership to `PistonHeadBlockEntity`.
+- [x] Updated the current stack to `piston_head -> piston -> empty stroke -> Create shaft`.
+- [x] Replaced crankshaft renderer/visual/animation with piston-head renderer/visual/animation driven from the linked shaft angle.
+- [x] Fixed dynamic piston/head lighting by relighting the head, piston body, and shaft partial at their own world positions.
 
 Automated results:
 
@@ -61,20 +70,25 @@ Automated results:
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after correcting the piston-head stack and applying the v2 model.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after applying the piston body v1 model and hitbox.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after replacing proxy piston animation with dynamic actual piston/head partials.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-23 after the shaft-link remodel.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-23 after the shaft-link remodel.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after the shaft-link remodel.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` reached an integrated world on 2026-05-21 after lazy partial registration.
 
 Manual runtime checklist:
 
 - [x] Existing direct compact engines still assemble and run.
 - [x] `piston_head` appears in the creative tab and is placeable.
-- [x] New stack assembles as `piston_head -> piston -> piston -> crankshaft`.
+- [x] Previous stack assembled as `piston_head -> piston -> piston -> crankshaft`.
+- [ ] New stack assembles as `piston_head -> piston -> empty stroke -> Create shaft`.
 - [x] `piston_head` v2 model renders correctly and uses the stepped non-full-block hitbox.
 - [x] `piston` v1 body model renders correctly in unassembled placement and uses the narrow 6x16x6 hitbox.
-- [ ] Assembled `piston_head` and both `piston` bodies remain visible at rest and reciprocate while the crankshaft is running.
+- [ ] Assembled `piston_head` and the `piston` body remain visible at rest and reciprocate while the linked shaft is running.
 - [x] Existing pipe-fed engines still assemble and run.
 - [x] Old worlds with existing engines load without blockstate/model errors.
-- [x] Piston motion is synchronized with crankshaft rotation at 16, 32, 48, and 64 RPM.
-- [x] Crankshaft only connects and transfers rotation through the two opposite faces on its selected axis.
+- [x] Piston motion was synchronized with crankshaft rotation at 16, 32, 48, and 64 RPM before the shaft-link remodel.
+- [ ] Piston motion is synchronized with linked Create shaft rotation at 16, 32, 48, and 64 RPM after the shaft-link remodel.
+- [ ] The custom crankshaft item no longer appears in the creative tab, and the top output behaves as a normal Create shaft.
 - [x] Piston motion stops when the engine has no steam.
 - [x] Steam particles appear only while running and scale reasonably with speed.
 - [x] Steam sound matches Create's vanilla steam-engine style, is slightly louder, and only plays while running.

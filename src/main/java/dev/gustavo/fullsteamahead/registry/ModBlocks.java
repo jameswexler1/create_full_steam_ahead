@@ -1,12 +1,12 @@
 package dev.gustavo.fullsteamahead.registry;
 
 import dev.gustavo.fullsteamahead.FullSteamAhead;
-import dev.gustavo.fullsteamahead.content.crankshaft.CrankshaftBlock;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlock;
 import dev.gustavo.fullsteamahead.content.flywheel.FlywheelBlock;
 import dev.gustavo.fullsteamahead.content.governor.GovernorBlock;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlock;
 import dev.gustavo.fullsteamahead.content.piston.SteamPistonBlock;
+import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
 import net.minecraft.world.level.block.Block;
@@ -27,8 +27,8 @@ public final class ModBlocks {
             registerBlock("piston", SteamPistonBlock::new, metalProperties().noOcclusion());
     public static final DeferredBlock<PistonHeadBlock> PISTON_HEAD =
             registerBlock("piston_head", PistonHeadBlock::new, metalProperties().noOcclusion());
-    public static final DeferredBlock<CrankshaftBlock> CRANKSHAFT =
-            registerBlock("crankshaft", CrankshaftBlock::new, metalProperties());
+    public static final DeferredBlock<FullSteamPoweredShaftBlock> POWERED_SHAFT =
+            registerBlockOnly("powered_shaft", FullSteamPoweredShaftBlock::new, metalProperties().noOcclusion());
     public static final DeferredBlock<FlywheelBlock> FLYWHEEL =
             registerBlock("flywheel", FlywheelBlock::new, metalProperties());
     public static final DeferredBlock<GovernorBlock> GOVERNOR =
@@ -46,6 +46,14 @@ public final class ModBlocks {
         DeferredBlock<T> block = BLOCKS.registerBlock(name, factory, properties);
         ModItems.ITEMS.registerSimpleBlockItem(name, block);
         return block;
+    }
+
+    private static <T extends Block> DeferredBlock<T> registerBlockOnly(
+            String name,
+            Function<BlockBehaviour.Properties, T> factory,
+            BlockBehaviour.Properties properties
+    ) {
+        return BLOCKS.registerBlock(name, factory, properties);
     }
 
     private static BlockBehaviour.Properties cylinderProperties() {

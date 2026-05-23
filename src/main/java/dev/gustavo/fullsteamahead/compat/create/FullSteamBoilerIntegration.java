@@ -1,7 +1,7 @@
 package dev.gustavo.fullsteamahead.compat.create;
 
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
-import dev.gustavo.fullsteamahead.content.crankshaft.CrankshaftValidator;
+import dev.gustavo.fullsteamahead.content.piston.EngineValidator;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
@@ -36,24 +36,24 @@ public final class FullSteamBoilerIntegration {
         }
 
         BlockPos controllerPos = controller.getBlockPos();
-        Set<BlockPos> crankshafts = new HashSet<>();
+        Set<BlockPos> engines = new HashSet<>();
         for (int x = 0; x <= width - 3; x++) {
             for (int z = 0; z <= width - 3; z++) {
                 BlockPos ringOrigin = controllerPos.offset(x, height, z);
-                BlockPos crankshaftPos = ringOrigin.offset(1, 3, 1);
-                if (!level.isLoaded(crankshaftPos)
-                        || !level.getBlockState(crankshaftPos).is(ModBlocks.CRANKSHAFT.get())) {
+                BlockPos enginePos = ringOrigin.offset(1, 0, 1);
+                if (!level.isLoaded(enginePos)
+                        || !level.getBlockState(enginePos).is(ModBlocks.PISTON_HEAD.get())) {
                     continue;
                 }
 
-                CrankshaftValidator.Result result = CrankshaftValidator.validate(level, crankshaftPos);
+                EngineValidator.Result result = EngineValidator.validate(level, enginePos);
                 if (result.valid() && controllerPos.equals(result.boilerPos())) {
-                    crankshafts.add(crankshaftPos);
+                    engines.add(enginePos);
                 }
             }
         }
 
-        return crankshafts.size() + countAttachedOutlets(controller);
+        return engines.size() + countAttachedOutlets(controller);
     }
 
     private static int countAttachedOutlets(FluidTankBlockEntity controller) {

@@ -1,7 +1,6 @@
 package dev.gustavo.fullsteamahead.content.piston;
 
 import com.mojang.serialization.MapCodec;
-import dev.gustavo.fullsteamahead.content.crankshaft.CrankshaftBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -55,14 +54,14 @@ public class SteamPistonBlock extends Block {
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         if (!level.isClientSide() && !state.is(oldState.getBlock())) {
-            CrankshaftBlockEntity.revalidateNearbyCrankshafts(level, pos);
+            PistonHeadBlockEntity.revalidateNearbyEngines(level, pos);
         }
     }
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!level.isClientSide() && !state.is(newState.getBlock())) {
-            CrankshaftBlockEntity.invalidateNearbyCrankshafts(level, pos, "Piston column changed", pos);
+            PistonHeadBlockEntity.invalidateNearbyEngines(level, pos, "Piston column changed", pos);
         }
     }
 

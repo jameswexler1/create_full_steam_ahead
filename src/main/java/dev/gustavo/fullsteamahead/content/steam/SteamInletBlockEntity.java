@@ -117,8 +117,8 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         return ringOrigin;
     }
 
-    public BlockPos getCrankshaftPos() {
-        return ringOrigin == null ? null : ringOrigin.offset(1, 3, 1);
+    public BlockPos getEnginePos() {
+        return ringOrigin == null ? null : ringOrigin.offset(1, 0, 1);
     }
 
     public int getSteamAmount() {
@@ -162,9 +162,9 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         tooltip.add(Component.literal("Consumed: " + consumedLastTick + " mB/t")
                 .withStyle(consumedLastTick > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY));
 
-        BlockPos crankshaftPos = getCrankshaftPos();
-        tooltip.add(Component.literal(crankshaftPos == null ? "No crankshaft link" : "Crankshaft linked")
-                .withStyle(crankshaftPos == null ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY));
+        BlockPos enginePos = getEnginePos();
+        tooltip.add(Component.literal(enginePos == null ? "No engine link" : "Engine linked")
+                .withStyle(enginePos == null ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY));
         return true;
     }
 

@@ -4,26 +4,25 @@ import dev.engine_room.flywheel.api.instance.Instance;
 import dev.engine_room.flywheel.api.visual.DynamicVisual;
 import dev.engine_room.flywheel.api.visualization.VisualizationContext;
 import dev.engine_room.flywheel.api.visualization.VisualizerRegistry;
-import dev.engine_room.flywheel.lib.instance.FlatLit;
-import dev.engine_room.flywheel.lib.instance.InstanceTypes;
 import dev.engine_room.flywheel.lib.instance.TransformedInstance;
+import dev.engine_room.flywheel.lib.instance.InstanceTypes;
 import dev.engine_room.flywheel.lib.model.Models;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import dev.engine_room.flywheel.lib.visual.AbstractBlockEntityVisual;
 import dev.engine_room.flywheel.lib.visual.SimpleDynamicVisual;
 import dev.engine_room.flywheel.lib.visualization.SimpleBlockEntityVisualizer;
-import dev.gustavo.fullsteamahead.content.crankshaft.CrankshaftBlockEntity;
+import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 
 import java.util.function.Consumer;
 
-public class CrankshaftVisual extends AbstractBlockEntityVisual<CrankshaftBlockEntity> implements SimpleDynamicVisual {
-    private final TransformedInstance[] pistons = new TransformedInstance[CrankshaftAnimation.PISTON_BLOCKS];
+public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockEntity> implements SimpleDynamicVisual {
+    private final TransformedInstance[] pistons = new TransformedInstance[PistonHeadAnimation.PISTON_BLOCKS];
     private final TransformedInstance head;
     private final TransformedInstance crankPin;
 
-    public CrankshaftVisual(VisualizationContext context, CrankshaftBlockEntity blockEntity, float partialTick) {
+    public PistonHeadVisual(VisualizationContext context, PistonHeadBlockEntity blockEntity, float partialTick) {
         super(context, blockEntity, partialTick);
         for (int blockIndex = 0; blockIndex < pistons.length; blockIndex++) {
             pistons[blockIndex] = transformed(FullSteamPartialModels.pistonBody());
@@ -35,10 +34,10 @@ public class CrankshaftVisual extends AbstractBlockEntityVisual<CrankshaftBlockE
 
     public static void register() {
         VisualizerRegistry.setVisualizer(
-                ModBlockEntities.CRANKSHAFT.get(),
-                SimpleBlockEntityVisualizer.builder(ModBlockEntities.CRANKSHAFT.get())
-                        .factory(CrankshaftVisual::new)
-                        .skipVanillaRender(crankshaft -> true)
+                ModBlockEntities.PISTON_HEAD.get(),
+                SimpleBlockEntityVisualizer.builder(ModBlockEntities.PISTON_HEAD.get())
+                        .factory(PistonHeadVisual::new)
+                        .skipVanillaRender(engine -> true)
                         .apply()
         );
     }
@@ -50,11 +49,11 @@ public class CrankshaftVisual extends AbstractBlockEntityVisual<CrankshaftBlockE
 
     @Override
     public void updateLight(float partialTick) {
-        FlatLit[] instances = new FlatLit[pistons.length + 2];
-        System.arraycopy(pistons, 0, instances, 0, pistons.length);
-        instances[pistons.length] = head;
-        instances[pistons.length + 1] = crankPin;
-        relight(instances);
+        BlockPos base = blockEntity.getBlockPos();
+        PistonHeadAnimation.State animation = PistonHeadAnimation.state(blockEntity);
+        relight(partLightPos(base, animation.headY()), head);
+        relight(partLightPos(base, animation.pistonY(0)), pistons);
+        relight(base.above(3), crankPin);
     }
 
     @Override
@@ -76,7 +75,7 @@ public class CrankshaftVisual extends AbstractBlockEntityVisual<CrankshaftBlockE
     }
 
     private void animate() {
-        CrankshaftAnimation.State animation = CrankshaftAnimation.state(blockEntity);
+        PistonHeadAnimation.State animation = PistonHeadAnimation.state(blockEntity);
         for (int blockIndex = 0; blockIndex < pistons.length; blockIndex++) {
             setVisible(pistons[blockIndex], animation.visible());
             if (animation.visible()) {
@@ -96,6 +95,7 @@ public class CrankshaftVisual extends AbstractBlockEntityVisual<CrankshaftBlockE
                 .translate(0, animation.headY(), 0)
                 .setChanged();
         base(crankPin)
+                .translate(0, animation.crankPinY(), 0)
                 .center()
                 .rotateY(animation.angle())
                 .uncenter()
@@ -117,5 +117,10 @@ public class CrankshaftVisual extends AbstractBlockEntityVisual<CrankshaftBlockE
 
     private static void setVisible(TransformedInstance instance, boolean visible) {
         instance.setVisible(visible);
+    }
+
+    private static BlockPos partLightPos(BlockPos basePos, float y) {
+        int blockOffset = Math.max(0, Math.min(3, Math.round(y)));
+        return basePos.above(blockOffset);
     }
 }

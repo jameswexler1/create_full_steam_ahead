@@ -1,10 +1,13 @@
-package dev.gustavo.fullsteamahead.content.crankshaft;
+package dev.gustavo.fullsteamahead.content.piston;
 
+import com.simibubi.create.AllBlocks;
+import com.simibubi.create.content.kinetics.simpleRelays.AbstractShaftBlock;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -13,26 +16,29 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public final class CrankshaftValidator {
+public final class EngineValidator {
     private static final Comparator<BlockPos> ROOT_ORDER = Comparator
             .comparingInt((BlockPos pos) -> pos.getY())
             .thenComparingInt(pos -> pos.getX())
             .thenComparingInt(pos -> pos.getZ());
 
-    public static Result validate(Level level, BlockPos crankshaftPos) {
-        PistonPositions pistons = pistonPositions(crankshaftPos);
+    public static Result validate(Level level, BlockPos pistonHeadPos) {
+        PistonPositions pistons = pistonPositions(pistonHeadPos);
 
         if (!isPistonHead(level, pistons.pistonHead())) {
             return Result.invalid("Missing piston head");
         }
-        if (!isPiston(level, pistons.lowerPiston())) {
-            return Result.invalid("Missing lower protruding piston");
+        if (!isPiston(level, pistons.piston())) {
+            return Result.invalid("Missing piston body");
         }
-        if (!isPiston(level, pistons.upperPiston())) {
-            return Result.invalid("Missing upper protruding piston");
+        if (!isEmpty(level, pistons.emptyStroke())) {
+            return Result.invalid("Stroke space above piston must be empty");
+        }
+        if (!isValidShaft(level, pistons.shaft())) {
+            return Result.invalid("Missing horizontal Create shaft");
         }
 
-        BlockPos ringOrigin = crankshaftPos.offset(-1, -3, -1);
+        BlockPos ringOrigin = pistonHeadPos.offset(-1, 0, -1);
         List<BlockPos> ringPositions = ringPositions(ringOrigin);
         List<BlockPos> cylinderPositions = new ArrayList<>(16);
         BlockPos inletPos = null;
@@ -81,23 +87,25 @@ public final class CrankshaftValidator {
                 boiler.boilerPos(),
                 inletPos,
                 pistons.pistonHead(),
-                pistons.lowerPiston(),
-                pistons.upperPiston()
+                pistons.piston(),
+                pistons.emptyStroke(),
+                pistons.shaft()
         );
     }
 
-    public static PistonPositions pistonPositions(BlockPos crankshaftPos) {
+    public static PistonPositions pistonPositions(BlockPos pistonHeadPos) {
         return new PistonPositions(
-                crankshaftPos.below(3),
-                crankshaftPos.below(2),
-                crankshaftPos.below(1)
+                pistonHeadPos,
+                pistonHeadPos.above(),
+                pistonHeadPos.above(2),
+                pistonHeadPos.above(3)
         );
     }
 
-    public static List<BlockPos> candidateCrankshaftsNear(BlockPos changedPos) {
+    public static List<BlockPos> candidatePistonHeadsNear(BlockPos changedPos) {
         List<BlockPos> candidates = new ArrayList<>(175);
         for (int dx = -2; dx <= 2; dx++) {
-            for (int dy = 0; dy <= 6; dy++) {
+            for (int dy = -3; dy <= 3; dy++) {
                 for (int dz = -2; dz <= 2; dz++) {
                     candidates.add(changedPos.offset(dx, dy, dz));
                 }
@@ -112,6 +120,35 @@ public final class CrankshaftValidator {
 
     private static boolean isPistonHead(Level level, BlockPos pos) {
         return level.isLoaded(pos) && level.getBlockState(pos).is(ModBlocks.PISTON_HEAD.get());
+    }
+
+    private static boolean isEmpty(Level level, BlockPos pos) {
+        return level.isLoaded(pos) && level.getBlockState(pos).isAir();
+    }
+
+    public static boolean isValidShaft(Level level, BlockPos pos) {
+        if (!level.isLoaded(pos)) {
+            return false;
+        }
+
+        BlockState state = level.getBlockState(pos);
+        if (!AllBlocks.SHAFT.has(state) && !state.is(ModBlocks.POWERED_SHAFT.get())) {
+            return false;
+        }
+
+        if (!(state.getBlock() instanceof AbstractShaftBlock shaft)) {
+            return false;
+        }
+
+        return shaft.getRotationAxis(state).isHorizontal();
+    }
+
+    public static Direction.Axis shaftAxis(Level level, BlockPos shaftPos) {
+        BlockState state = level.getBlockState(shaftPos);
+        if (state.getBlock() instanceof AbstractShaftBlock shaft) {
+            return shaft.getRotationAxis(state);
+        }
+        return Direction.Axis.X;
     }
 
     private static boolean isAssembled(
@@ -174,8 +211,9 @@ public final class CrankshaftValidator {
 
     public record PistonPositions(
             BlockPos pistonHead,
-            BlockPos lowerPiston,
-            BlockPos upperPiston
+            BlockPos piston,
+            BlockPos emptyStroke,
+            BlockPos shaft
     ) {
     }
 
@@ -187,11 +225,12 @@ public final class CrankshaftValidator {
             BlockPos boilerPos,
             BlockPos inletPos,
             BlockPos pistonHead,
-            BlockPos lowerPiston,
-            BlockPos upperPiston
+            BlockPos piston,
+            BlockPos emptyStroke,
+            BlockPos shaft
     ) {
         public static Result invalid(String message) {
-            return new Result(false, message, null, null, null, null, null, null, null);
+            return new Result(false, message, null, null, null, null, null, null, null, null);
         }
     }
 
@@ -205,6 +244,6 @@ public final class CrankshaftValidator {
         }
     }
 
-    private CrankshaftValidator() {
+    private EngineValidator() {
     }
 }

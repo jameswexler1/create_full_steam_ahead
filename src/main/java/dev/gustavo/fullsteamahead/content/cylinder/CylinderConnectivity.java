@@ -1,7 +1,7 @@
 package dev.gustavo.fullsteamahead.content.cylinder;
 
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
-import dev.gustavo.fullsteamahead.content.crankshaft.CrankshaftBlockEntity;
+import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
@@ -58,7 +58,7 @@ public final class CylinderConnectivity {
             assemble(level, origin);
         }
 
-        notifyCrankshafts(level, candidates);
+        notifyEngines(level, candidates);
     }
 
     private static Set<BlockPos> candidateOrigins(BlockPos pos) {
@@ -237,12 +237,12 @@ public final class CylinderConnectivity {
         return state.is(ModBlocks.STEAM_CYLINDER.get()) || state.is(ModBlocks.STEAM_INLET.get());
     }
 
-    private static void notifyCrankshafts(Level level, Set<BlockPos> candidateOrigins) {
+    private static void notifyEngines(Level level, Set<BlockPos> candidateOrigins) {
         Set<BlockPos> notified = new LinkedHashSet<>();
         for (BlockPos origin : candidateOrigins) {
-            BlockPos crankshaftPos = origin.offset(1, 3, 1);
-            if (notified.add(crankshaftPos)) {
-                CrankshaftBlockEntity.revalidateAt(level, crankshaftPos);
+            BlockPos pistonHeadPos = origin.offset(1, 0, 1);
+            if (notified.add(pistonHeadPos)) {
+                PistonHeadBlockEntity.revalidateAt(level, pistonHeadPos);
             }
         }
     }

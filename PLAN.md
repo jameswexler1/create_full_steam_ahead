@@ -25,8 +25,8 @@ Verified target stack:
 
 Important source findings:
 
-- Create's `SteamEngineBlockEntity` reads a neighbouring `FluidTankBlockEntity` boiler and updates a `PoweredShaftBlockEntity`. We follow this same pattern: our `CrankshaftBlockEntity` reads the `FluidTankBlockEntity` boiler below the cylinder via the same `BoilerData` path.
-- Create's `GeneratingKineticBlockEntity` with dynamic `getGeneratedSpeed()` and `calculateAddedStressCapacity()` is the correct base for the crankshaft output. Do not subclass `PoweredShaftBlockEntity` directly.
+- Create's `SteamEngineBlockEntity` reads a neighbouring `FluidTankBlockEntity` boiler and updates a hidden `PoweredShaftBlockEntity`. We follow the same player-facing pattern: the player places a normal Create shaft, and the assembled Full Steam Ahead engine swaps it to a hidden `full_steam_ahead:powered_shaft`.
+- The hidden `full_steam_ahead:powered_shaft` extends Create's powered shaft block but uses our own `GeneratingKineticBlockEntity` implementation so we can preserve the exact Full Steam Ahead SU/RPM balance.
 - Create exposes `BlockStressValues` for stress tooltip metadata.
 - NeoForge `BaseFlowingFluid`, `FluidType`, `FluidTank`, `IFluidHandler`, and `Capabilities.FluidHandler.BLOCK` are present in the 21.1.230 dev classpath and are the correct baseline for a storable `steam` fluid.
 - Create's fluid pipes ultimately interact with NeoForge `IFluidHandler`; Create also exposes internal pipe pressure helpers through `FluidTransportBehaviour`, `FluidNetwork`, `FluidPropagator.getPumpRange()`, and `PipeConnection`.
@@ -35,7 +35,7 @@ Important source findings:
 - The current Simulated Project source exposes `dev.simulated_team.simulated.index.SimBlockMovementChecks` with attached-block and additional-block registration hooks. Aeronautics uses that API from `AeroBlockMovementChecks`.
 - The local dev classpath intentionally does not include Aeronautics, Simulated, or Sable jars. Compatibility must therefore remain optional at compile time and guarded at runtime.
 - Flywheel 1.0.6 exposes `VisualizerRegistry`, `SimpleBlockEntityVisualizer`, `AbstractBlockEntityVisual`, `TransformedInstance`, and `PartialModel`. Create's own `SteamEngineVisual` uses this stack for piston/linkage animation.
-- Create exposes `KineticBlockEntityRenderer.getAngleForBe(...)`, which should drive the crankshaft visual phase so our piston animation stays synchronized with Create kinetic rotation.
+- Create exposes `KineticBlockEntityRenderer.getAngleForBe(...)`, which drives the piston animation phase from the linked powered shaft so visuals stay synchronized with Create kinetic rotation.
 - Ponder 1.0.82 exposes `PonderPlugin`, `PonderSceneRegistrationHelper`, and `PonderIndex.addPlugin(...)`. Ponder scenes should be registered from a client-side plugin after the visual models are stable.
 
 Primary references:
@@ -81,11 +81,11 @@ The already-registered `flywheel` and `governor` blocks remain inert placeholder
 
 ### Engine orientation: vertical only in v1
 
-The cylinder, piston column, and crankshaft remain vertical in v1:
+The cylinder, piston column, and shaft link remain vertical in v1:
 
 - Steam Cylinder frame
 - Piston column rising through the cylinder
-- Crankshaft at the top of the piston
+- A regular horizontal Create shaft above the piston stroke space
 
 In direct compact mode, the Create Fluid Tank boiler still sits directly below the cylinder and Blaze Burners still heat upward below the tank. In pipe-fed mode, the boiler can be remote, but the engine assembly itself is still vertical.
 
@@ -96,9 +96,9 @@ Other orientations (horizontal, inverted) are deferred to a future version.
 | Block | Class base | Role |
 |---|---|---|
 | `steam_cylinder` | `Block + IBE<SteamCylinderBlockEntity>` | Forms the 3×3×2 hollow casing ring around the piston. Self-assembles. |
-| `piston_head` | `Block` | Physical piston head. Sits in the lower center of the cylinder bore and is part of the moving piston assembly. |
-| `piston` | `Block` | Physical piston extension block. 2 blocks per engine above the cylinder head. Animated when running. |
-| `crankshaft` | `HorizontalAxisKineticBlock` | Sits at the tip of the piston. The axial kinetic output. Triggers full structure validation. |
+| `piston_head` | `Block + IBE<PistonHeadBlockEntity>` | Physical piston head and engine brain. Validates the stack, reads steam/boiler state, and powers the linked shaft. |
+| `piston` | `Block` | Physical piston body block above the piston head. Animated when running. |
+| `powered_shaft` | `PoweredShaftBlock + FullSteamPoweredShaftBlockEntity` | Hidden internal replacement for a player-placed Create shaft. Provides kinetic output while cloning/dropping as a normal shaft. |
 | `boiler_outlet` | `Block + SmartBlockEntity` | Attaches to a Create Fluid Tank boiler, generates `steam`, and provides pressure into pipes. |
 | `steam_inlet` | `Block + SmartBlockEntity` | Phase 6 block. Replaces one cylinder shell block in the 3×3×2 ring and accepts `steam` from pipes. |
 
@@ -115,8 +115,9 @@ Removed from the old plan (do not re-add without discussion):
 - `firebox` — Blaze Burners go directly under Create's fluid tank
 - `large_engine_casing` — cylinder block handles casing
 - `boiler_drum` — Create's fluid tank is the boiler
-- `output_coupling` — crankshaft is the kinetic output
+- `output_coupling` — normal Create shafts are the player-facing kinetic output
 - `piston_rod` — renamed and redesigned as `piston`
+- `crankshaft` — removed in favor of vanilla Create shaft placement and a hidden powered shaft, matching Create's own steam engine pattern
 
 ---
 
@@ -125,8 +126,8 @@ Removed from the old plan (do not re-add without discussion):
 A minimal working engine (vertical, default orientation):
 
 ```
-        [Crankshaft]              ← KineticBlock; two opposite shaft ports on one horizontal axis
-        [  Piston  ]              ← protruding piston block
+        [Create Shaft]            ← player-placed horizontal shaft; internally becomes powered_shaft
+        [          ]              ← empty stroke space
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ← top of cylinder frame (assembled texture: cylinder head cap)
 [Cyl]   [  Piston  ]   [Cyl]     ← upper cylinder layer (inner face texture active)
 [Cyl]   [          ]   [Cyl]
@@ -144,8 +145,9 @@ Block counts for a minimal engine:
 - Direct compact mode: 16 × `steam_cylinder` (8 per layer × 2 layers)
 - Pipe-fed mode: 15 × `steam_cylinder` + 1 × `steam_inlet` occupying any cylinder shell slot
 - 1 × `piston_head` in the lower cylinder bore center
-- 2 × `piston` above it: one in the upper cylinder bore and one protruding above the cylinder
-- 1 × `crankshaft`
+- 1 × `piston` above it, in the upper cylinder bore
+- 1 × empty stroke block above the piston
+- 1 × regular horizontal Create `shaft` above the empty stroke space
 - At least 9 × Create `fluid_tank` (3×3×1 minimum)
 - At least 1 × Create `blaze_burner`
 
@@ -161,7 +163,7 @@ Pipe-fed ship/airship layout (planned):
                                                 ||
                                                 \/
 [Engine Room]
-[Steam Cylinder Ring with one Steam Inlet] → [Pistons + Crankshaft] → Create shafts/gearboxes/propellers
+[Steam Cylinder Ring with one Steam Inlet] → [Piston Head + Piston + Create Shaft] → Create shafts/gearboxes/propellers
 ```
 
 The current direct compact stack remains valid while the pipe-fed path is added.
@@ -176,7 +178,7 @@ Assembly is layered. Each layer has its own validity and its own visual state.
 
 The player builds a Create Fluid Tank structure and heats it with Blaze Burners. Create handles heat indicator, water indicator, water supply tracking, and boiler visuals.
 
-In direct compact mode, our crankshaft reads this boiler's `BoilerData` directly.
+In direct compact mode, the `piston_head` block entity reads this boiler's `BoilerData` directly.
 
 In pipe-fed mode, `boiler_outlet` reads this boiler's `BoilerData`, creates `steam` fluid from valid active heat and water supply, and pushes that steam into Create pipes. This still does not replace Create's boiler; it is an outlet/valve attached to it.
 
@@ -196,24 +198,25 @@ The cylinder ring also disassembles visually if any of the 16 shell blocks is re
 
 **Boiler detection**: The bottom ring layer checks positions (0,−1,0) through (2,−1,2) relative to its south-west corner for `FluidTankBlockEntity`. It needs at least the 8 positions directly below the ring blocks (positions matching the cylinder shell footprint) to be valid fluid tanks. The boiler does not need to be assembled in any Create-specific sense; it just needs to be fluid tanks with Blaze Burners below.
 
-### Layer 3 — The Crankshaft (kinetic assembly)
+### Layer 3 — The Piston Head and Shaft Link (kinetic assembly)
 
-When the `Crankshaft` block is placed, it scans downward along its Y axis:
+When the `piston_head` block entity revalidates, it scans upward along its Y axis:
 
-1. Expects exactly 2 `piston` blocks immediately below it
-2. Expects one `piston_head` block below those pistons, in the lower center of the cylinder bore
-3. Expects a valid assembled `SteamCylinder` ring around the bore
-4. Expects either a valid Create fluid tank layer directly below the ring's bottom layer, or one assembled `steam_inlet` occupying a cylinder shell slot
+1. Expects one `piston` block directly above it
+2. Expects one empty stroke block above the piston
+3. Expects a horizontal regular Create shaft or hidden Full Steam Ahead powered shaft above the empty stroke space
+4. Expects a valid assembled `SteamCylinder` ring around the lower piston head and upper piston body
+5. Expects either a valid Create fluid tank layer directly below the ring's bottom layer, or one assembled `steam_inlet` occupying a cylinder shell slot
 
-If all checks pass: the crankshaft block entity stores references to the cylinder root and begins receiving steam data. Direct compact mode reads boiler heat/water. Pipe-fed mode consumes stored `steam` from the inlet. If both sources exist, piped steam is preferred while available, with direct boiler output as fallback.
+If all checks pass: the piston head stores references to the cylinder root, inlet, boiler, and shaft. If the player placed a normal Create shaft, it is swapped to `full_steam_ahead:powered_shaft` and powered from our exact steam output calculation. Direct compact mode reads boiler heat/water. Pipe-fed mode consumes stored `steam` from the inlet. If both sources exist, piped steam is preferred while available, with direct boiler output as fallback.
 
-If any check fails: the crankshaft sits inert and shows a "incomplete structure" goggle overlay.
+If any check fails: the piston head clears assembly, restores the hidden powered shaft back to a normal Create shaft when it owns that shaft, and shows an incomplete-structure goggle overlay.
 
 **Revalidation triggers:**
 - Any `piston` or `piston_head` block placed or removed
 - Any `steam_cylinder` block placed or removed within the expected positions
 - Any Create fluid tank block placed or removed directly below the cylinder's bottom ring
-- Crankshaft block entity loads from disk
+- Piston head block entity loads from disk or lazy-ticks after the player places the shaft
 
 Pipe-fed mode accepts either the direct boiler below the ring or a valid steam inlet occupying one assembled cylinder shell slot. Direct compact mode must remain working during the transition.
 
@@ -235,12 +238,13 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 
 ### `PistonHead` (registered as `piston_head`)
 
-- Extends vanilla `Block`
-- No block entity in v1
+- Extends vanilla `Block` and implements Create `IBE<PistonHeadBlockEntity>`
+- Block entity: `PistonHeadBlockEntity extends SmartBlockEntity`
 - Blockstate properties:
   - `ASSEMBLED: BooleanProperty` (default false)
-- Required at the lower center of the cylinder bore, directly below the two normal piston extension blocks.
-- Animation: when `ASSEMBLED = true`, the static block model is hidden and the crankshaft renders the piston head as a dynamic partial. It remains visible at rest and reciprocates while the crankshaft is running.
+- Required at the lower center of the cylinder bore, directly below the piston body.
+- Validates the complete engine and owns the hidden powered shaft link.
+- Animation: when `ASSEMBLED = true`, the static block model is hidden and the piston head block entity renders the piston head as a dynamic partial. It remains visible at rest and reciprocates while the linked shaft is running.
 
 ### `SteamPiston` (registered as `piston`)
 
@@ -249,19 +253,20 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - Blockstate properties:
   - `ASSEMBLED: BooleanProperty` (default false)
   - `PISTON_SECTION: EnumProperty<PistonSection>` where `PistonSection` has values `INSIDE_LOW`, `INSIDE_HIGH`, `PROTRUDE_LOW`, `PROTRUDE_HIGH` — determines which texture variant and animation offset to use
-- When the crankshaft validates the structure, it sets the assembled state and piston section on the 2 normal piston extension blocks.
-- Animation: when `ASSEMBLED = true`, the static piston block models are hidden and the crankshaft renders two dynamic piston body partials. They remain visible at rest and reciprocate while the crankshaft is running. One piston block sits in the upper cylinder bore and one protrudes above the cylinder. No block actually moves; the animation is purely rendered via Flywheel/fallback block entity rendering.
+- When the piston head validates the structure, it sets the assembled state and piston section on the one piston body block.
+- Animation: when `ASSEMBLED = true`, the static piston block model is hidden and the piston head block entity renders the moving piston body partial. It remains visible at rest and reciprocates while the linked shaft is running. No block actually moves; the animation is purely rendered via Flywheel/fallback block entity rendering.
 
-### `Crankshaft`
+### Hidden `PoweredShaft`
 
-- Extends `HorizontalAxisKineticBlock` (Create)
-- Block entity: `CrankshaftBlockEntity extends GeneratingKineticBlockEntity`
-- Axis: one horizontal shaft axis, selected like Create shafts
-- Shaft ports: the two opposite faces on the selected horizontal axis. Perpendicular horizontal faces, top, and bottom do not transmit rotation.
-- `getGeneratedSpeed()`: returns the active burner-count RPM tier when assembled and steam is available; 0 otherwise.
+- Registered as `full_steam_ahead:powered_shaft`.
+- Hidden from the creative tab and has no block item.
+- Extends Create `PoweredShaftBlock`.
+- Block entity: `FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEntity`.
+- Axis: inherited from the player-placed Create shaft. Only the shaft's own axis transmits rotation.
+- Clones and drops as `create:shaft`, so players continue to interact with it like a normal shaft.
+- `getGeneratedSpeed()`: returns the active burner-count or steam-rate RPM tier when assembled and steam is available; 0 otherwise.
 - `calculateAddedStressCapacity()`: returns capacity proportional to available direct boiler heat or consumed `steam`.
-- Holds reference to `SteamCylinderBlockEntity` root position. On each server tick, reads direct boiler data for compact mode. After pipe-fed mode is implemented, it should prefer valid steam inlet consumption when present and fall back to direct boiler mode otherwise.
-- Implements `IHaveGoggleInformation`: shows assembly status, source mode, active burners or steam rate, water/source state, current RPM, and SU capacity.
+- If the engine becomes invalid, the piston head clears shaft power and restores this block to a normal Create shaft.
 
 ### `BoilerOutlet` (planned as `boiler_outlet`)
 
@@ -285,12 +290,12 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - Accepts only `steam` through an input-only `IFluidHandler`.
 - Stores a small local steam buffer. The buffer is not a pressure source and cannot be drained by external blocks.
 - When the ring assembles, the inlet caches the ring origin and cylinder root. When the ring disassembles, it clears that link and stops accepting steam.
-- The crankshaft prefers consuming steam from the linked inlet. If no usable inlet steam exists and a direct boiler is present, direct compact mode remains the fallback.
+- The piston head prefers consuming steam from the linked inlet. If no usable inlet steam exists and a direct boiler is present, direct compact mode remains the fallback.
 - Pipe-fed balance maps consumed steam rate to output:
   - 10 mB/t consumed steam = 1 heat unit = 16,384 SU
   - Maximum consumed steam for one engine = 180 mB/t = 18 heat units = 294,912 SU
   - RPM uses burner-equivalent tiers from consumed steam units, clamped to 9 equivalents: 1-2 = 16 rpm, 3-4 = 32 rpm, 5-8 = 48 rpm, 9+ = 64 rpm
-- Goggle overlay: ring link status, steam buffer, accepted steam rate, crankshaft link.
+- Goggle overlay: ring link status, steam buffer, accepted steam rate, engine link.
 
 ### Parked `Flywheel` and `Governor`
 
@@ -319,10 +324,12 @@ src/main/java/dev/gustavo/fullsteamahead/
     piston/
       SteamPistonBlock.java
       PistonHeadBlock.java
+      PistonHeadBlockEntity.java       ← validates the engine, reads direct boiler or steam inlet, owns powered shaft
+      EngineValidator.java             ← fixed vertical engine validation
       PistonSection.java               ← enum: INSIDE_LOW, INSIDE_HIGH, PROTRUDE_LOW, PROTRUDE_HIGH
-    crankshaft/
-      CrankshaftBlock.java
-      CrankshaftBlockEntity.java       ← GeneratingKineticBlockEntity, reads direct boiler or steam inlet
+    shaft/
+      FullSteamPoweredShaftBlock.java  ← hidden replacement for player-placed Create shaft
+      FullSteamPoweredShaftBlockEntity.java
     steam/
       BoilerOutletBlock.java
       BoilerOutletBlockEntity.java
@@ -344,9 +351,9 @@ src/main/java/dev/gustavo/fullsteamahead/
     FullSteamAheadClient.java
     FullSteamPartialModels.java
     render/
-      CrankshaftVisual.java
-      CrankshaftRenderer.java
-      CrankshaftAnimation.java
+      PistonHeadVisual.java
+      PistonHeadRenderer.java
+      PistonHeadAnimation.java
     ponder/
       FullSteamPonderPlugin.java
       FullSteamPonderScenes.java
@@ -435,7 +442,7 @@ Tasks:
 - [x] Delete: `EnginePartBlock.java`, `HorizontalEnginePartBlock.java`, `AxialEnginePartBlock.java`
 - [x] Add: `SteamCylinderBlock` with `ASSEMBLED` BooleanProperty blockstate
 - [x] Add: `SteamPistonBlock` with `ASSEMBLED` BooleanProperty and `PISTON_SECTION` EnumProperty blockstate
-- [x] Add: `CrankshaftBlock extends HorizontalAxisKineticBlock` with one horizontal shaft axis and two opposite shaft ports
+- [x] Add current shaft output: player-facing Create shaft with hidden `full_steam_ahead:powered_shaft` kinetic generator
 - [x] Add: `FlywheelBlock` inert stub
 - [x] Add: `GovernorBlock` inert stub
 - [x] Add: `PistonSection.java` enum
@@ -466,14 +473,15 @@ Tasks:
 
 Implementation note: Phase 3 uses `Block implements IBE<SteamCylinderBlockEntity>` plus `SmartBlockEntity`, matching Create 6.0.10's available API. `SmartBlock` is still not used because it is not present in this classpath.
 
-### Phase 4: Crankshaft Validation and Kinetic Output — Complete
+### Phase 4: Piston Head Validation and Kinetic Output — Complete
 
-**Goal**: Crankshaft placed at top of piston column validates full structure and generates rotation.
+**Goal**: the engine validates the vertical piston/cylinder stack and generates rotation into a Create shaft.
 
 Tasks:
-- [x] Implement `CrankshaftBlockEntity extends GeneratingKineticBlockEntity`
-- [x] Downward scan on placement: 2 piston blocks + piston head → assembled cylinder ring → boiler below ring
-- [x] If valid: store cylinder root ref, call `updateGeneratedRotation()`
+- [x] Initially implemented `CrankshaftBlockEntity extends GeneratingKineticBlockEntity`
+- [x] Refactored output ownership to `PistonHeadBlockEntity` plus hidden `FullSteamPoweredShaftBlockEntity`, matching Create's vanilla shaft-grab pattern
+- [x] Upward scan from piston head: piston body → empty stroke → horizontal Create shaft; ring and boiler/inlet are validated around/below the piston head
+- [x] If valid: store cylinder root, inlet, boiler, and shaft refs; power the hidden shaft block entity
 - [x] `getGeneratedSpeed()`: follows exact active-burner RPM tiers: 1-2 = 16 RPM, 3-4 = 32 RPM, 5-8 = 48 RPM, 9 = 64 RPM
 - [x] `calculateAddedStressCapacity()`: follows exact SU output: 16,384 SU per normal fired burner, doubled per Blaze Cake burner, up to 294,912 SU
 - [x] Read `BoilerData` from the `FluidTankBlockEntity` at boiler position each server tick
@@ -481,14 +489,14 @@ Tasks:
 - [x] Treat 3x3x1 tank boilers as the compact optimal size when a Full Steam Ahead engine is attached
 - [x] Require active fired Blaze Burner heat; passive/unfired heat produces no rotation
 - [x] Scan the 3x3 Blaze Burner footprint directly so mixed normal/Blaze Cake burners contribute exact per-burner SU
-- [x] Add piston block state updates: set `ASSEMBLED` and section/head state on the moving piston stack when crankshaft validates
+- [x] Add piston block state updates: set `ASSEMBLED` and section/head state on the moving piston stack when piston head validates
 - [x] Add visible placeholder models for assembled piston section states
 - [x] Add revalidation on neighbour changes
 - [x] Add goggle overlay: assembly status, active burners, heat units, water supply, RPM, SU, flywheel placeholder
 - [x] Verify exact output tiers: no passive output, 1-9 normal fired burners match SU/RPM table, and Blaze Cake burners double SU individually
 - [ ] Optional hardening verify: break piston → shaft stops; break boiler → shaft stops; restore/reload → state recovers
 
-Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerData.evaluate()` recognizes valid Full Steam Ahead crankshafts as attached steam engines. This lets Create's own Fluid Tank switch to active boiler visuals/capabilities and lets the compact 3x3x1 boiler footprint behave as the intended v1 boiler size. The flywheel and governor are parked inert placeholders and currently do not change output.
+Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerData.evaluate()` recognizes valid Full Steam Ahead piston-head engines as attached steam engines. This lets Create's own Fluid Tank switch to active boiler visuals/capabilities and lets the compact 3x3x1 boiler footprint behave as the intended v1 boiler size. The flywheel and governor are parked inert placeholders and currently do not change output.
 
 ### Phase 5: Steam Fluid and Boiler Outlet
 
@@ -504,7 +512,7 @@ Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerD
 - [x] Implement output-only `IFluidHandler` for generated `steam`
 - [x] Implement pressure-assisted output with default 30-block range; prefer Create `FluidTransportBehaviour`/`FluidNetwork` integration, fallback to bounded `IFluidHandler` push if needed
 - [x] Add goggle overlay for boiler link, heat, water, steam production rate, buffer, and output pressure state
-- [x] Verify: direct compact crankshaft still works exactly as Phase 4
+- [x] Verify: direct compact engine still works exactly as Phase 4
 - [x] Verify: boiler outlet produces steam only on valid active boilers, fills Create tanks through pipes, and does not auto-pump from stored steam tanks
 - [x] Apply Create `FluidTransportBehaviour` pressure so generated steam is visible in connected Create pipes
 - [x] Register steam open-pipe effect and outlet vent particles for open/unconnected steam leaks
@@ -525,8 +533,8 @@ Implementation notes:
 - [x] Allow a valid cylinder ring to be either 16 `steam_cylinder` blocks or 15 `steam_cylinder` blocks plus exactly 1 `steam_inlet` occupying any shell slot
 - [x] `SteamInletBlockEntity` accepts only `steam` through an input-only `IFluidHandler` while assembled
 - [x] Inlet caches assembled ring origin and cylinder root, and clears its link on disassembly
-- [x] Crankshaft detects the linked steam inlet from the assembled ring
-- [x] If usable inlet steam is available, crankshaft consumes `steam` and calculates output from steam consumption rate
+- [x] Piston head detects the linked steam inlet from the assembled ring
+- [x] If usable inlet steam is available, piston head consumes `steam` and calculates output from steam consumption rate
 - [x] If no valid inlet is present, existing direct compact boiler mode remains unchanged
 - [x] Add goggle overlays for source mode: direct boiler vs piped steam
 - [x] Verify: remote boiler outlet → Create pipes → steam inlet → engine rotation
@@ -561,15 +569,16 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Replace flickering multipart placeholders with stable non-overlapping proxy models
 - [x] Add Blockbench handoff guide for final static models and animated partials
 - [ ] Add cylinder visual states that identify ring position clearly: unassembled shell, assembled lower shell, assembled upper cap, inlet face, and bore-facing side pieces
-- [x] Add piston static models for unassembled placement; assembled piston/head block geometry is rendered dynamically from the crankshaft
-- [x] Add a `CrankshaftAnimation` math helper shared by Flywheel and fallback renderer
-- [x] Add `CrankshaftVisual` using Flywheel `SimpleBlockEntityVisualizer`, `TransformedInstance`, and `PartialModel`; drive it from `KineticBlockEntityRenderer.getAngleForBe(...)`
-- [x] Add `CrankshaftRenderer` fallback for non-visualized rendering so piston motion is still visible if Flywheel visualization is disabled
-- [x] Make the crankshaft axial: one horizontal rotation axis, two opposite shaft ports, no four-way output
-- [x] Expose minimal client-safe getters on `CrankshaftBlockEntity`: assembled state, source mode/running state, active speed, ring origin, inlet position, and piston positions
+- [x] Add piston static models for unassembled placement; assembled piston/head block geometry is rendered dynamically from the piston head block entity
+- [x] Add a `PistonHeadAnimation` math helper shared by Flywheel and fallback renderer
+- [x] Add `PistonHeadVisual` using Flywheel `SimpleBlockEntityVisualizer`, `TransformedInstance`, and `PartialModel`; drive it from `KineticBlockEntityRenderer.getAngleForBe(...)` on the linked shaft
+- [x] Add `PistonHeadRenderer` fallback for non-visualized rendering so piston motion is still visible if Flywheel visualization is disabled
+- [x] Remove the custom `crankshaft` block and use a regular Create shaft as the player-facing output
+- [x] Expose minimal client-safe getters on `PistonHeadBlockEntity`: assembled state, source mode/running state, active speed, ring origin, inlet position, and shaft position
 - [x] Hide or simplify static assembled piston block geometry so it does not fight the moving visual
 - [x] Add `piston_head` as a separate structural block in the lower cylinder bore
-- [x] Animate the actual `piston_head` and two `piston` bodies up and down from crankshaft phase, using Flywheel and fallback rendering
+- [x] Animate the actual `piston_head` and `piston` body up and down from linked shaft phase, using Flywheel and fallback rendering
+- [x] Fix dynamic piston/head lighting by relighting each moving partial at its own world position instead of using one block entity light value
 - [x] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
 - [x] Add rhythmic steam sound using Create's normal `STEAM` sound event, slightly louder than the vanilla Create steam engine
 - [ ] Add Ponder plugin and scenes after visual models settle: direct compact engine, boiler outlet pressure, steam storage/pipes, steam inlet, Aeronautics ship use
@@ -606,7 +615,7 @@ Deferred idea after visuals: inline shared-wall cylinder banks, where adjacent c
 | Steam storage becomes an exploit | `boiler_outlet` only generates from valid active boilers and never auto-pumps stored steam |
 | Pipe-fed mode loses burner-count metadata | Treat steam as a pressure manifold in pipe-fed mode; keep exact burner-count RPM table for direct compact mode |
 | Cylinder ring scan too expensive | Run only on placement/removal, not every tick; cache result |
-| Piston animation desync | Drive animation entirely from crankshaft rotation angle on client |
+| Piston animation desync | Drive animation entirely from linked shaft rotation angle on client |
 | Sable assembly splits engine parts | Register Create and Simulated movement checks early |
 | Parked flywheel/governor confuse players | Hide/remove or clearly mark before release if they remain inert |
 
@@ -618,6 +627,6 @@ Stay as close as possible to base Create's visual language:
 
 - Copper and brass for the cylinder casing (warm, industrial)
 - Dark iron/steel for the piston rod
-- Exposed shaft geometry on the crankshaft ends
+- Exposed normal Create shaft geometry at the top output
 - Riveted panel texture language on the cylinder outer faces
 - Goggle overlays follow Create's own overlay style exactly

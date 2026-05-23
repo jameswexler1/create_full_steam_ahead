@@ -1,24 +1,24 @@
-package dev.gustavo.fullsteamahead.content.crankshaft;
+package dev.gustavo.fullsteamahead.content.piston;
 
+import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllSoundEvents;
+import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.fluids.tank.BoilerData;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
-import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
-import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import com.simibubi.create.content.kinetics.steamEngine.SteamJetParticleData;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlock;
-import dev.gustavo.fullsteamahead.content.piston.PistonSection;
-import dev.gustavo.fullsteamahead.content.piston.SteamPistonBlock;
+import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
+import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -32,12 +32,13 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
+public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation {
     private static final String ASSEMBLED_KEY = "Assembled";
     private static final String RING_ORIGIN_KEY = "RingOrigin";
     private static final String CYLINDER_ROOT_KEY = "CylinderRoot";
     private static final String BOILER_POS_KEY = "BoilerPos";
     private static final String INLET_POS_KEY = "InletPos";
+    private static final String SHAFT_POS_KEY = "ShaftPos";
     private static final String ACTIVE_BURNERS_KEY = "ActiveBurners";
     private static final String HEAT_UNITS_KEY = "HeatUnits";
     private static final String GENERATED_SPEED_KEY = "GeneratedSpeed";
@@ -61,6 +62,7 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
     private BlockPos cylinderRootPos;
     private BlockPos boilerPos;
     private BlockPos inletPos;
+    private BlockPos shaftPos;
     private int activeBurners;
     private int heatUnits;
     private float generatedSpeed;
@@ -72,14 +74,13 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
     private float previousEffectAngle = Float.NaN;
     private int steamSoundCooldown;
 
-    public CrankshaftBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.CRANKSHAFT.get(), pos, state);
+    public PistonHeadBlockEntity(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.PISTON_HEAD.get(), pos, state);
         setLazyTickRate(20);
     }
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        super.addBehaviours(behaviours);
     }
 
     @Override
@@ -108,7 +109,7 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
 
         SteamOutput output = calculateBestSteamOutput(true);
         if (applySteamOutput(output)) {
-            updateGeneratedRotation();
+            updateShaftOutput();
             notifyUpdate();
         }
     }
@@ -126,9 +127,13 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
             return;
         }
 
-        CrankshaftValidator.Result result = CrankshaftValidator.validate(level, worldPosition);
+        EngineValidator.Result result = EngineValidator.validate(level, worldPosition);
         if (!result.valid()) {
             markInvalid(result.message(), null);
+            return;
+        }
+        if (!ensurePoweredShaft(result.shaft())) {
+            markInvalid("Could not claim shaft", null);
             return;
         }
 
@@ -137,6 +142,7 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
                 || !Objects.equals(cylinderRootPos, result.cylinderRoot())
                 || !Objects.equals(boilerPos, result.boilerPos())
                 || !Objects.equals(inletPos, result.inletPos())
+                || !Objects.equals(shaftPos, result.shaft())
                 || !Objects.equals(status, result.message());
 
         assembled = true;
@@ -144,6 +150,7 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         cylinderRootPos = result.cylinderRoot();
         boilerPos = result.boilerPos();
         inletPos = result.inletPos();
+        shaftPos = result.shaft();
         status = result.message();
 
         setPistonsAssembled(result);
@@ -154,13 +161,13 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         SteamOutput output = calculateBestSteamOutput(false);
         boolean outputChanged = applySteamOutput(output);
         if (changed || outputChanged) {
-            updateGeneratedRotation();
+            updateShaftOutput();
             notifyUpdate();
         }
     }
 
     public void clearAssembly() {
-        markInvalid("Crankshaft removed", null);
+        markInvalid("Piston head removed", null);
     }
 
     private void markInvalid(String reason, BlockPos skippedPistonPos) {
@@ -175,10 +182,12 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
                 || cylinderRootPos != null
                 || boilerPos != null
                 || inletPos != null
+                || shaftPos != null
                 || steamConsumedRate != 0
                 || sourceMode != SourceMode.NONE
                 || !Objects.equals(status, reason);
 
+        clearShaftPower();
         clearPistonStates(skippedPistonPos);
 
         assembled = false;
@@ -186,6 +195,7 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         cylinderRootPos = null;
         boilerPos = null;
         inletPos = null;
+        shaftPos = null;
         activeBurners = 0;
         heatUnits = 0;
         generatedSpeed = 0;
@@ -198,14 +208,8 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         refreshBoilerState(previousBoiler);
 
         if (changed) {
-            updateGeneratedRotation();
             notifyUpdate();
         }
-    }
-
-    @Override
-    public float getGeneratedSpeed() {
-        return assembled ? generatedSpeed : 0;
     }
 
     public boolean isEngineAssembled() {
@@ -214,6 +218,10 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
 
     public boolean isEngineRunning() {
         return assembled && generatedSpeed != 0;
+    }
+
+    public float getGeneratedSpeed() {
+        return assembled ? generatedSpeed : 0;
     }
 
     public float getGeneratedCapacitySu() {
@@ -232,33 +240,29 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         return inletPos;
     }
 
-    public CrankshaftValidator.PistonPositions getPistonPositions() {
-        return CrankshaftValidator.pistonPositions(worldPosition);
+    public BlockPos getShaftPos() {
+        return shaftPos;
     }
 
-    @Override
-    public float calculateAddedStressCapacity() {
-        float speed = Math.abs(getGeneratedSpeed());
-        if (speed == 0) {
-            lastCapacityProvided = 0;
-            return 0;
+    public Direction.Axis getShaftAxis() {
+        if (level == null || shaftPos == null || !level.isLoaded(shaftPos)) {
+            return Direction.Axis.X;
+        }
+        return EngineValidator.shaftAxis(level, shaftPos);
+    }
+
+    public FullSteamPoweredShaftBlockEntity getShaft() {
+        if (level == null || shaftPos == null || !level.isLoaded(shaftPos)) {
+            return null;
         }
 
-        lastCapacityProvided = getTargetCapacitySu() / speed;
-        return lastCapacityProvided;
-    }
-
-    @Override
-    public float calculateStressApplied() {
-        lastStressApplied = 0;
-        return 0;
+        BlockEntity blockEntity = level.getBlockEntity(shaftPos);
+        return blockEntity instanceof FullSteamPoweredShaftBlockEntity shaft ? shaft : null;
     }
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        super.addToGoggleTooltip(tooltip, isPlayerSneaking);
-
-        tooltip.add(Component.literal("Full Steam Crankshaft").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.literal("Full Steam Engine").withStyle(ChatFormatting.GRAY));
         if (!assembled) {
             tooltip.add(Component.literal(status).withStyle(ChatFormatting.RED));
             return true;
@@ -284,6 +288,8 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
                 .withStyle(getGeneratedSpeed() > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
         tooltip.add(Component.literal("Capacity: " + Math.round(getTargetCapacitySu()) + " SU")
                 .withStyle(getTargetCapacitySu() > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
+        tooltip.add(Component.literal(shaftPos == null ? "No shaft link" : "Shaft linked")
+                .withStyle(shaftPos == null ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY));
         tooltip.add(Component.literal("Flywheel: deferred").withStyle(ChatFormatting.DARK_GRAY));
         return true;
     }
@@ -424,49 +430,83 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         }
 
         BlockEntity blockEntity = level.getBlockEntity(inletPos);
-        if (blockEntity instanceof SteamInletBlockEntity inlet) {
-            return inlet;
-        }
-        return null;
+        return blockEntity instanceof SteamInletBlockEntity inlet ? inlet : null;
     }
 
     private void refreshBoilerState(FluidTankBlockEntity boiler) {
-        if (boiler == null || boiler.isRemoved()) {
+        if (boiler != null && !boiler.isRemoved()) {
+            boiler.updateBoilerState();
+        }
+    }
+
+    private boolean ensurePoweredShaft(BlockPos targetShaftPos) {
+        if (level == null || targetShaftPos == null || !level.isLoaded(targetShaftPos)) {
+            return false;
+        }
+
+        BlockState state = level.getBlockState(targetShaftPos);
+        if (state.is(ModBlocks.POWERED_SHAFT.get())) {
+            return level.getBlockEntity(targetShaftPos) instanceof FullSteamPoweredShaftBlockEntity;
+        }
+        if (!AllBlocks.SHAFT.has(state)) {
+            return false;
+        }
+
+        level.setBlock(targetShaftPos, FullSteamPoweredShaftBlock.equivalentOf(state), Block.UPDATE_ALL);
+        return level.getBlockEntity(targetShaftPos) instanceof FullSteamPoweredShaftBlockEntity;
+    }
+
+    private void updateShaftOutput() {
+        FullSteamPoweredShaftBlockEntity shaft = getShaft();
+        if (shaft == null) {
+            if (assembled) {
+                markInvalid("Missing shaft", null);
+            }
             return;
         }
 
-        boiler.updateBoilerState();
+        shaft.update(worldPosition, getGeneratedSpeed(), getTargetCapacitySu());
     }
 
-    private void setPistonsAssembled(CrankshaftValidator.Result result) {
+    private void clearShaftPower() {
+        if (level == null || shaftPos == null || !level.isLoaded(shaftPos)) {
+            return;
+        }
+
+        BlockState state = level.getBlockState(shaftPos);
+        if (!state.is(ModBlocks.POWERED_SHAFT.get())) {
+            return;
+        }
+
+        BlockEntity blockEntity = level.getBlockEntity(shaftPos);
+        if (blockEntity instanceof FullSteamPoweredShaftBlockEntity shaft && shaft.isPoweredBy(worldPosition)) {
+            shaft.remove(worldPosition);
+            level.setBlock(shaftPos, FullSteamPoweredShaftBlock.asRegularShaft(state), Block.UPDATE_ALL);
+        }
+    }
+
+    private void setPistonsAssembled(EngineValidator.Result result) {
         setPistonHead(result.pistonHead(), true);
-        setPiston(result.lowerPiston(), true, PistonSection.INSIDE_HIGH);
-        setPiston(result.upperPiston(), true, PistonSection.PROTRUDE_LOW);
+        setPiston(result.piston(), true, PistonSection.INSIDE_HIGH);
     }
 
     private void clearPistonStates(BlockPos skippedPistonPos) {
-        CrankshaftValidator.PistonPositions pistons = CrankshaftValidator.pistonPositions(worldPosition);
+        EngineValidator.PistonPositions pistons = EngineValidator.pistonPositions(worldPosition);
         clearPistonHead(pistons.pistonHead(), skippedPistonPos);
-        clearPiston(pistons.lowerPiston(), skippedPistonPos);
-        clearPiston(pistons.upperPiston(), skippedPistonPos);
-
-        BlockPos legacyLowerBore = worldPosition.below(4);
-        clearPiston(legacyLowerBore, skippedPistonPos);
-        clearPistonHead(legacyLowerBore, skippedPistonPos);
+        clearPiston(pistons.piston(), skippedPistonPos);
+        clearPiston(pistons.emptyStroke(), skippedPistonPos);
     }
 
     private void clearPiston(BlockPos pos, BlockPos skippedPistonPos) {
-        if (pos.equals(skippedPistonPos)) {
-            return;
+        if (!pos.equals(skippedPistonPos)) {
+            setPiston(pos, false, PistonSection.INSIDE_LOW);
         }
-        setPiston(pos, false, PistonSection.INSIDE_LOW);
     }
 
     private void clearPistonHead(BlockPos pos, BlockPos skippedPistonPos) {
-        if (pos.equals(skippedPistonPos)) {
-            return;
+        if (!pos.equals(skippedPistonPos)) {
+            setPistonHead(pos, false);
         }
-        setPistonHead(pos, false);
     }
 
     private void setPiston(BlockPos pos, boolean assembled, PistonSection section) {
@@ -503,42 +543,42 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         }
     }
 
-    public static void revalidateNearbyCrankshafts(Level level, BlockPos changedPos) {
-        forNearbyCrankshafts(level, changedPos, CrankshaftBlockEntity::revalidateStructure);
+    public static void revalidateNearbyEngines(Level level, BlockPos changedPos) {
+        forNearbyEngines(level, changedPos, PistonHeadBlockEntity::revalidateStructure);
     }
 
     public static void revalidateAt(Level level, BlockPos pos) {
-        if (level.isClientSide() || !level.isLoaded(pos) || !level.getBlockState(pos).is(ModBlocks.CRANKSHAFT.get())) {
+        if (level.isClientSide() || !level.isLoaded(pos) || !level.getBlockState(pos).is(ModBlocks.PISTON_HEAD.get())) {
             return;
         }
 
         BlockEntity blockEntity = level.getBlockEntity(pos);
-        if (blockEntity instanceof CrankshaftBlockEntity crankshaft) {
-            crankshaft.revalidateStructure();
+        if (blockEntity instanceof PistonHeadBlockEntity engine) {
+            engine.revalidateStructure();
         }
     }
 
-    public static void invalidateNearbyCrankshafts(Level level, BlockPos changedPos, String reason, BlockPos skippedPistonPos) {
-        forNearbyCrankshafts(level, changedPos, be -> be.markInvalid(reason, skippedPistonPos));
+    public static void invalidateNearbyEngines(Level level, BlockPos changedPos, String reason, BlockPos skippedPistonPos) {
+        forNearbyEngines(level, changedPos, be -> be.markInvalid(reason, skippedPistonPos));
     }
 
-    private static void forNearbyCrankshafts(
+    private static void forNearbyEngines(
             Level level,
             BlockPos changedPos,
-            Consumer<CrankshaftBlockEntity> action
+            Consumer<PistonHeadBlockEntity> action
     ) {
         if (level.isClientSide()) {
             return;
         }
 
-        for (BlockPos pos : CrankshaftValidator.candidateCrankshaftsNear(changedPos)) {
-            if (!level.isLoaded(pos) || !level.getBlockState(pos).is(ModBlocks.CRANKSHAFT.get())) {
+        for (BlockPos pos : EngineValidator.candidatePistonHeadsNear(changedPos)) {
+            if (!level.isLoaded(pos) || !level.getBlockState(pos).is(ModBlocks.PISTON_HEAD.get())) {
                 continue;
             }
 
             BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof CrankshaftBlockEntity crankshaft) {
-                action.accept(crankshaft);
+            if (blockEntity instanceof PistonHeadBlockEntity engine) {
+                action.accept(engine);
             }
         }
     }
@@ -551,6 +591,7 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         writePos(tag, CYLINDER_ROOT_KEY, cylinderRootPos);
         writePos(tag, BOILER_POS_KEY, boilerPos);
         writePos(tag, INLET_POS_KEY, inletPos);
+        writePos(tag, SHAFT_POS_KEY, shaftPos);
         tag.putInt(ACTIVE_BURNERS_KEY, activeBurners);
         tag.putInt(HEAT_UNITS_KEY, heatUnits);
         tag.putFloat(GENERATED_SPEED_KEY, generatedSpeed);
@@ -569,6 +610,7 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         cylinderRootPos = readPos(tag, CYLINDER_ROOT_KEY);
         boilerPos = readPos(tag, BOILER_POS_KEY);
         inletPos = readPos(tag, INLET_POS_KEY);
+        shaftPos = readPos(tag, SHAFT_POS_KEY);
         activeBurners = tag.getInt(ACTIVE_BURNERS_KEY);
         heatUnits = tag.getInt(HEAT_UNITS_KEY);
         generatedSpeed = tag.getFloat(GENERATED_SPEED_KEY);
@@ -606,17 +648,13 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
     }
 
     private float getCurrentEffectAngle() {
-        Direction.Axis axis = getRotationAxis();
-        float radians = KineticBlockEntityRenderer.getAngleForBe(this, worldPosition, axis);
-        return Mth.positiveModulo((float) Math.toDegrees(radians), 360.0F);
-    }
-
-    private Direction.Axis getRotationAxis() {
-        BlockState state = getBlockState();
-        if (state.getBlock() instanceof IRotate rotating) {
-            return rotating.getRotationAxis(state);
+        FullSteamPoweredShaftBlockEntity shaft = getShaft();
+        if (shaft == null) {
+            return 0;
         }
-        return Direction.Axis.X;
+
+        float radians = KineticBlockEntityRenderer.getAngleForBe(shaft, shaft.getBlockPos(), getShaftAxis());
+        return Mth.positiveModulo((float) Math.toDegrees(radians), 360.0F);
     }
 
     private static boolean crossedCrankPhase(float previousAngle, float angle) {
@@ -630,10 +668,10 @@ public class CrankshaftBlockEntity extends GeneratingKineticBlockEntity {
         }
 
         float intensity = getEffectIntensity();
-        Direction exhaustDirection = getExhaustDirection(getRotationAxis());
+        Direction exhaustDirection = getExhaustDirection(getShaftAxis());
         Vec3 normal = Vec3.atLowerCornerOf(exhaustDirection.getNormal());
         Vec3 origin = Vec3.atCenterOf(worldPosition)
-                .add(0.0D, -2.05D, 0.0D)
+                .add(0.0D, 0.95D, 0.0D)
                 .add(normal.scale(0.68D));
         Vec3 jitter = new Vec3(
                 (level.random.nextDouble() - 0.5D) * 0.08D,
