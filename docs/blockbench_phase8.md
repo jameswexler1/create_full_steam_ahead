@@ -12,8 +12,17 @@ Create these as Java Block/Item models and export them over the existing files i
 - `src/main/resources/assets/full_steam_ahead/models/block/steam_inlet_assembled.json`
 - `src/main/resources/assets/full_steam_ahead/models/block/boiler_outlet.json`
 - `src/main/resources/assets/full_steam_ahead/models/block/crankshaft.json`
+- `src/main/resources/assets/full_steam_ahead/models/block/piston.json`
+- `src/main/resources/assets/full_steam_ahead/models/block/piston_inside_low.json`
+- `src/main/resources/assets/full_steam_ahead/models/block/piston_inside_high.json`
+- `src/main/resources/assets/full_steam_ahead/models/block/piston_protrude_low.json`
+- `src/main/resources/assets/full_steam_ahead/models/block/piston_protrude_high.json`
 
 Keep every static block inside the normal 16x16x16 block cube. Do not create faces that sit exactly on top of another face. If two cubes touch, let them meet edge-to-edge; do not let them occupy the same space.
+
+The unassembled `piston.json` is used for all four piston section variants while `assembled=false`.
+The four assembled piston files are distinct section models and should remain separate exports even if
+their first pass looks similar.
 
 ## Animated Partial Models
 
