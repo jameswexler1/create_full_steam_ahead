@@ -101,6 +101,7 @@ Other orientations (horizontal, inverted) are deferred to a future version.
 | `powered_shaft` | `PoweredShaftBlock + FullSteamPoweredShaftBlockEntity` | Hidden internal replacement for a player-placed Create shaft. Provides kinetic output while cloning/dropping as a normal shaft. |
 | `boiler_outlet` | `Block + SmartBlockEntity` | Attaches to a Create Fluid Tank boiler, generates `steam`, and provides pressure into pipes. |
 | `steam_inlet` | `Block + SmartBlockEntity` | Phase 6 block. Replaces one cylinder shell block in the 3×3×2 ring and accepts `steam` from pipes. |
+| `engine_telegraph` | `HorizontalDirectionalBlock` | Inert decorative/control block for ship bridge theming. No engine control mechanics yet. |
 
 Existing parked placeholders:
 
@@ -335,6 +336,8 @@ src/main/java/dev/gustavo/fullsteamahead/
       BoilerOutletBlockEntity.java
       SteamInletBlock.java
       SteamInletBlockEntity.java
+    telegraph/
+      EngineTelegraphBlock.java        ← inert directional ship control block
     flywheel/
       FlywheelBlock.java               ← parked inert placeholder
     governor/
@@ -581,6 +584,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Fix dynamic piston/head lighting by relighting each moving partial at its own world position instead of using one block entity light value
 - [x] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
 - [x] Add rhythmic steam sound using Create's normal `STEAM` sound event, slightly louder than the vanilla Create steam engine
+- [x] Add inert `engine_telegraph` block scaffold, model, textures, loot, lang, creative entry, mining tags, and directional placement
 - [ ] Add Ponder plugin and scenes after visual models settle: direct compact engine, boiler outlet pressure, steam storage/pipes, steam inlet, Aeronautics ship use
 - [ ] Verify visuals on standalone world, pipe-fed world, and Aeronautics assembled sublevel
 - [ ] Verify dedicated server startup remains clean with no client-class loading

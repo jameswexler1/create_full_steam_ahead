@@ -9,6 +9,7 @@ import dev.gustavo.fullsteamahead.content.piston.SteamPistonBlock;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
+import dev.gustavo.fullsteamahead.content.telegraph.EngineTelegraphBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -37,6 +38,14 @@ public final class ModBlocks {
             registerBlock("boiler_outlet", BoilerOutletBlock::new, copperProperties());
     public static final DeferredBlock<SteamInletBlock> STEAM_INLET =
             registerBlock("steam_inlet", SteamInletBlock::new, copperProperties());
+    public static final DeferredBlock<EngineTelegraphBlock> ENGINE_TELEGRAPH =
+            registerBlock("engine_telegraph", EngineTelegraphBlock::new,
+                    BlockBehaviour.Properties.of()
+                            .strength(2.5f, 6.0f)
+                            .sound(SoundType.METAL)
+                            .requiresCorrectToolForDrops()
+                            .noOcclusion()
+            );
 
     private static <T extends Block> DeferredBlock<T> registerBlock(
             String name,

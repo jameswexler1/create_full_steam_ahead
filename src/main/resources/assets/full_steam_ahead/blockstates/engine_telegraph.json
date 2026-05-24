@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "full_steam_ahead:block/engine_telegraph" },
+    "facing=south": { "model": "full_steam_ahead:block/engine_telegraph", "y": 180 },
+    "facing=east":  { "model": "full_steam_ahead:block/engine_telegraph", "y": 90  },
+    "facing=west":  { "model": "full_steam_ahead:block/engine_telegraph", "y": 270 }
+  }
+}

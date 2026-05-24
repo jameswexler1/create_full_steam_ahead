@@ -8,6 +8,7 @@
     "full_steam_ahead:boiler_outlet",
     "full_steam_ahead:steam_inlet",
     "full_steam_ahead:flywheel",
+    "full_steam_ahead:engine_telegraph",
     "full_steam_ahead:governor"
   ]
 }
