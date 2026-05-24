@@ -1,6 +1,7 @@
 {
+  "credit": "Converted from Steam_Cylinder_all_faces.bbmodel",
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "create:block/copper_casing_connected"
+    "all": "full_steam_ahead:block/steam_cylinder/steam_cylinder_texture"
   }
 }

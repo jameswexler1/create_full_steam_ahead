@@ -1,7 +1,3 @@
 {
-  "parent": "minecraft:block/cube_column",
-  "textures": {
-    "end": "create:block/brass_casing",
-    "side": "create:block/copper_casing_connected"
-  }
+  "parent": "full_steam_ahead:block/steam_cylinder"
 }

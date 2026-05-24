@@ -55,6 +55,11 @@ Completed shaft-link remodel slice:
 - [x] Replaced crankshaft renderer/visual/animation with piston-head renderer/visual/animation driven from the linked shaft angle.
 - [x] Fixed dynamic piston/head lighting by relighting the head, piston body, and shaft partial at their own world positions.
 
+Completed static cylinder art slice:
+
+- [x] Converted `Steam_Cylinder_all_faces.bbmodel` into a local 16x16 cylinder texture.
+- [x] Applied the custom cylinder texture to both unassembled and assembled `steam_cylinder` block models.
+
 Automated results:
 
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-21 after technical partials, the axial crankshaft fix, crank-phase steam effects, and the steam sound correction.
@@ -73,6 +78,8 @@ Automated results:
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-23 after the shaft-link remodel.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-23 after the shaft-link remodel.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after the shaft-link remodel.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after applying the custom steam cylinder texture.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after applying the custom steam cylinder texture.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` reached an integrated world on 2026-05-21 after lazy partial registration.
 
 Manual runtime checklist:
@@ -83,6 +90,7 @@ Manual runtime checklist:
 - [ ] New stack assembles as `piston_head -> piston -> empty stroke -> Create shaft`.
 - [x] `piston_head` v2 model renders correctly and uses the stepped non-full-block hitbox.
 - [x] `piston` v1 body model renders correctly in unassembled placement and uses the narrow 6x16x6 hitbox.
+- [ ] `steam_cylinder` renders with the custom cylinder texture in both unassembled placement and assembled ring state.
 - [ ] Assembled `piston_head` and the `piston` body remain visible at rest and reciprocate while the linked shaft is running.
 - [x] Existing pipe-fed engines still assemble and run.
 - [x] Old worlds with existing engines load without blockstate/model errors.
