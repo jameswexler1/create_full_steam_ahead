@@ -65,6 +65,11 @@ Completed stepped lever slice:
 - [x] Added `stepped_lever` as a face-attached analog redstone control block.
 - [x] Ported the stepped lever block entity, goggle tooltip, renderer, handle partial model, block/item models, texture, loot, recipe, mining tags, safe-NBT tag, lang entry, and creative tab entry.
 
+Completed telegraph polish slice:
+
+- [x] Set `engine_telegraph` to `minecraft:cutout_mipped` with ambient occlusion disabled for cleaner moving/simulated contraption rendering.
+- [x] Replaced the coarse telegraph hitbox with a model-derived, direction-aware union of its Blockbench cuboids.
+
 Automated results:
 
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-21 after technical partials, the axial crankshaft fix, crank-phase steam effects, and the steam sound correction.
@@ -89,6 +94,7 @@ Automated results:
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after setting `stepped_lever` static models to `minecraft:cutout_mipped`.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after polishing `engine_telegraph` rendering and hitbox.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` reached an integrated world on 2026-05-21 after lazy partial registration.
 
 Manual runtime checklist:
@@ -109,6 +115,7 @@ Manual runtime checklist:
 - [x] Piston motion stops when the engine has no steam.
 - [x] Steam particles appear only while running and scale reasonably with speed.
 - [x] Steam sound matches Create's vanilla steam-engine style, is slightly louder, and only plays while running.
+- [ ] `engine_telegraph` renders without bad black/shadow artifacts on a Simulated contraption and has a selection/collision shape that follows the model in all four facings.
 - [ ] `stepped_lever` appears in the creative tab, places on floor/wall/ceiling, changes redstone strength 0-15 with normal/shift right-click, animates its handle, and keeps its state after save/reload.
 - [x] Resource reload (`F3+T`) keeps partial models and textures intact.
 - [ ] Dedicated server starts without client-class loading errors.

@@ -1,6 +1,8 @@
 {
   "format_version": "1.9.0",
   "credit": "Made with Blockbench",
+  "ambientocclusion": false,
+  "render_type": "minecraft:cutout_mipped",
   "textures": {
     "0": "full_steam_ahead:block/engine_telegraph/base",
     "1": "full_steam_ahead:block/engine_telegraph/lateral_1",

@@ -586,6 +586,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
 - [x] Add rhythmic steam sound using Create's normal `STEAM` sound event, slightly louder than the vanilla Create steam engine
 - [x] Add inert `engine_telegraph` block scaffold, model, textures, loot, lang, creative entry, mining tags, and directional placement
+- [x] Polish `engine_telegraph` contraption rendering with cutout/AO model settings and a detailed model-derived hitbox
 - [x] Add `stepped_lever` scaffold with analog redstone state, goggle tooltip, block entity renderer, model assets, loot, recipe, tags, lang, and creative entry
 - [x] Apply the first custom Blockbench `steam_cylinder` texture/model prototype to both unassembled and assembled cylinder shell models
 - [ ] Add Ponder plugin and scenes after visual models settle: direct compact engine, boiler outlet pressure, steam storage/pipes, steam inlet, Aeronautics ship use
