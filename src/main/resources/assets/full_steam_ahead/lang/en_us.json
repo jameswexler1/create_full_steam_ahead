@@ -10,5 +10,6 @@
   "block.full_steam_ahead.governor": "Governor",
   "fluid_type.full_steam_ahead.steam": "Steam",
   "fluid.full_steam_ahead.steam": "Steam",
-  "block.full_steam_ahead.engine_telegraph": "Engine Order Telegraph"
+  "block.full_steam_ahead.engine_telegraph": "Engine Order Telegraph",
+  "block.full_steam_ahead.stepped_lever": "Stepped Lever"
 }

@@ -3,6 +3,7 @@ package dev.gustavo.fullsteamahead.registry;
 import dev.gustavo.fullsteamahead.FullSteamAhead;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlockEntity;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
+import dev.gustavo.fullsteamahead.content.redstone.SteppedLeverBlockEntity;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlockEntity;
@@ -49,6 +50,13 @@ public final class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             SteamInletBlockEntity::new,
                             ModBlocks.STEAM_INLET.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SteppedLeverBlockEntity>> STEPPED_LEVER =
+            BLOCK_ENTITY_TYPES.register("stepped_lever",
+                    () -> BlockEntityType.Builder.of(
+                            SteppedLeverBlockEntity::new,
+                            ModBlocks.STEPPED_LEVER.get()
                     ).build(null));
 
     public static void register(IEventBus modEventBus) {

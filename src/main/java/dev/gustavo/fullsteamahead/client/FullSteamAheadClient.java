@@ -8,6 +8,7 @@ import dev.gustavo.fullsteamahead.FullSteamAhead;
 import dev.gustavo.fullsteamahead.client.render.FullSteamPartialModels;
 import dev.gustavo.fullsteamahead.client.render.PistonHeadRenderer;
 import dev.gustavo.fullsteamahead.client.render.PistonHeadVisual;
+import dev.gustavo.fullsteamahead.client.render.SteppedLeverRenderer;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import net.neoforged.api.distmarker.Dist;
@@ -44,6 +45,7 @@ public final class FullSteamAheadClient {
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.PISTON_HEAD.get(), PistonHeadRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.POWERED_SHAFT.get(), ShaftRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.STEPPED_LEVER.get(), SteppedLeverRenderer::new);
     }
 
     private FullSteamAheadClient() {

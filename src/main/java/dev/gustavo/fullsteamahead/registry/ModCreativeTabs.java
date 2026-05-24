@@ -26,6 +26,7 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.FLYWHEEL.get());
                         output.accept(ModBlocks.GOVERNOR.get());
                         output.accept(ModBlocks.ENGINE_TELEGRAPH.get());
+                        output.accept(ModBlocks.STEPPED_LEVER.get());
                     })
                     .build());
 

@@ -6,6 +6,7 @@ import dev.gustavo.fullsteamahead.content.flywheel.FlywheelBlock;
 import dev.gustavo.fullsteamahead.content.governor.GovernorBlock;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlock;
 import dev.gustavo.fullsteamahead.content.piston.SteamPistonBlock;
+import dev.gustavo.fullsteamahead.content.redstone.SteppedLeverBlock;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
@@ -44,6 +45,13 @@ public final class ModBlocks {
                             .strength(2.5f, 6.0f)
                             .sound(SoundType.METAL)
                             .requiresCorrectToolForDrops()
+                            .noOcclusion()
+            );
+    public static final DeferredBlock<SteppedLeverBlock> STEPPED_LEVER =
+            registerBlock("stepped_lever", SteppedLeverBlock::new,
+                    BlockBehaviour.Properties.of()
+                            .strength(0.5F)
+                            .sound(SoundType.WOOD)
                             .noOcclusion()
             );
 
