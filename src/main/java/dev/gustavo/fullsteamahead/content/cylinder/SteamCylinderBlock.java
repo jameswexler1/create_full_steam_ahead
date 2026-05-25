@@ -13,14 +13,20 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockEntity> {
     public static final MapCodec<SteamCylinderBlock> CODEC = simpleCodec(SteamCylinderBlock::new);
     public static final BooleanProperty ASSEMBLED = BooleanProperty.create("assembled");
+    public static final EnumProperty<CylinderSection> SECTION = EnumProperty.create("section", CylinderSection.class);
 
     public SteamCylinderBlock(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(ASSEMBLED, false));
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(ASSEMBLED, false)
+                .setValue(SECTION, CylinderSection.NONE));
     }
 
     @Override
@@ -88,8 +94,30 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
     }
 
     @Override
+    protected VoxelShape getShape(
+            BlockState state,
+            net.minecraft.world.level.BlockGetter level,
+            BlockPos pos,
+            CollisionContext context
+    ) {
+        return state.getValue(ASSEMBLED)
+                ? CylinderRingShapes.forSection(state.getValue(SECTION))
+                : super.getShape(state, level, pos, context);
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(
+            BlockState state,
+            net.minecraft.world.level.BlockGetter level,
+            BlockPos pos,
+            CollisionContext context
+    ) {
+        return getShape(state, level, pos, context);
+    }
+
+    @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(ASSEMBLED);
+        builder.add(ASSEMBLED, SECTION);
     }
 
     @Override

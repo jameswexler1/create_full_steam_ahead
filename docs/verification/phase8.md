@@ -59,6 +59,8 @@ Completed static cylinder art slice:
 
 - [x] Converted `Steam_Cylinder_all_faces.bbmodel` into a local 16x16 cylinder texture.
 - [x] Applied the custom cylinder texture to both unassembled and assembled `steam_cylinder` block models.
+- [x] Converted `Assembled_cylinder_ring_prototype.bbmodel` into 16 section-specific assembled cylinder models.
+- [x] Added a `section` blockstate property and model-derived slim assembled hitboxes for `steam_cylinder` and `steam_inlet`.
 
 Completed stepped lever slice:
 
@@ -90,6 +92,7 @@ Automated results:
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after the shaft-link remodel.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after applying the custom steam cylinder texture.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after applying the custom steam cylinder texture.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-25 after adding section-aware assembled cylinder models and hitboxes.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
@@ -106,6 +109,7 @@ Manual runtime checklist:
 - [x] `piston_head` v2 model renders correctly and uses the stepped non-full-block hitbox.
 - [x] `piston` v1 body model renders correctly in unassembled placement and uses the narrow 6x16x6 hitbox.
 - [ ] `steam_cylinder` renders with the custom cylinder texture in both unassembled placement and assembled ring state.
+- [ ] Assembled `steam_cylinder` ring uses the slim section-aware model in all 16 positions, disassembles back to the standalone block model, and has a slim outline/collision shape.
 - [ ] Assembled `piston_head` and the `piston` body remain visible at rest and reciprocate while the linked shaft is running.
 - [x] Existing pipe-fed engines still assemble and run.
 - [x] Old worlds with existing engines load without blockstate/model errors.

@@ -151,7 +151,7 @@ public final class CylinderConnectivity {
                 continue;
             }
 
-            setAssembled(level, pos, state, false);
+            setRingState(level, pos, state, false, CylinderSection.NONE);
             withCylinderBlockEntity(level, pos, SteamCylinderBlockEntity::clearRingState);
             withInletBlockEntity(level, pos, SteamInletBlockEntity::clearRingState);
         }
@@ -168,7 +168,8 @@ public final class CylinderConnectivity {
 
         for (BlockPos pos : positions) {
             BlockState state = level.getBlockState(pos);
-            setAssembled(level, pos, state, true);
+            CylinderSection section = sectionFor(origin, pos);
+            setRingState(level, pos, state, true, section);
             withCylinderBlockEntity(level, pos,
                     be -> be.applyRingState(origin, root, boilerPos, inletPos, pos.equals(root)));
             withInletBlockEntity(level, pos,
@@ -211,26 +212,49 @@ public final class CylinderConnectivity {
         return Optional.ofNullable(linkedBoiler);
     }
 
-    private static void setAssembled(Level level, BlockPos pos, BlockState state, boolean assembled) {
+    private static CylinderSection sectionFor(BlockPos origin, BlockPos pos) {
+        return CylinderSection.fromOffsets(
+                pos.getX() - origin.getX(),
+                pos.getY() - origin.getY(),
+                pos.getZ() - origin.getZ()
+        );
+    }
+
+    private static void setRingState(
+            Level level,
+            BlockPos pos,
+            BlockState state,
+            boolean assembled,
+            CylinderSection section
+    ) {
         if (state.is(ModBlocks.STEAM_CYLINDER.get())) {
-            setAssembled(level, pos, state, SteamCylinderBlock.ASSEMBLED, assembled);
+            setRingState(level, pos, state, SteamCylinderBlock.ASSEMBLED, SteamCylinderBlock.SECTION, assembled, section);
         } else if (state.is(ModBlocks.STEAM_INLET.get())) {
-            setAssembled(level, pos, state, SteamInletBlock.ASSEMBLED, assembled);
+            setRingState(level, pos, state, SteamInletBlock.ASSEMBLED, SteamInletBlock.SECTION, assembled, section);
         }
     }
 
-    private static void setAssembled(
+    private static void setRingState(
             Level level,
             BlockPos pos,
             BlockState state,
             net.minecraft.world.level.block.state.properties.BooleanProperty property,
-            boolean assembled
+            net.minecraft.world.level.block.state.properties.EnumProperty<CylinderSection> sectionProperty,
+            boolean assembled,
+            CylinderSection section
     ) {
-        if (!state.hasProperty(property) || state.getValue(property) == assembled) {
+        if (!state.hasProperty(property) || !state.hasProperty(sectionProperty)) {
             return;
         }
 
-        level.setBlock(pos, state.setValue(property, assembled), Block.UPDATE_CLIENTS);
+        BlockState newState = state
+                .setValue(property, assembled)
+                .setValue(sectionProperty, section);
+        if (newState == state) {
+            return;
+        }
+
+        level.setBlock(pos, newState, Block.UPDATE_CLIENTS);
     }
 
     private static boolean isRingMember(BlockState state) {

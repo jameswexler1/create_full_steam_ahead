@@ -1,6 +1,20 @@
 {
-  "variants": {
-    "assembled=false": { "model": "full_steam_ahead:block/steam_inlet" },
-    "assembled=true": { "model": "full_steam_ahead:block/steam_inlet_assembled" }
-  }
+  "multipart": [
+    {
+      "when": {
+        "assembled": "false"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet_assembled"
+      }
+    }
+  ]
 }

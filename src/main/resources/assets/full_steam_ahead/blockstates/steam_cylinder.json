@@ -1,6 +1,165 @@
 {
-  "variants": {
-    "assembled=false": { "model": "full_steam_ahead:block/steam_cylinder" },
-    "assembled=true": { "model": "full_steam_ahead:block/steam_cylinder_assembled" }
-  }
+  "multipart": [
+    {
+      "when": {
+        "assembled": "false"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true",
+        "section": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder_assembled"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true",
+        "section": "lower_north_west"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north_west"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true",
+        "section": "lower_north"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true",
+        "section": "lower_north_east"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north_east"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true",
+        "section": "lower_west"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_west"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true",
+        "section": "lower_east"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_east"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true",
+        "section": "lower_south_west"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south_west"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true",
+        "section": "lower_south"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true",
+        "section": "lower_south_east"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south_east"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true",
+        "section": "upper_north_west"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north_west"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true",
+        "section": "upper_north"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true",
+        "section": "upper_north_east"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north_east"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true",
+        "section": "upper_west"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_west"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true",
+        "section": "upper_east"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_east"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true",
+        "section": "upper_south_west"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south_west"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true",
+        "section": "upper_south"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south"
+      }
+    },
+    {
+      "when": {
+        "assembled": "true",
+        "section": "upper_south_east"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south_east"
+      }
+    }
+  ]
 }

@@ -24,7 +24,7 @@ public final class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(FullSteamAhead.MOD_ID);
 
     public static final DeferredBlock<SteamCylinderBlock> STEAM_CYLINDER =
-            registerBlock("steam_cylinder", SteamCylinderBlock::new, cylinderProperties());
+            registerBlock("steam_cylinder", SteamCylinderBlock::new, cylinderProperties().noOcclusion());
     public static final DeferredBlock<SteamPistonBlock> PISTON =
             registerBlock("piston", SteamPistonBlock::new, metalProperties().noOcclusion());
     public static final DeferredBlock<PistonHeadBlock> PISTON_HEAD =
@@ -38,7 +38,7 @@ public final class ModBlocks {
     public static final DeferredBlock<BoilerOutletBlock> BOILER_OUTLET =
             registerBlock("boiler_outlet", BoilerOutletBlock::new, copperProperties());
     public static final DeferredBlock<SteamInletBlock> STEAM_INLET =
-            registerBlock("steam_inlet", SteamInletBlock::new, copperProperties());
+            registerBlock("steam_inlet", SteamInletBlock::new, copperProperties().noOcclusion());
     public static final DeferredBlock<EngineTelegraphBlock> ENGINE_TELEGRAPH =
             registerBlock("engine_telegraph", EngineTelegraphBlock::new,
                     BlockBehaviour.Properties.of()

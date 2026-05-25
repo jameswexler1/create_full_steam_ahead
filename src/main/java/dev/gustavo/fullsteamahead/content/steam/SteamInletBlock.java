@@ -4,6 +4,8 @@ import com.mojang.serialization.MapCodec;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderConnectivity;
+import dev.gustavo.fullsteamahead.content.cylinder.CylinderRingShapes;
+import dev.gustavo.fullsteamahead.content.cylinder.CylinderSection;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
@@ -14,14 +16,20 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity> {
     public static final MapCodec<SteamInletBlock> CODEC = simpleCodec(SteamInletBlock::new);
     public static final BooleanProperty ASSEMBLED = BooleanProperty.create("assembled");
+    public static final EnumProperty<CylinderSection> SECTION = EnumProperty.create("section", CylinderSection.class);
 
     public SteamInletBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(ASSEMBLED, false));
+        registerDefaultState(stateDefinition.any()
+                .setValue(ASSEMBLED, false)
+                .setValue(SECTION, CylinderSection.NONE));
     }
 
     @Override
@@ -89,8 +97,30 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
     }
 
     @Override
+    protected VoxelShape getShape(
+            BlockState state,
+            net.minecraft.world.level.BlockGetter level,
+            BlockPos pos,
+            CollisionContext context
+    ) {
+        return state.getValue(ASSEMBLED)
+                ? CylinderRingShapes.forSection(state.getValue(SECTION))
+                : super.getShape(state, level, pos, context);
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(
+            BlockState state,
+            net.minecraft.world.level.BlockGetter level,
+            BlockPos pos,
+            CollisionContext context
+    ) {
+        return getShape(state, level, pos, context);
+    }
+
+    @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(ASSEMBLED);
+        builder.add(ASSEMBLED, SECTION);
     }
 
     @Override

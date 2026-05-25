@@ -1,0 +1,55 @@
+{
+  "credit": "Split from Assembled_cylinder_ring_prototype.bbmodel",
+  "ambientocclusion": false,
+  "texture_size": [
+    256,
+    256
+  ],
+  "textures": {
+    "0": "full_steam_ahead:block/steam_cylinder/assembled_cylinder_ring",
+    "particle": "full_steam_ahead:block/steam_cylinder/assembled_cylinder_ring"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        6
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            69,
+            10,
+            85,
+            26
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            98,
+            10,
+            114,
+            26
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            105,
+            0,
+            89,
+            10
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}
