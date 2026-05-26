@@ -37,7 +37,15 @@ public final class CylinderRingShapes {
             new RingBox(-3, 31, -6, -1, 32, -4),
             new RingBox(-3, 31, 20, -1, 32, 22),
             new RingBox(18, 31, 20, 20, 32, 22),
-            new RingBox(18, 31, -6, 20, 32, -4)
+            new RingBox(18, 31, -6, 20, 32, -4),
+            new RingBox(18, 0, 18, 22, 1, 20),
+            new RingBox(18, 0, 20, 20, 1, 22),
+            new RingBox(-3, 0, 20, -1, 1, 22),
+            new RingBox(-5, 0, 18, -1, 1, 20),
+            new RingBox(-5, 0, -4, -1, 1, -2),
+            new RingBox(-3, 0, -6, -1, 1, -4),
+            new RingBox(18, 0, -6, 20, 1, -4),
+            new RingBox(18, 0, -4, 22, 1, -2)
     };
 
     static {

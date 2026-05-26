@@ -1,6 +1,7 @@
 {
-  "credit": "Split from Assembled_cylinder_ring_prototype.bbmodel",
+  "credit": "Split from Steam_Cylinder_all_faces_claude_tuesday_1.bbmodel",
   "ambientocclusion": false,
+  "render_type": "minecraft:cutout_mipped",
   "texture_size": [
     256,
     256
@@ -282,6 +283,142 @@
             123,
             28,
             125
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "from": [
+        13,
+        0,
+        4
+      ],
+      "to": [
+        15,
+        1,
+        6
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            126,
+            17,
+            128,
+            18
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            124,
+            17,
+            126,
+            18
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            130,
+            17,
+            132,
+            18
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            128,
+            17,
+            130,
+            18
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            128,
+            17,
+            126,
+            15
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            130,
+            15,
+            128,
+            17
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "from": [
+        11,
+        0,
+        2
+      ],
+      "to": [
+        15,
+        1,
+        4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            124,
+            100,
+            128,
+            101
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            122,
+            100,
+            124,
+            101
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            130,
+            100,
+            134,
+            101
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            128,
+            100,
+            130,
+            101
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            128,
+            100,
+            124,
+            98
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            132,
+            98,
+            128,
+            100
           ],
           "texture": "#0"
         }

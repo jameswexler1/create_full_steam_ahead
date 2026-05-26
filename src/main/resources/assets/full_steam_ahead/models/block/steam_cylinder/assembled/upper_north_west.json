@@ -1,6 +1,7 @@
 {
-  "credit": "Split from Assembled_cylinder_ring_prototype.bbmodel",
+  "credit": "Split from Steam_Cylinder_all_faces_claude_tuesday_1.bbmodel",
   "ambientocclusion": false,
+  "render_type": "minecraft:cutout_mipped",
   "texture_size": [
     256,
     256
@@ -487,55 +488,55 @@
       "faces": {
         "north": {
           "uv": [
-            124,
-            71,
-            126,
-            72
+            46,
+            125,
+            48,
+            126
           ],
           "texture": "#0"
         },
         "east": {
           "uv": [
-            122,
-            71,
-            124,
-            72
+            44,
+            125,
+            46,
+            126
           ],
           "texture": "#0"
         },
         "south": {
           "uv": [
-            128,
-            71,
-            130,
-            72
+            50,
+            125,
+            52,
+            126
           ],
           "texture": "#0"
         },
         "west": {
           "uv": [
-            126,
-            71,
-            128,
-            72
+            48,
+            125,
+            50,
+            126
           ],
           "texture": "#0"
         },
         "up": {
           "uv": [
-            126,
-            71,
-            124,
-            69
+            48,
+            125,
+            46,
+            123
           ],
           "texture": "#0"
         },
         "down": {
           "uv": [
-            128,
-            69,
-            126,
-            71
+            50,
+            123,
+            48,
+            125
           ],
           "texture": "#0"
         }
