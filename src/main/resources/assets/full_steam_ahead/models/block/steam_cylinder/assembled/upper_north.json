@@ -2,10 +2,6 @@
   "credit": "Split from Steam_Cylinder_all_faces_claude_tuesday_1.bbmodel",
   "ambientocclusion": false,
   "render_type": "minecraft:cutout_mipped",
-  "texture_size": [
-    256,
-    256
-  ],
   "textures": {
     "0": "full_steam_ahead:block/steam_cylinder/assembled_cylinder_ring",
     "particle": "full_steam_ahead:block/steam_cylinder/assembled_cylinder_ring"
@@ -25,27 +21,27 @@
       "faces": {
         "north": {
           "uv": [
-            69,
-            26,
-            85,
-            41
+            4.3125,
+            1.625,
+            5.3125,
+            2.5625
           ],
           "texture": "#0"
         },
         "south": {
           "uv": [
-            98,
-            26,
-            114,
-            41
+            6.125,
+            1.625,
+            7.125,
+            2.5625
           ],
           "texture": "#0"
         },
         "up": {
           "uv": [
-            86,
-            10,
-            70,
+            5.375,
+            0.625,
+            4.375,
             0
           ],
           "texture": "#0"
@@ -66,37 +62,37 @@
       "faces": {
         "north": {
           "uv": [
-            61,
-            110,
-            77,
-            111
+            3.8125,
+            6.875,
+            4.8125,
+            6.9375
           ],
           "texture": "#0"
         },
         "south": {
           "uv": [
-            88,
-            110,
-            104,
-            111
+            5.5,
+            6.875,
+            6.5,
+            6.9375
           ],
           "texture": "#0"
         },
         "up": {
           "uv": [
-            78,
-            110,
-            62,
-            102
+            4.875,
+            6.875,
+            3.875,
+            6.375
           ],
           "texture": "#0"
         },
         "down": {
           "uv": [
-            97,
-            102,
-            81,
-            110
+            6.0625,
+            6.375,
+            5.0625,
+            6.875
           ],
           "texture": "#0"
         }

@@ -2,10 +2,6 @@
   "credit": "Split from Steam_Cylinder_all_faces_claude_tuesday_1.bbmodel",
   "ambientocclusion": false,
   "render_type": "minecraft:cutout_mipped",
-  "texture_size": [
-    256,
-    256
-  ],
   "textures": {
     "0": "full_steam_ahead:block/steam_cylinder/assembled_cylinder_ring",
     "particle": "full_steam_ahead:block/steam_cylinder/assembled_cylinder_ring"
@@ -25,28 +21,28 @@
       "faces": {
         "north": {
           "uv": [
-            68,
-            66,
-            84,
-            81
+            4.25,
+            4.125,
+            5.25,
+            5.0625
           ],
           "texture": "#0"
         },
         "south": {
           "uv": [
-            96,
-            66,
-            112,
-            81
+            6,
+            4.125,
+            7,
+            5.0625
           ],
           "texture": "#0"
         },
         "up": {
           "uv": [
-            85,
-            50,
-            69,
-            41
+            5.3125,
+            3.125,
+            4.3125,
+            2.5625
           ],
           "texture": "#0"
         }
@@ -66,37 +62,37 @@
       "faces": {
         "north": {
           "uv": [
-            115,
-            110,
-            131,
-            111
+            7.1875,
+            6.875,
+            8.1875,
+            6.9375
           ],
           "texture": "#0"
         },
         "south": {
           "uv": [
-            142,
-            110,
-            158,
-            111
+            8.875,
+            6.875,
+            9.875,
+            6.9375
           ],
           "texture": "#0"
         },
         "up": {
           "uv": [
-            132,
-            110,
-            116,
-            102
+            8.25,
+            6.875,
+            7.25,
+            6.375
           ],
           "texture": "#0"
         },
         "down": {
           "uv": [
-            151,
-            102,
-            135,
-            110
+            9.4375,
+            6.375,
+            8.4375,
+            6.875
           ],
           "texture": "#0"
         }
