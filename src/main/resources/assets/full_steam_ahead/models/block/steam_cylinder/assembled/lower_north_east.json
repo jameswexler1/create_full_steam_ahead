@@ -1,5 +1,5 @@
 {
-  "credit": "Split from Steam_Cylinder_all_faces_claude_tuesday_1.bbmodel",
+  "credit": "Split from Steam_Cylinder_all_faces_claude_wednesday.bbmodel",
   "ambientocclusion": false,
   "render_type": "minecraft:cutout_mipped",
   "textures": {
@@ -61,7 +61,7 @@
       "from": [
         0,
         0,
-        6
+        7
       ],
       "to": [
         2,
@@ -82,7 +82,7 @@
           "uv": [
             3.625,
             0.625,
-            4.25,
+            4.1875,
             1.625
           ],
           "texture": "#0"
@@ -99,7 +99,7 @@
         "down": {
           "uv": [
             5.5625,
-            0,
+            0.0625,
             5.4375,
             0.625
           ],

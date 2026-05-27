@@ -1,6 +1,6 @@
 # Create: Full Steam Ahead — Design Plan
 
-Last updated: 2026-05-23
+Last updated: 2026-05-27
 
 ## Goal
 
@@ -590,6 +590,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Add `stepped_lever` scaffold with analog redstone state, goggle tooltip, block entity renderer, model assets, loot, recipe, tags, lang, and creative entry
 - [x] Apply the first custom Blockbench `steam_cylinder` texture/model prototype to both unassembled and assembled cylinder shell models
 - [x] Split `Assembled_cylinder_ring_prototype.bbmodel` into section-aware assembled `steam_cylinder` models and matching slim assembled hitboxes
+- [x] Regenerate assembled cylinder section models, texture, and slim hitboxes from the symmetrical Wednesday Blockbench revision
 - [ ] Add Ponder plugin and scenes after visual models settle: direct compact engine, boiler outlet pressure, steam storage/pipes, steam inlet, Aeronautics ship use
 - [ ] Verify visuals on standalone world, pipe-fed world, and Aeronautics assembled sublevel
 - [ ] Verify dedicated server startup remains clean with no client-class loading

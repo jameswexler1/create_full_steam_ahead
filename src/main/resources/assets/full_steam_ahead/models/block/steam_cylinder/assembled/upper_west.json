@@ -1,5 +1,5 @@
 {
-  "credit": "Split from Steam_Cylinder_all_faces_claude_tuesday_1.bbmodel",
+  "credit": "Split from Steam_Cylinder_all_faces_claude_wednesday.bbmodel",
   "ambientocclusion": false,
   "render_type": "minecraft:cutout_mipped",
   "textures": {
@@ -50,12 +50,12 @@
     },
     {
       "from": [
-        9,
+        8,
         15,
         0
       ],
       "to": [
-        15,
+        14,
         16,
         16
       ],
@@ -100,7 +100,7 @@
     },
     {
       "from": [
-        15,
+        14,
         15,
         0
       ],
@@ -114,7 +114,16 @@
           "uv": [
             7.875,
             6.0625,
-            7.9375,
+            8,
+            6.125
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            6.875,
+            6.0625,
+            7.875,
             6.125
           ],
           "texture": "#0"
@@ -123,7 +132,7 @@
           "uv": [
             9,
             6.0625,
-            9.0625,
+            9.125,
             6.125
           ],
           "texture": "#0"
@@ -141,7 +150,7 @@
           "uv": [
             8,
             6.0625,
-            7.9375,
+            7.875,
             5.0625
           ],
           "texture": "#0"
@@ -150,7 +159,7 @@
           "uv": [
             8.125,
             5.0625,
-            8.0625,
+            8,
             6.0625
           ],
           "texture": "#0"
