@@ -1,15 +1,13 @@
 {
-  "credit": "Converted from piston_head_for_testing_v2.bbmodel for local testing.",
+  "credit": "Converted from piston_head_for_testing_v3_textured.bbmodel",
   "ambientocclusion": true,
   "textures": {
-    "continuity_of_head_texture": "full_steam_ahead:block/piston_head/continuity_of_head_texture",
-    "shaft_base_texture": "full_steam_ahead:block/piston_head/shaft_base_texture",
-    "head_shaft": "full_steam_ahead:block/piston_head/head_shaft",
-    "base_head_texture": "full_steam_ahead:block/piston_head/base_head_texture",
-    "particle": "full_steam_ahead:block/piston_head/base_head_texture"
+    "0": "full_steam_ahead:block/piston_head/piston_iron",
+    "particle": "full_steam_ahead:block/piston_head/piston_iron"
   },
   "elements": [
     {
+      "name": "base of head",
       "from": [
         0,
         0,
@@ -28,7 +26,7 @@
             8,
             4.25
           ],
-          "texture": "#base_head_texture"
+          "texture": "#0"
         },
         "east": {
           "uv": [
@@ -37,7 +35,7 @@
             4,
             4.25
           ],
-          "texture": "#base_head_texture"
+          "texture": "#0"
         },
         "south": {
           "uv": [
@@ -46,7 +44,7 @@
             16,
             4.25
           ],
-          "texture": "#base_head_texture"
+          "texture": "#0"
         },
         "west": {
           "uv": [
@@ -55,7 +53,7 @@
             12,
             4.25
           ],
-          "texture": "#base_head_texture"
+          "texture": "#0"
         },
         "up": {
           "uv": [
@@ -64,7 +62,7 @@
             4,
             0
           ],
-          "texture": "#base_head_texture"
+          "texture": "#0"
         },
         "down": {
           "uv": [
@@ -73,11 +71,12 @@
             8,
             4
           ],
-          "texture": "#base_head_texture"
+          "texture": "#0"
         }
       }
     },
     {
+      "name": "continuity of head",
       "from": [
         1,
         1,
@@ -91,61 +90,62 @@
       "faces": {
         "north": {
           "uv": [
-            7,
-            0,
-            14,
-            1
+            9,
+            9.25,
+            12.5,
+            9.75
           ],
-          "texture": "#continuity_of_head_texture"
+          "texture": "#0"
         },
         "east": {
           "uv": [
-            7,
-            1,
-            14,
-            2
+            9,
+            9.75,
+            12.5,
+            10.25
           ],
-          "texture": "#continuity_of_head_texture"
+          "texture": "#0"
         },
         "south": {
           "uv": [
-            7,
-            2,
-            14,
-            3
+            10,
+            4.25,
+            13.5,
+            4.75
           ],
-          "texture": "#continuity_of_head_texture"
+          "texture": "#0"
         },
         "west": {
           "uv": [
-            7,
-            3,
-            14,
-            4
+            10,
+            4.75,
+            13.5,
+            5.25
           ],
-          "texture": "#continuity_of_head_texture"
+          "texture": "#0"
         },
         "up": {
           "uv": [
-            7,
-            7,
+            3.5,
+            7.75,
             0,
-            0
+            4.25
           ],
-          "texture": "#continuity_of_head_texture"
+          "texture": "#0"
         },
         "down": {
           "uv": [
             7,
-            7,
-            0,
-            14
+            4.25,
+            3.5,
+            7.75
           ],
-          "texture": "#continuity_of_head_texture"
+          "texture": "#0"
         }
       }
     },
     {
+      "name": "shaft base",
       "from": [
         2,
         3,
@@ -159,61 +159,62 @@
       "faces": {
         "north": {
           "uv": [
-            6,
-            0,
-            12,
-            0.5
+            10,
+            5.25,
+            13,
+            5.5
           ],
-          "texture": "#shaft_base_texture"
+          "texture": "#0"
         },
         "east": {
           "uv": [
-            6,
-            1,
-            11,
-            1.5
+            10,
+            5.75,
+            12.5,
+            6
           ],
-          "texture": "#shaft_base_texture"
+          "texture": "#0"
         },
         "south": {
           "uv": [
-            6,
-            0.5,
-            12,
-            1
+            10,
+            5.5,
+            13,
+            5.75
           ],
-          "texture": "#shaft_base_texture"
+          "texture": "#0"
         },
         "west": {
           "uv": [
+            10,
             6,
-            1.5,
-            11,
-            2
+            12.5,
+            6.25
           ],
-          "texture": "#shaft_base_texture"
+          "texture": "#0"
         },
         "up": {
           "uv": [
-            6,
-            5,
-            0,
-            0
+            10,
+            6.75,
+            7,
+            4.25
           ],
-          "texture": "#shaft_base_texture"
+          "texture": "#0"
         },
         "down": {
           "uv": [
-            6,
-            5,
-            0,
-            10
+            10,
+            6.75,
+            7,
+            9.25
           ],
-          "texture": "#shaft_base_texture"
+          "texture": "#0"
         }
       }
     },
     {
+      "name": "head shaft",
       "from": [
         5,
         4,
@@ -228,56 +229,56 @@
         "north": {
           "uv": [
             0,
-            0,
-            5,
-            6
+            7.75,
+            1.5,
+            10.75
           ],
-          "texture": "#head_shaft"
+          "texture": "#0"
         },
         "east": {
           "uv": [
-            0,
-            6,
+            1.5,
+            7.75,
             3,
-            12
+            10.75
           ],
-          "texture": "#head_shaft"
+          "texture": "#0"
         },
         "south": {
           "uv": [
-            5,
-            0,
-            10,
-            6
+            3,
+            7.75,
+            4.5,
+            10.75
           ],
-          "texture": "#head_shaft"
+          "texture": "#0"
         },
         "west": {
           "uv": [
-            3,
+            4.5,
+            7.75,
             6,
-            6,
-            12
+            10.75
           ],
-          "texture": "#head_shaft"
+          "texture": "#0"
         },
         "up": {
           "uv": [
-            11,
-            9,
+            7.5,
+            10.75,
             6,
-            6
+            9.25
           ],
-          "texture": "#head_shaft"
+          "texture": "#0"
         },
         "down": {
           "uv": [
-            11,
             9,
-            6,
-            12
+            9.25,
+            7.5,
+            10.75
           ],
-          "texture": "#head_shaft"
+          "texture": "#0"
         }
       }
     }
