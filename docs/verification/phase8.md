@@ -64,6 +64,7 @@ Completed static cylinder art slice:
 - [x] Regenerated the assembled cylinder ring models and texture from `Steam_Cylinder_all_faces_claude_tuesday_1.bbmodel`, including the new bottom detail and cutout render type.
 - [x] Corrected assembled cylinder model UVs from 256px Blockbench coordinates into Minecraft's 0-16 UV range to prevent texture-atlas sampling artifacts.
 - [x] Regenerated the assembled cylinder ring models, texture, and model-derived slim hitboxes from `Steam_Cylinder_all_faces_claude_wednesday.bbmodel`.
+- [x] Corrected assembled cylinder section UV clipping to follow Minecraft's baked face orientation so split models match the Blockbench source.
 
 Completed stepped lever slice:
 
@@ -99,6 +100,7 @@ Automated results:
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-26 after applying the Tuesday assembled cylinder texture revision.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-26 after normalizing the assembled cylinder UVs.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-27 after applying the Wednesday assembled cylinder revision and matching hitboxes.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-27 after correcting assembled cylinder section UV orientation.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.

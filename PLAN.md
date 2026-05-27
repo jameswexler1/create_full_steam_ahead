@@ -591,6 +591,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Apply the first custom Blockbench `steam_cylinder` texture/model prototype to both unassembled and assembled cylinder shell models
 - [x] Split `Assembled_cylinder_ring_prototype.bbmodel` into section-aware assembled `steam_cylinder` models and matching slim assembled hitboxes
 - [x] Regenerate assembled cylinder section models, texture, and slim hitboxes from the symmetrical Wednesday Blockbench revision
+- [x] Correct assembled cylinder section UV clipping so the split in-game models match the Blockbench texture orientation
 - [ ] Add Ponder plugin and scenes after visual models settle: direct compact engine, boiler outlet pressure, steam storage/pipes, steam inlet, Aeronautics ship use
 - [ ] Verify visuals on standalone world, pipe-fed world, and Aeronautics assembled sublevel
 - [ ] Verify dedicated server startup remains clean with no client-class loading
