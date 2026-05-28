@@ -70,6 +70,7 @@ Completed static cylinder art slice:
 - [x] Replaced the assembled multiblock cylinder runtime texture with the `_v2` hand-authored PNG revision.
 - [x] Reused the 16 assembled cylinder section models as progressive `Cylinder Wall` construction visuals.
 - [x] Added best-fit partial section assignment for connected cylinder wall/inlet groups while keeping `assembled=true` reserved for complete valid rings.
+- [x] Applied `cylinder_exposed_parts_fix.zip`: v3 assembled cylinder atlas plus exposed cut faces for all 16 section models.
 
 Completed stepped lever slice:
 
@@ -110,6 +111,7 @@ Automated results:
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-28 after applying the latest assembled cylinder ring PNG.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-28 after applying the assembled cylinder ring `_v2` PNG.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-28 after adding progressive cylinder wall subunit visuals.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-28 after applying the exposed cylinder section face fix.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
