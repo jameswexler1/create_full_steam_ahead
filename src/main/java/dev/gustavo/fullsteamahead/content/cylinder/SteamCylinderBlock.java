@@ -15,12 +15,17 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockEntity> {
     public static final MapCodec<SteamCylinderBlock> CODEC = simpleCodec(SteamCylinderBlock::new);
     public static final BooleanProperty ASSEMBLED = BooleanProperty.create("assembled");
     public static final EnumProperty<CylinderSection> SECTION = EnumProperty.create("section", CylinderSection.class);
+    private static final VoxelShape STANDALONE_SHAPE = Shapes.or(
+            Block.box(4, 0, 0, 12, 15, 16),
+            Block.box(5, 15, 0, 11, 16, 16)
+    );
 
     public SteamCylinderBlock(Properties properties) {
         super(properties);
@@ -102,7 +107,7 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
     ) {
         return state.getValue(SECTION) != CylinderSection.NONE
                 ? CylinderRingShapes.forSection(state.getValue(SECTION))
-                : super.getShape(state, level, pos, context);
+                : STANDALONE_SHAPE;
     }
 
     @Override

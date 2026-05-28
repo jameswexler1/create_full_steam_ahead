@@ -1,7 +1,148 @@
 {
-  "credit": "Converted from Steam_Cylinder_all_faces.bbmodel",
-  "parent": "minecraft:block/cube_all",
+  "credit": "Converted from Stean_cylinder_wall_v1.bbmodel",
+  "ambientocclusion": true,
   "textures": {
-    "all": "full_steam_ahead:block/steam_cylinder/steam_cylinder_texture"
-  }
+    "0": "full_steam_ahead:block/steam_cylinder/steam_cylinder_wall",
+    "particle": "full_steam_ahead:block/steam_cylinder/steam_cylinder_wall"
+  },
+  "elements": [
+    {
+      "name": "cube",
+      "from": [
+        4,
+        0,
+        0
+      ],
+      "to": [
+        12,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            0,
+            8,
+            3.75
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            4,
+            3.75
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            6,
+            3.75,
+            8,
+            7.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0,
+            3.75,
+            4,
+            7.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            6,
+            4,
+            4,
+            0
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            6,
+            4,
+            4,
+            8
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "cube",
+      "from": [
+        5,
+        15,
+        0
+      ],
+      "to": [
+        11,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            0,
+            9.5,
+            0.25
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            6,
+            7.5,
+            10,
+            7.75
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            8,
+            0.25,
+            9.5,
+            0.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            6,
+            7.75,
+            10,
+            8
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            1.5,
+            11.5,
+            0,
+            7.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            3,
+            7.5,
+            1.5,
+            11.5
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
 }
