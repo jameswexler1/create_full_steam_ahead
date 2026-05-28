@@ -599,6 +599,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Infer partial cylinder-wall section visuals from connected wall/inlet groups without enabling engine mechanics
 - [x] Apply the exposed-parts fix: v3 assembled cylinder atlas plus generated cut faces for all 16 section models
 - [x] Replace the standalone `Cylinder Wall` block with the v1 textured wall model and matching hitbox
+- [x] Refresh adjacent Create pipe connections when `steam_inlet` fluid capability changes during cylinder ring disassembly/reassembly
 - [ ] Add Ponder plugin and scenes after visual models settle: direct compact engine, boiler outlet pressure, steam storage/pipes, steam inlet, Aeronautics ship use
 - [ ] Verify visuals on standalone world, pipe-fed world, and Aeronautics assembled sublevel
 - [ ] Verify dedicated server startup remains clean with no client-class loading

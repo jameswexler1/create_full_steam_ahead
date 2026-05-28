@@ -1,6 +1,7 @@
 package dev.gustavo.fullsteamahead.content.steam;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.content.fluids.FluidPropagator;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderConnectivity;
@@ -12,6 +13,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
@@ -142,6 +144,28 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
     private void invalidateFluidCapability() {
         if (level != null) {
             level.invalidateCapabilities(worldPosition);
+            // Create pipes cache both connection shape and flow graph state; the inlet can change
+            // capability availability without being replaced, so refresh adjacent pipes explicitly.
+            refreshAdjacentPipes();
+        }
+    }
+
+    private void refreshAdjacentPipes() {
+        for (Direction direction : Direction.values()) {
+            BlockPos pipePos = worldPosition.relative(direction);
+            if (!level.isLoaded(pipePos) || FluidPropagator.getPipe(level, pipePos) == null) {
+                continue;
+            }
+
+            BlockState pipeState = level.getBlockState(pipePos);
+            BlockState refreshedState = Block.updateFromNeighbourShapes(pipeState, level, pipePos);
+            if (refreshedState != pipeState) {
+                level.setBlock(pipePos, refreshedState, Block.UPDATE_CLIENTS);
+                pipeState = refreshedState;
+            }
+
+            FluidPropagator.propagateChangedPipe(level, pipePos, pipeState);
+            SteamPipePressureCoordinator.refreshSteamPressureNear(level, pipePos);
         }
     }
 

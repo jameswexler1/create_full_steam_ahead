@@ -168,9 +168,9 @@ public final class CylinderConnectivity {
             }
 
             CylinderSection section = partialSections.getOrDefault(pos, CylinderSection.NONE);
-            setRingState(level, pos, state, false, section);
             withCylinderBlockEntity(level, pos, SteamCylinderBlockEntity::clearRingState);
             withInletBlockEntity(level, pos, SteamInletBlockEntity::clearRingState);
+            setRingState(level, pos, state, false, section);
         }
     }
 
@@ -186,11 +186,15 @@ public final class CylinderConnectivity {
         for (BlockPos pos : positions) {
             BlockState state = level.getBlockState(pos);
             CylinderSection section = sectionFor(origin, pos);
-            setRingState(level, pos, state, true, section);
-            withCylinderBlockEntity(level, pos,
-                    be -> be.applyRingState(origin, root, boilerPos, inletPos, pos.equals(root)));
-            withInletBlockEntity(level, pos,
-                    be -> be.applyRingState(origin, root, boilerPos));
+            if (state.is(ModBlocks.STEAM_INLET.get())) {
+                withInletBlockEntity(level, pos,
+                        be -> be.applyRingState(origin, root, boilerPos));
+                setRingState(level, pos, state, true, section);
+            } else {
+                setRingState(level, pos, state, true, section);
+                withCylinderBlockEntity(level, pos,
+                        be -> be.applyRingState(origin, root, boilerPos, inletPos, pos.equals(root)));
+            }
         }
     }
 

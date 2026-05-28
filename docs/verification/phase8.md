@@ -83,6 +83,12 @@ Completed telegraph polish slice:
 - [x] Set `engine_telegraph` to `minecraft:cutout_mipped` with ambient occlusion disabled for cleaner moving/simulated contraption rendering.
 - [x] Replaced the coarse telegraph hitbox with a model-derived, direction-aware union of its Blockbench cuboids.
 
+Completed inlet/pipe reliability slice:
+
+- [x] Diagnosed stale Create pipe connection state after a `steam_inlet` disassembled and reassembled.
+- [x] Exposed/cleared the inlet fluid capability before ring blockstate updates so Create pipe shape recalculation sees the correct handler state.
+- [x] Refreshed adjacent Create pipes and their steam pressure cache when inlet capability availability changes without block replacement.
+
 Automated results:
 
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-21 after technical partials, the axial crankshaft fix, crank-phase steam effects, and the steam sound correction.
@@ -114,6 +120,7 @@ Automated results:
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-28 after adding progressive cylinder wall subunit visuals.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-28 after applying the exposed cylinder section face fix.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-28 after replacing the standalone `Cylinder Wall` model.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-28 after refreshing adjacent pipes on steam inlet capability changes.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
@@ -133,6 +140,7 @@ Manual runtime checklist:
 - [ ] Assembled `steam_cylinder` ring uses the slim section-aware model in all 16 positions, disassembles back to the standalone block model, and has a slim outline/collision shape.
 - [ ] Assembled `piston_head` and the `piston` body remain visible at rest and reciprocate while the linked shaft is running.
 - [x] Existing pipe-fed engines still assemble and run.
+- [ ] Pipe connected to a `steam_inlet` reconnects automatically after breaking and repairing one cylinder wall block in the ring.
 - [x] Old worlds with existing engines load without blockstate/model errors.
 - [x] Piston motion was synchronized with crankshaft rotation at 16, 32, 48, and 64 RPM before the shaft-link remodel.
 - [ ] Piston motion is synchronized with linked Create shaft rotation at 16, 32, 48, and 64 RPM after the shaft-link remodel.
