@@ -1,6 +1,6 @@
 # Create: Full Steam Ahead — Design Plan
 
-Last updated: 2026-05-27
+Last updated: 2026-05-28
 
 ## Goal
 
@@ -593,6 +593,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Split `Assembled_cylinder_ring_prototype.bbmodel` into section-aware assembled `steam_cylinder` models and matching slim assembled hitboxes
 - [x] Regenerate assembled cylinder section models, texture, and slim hitboxes from the symmetrical Wednesday Blockbench revision
 - [x] Correct assembled cylinder section UV clipping so the split in-game models match the Blockbench texture orientation
+- [x] Apply the latest hand-authored assembled cylinder ring texture PNG to the implemented runtime atlas
 - [ ] Add Ponder plugin and scenes after visual models settle: direct compact engine, boiler outlet pressure, steam storage/pipes, steam inlet, Aeronautics ship use
 - [ ] Verify visuals on standalone world, pipe-fed world, and Aeronautics assembled sublevel
 - [ ] Verify dedicated server startup remains clean with no client-class loading
