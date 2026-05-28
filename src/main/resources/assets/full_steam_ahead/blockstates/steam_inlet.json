@@ -2,7 +2,7 @@
   "multipart": [
     {
       "when": {
-        "assembled": "false"
+        "section": "none"
       },
       "apply": {
         "model": "full_steam_ahead:block/steam_inlet"
@@ -10,7 +10,127 @@
     },
     {
       "when": {
-        "assembled": "true"
+        "section": "lower_north_west"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet_assembled"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_north"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet_assembled"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_north_east"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet_assembled"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_west"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet_assembled"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_east"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet_assembled"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_south_west"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet_assembled"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_south"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet_assembled"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_south_east"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet_assembled"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_north_west"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet_assembled"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_north"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet_assembled"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_north_east"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet_assembled"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_west"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet_assembled"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_east"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet_assembled"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_south_west"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet_assembled"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_south"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet_assembled"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_south_east"
       },
       "apply": {
         "model": "full_steam_ahead:block/steam_inlet_assembled"

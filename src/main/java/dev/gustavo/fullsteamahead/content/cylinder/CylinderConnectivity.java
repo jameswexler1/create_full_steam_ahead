@@ -6,15 +6,19 @@ import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -48,11 +52,10 @@ public final class CylinderConnectivity {
             }
         }
 
-        for (BlockPos origin : candidates) {
-            if (!validOrigins.contains(origin)) {
-                disassemble(level, ringPositions(origin), validRingPositions);
-            }
-        }
+        Map<BlockPos, CylinderSection> partialSections =
+                inferPartialSections(level, candidates, validRingPositions, ignoredRingMemberPos);
+
+        clearOrApplyPartialSections(level, candidateRingPositions(candidates), validRingPositions, partialSections);
 
         for (BlockPos origin : validOrigins) {
             assemble(level, origin);
@@ -71,6 +74,14 @@ public final class CylinderConnectivity {
             }
         }
         return origins;
+    }
+
+    private static Set<BlockPos> candidateRingPositions(Set<BlockPos> candidateOrigins) {
+        Set<BlockPos> positions = new LinkedHashSet<>();
+        for (BlockPos origin : candidateOrigins) {
+            positions.addAll(ringPositions(origin));
+        }
+        return positions;
     }
 
     private static boolean isValidRing(Level level, BlockPos origin, BlockPos ignoredRingMemberPos) {
@@ -140,7 +151,12 @@ public final class CylinderConnectivity {
         return positions;
     }
 
-    private static void disassemble(Level level, List<BlockPos> positions, Set<BlockPos> protectedPositions) {
+    private static void clearOrApplyPartialSections(
+            Level level,
+            Set<BlockPos> positions,
+            Set<BlockPos> protectedPositions,
+            Map<BlockPos, CylinderSection> partialSections
+    ) {
         for (BlockPos pos : positions) {
             if (protectedPositions.contains(pos) || !level.isLoaded(pos)) {
                 continue;
@@ -151,7 +167,8 @@ public final class CylinderConnectivity {
                 continue;
             }
 
-            setRingState(level, pos, state, false, CylinderSection.NONE);
+            CylinderSection section = partialSections.getOrDefault(pos, CylinderSection.NONE);
+            setRingState(level, pos, state, false, section);
             withCylinderBlockEntity(level, pos, SteamCylinderBlockEntity::clearRingState);
             withInletBlockEntity(level, pos, SteamInletBlockEntity::clearRingState);
         }
@@ -218,6 +235,95 @@ public final class CylinderConnectivity {
                 pos.getY() - origin.getY(),
                 pos.getZ() - origin.getZ()
         );
+    }
+
+    private static Map<BlockPos, CylinderSection> inferPartialSections(
+            Level level,
+            Set<BlockPos> candidateOrigins,
+            Set<BlockPos> protectedPositions,
+            BlockPos ignoredRingMemberPos
+    ) {
+        Set<BlockPos> members = new LinkedHashSet<>();
+        for (BlockPos pos : candidateRingPositions(candidateOrigins)) {
+            if (!protectedPositions.contains(pos)
+                    && level.isLoaded(pos)
+                    && getRingMemberAt(level, pos, ignoredRingMemberPos) != RingMember.NONE) {
+                members.add(pos);
+            }
+        }
+
+        Map<BlockPos, CylinderSection> assignments = new HashMap<>();
+        for (Set<BlockPos> component : connectedComponents(members)) {
+            if (component.size() < 2) {
+                continue;
+            }
+
+            Optional<BlockPos> bestOrigin = bestVisualOrigin(component);
+            if (bestOrigin.isEmpty()) {
+                continue;
+            }
+
+            for (BlockPos pos : component) {
+                CylinderSection section = sectionFor(bestOrigin.get(), pos);
+                if (section != CylinderSection.NONE) {
+                    assignments.put(pos, section);
+                }
+            }
+        }
+
+        return assignments;
+    }
+
+    private static List<Set<BlockPos>> connectedComponents(Set<BlockPos> members) {
+        List<Set<BlockPos>> components = new ArrayList<>();
+        Set<BlockPos> unvisited = new LinkedHashSet<>(members);
+
+        while (!unvisited.isEmpty()) {
+            BlockPos start = unvisited.iterator().next();
+            Set<BlockPos> component = new LinkedHashSet<>();
+            ArrayDeque<BlockPos> queue = new ArrayDeque<>();
+            queue.add(start);
+            unvisited.remove(start);
+
+            while (!queue.isEmpty()) {
+                BlockPos pos = queue.removeFirst();
+                component.add(pos);
+
+                for (Direction direction : Direction.values()) {
+                    BlockPos neighbor = pos.relative(direction);
+                    if (unvisited.remove(neighbor)) {
+                        queue.add(neighbor);
+                    }
+                }
+            }
+
+            components.add(component);
+        }
+
+        return components;
+    }
+
+    private static Optional<BlockPos> bestVisualOrigin(Set<BlockPos> component) {
+        Set<BlockPos> origins = new LinkedHashSet<>();
+        for (BlockPos pos : component) {
+            origins.addAll(candidateOrigins(pos));
+        }
+
+        return origins.stream()
+                .filter(origin -> visualScore(origin, component) >= 2)
+                .max(Comparator
+                        .comparingInt((BlockPos origin) -> visualScore(origin, component))
+                        .thenComparing(ROOT_ORDER.reversed()));
+    }
+
+    private static int visualScore(BlockPos origin, Set<BlockPos> component) {
+        int score = 0;
+        for (BlockPos pos : component) {
+            if (sectionFor(origin, pos) != CylinderSection.NONE) {
+                score++;
+            }
+        }
+        return score;
     }
 
     private static void setRingState(
