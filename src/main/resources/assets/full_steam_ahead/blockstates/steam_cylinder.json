@@ -2,7 +2,7 @@
   "multipart": [
     {
       "when": {
-        "assembled": "false"
+        "section": "none"
       },
       "apply": {
         "model": "full_steam_ahead:block/steam_cylinder"
@@ -10,16 +10,6 @@
     },
     {
       "when": {
-        "assembled": "true",
-        "section": "none"
-      },
-      "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder_assembled"
-      }
-    },
-    {
-      "when": {
-        "assembled": "true",
         "section": "lower_north_west"
       },
       "apply": {
@@ -28,7 +18,6 @@
     },
     {
       "when": {
-        "assembled": "true",
         "section": "lower_north"
       },
       "apply": {
@@ -37,7 +26,6 @@
     },
     {
       "when": {
-        "assembled": "true",
         "section": "lower_north_east"
       },
       "apply": {
@@ -46,7 +34,6 @@
     },
     {
       "when": {
-        "assembled": "true",
         "section": "lower_west"
       },
       "apply": {
@@ -55,7 +42,6 @@
     },
     {
       "when": {
-        "assembled": "true",
         "section": "lower_east"
       },
       "apply": {
@@ -64,7 +50,6 @@
     },
     {
       "when": {
-        "assembled": "true",
         "section": "lower_south_west"
       },
       "apply": {
@@ -73,7 +58,6 @@
     },
     {
       "when": {
-        "assembled": "true",
         "section": "lower_south"
       },
       "apply": {
@@ -82,7 +66,6 @@
     },
     {
       "when": {
-        "assembled": "true",
         "section": "lower_south_east"
       },
       "apply": {
@@ -91,7 +74,6 @@
     },
     {
       "when": {
-        "assembled": "true",
         "section": "upper_north_west"
       },
       "apply": {
@@ -100,7 +82,6 @@
     },
     {
       "when": {
-        "assembled": "true",
         "section": "upper_north"
       },
       "apply": {
@@ -109,7 +90,6 @@
     },
     {
       "when": {
-        "assembled": "true",
         "section": "upper_north_east"
       },
       "apply": {
@@ -118,7 +98,6 @@
     },
     {
       "when": {
-        "assembled": "true",
         "section": "upper_west"
       },
       "apply": {
@@ -127,7 +106,6 @@
     },
     {
       "when": {
-        "assembled": "true",
         "section": "upper_east"
       },
       "apply": {
@@ -136,7 +114,6 @@
     },
     {
       "when": {
-        "assembled": "true",
         "section": "upper_south_west"
       },
       "apply": {
@@ -145,7 +122,6 @@
     },
     {
       "when": {
-        "assembled": "true",
         "section": "upper_south"
       },
       "apply": {
@@ -154,7 +130,6 @@
     },
     {
       "when": {
-        "assembled": "true",
         "section": "upper_south_east"
       },
       "apply": {

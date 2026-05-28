@@ -100,7 +100,7 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
             BlockPos pos,
             CollisionContext context
     ) {
-        return state.getValue(ASSEMBLED)
+        return state.getValue(SECTION) != CylinderSection.NONE
                 ? CylinderRingShapes.forSection(state.getValue(SECTION))
                 : super.getShape(state, level, pos, context);
     }
