@@ -6,6 +6,7 @@ import com.simibubi.create.foundation.block.IBE;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderConnectivity;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderRingShapes;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderSection;
+import dev.gustavo.fullsteamahead.content.cylinder.CylinderWallShape;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
@@ -24,12 +25,15 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
     public static final MapCodec<SteamInletBlock> CODEC = simpleCodec(SteamInletBlock::new);
     public static final BooleanProperty ASSEMBLED = BooleanProperty.create("assembled");
     public static final EnumProperty<CylinderSection> SECTION = EnumProperty.create("section", CylinderSection.class);
+    public static final EnumProperty<CylinderWallShape> WALL_SHAPE =
+            EnumProperty.create("wall_shape", CylinderWallShape.class);
 
     public SteamInletBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any()
                 .setValue(ASSEMBLED, false)
-                .setValue(SECTION, CylinderSection.NONE));
+                .setValue(SECTION, CylinderSection.NONE)
+                .setValue(WALL_SHAPE, CylinderWallShape.STANDALONE));
     }
 
     @Override
@@ -120,7 +124,7 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(ASSEMBLED, SECTION);
+        builder.add(ASSEMBLED, SECTION, WALL_SHAPE);
     }
 
     @Override

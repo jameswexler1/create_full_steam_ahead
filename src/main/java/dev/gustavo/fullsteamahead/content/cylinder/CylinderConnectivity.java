@@ -54,8 +54,16 @@ public final class CylinderConnectivity {
 
         Map<BlockPos, CylinderSection> partialSections =
                 inferPartialSections(level, candidates, validRingPositions, ignoredRingMemberPos);
+        Map<BlockPos, CylinderWallShape> partialWallShapes =
+                inferPartialWallShapes(level, candidates, validRingPositions, ignoredRingMemberPos, partialSections);
 
-        clearOrApplyPartialSections(level, candidateRingPositions(candidates), validRingPositions, partialSections);
+        clearOrApplyPartialSections(
+                level,
+                candidateRingPositions(candidates),
+                validRingPositions,
+                partialSections,
+                partialWallShapes
+        );
 
         for (BlockPos origin : validOrigins) {
             assemble(level, origin);
@@ -155,7 +163,8 @@ public final class CylinderConnectivity {
             Level level,
             Set<BlockPos> positions,
             Set<BlockPos> protectedPositions,
-            Map<BlockPos, CylinderSection> partialSections
+            Map<BlockPos, CylinderSection> partialSections,
+            Map<BlockPos, CylinderWallShape> partialWallShapes
     ) {
         for (BlockPos pos : positions) {
             if (protectedPositions.contains(pos) || !level.isLoaded(pos)) {
@@ -168,9 +177,10 @@ public final class CylinderConnectivity {
             }
 
             CylinderSection section = partialSections.getOrDefault(pos, CylinderSection.NONE);
+            CylinderWallShape wallShape = partialWallShapes.getOrDefault(pos, CylinderWallShape.STANDALONE);
             withCylinderBlockEntity(level, pos, SteamCylinderBlockEntity::clearRingState);
             withInletBlockEntity(level, pos, SteamInletBlockEntity::clearRingState);
-            setRingState(level, pos, state, false, section);
+            setRingState(level, pos, state, false, section, wallShape);
         }
     }
 
@@ -189,9 +199,9 @@ public final class CylinderConnectivity {
             if (state.is(ModBlocks.STEAM_INLET.get())) {
                 withInletBlockEntity(level, pos,
                         be -> be.applyRingState(origin, root, boilerPos));
-                setRingState(level, pos, state, true, section);
+                setRingState(level, pos, state, true, section, CylinderWallShape.STANDALONE);
             } else {
-                setRingState(level, pos, state, true, section);
+                setRingState(level, pos, state, true, section, CylinderWallShape.STANDALONE);
                 withCylinderBlockEntity(level, pos,
                         be -> be.applyRingState(origin, root, boilerPos, inletPos, pos.equals(root)));
             }
@@ -258,7 +268,7 @@ public final class CylinderConnectivity {
 
         Map<BlockPos, CylinderSection> assignments = new HashMap<>();
         for (Set<BlockPos> component : connectedComponents(members)) {
-            if (component.size() < 2) {
+            if (!hasRingIntent(component)) {
                 continue;
             }
 
@@ -272,6 +282,38 @@ public final class CylinderConnectivity {
                 if (section != CylinderSection.NONE) {
                     assignments.put(pos, section);
                 }
+            }
+        }
+
+        return assignments;
+    }
+
+    private static Map<BlockPos, CylinderWallShape> inferPartialWallShapes(
+            Level level,
+            Set<BlockPos> candidateOrigins,
+            Set<BlockPos> protectedPositions,
+            BlockPos ignoredRingMemberPos,
+            Map<BlockPos, CylinderSection> partialSections
+    ) {
+        Set<BlockPos> members = new LinkedHashSet<>();
+        for (BlockPos pos : candidateRingPositions(candidateOrigins)) {
+            if (!protectedPositions.contains(pos)
+                    && !partialSections.containsKey(pos)
+                    && level.isLoaded(pos)
+                    && getRingMemberAt(level, pos, ignoredRingMemberPos) != RingMember.NONE) {
+                members.add(pos);
+            }
+        }
+
+        Map<BlockPos, CylinderWallShape> assignments = new HashMap<>();
+        for (Set<BlockPos> component : connectedComponents(members)) {
+            CylinderWallShape shape = straightWallShape(component);
+            if (shape == CylinderWallShape.STANDALONE) {
+                continue;
+            }
+
+            for (BlockPos pos : component) {
+                assignments.put(pos, shape);
             }
         }
 
@@ -307,6 +349,34 @@ public final class CylinderConnectivity {
         return components;
     }
 
+    private static boolean hasRingIntent(Set<BlockPos> component) {
+        return component.size() >= 3 && hasHorizontalAxis(component, Direction.Axis.X)
+                && hasHorizontalAxis(component, Direction.Axis.Z);
+    }
+
+    private static CylinderWallShape straightWallShape(Set<BlockPos> component) {
+        boolean hasX = hasHorizontalAxis(component, Direction.Axis.X);
+        boolean hasZ = hasHorizontalAxis(component, Direction.Axis.Z);
+
+        if (hasX == hasZ) {
+            return CylinderWallShape.STANDALONE;
+        }
+
+        return hasX ? CylinderWallShape.STRAIGHT_X : CylinderWallShape.STRAIGHT_Z;
+    }
+
+    private static boolean hasHorizontalAxis(Set<BlockPos> component, Direction.Axis axis) {
+        for (BlockPos pos : component) {
+            Direction negative = axis == Direction.Axis.X ? Direction.WEST : Direction.NORTH;
+            Direction positive = axis == Direction.Axis.X ? Direction.EAST : Direction.SOUTH;
+            if (component.contains(pos.relative(negative)) || component.contains(pos.relative(positive))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private static Optional<BlockPos> bestVisualOrigin(Set<BlockPos> component) {
         Set<BlockPos> origins = new LinkedHashSet<>();
         for (BlockPos pos : component) {
@@ -335,12 +405,33 @@ public final class CylinderConnectivity {
             BlockPos pos,
             BlockState state,
             boolean assembled,
-            CylinderSection section
+            CylinderSection section,
+            CylinderWallShape wallShape
     ) {
         if (state.is(ModBlocks.STEAM_CYLINDER.get())) {
-            setRingState(level, pos, state, SteamCylinderBlock.ASSEMBLED, SteamCylinderBlock.SECTION, assembled, section);
+            setRingState(
+                    level,
+                    pos,
+                    state,
+                    SteamCylinderBlock.ASSEMBLED,
+                    SteamCylinderBlock.SECTION,
+                    SteamCylinderBlock.WALL_SHAPE,
+                    assembled,
+                    section,
+                    wallShape
+            );
         } else if (state.is(ModBlocks.STEAM_INLET.get())) {
-            setRingState(level, pos, state, SteamInletBlock.ASSEMBLED, SteamInletBlock.SECTION, assembled, section);
+            setRingState(
+                    level,
+                    pos,
+                    state,
+                    SteamInletBlock.ASSEMBLED,
+                    SteamInletBlock.SECTION,
+                    SteamInletBlock.WALL_SHAPE,
+                    assembled,
+                    section,
+                    wallShape
+            );
         }
     }
 
@@ -350,16 +441,19 @@ public final class CylinderConnectivity {
             BlockState state,
             net.minecraft.world.level.block.state.properties.BooleanProperty property,
             net.minecraft.world.level.block.state.properties.EnumProperty<CylinderSection> sectionProperty,
+            net.minecraft.world.level.block.state.properties.EnumProperty<CylinderWallShape> wallShapeProperty,
             boolean assembled,
-            CylinderSection section
+            CylinderSection section,
+            CylinderWallShape wallShape
     ) {
-        if (!state.hasProperty(property) || !state.hasProperty(sectionProperty)) {
+        if (!state.hasProperty(property) || !state.hasProperty(sectionProperty) || !state.hasProperty(wallShapeProperty)) {
             return;
         }
 
         BlockState newState = state
                 .setValue(property, assembled)
-                .setValue(sectionProperty, section);
+                .setValue(sectionProperty, section)
+                .setValue(wallShapeProperty, wallShape);
         if (newState == state) {
             return;
         }

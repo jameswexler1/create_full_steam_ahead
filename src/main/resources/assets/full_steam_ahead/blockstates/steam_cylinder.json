@@ -2,10 +2,30 @@
   "multipart": [
     {
       "when": {
-        "section": "none"
+        "section": "none",
+        "wall_shape": "standalone"
       },
       "apply": {
         "model": "full_steam_ahead:block/steam_cylinder"
+      }
+    },
+    {
+      "when": {
+        "section": "none",
+        "wall_shape": "straight_z"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder"
+      }
+    },
+    {
+      "when": {
+        "section": "none",
+        "wall_shape": "straight_x"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder",
+        "y": 90
       }
     },
     {

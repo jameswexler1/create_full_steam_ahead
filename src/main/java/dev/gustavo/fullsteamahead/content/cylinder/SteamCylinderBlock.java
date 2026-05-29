@@ -22,16 +22,23 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
     public static final MapCodec<SteamCylinderBlock> CODEC = simpleCodec(SteamCylinderBlock::new);
     public static final BooleanProperty ASSEMBLED = BooleanProperty.create("assembled");
     public static final EnumProperty<CylinderSection> SECTION = EnumProperty.create("section", CylinderSection.class);
+    public static final EnumProperty<CylinderWallShape> WALL_SHAPE =
+            EnumProperty.create("wall_shape", CylinderWallShape.class);
     private static final VoxelShape STANDALONE_SHAPE = Shapes.or(
             Block.box(4, 0, 0, 12, 15, 16),
             Block.box(5, 15, 0, 11, 16, 16)
+    );
+    private static final VoxelShape STRAIGHT_X_SHAPE = Shapes.or(
+            Block.box(0, 0, 4, 16, 15, 12),
+            Block.box(0, 15, 5, 16, 16, 11)
     );
 
     public SteamCylinderBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(ASSEMBLED, false)
-                .setValue(SECTION, CylinderSection.NONE));
+                .setValue(SECTION, CylinderSection.NONE)
+                .setValue(WALL_SHAPE, CylinderWallShape.STANDALONE));
     }
 
     @Override
@@ -105,9 +112,11 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
             BlockPos pos,
             CollisionContext context
     ) {
-        return state.getValue(SECTION) != CylinderSection.NONE
-                ? CylinderRingShapes.forSection(state.getValue(SECTION))
-                : STANDALONE_SHAPE;
+        if (state.getValue(SECTION) != CylinderSection.NONE) {
+            return CylinderRingShapes.forSection(state.getValue(SECTION));
+        }
+
+        return state.getValue(WALL_SHAPE) == CylinderWallShape.STRAIGHT_X ? STRAIGHT_X_SHAPE : STANDALONE_SHAPE;
     }
 
     @Override
@@ -122,7 +131,7 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(ASSEMBLED, SECTION);
+        builder.add(ASSEMBLED, SECTION, WALL_SHAPE);
     }
 
     @Override
