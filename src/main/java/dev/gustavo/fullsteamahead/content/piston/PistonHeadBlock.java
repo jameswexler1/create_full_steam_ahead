@@ -19,10 +19,10 @@ public class PistonHeadBlock extends Block implements IBE<PistonHeadBlockEntity>
     public static final MapCodec<PistonHeadBlock> CODEC = simpleCodec(PistonHeadBlock::new);
     public static final BooleanProperty ASSEMBLED = BooleanProperty.create("assembled");
     private static final VoxelShape SHAPE = Shapes.or(
-            Block.box(0, 0, 0, 16, 1, 16),
-            Block.box(1, 1, 1, 15, 3, 15),
-            Block.box(2, 3, 3, 14, 4, 13),
-            Block.box(5, 4, 5, 11, 16, 11)
+            Block.box(0, 0, 0, 16, 3, 16),
+            Block.box(2, 3, 2, 14, 5, 14),
+            Block.box(4, 5, 4, 12, 7, 12),
+            Block.box(5, 7, 5, 11, 16, 11)
     );
 
     public PistonHeadBlock(Properties properties) {

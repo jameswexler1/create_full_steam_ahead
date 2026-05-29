@@ -583,6 +583,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Add `piston_head` as a separate structural block in the lower cylinder bore
 - [x] Animate the actual `piston_head` and `piston` body up and down from linked shaft phase, using Flywheel and fallback rendering
 - [x] Apply the textured v3 Blockbench `piston_head` model and embedded texture while preserving the existing hitbox
+- [x] Replace `piston_head` with the `Steam_Piston_Head.bbmodel` visual and matching model-derived hitbox
 - [x] Fix dynamic piston/head lighting by relighting each moving partial at its own world position instead of using one block entity light value
 - [x] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
 - [x] Add rhythmic steam sound using Create's normal `STEAM` sound event, slightly louder than the vanilla Create steam engine
