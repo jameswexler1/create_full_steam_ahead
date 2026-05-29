@@ -97,8 +97,8 @@ Completed cylinder wall partial visual slice:
 
 Completed fixed assembled cylinder model slice:
 
-- [x] Regenerated all 16 assembled cylinder section models from `Steam_Cylinder_all_faces_FIXED.bbmodel`.
-- [x] Updated `CylinderRingShapes` from the fixed model's 52 cuboids so outlines/collision match the new geometry.
+- [x] Regenerated all 16 assembled cylinder section models from `Steam_Cylinder_all_faces_FIXED_V2.bbmodel`.
+- [x] Updated `CylinderRingShapes` from the fixed V2 model's 60 cuboids so outlines/collision match the new geometry.
 - [x] Reused the embedded assembled ring texture from the fixed model; it matches the current v3 runtime atlas.
 
 Automated results:
@@ -135,6 +135,7 @@ Automated results:
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-28 after refreshing adjacent pipes on steam inlet capability changes.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-29 after adding straight-wall partial construction visuals.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-29 after regenerating assembled cylinder sections from the fixed Blockbench model.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-29 after regenerating assembled cylinder sections from the fixed V2 Blockbench model.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
