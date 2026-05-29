@@ -41,7 +41,11 @@ public final class CylinderConnectivity {
             return;
         }
 
-        Set<BlockPos> candidates = candidateOrigins(changedPos);
+        Set<BlockPos> candidates = expandWithTrackedRingOrigins(
+                level,
+                candidateOrigins(changedPos),
+                ignoredRingMemberPos
+        );
         Set<BlockPos> validOrigins = new LinkedHashSet<>();
         Set<BlockPos> validRingPositions = new LinkedHashSet<>();
 
@@ -82,6 +86,42 @@ public final class CylinderConnectivity {
             }
         }
         return origins;
+    }
+
+    private static Set<BlockPos> expandWithTrackedRingOrigins(
+            Level level,
+            Set<BlockPos> origins,
+            BlockPos ignoredRingMemberPos
+    ) {
+        Set<BlockPos> expanded = new LinkedHashSet<>(origins);
+        boolean changed;
+
+        do {
+            changed = false;
+            for (BlockPos pos : candidateRingPositions(expanded)) {
+                if (pos.equals(ignoredRingMemberPos) || !level.isLoaded(pos)) {
+                    continue;
+                }
+
+                BlockPos ringOrigin = trackedRingOrigin(level, pos);
+                if (ringOrigin != null && expanded.add(ringOrigin)) {
+                    changed = true;
+                }
+            }
+        } while (changed);
+
+        return expanded;
+    }
+
+    private static BlockPos trackedRingOrigin(Level level, BlockPos pos) {
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity instanceof SteamCylinderBlockEntity cylinder && cylinder.isCylinderAssembled()) {
+            return cylinder.getRingOrigin();
+        }
+        if (blockEntity instanceof SteamInletBlockEntity inlet && inlet.isInletAssembled()) {
+            return inlet.getRingOrigin();
+        }
+        return null;
     }
 
     private static Set<BlockPos> candidateRingPositions(Set<BlockPos> candidateOrigins) {

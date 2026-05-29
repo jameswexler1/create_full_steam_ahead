@@ -107,6 +107,12 @@ Completed steam inlet model slice:
 - [x] Replaced the assembled inlet placeholder with the same textured model, rotated from the cylinder section.
 - [x] Matched standalone and assembled inlet outlines/collision to the model's directional cuboids.
 
+Completed adjacent cylinder reliability slice:
+
+- [x] Diagnosed adjacent full cylinder rings deforming each other as a connectivity refresh scope issue.
+- [x] Expanded refresh candidates with existing assembled ring origins before clearing partial states.
+- [x] Preserved neighboring valid rings while still clearing invalid/stale rings when their own structure is broken.
+
 Automated results:
 
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-21 after technical partials, the axial crankshaft fix, crank-phase steam effects, and the steam sound correction.
@@ -143,6 +149,7 @@ Automated results:
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-29 after regenerating assembled cylinder sections from the fixed Blockbench model.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-29 after regenerating assembled cylinder sections from the fixed V2 Blockbench model.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-29 after replacing the steam inlet placeholder model.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-29 after protecting adjacent assembled cylinder rings during connectivity refresh.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
@@ -164,6 +171,7 @@ Manual runtime checklist:
 - [ ] Assembled `steam_cylinder` ring uses the slim section-aware model in all 16 positions, disassembles back to the standalone block model, and has a slim outline/collision shape.
 - [ ] Fixed assembled cylinder ring geometry renders without the previous overlapping/flickering parts.
 - [ ] `steam_inlet` renders with the new textured model as an item, standalone block, and assembled ring member in north/east/south/west-facing shell positions.
+- [ ] Two complete cylinder rings can be built directly adjacent without either ring deforming or stealing the other's section assignments.
 - [ ] Assembled `piston_head` and the `piston` body remain visible at rest and reciprocate while the linked shaft is running.
 - [x] Existing pipe-fed engines still assemble and run.
 - [ ] Pipe connected to a `steam_inlet` reconnects automatically after breaking and repairing one cylinder wall block in the ring.
