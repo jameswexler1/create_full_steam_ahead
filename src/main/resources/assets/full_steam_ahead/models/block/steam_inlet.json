@@ -1,6 +1,287 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "credit": "Converted from Steam_Inlet.bbmodel",
+  "ambientocclusion": true,
+  "render_type": "minecraft:cutout_mipped",
   "textures": {
-    "all": "create:block/pipes"
-  }
+    "0": "full_steam_ahead:block/steam_inlet",
+    "particle": "full_steam_ahead:block/steam_inlet"
+  },
+  "elements": [
+    {
+      "name": "casing",
+      "from": [
+        0,
+        0,
+        7
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2.75,
+            6,
+            6.75,
+            10
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0,
+            6,
+            2.25,
+            10
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            10,
+            6,
+            14,
+            10
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            7.25,
+            6,
+            9.5,
+            10
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            7.25,
+            2.025,
+            2.25,
+            0.225
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            12.25,
+            0.225,
+            7.25,
+            2.025
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "flange_plate",
+      "from": [
+        2,
+        2,
+        5
+      ],
+      "to": [
+        14,
+        14,
+        7
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            10,
+            3,
+            13
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0,
+            10,
+            0.5,
+            13
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            0,
+            10,
+            3,
+            13
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0,
+            10,
+            0.5,
+            13
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0,
+            10,
+            3,
+            10.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            0,
+            10,
+            3,
+            10.5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "flange_collar",
+      "from": [
+        3,
+        3,
+        3
+      ],
+      "to": [
+        13,
+        13,
+        5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            10,
+            2.5,
+            12.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0,
+            10,
+            0.5,
+            12.5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            0,
+            10,
+            2.5,
+            12.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0,
+            10,
+            0.5,
+            12.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0,
+            10,
+            2.5,
+            10.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            0,
+            10,
+            2.5,
+            10.5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "spigot",
+      "from": [
+        4,
+        4,
+        0
+      ],
+      "to": [
+        12,
+        12,
+        3
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            10,
+            12,
+            14
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            4,
+            10,
+            4.75,
+            12
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            4,
+            10,
+            6,
+            12
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            4,
+            10,
+            4.75,
+            12
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            4,
+            10,
+            6,
+            10.75
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            4,
+            10,
+            6,
+            10.75
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
 }

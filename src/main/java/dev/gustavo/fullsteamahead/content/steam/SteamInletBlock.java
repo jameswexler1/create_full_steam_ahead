@@ -4,12 +4,12 @@ import com.mojang.serialization.MapCodec;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderConnectivity;
-import dev.gustavo.fullsteamahead.content.cylinder.CylinderRingShapes;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderSection;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderWallShape;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity> {
@@ -27,6 +28,30 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
     public static final EnumProperty<CylinderSection> SECTION = EnumProperty.create("section", CylinderSection.class);
     public static final EnumProperty<CylinderWallShape> WALL_SHAPE =
             EnumProperty.create("wall_shape", CylinderWallShape.class);
+    private static final VoxelShape NORTH_SHAPE = Shapes.or(
+            Block.box(0, 0, 7, 16, 16, 16),
+            Block.box(2, 2, 5, 14, 14, 7),
+            Block.box(3, 3, 3, 13, 13, 5),
+            Block.box(4, 4, 0, 12, 12, 3)
+    );
+    private static final VoxelShape EAST_SHAPE = Shapes.or(
+            Block.box(0, 0, 0, 9, 16, 16),
+            Block.box(9, 2, 2, 11, 14, 14),
+            Block.box(11, 3, 3, 13, 13, 13),
+            Block.box(13, 4, 4, 16, 12, 12)
+    );
+    private static final VoxelShape SOUTH_SHAPE = Shapes.or(
+            Block.box(0, 0, 0, 16, 16, 9),
+            Block.box(2, 2, 9, 14, 14, 11),
+            Block.box(3, 3, 11, 13, 13, 13),
+            Block.box(4, 4, 13, 12, 12, 16)
+    );
+    private static final VoxelShape WEST_SHAPE = Shapes.or(
+            Block.box(7, 0, 0, 16, 16, 16),
+            Block.box(5, 2, 2, 7, 14, 14),
+            Block.box(3, 3, 3, 5, 13, 13),
+            Block.box(0, 4, 4, 3, 12, 12)
+    );
 
     public SteamInletBlock(Properties properties) {
         super(properties);
@@ -107,9 +132,7 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
             BlockPos pos,
             CollisionContext context
     ) {
-        return state.getValue(SECTION) != CylinderSection.NONE
-                ? CylinderRingShapes.forSection(state.getValue(SECTION))
-                : super.getShape(state, level, pos, context);
+        return shapeForSection(state.getValue(SECTION));
     }
 
     @Override
@@ -125,6 +148,28 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(ASSEMBLED, SECTION, WALL_SHAPE);
+    }
+
+    private VoxelShape shapeForSection(CylinderSection section) {
+        return switch (facingForSection(section)) {
+            case EAST -> EAST_SHAPE;
+            case SOUTH -> SOUTH_SHAPE;
+            case WEST -> WEST_SHAPE;
+            default -> NORTH_SHAPE;
+        };
+    }
+
+    private Direction facingForSection(CylinderSection section) {
+        if (section == null || section == CylinderSection.NONE) {
+            return Direction.NORTH;
+        }
+        if (section.zOffset() == 0) {
+            return Direction.NORTH;
+        }
+        if (section.zOffset() == 2) {
+            return Direction.SOUTH;
+        }
+        return section.xOffset() == 0 ? Direction.WEST : Direction.EAST;
     }
 
     @Override

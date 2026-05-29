@@ -37,7 +37,8 @@
         "section": "lower_west"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_inlet_assembled"
+        "model": "full_steam_ahead:block/steam_inlet_assembled",
+        "y": 270
       }
     },
     {
@@ -45,7 +46,8 @@
         "section": "lower_east"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_inlet_assembled"
+        "model": "full_steam_ahead:block/steam_inlet_assembled",
+        "y": 90
       }
     },
     {
@@ -53,7 +55,8 @@
         "section": "lower_south_west"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_inlet_assembled"
+        "model": "full_steam_ahead:block/steam_inlet_assembled",
+        "y": 180
       }
     },
     {
@@ -61,7 +64,8 @@
         "section": "lower_south"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_inlet_assembled"
+        "model": "full_steam_ahead:block/steam_inlet_assembled",
+        "y": 180
       }
     },
     {
@@ -69,7 +73,8 @@
         "section": "lower_south_east"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_inlet_assembled"
+        "model": "full_steam_ahead:block/steam_inlet_assembled",
+        "y": 180
       }
     },
     {
@@ -101,7 +106,8 @@
         "section": "upper_west"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_inlet_assembled"
+        "model": "full_steam_ahead:block/steam_inlet_assembled",
+        "y": 270
       }
     },
     {
@@ -109,7 +115,8 @@
         "section": "upper_east"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_inlet_assembled"
+        "model": "full_steam_ahead:block/steam_inlet_assembled",
+        "y": 90
       }
     },
     {
@@ -117,7 +124,8 @@
         "section": "upper_south_west"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_inlet_assembled"
+        "model": "full_steam_ahead:block/steam_inlet_assembled",
+        "y": 180
       }
     },
     {
@@ -125,7 +133,8 @@
         "section": "upper_south"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_inlet_assembled"
+        "model": "full_steam_ahead:block/steam_inlet_assembled",
+        "y": 180
       }
     },
     {
@@ -133,7 +142,8 @@
         "section": "upper_south_east"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_inlet_assembled"
+        "model": "full_steam_ahead:block/steam_inlet_assembled",
+        "y": 180
       }
     }
   ]
