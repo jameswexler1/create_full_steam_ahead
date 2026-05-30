@@ -1,353 +1,300 @@
 {
-  "credit": "Converted from Steam_Crank.bbmodel",
+  "credit": "Converted from new_models/crank.bbmodel",
   "ambientocclusion": true,
   "textures": {
-    "mechanical": "full_steam_ahead:block/piston/piston_body",
-    "particle": "full_steam_ahead:block/piston/piston_body"
+    "mechanical": "full_steam_ahead:block/piston/crank",
+    "particle": "full_steam_ahead:block/piston/crank"
   },
   "elements": [
     {
-      "name": "clamp",
+      "name": "cube_1",
       "from": [
-        4,
-        4,
-        3
-      ],
-      "to": [
-        12,
-        12,
-        13
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            8,
-            8,
-            12,
-            16
-          ],
-          "texture": "#mechanical"
-        },
-        "east": {
-          "uv": [
-            8,
-            0,
-            12,
-            8
-          ],
-          "texture": "#mechanical"
-        },
-        "south": {
-          "uv": [
-            8,
-            8,
-            12,
-            16
-          ],
-          "texture": "#mechanical"
-        },
-        "west": {
-          "uv": [
-            8,
-            0,
-            12,
-            8
-          ],
-          "texture": "#mechanical"
-        },
-        "up": {
-          "uv": [
-            8,
-            0,
-            12,
-            8
-          ],
-          "texture": "#mechanical"
-        },
-        "down": {
-          "uv": [
-            8,
-            0,
-            12,
-            8
-          ],
-          "texture": "#mechanical"
-        }
-      }
-    },
-    {
-      "name": "web_n",
-      "from": [
-        6,
-        -2,
+        11,
+        5,
         5
       ],
       "to": [
-        10,
-        4,
-        7
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            8,
-            0,
-            10,
-            6
-          ],
-          "texture": "#mechanical"
-        },
-        "east": {
-          "uv": [
-            8,
-            0,
-            9,
-            6
-          ],
-          "texture": "#mechanical"
-        },
-        "south": {
-          "uv": [
-            8,
-            0,
-            10,
-            6
-          ],
-          "texture": "#mechanical"
-        },
-        "west": {
-          "uv": [
-            8,
-            0,
-            9,
-            6
-          ],
-          "texture": "#mechanical"
-        },
-        "up": {
-          "uv": [
-            8,
-            0,
-            10,
-            2
-          ],
-          "texture": "#mechanical"
-        },
-        "down": {
-          "uv": [
-            8,
-            0,
-            10,
-            2
-          ],
-          "texture": "#mechanical"
-        }
-      }
-    },
-    {
-      "name": "web_s",
-      "from": [
-        6,
-        -2,
-        9
-      ],
-      "to": [
-        10,
-        4,
+        14,
+        11,
         11
       ],
       "faces": {
         "north": {
           "uv": [
-            8,
-            0,
-            10,
-            6
+            9.5,
+            1.5,
+            11,
+            4.5
           ],
           "texture": "#mechanical"
         },
         "east": {
           "uv": [
-            8,
-            0,
-            9,
-            6
+            11,
+            1.5,
+            14,
+            4.5
           ],
           "texture": "#mechanical"
         },
         "south": {
           "uv": [
-            8,
-            0,
-            10,
-            6
+            9.5,
+            1.5,
+            11,
+            4.5
           ],
           "texture": "#mechanical"
         },
         "west": {
           "uv": [
-            8,
-            0,
-            9,
-            6
+            11,
+            1.5,
+            14,
+            4.5
           ],
           "texture": "#mechanical"
         },
         "up": {
           "uv": [
-            8,
+            11,
             0,
-            10,
-            2
+            14,
+            1.5
           ],
-          "texture": "#mechanical"
+          "texture": "#mechanical",
+          "rotation": 270
         },
         "down": {
           "uv": [
-            8,
-            0,
-            10,
-            2
+            11,
+            4.5,
+            14,
+            6
           ],
-          "texture": "#mechanical"
+          "texture": "#mechanical",
+          "rotation": 270
         }
       }
     },
     {
-      "name": "crank_pin_n",
+      "name": "cube_2",
       "from": [
-        7,
-        -3,
-        3
-      ],
-      "to": [
-        9,
-        1,
+        2,
+        5,
         5
       ],
+      "to": [
+        5,
+        11,
+        11
+      ],
       "faces": {
         "north": {
           "uv": [
-            12,
-            0,
-            13,
-            4
+            9.5,
+            1.5,
+            11,
+            4.5
           ],
           "texture": "#mechanical"
         },
         "east": {
           "uv": [
-            12,
-            0,
-            13,
-            4
+            11,
+            1.5,
+            14,
+            4.5
           ],
           "texture": "#mechanical"
         },
         "south": {
           "uv": [
-            12,
-            0,
-            13,
-            4
+            9.5,
+            1.5,
+            11,
+            4.5
           ],
           "texture": "#mechanical"
         },
         "west": {
           "uv": [
-            12,
-            0,
-            13,
-            4
+            11,
+            1.5,
+            14,
+            4.5
           ],
           "texture": "#mechanical"
         },
         "up": {
           "uv": [
-            12,
+            11,
             0,
-            13,
-            2
+            14,
+            1.5
           ],
-          "texture": "#mechanical"
+          "texture": "#mechanical",
+          "rotation": 270
         },
         "down": {
           "uv": [
-            12,
-            0,
-            13,
-            2
+            11,
+            4.5,
+            14,
+            6
           ],
-          "texture": "#mechanical"
+          "texture": "#mechanical",
+          "rotation": 270
         }
       }
     },
     {
-      "name": "crank_pin_s",
+      "name": "cube_3",
       "from": [
-        7,
-        -3,
-        11
+        10,
+        -4,
+        5
       ],
       "to": [
-        9,
-        1,
-        13
+        13,
+        5,
+        11
       ],
       "faces": {
         "north": {
           "uv": [
-            12,
-            0,
-            13,
-            4
+            9.5,
+            1.5,
+            11,
+            6
           ],
-          "texture": "#mechanical"
+          "texture": "#mechanical",
+          "rotation": 180
         },
         "east": {
           "uv": [
-            12,
-            0,
-            13,
-            4
+            11,
+            1.5,
+            14,
+            6
           ],
-          "texture": "#mechanical"
+          "texture": "#mechanical",
+          "rotation": 180
         },
         "south": {
           "uv": [
-            12,
-            0,
-            13,
-            4
+            9.5,
+            1.5,
+            11,
+            6
           ],
-          "texture": "#mechanical"
+          "texture": "#mechanical",
+          "rotation": 180
         },
         "west": {
           "uv": [
-            12,
-            0,
-            13,
-            4
+            11,
+            1.5,
+            14,
+            6
           ],
-          "texture": "#mechanical"
+          "texture": "#mechanical",
+          "rotation": 180
         },
         "up": {
           "uv": [
-            12,
-            0,
-            13,
-            2
+            11,
+            4.5,
+            14,
+            6
           ],
-          "texture": "#mechanical"
+          "texture": "#mechanical",
+          "rotation": 270
         },
         "down": {
           "uv": [
-            12,
+            11,
             0,
-            13,
-            2
+            14,
+            1.5
           ],
-          "texture": "#mechanical"
+          "texture": "#mechanical",
+          "rotation": 270
+        }
+      }
+    },
+    {
+      "name": "cube_4",
+      "from": [
+        3,
+        -4,
+        5
+      ],
+      "to": [
+        6,
+        5,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9.5,
+            1.5,
+            11,
+            6
+          ],
+          "texture": "#mechanical",
+          "rotation": 180
+        },
+        "east": {
+          "uv": [
+            11,
+            1.5,
+            14,
+            6
+          ],
+          "texture": "#mechanical",
+          "rotation": 180
+        },
+        "south": {
+          "uv": [
+            9.5,
+            1.5,
+            11,
+            6
+          ],
+          "texture": "#mechanical",
+          "rotation": 180
+        },
+        "west": {
+          "uv": [
+            11,
+            1.5,
+            14,
+            6
+          ],
+          "texture": "#mechanical",
+          "rotation": 180
+        },
+        "up": {
+          "uv": [
+            11,
+            4.5,
+            14,
+            6
+          ],
+          "texture": "#mechanical",
+          "rotation": 270
+        },
+        "down": {
+          "uv": [
+            11,
+            0,
+            14,
+            1.5
+          ],
+          "texture": "#mechanical",
+          "rotation": 270
         }
       }
     }

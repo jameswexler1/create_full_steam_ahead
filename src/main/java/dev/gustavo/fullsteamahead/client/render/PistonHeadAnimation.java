@@ -10,7 +10,7 @@ public final class PistonHeadAnimation {
     public static final int PISTON_BLOCKS = 1;
     public static final float CONNECTING_ROD_SMALL_END_Y = 2.0F / 16.0F;
 
-    private static final float CRANK_RADIUS = 9.0F / 16.0F;
+    private static final float CRANK_RADIUS = 7.5F / 16.0F;
     private static final float CONNECTING_ROD_LENGTH = 14.0F / 16.0F;
     private static final float PISTON_WRIST_PIN_Y = 14.0F / 16.0F;
     private static final float HEAD_TO_PISTON_BODY_Y = 1.0F;

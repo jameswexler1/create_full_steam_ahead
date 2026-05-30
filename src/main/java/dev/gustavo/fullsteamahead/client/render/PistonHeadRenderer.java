@@ -84,7 +84,7 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             int blockIndex
     ) {
         SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.pistonBody(), state);
-        orientForShaft(buffer.translate(0, animation.pistonY(blockIndex), 0), animation.shaftAxis())
+        buffer.translate(0, animation.pistonY(blockIndex), 0)
                 .light(light)
                 .overlay(overlay)
                 .renderInto(poseStack, vertexConsumer);
@@ -126,15 +126,6 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
                 .renderInto(poseStack, vertexConsumer);
     }
 
-    private static SuperByteBuffer orientForShaft(SuperByteBuffer buffer, Direction.Axis axis) {
-        if (axis == Direction.Axis.X) {
-            buffer.center()
-                    .rotateY((float) (Math.PI / 2.0D))
-                    .uncenter();
-        }
-        return buffer;
-    }
-
     private static SuperByteBuffer rotateConnectingRod(
             SuperByteBuffer buffer,
             PistonHeadAnimation.State animation
@@ -143,7 +134,7 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
         yawLinkageFrame(buffer, animation.shaftAxis());
         buffer.uncenter();
         buffer.translate(0.5F, PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, 0.5F);
-        buffer.rotateZ(animation.connectingRodRotation());
+        buffer.rotateX(animation.connectingRodRotation());
         return buffer.translate(-0.5F, -PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, -0.5F);
     }
 
@@ -153,13 +144,13 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
     ) {
         buffer.center();
         yawLinkageFrame(buffer, animation.shaftAxis());
-        buffer.rotateZ(animation.crankRotation());
+        buffer.rotateX(animation.crankRotation());
         return buffer.uncenter();
     }
 
     private static SuperByteBuffer yawLinkageFrame(SuperByteBuffer buffer, Direction.Axis axis) {
-        if (axis == Direction.Axis.X) {
-            buffer.rotateY((float) (Math.PI / 2.0D));
+        if (axis == Direction.Axis.Z) {
+            buffer.rotateY((float) (-Math.PI / 2.0D));
         }
         return buffer;
     }

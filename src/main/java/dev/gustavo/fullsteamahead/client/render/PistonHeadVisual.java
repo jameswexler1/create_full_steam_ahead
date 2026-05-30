@@ -85,11 +85,8 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         for (int blockIndex = 0; blockIndex < pistons.length; blockIndex++) {
             setVisible(pistons[blockIndex], animation.visible());
             if (animation.visible()) {
-                orientForShaft(
-                        base(pistons[blockIndex])
-                                .translate(0, animation.pistonY(blockIndex), 0),
-                        animation.shaftAxis()
-                )
+                base(pistons[blockIndex])
+                        .translate(0, animation.pistonY(blockIndex), 0)
                         .setChanged();
             }
         }
@@ -129,15 +126,6 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
                 .translate(visualPosition.getX(), visualPosition.getY(), visualPosition.getZ());
     }
 
-    private static TransformedInstance orientForShaft(TransformedInstance instance, Direction.Axis axis) {
-        if (axis == Direction.Axis.X) {
-            instance.center()
-                    .rotateY((float) (Math.PI / 2.0D))
-                    .uncenter();
-        }
-        return instance;
-    }
-
     private static TransformedInstance rotateConnectingRod(
             TransformedInstance instance,
             PistonHeadAnimation.State animation
@@ -146,7 +134,7 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         yawLinkageFrame(instance, animation.shaftAxis());
         instance.uncenter();
         instance.translate(0.5F, PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, 0.5F);
-        instance.rotateZ(animation.connectingRodRotation());
+        instance.rotateX(animation.connectingRodRotation());
         return instance.translate(-0.5F, -PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, -0.5F);
     }
 
@@ -156,13 +144,13 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
     ) {
         instance.center();
         yawLinkageFrame(instance, animation.shaftAxis());
-        instance.rotateZ(animation.crankRotation());
+        instance.rotateX(animation.crankRotation());
         return instance.uncenter();
     }
 
     private static TransformedInstance yawLinkageFrame(TransformedInstance instance, Direction.Axis axis) {
-        if (axis == Direction.Axis.X) {
-            instance.rotateY((float) (Math.PI / 2.0D));
+        if (axis == Direction.Axis.Z) {
+            instance.rotateY((float) (-Math.PI / 2.0D));
         }
         return instance;
     }
