@@ -105,13 +105,13 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
                 .translate(0, animation.headY(), 0)
                 .setChanged();
         rotateConnectingRod(
-                orientForShaft(base(connectingRod)
-                        .translate(0, animation.connectingRodY(), 0), animation.shaftAxis()),
+                base(connectingRod)
+                        .translate(0, animation.connectingRodY(), 0),
                 animation
         ).setChanged();
         rotateCrank(
-                orientForShaft(base(crank)
-                        .translate(0, animation.crankY(), 0), animation.shaftAxis()),
+                base(crank)
+                        .translate(0, animation.crankY(), 0),
                 animation
         ).setChanged();
     }
@@ -142,8 +142,11 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
             TransformedInstance instance,
             PistonHeadAnimation.State animation
     ) {
+        instance.center();
+        yawLinkageFrame(instance, animation.shaftAxis());
+        instance.uncenter();
         instance.translate(0.5F, PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, 0.5F);
-        instance.rotateX(animation.connectingRodRotation());
+        instance.rotateZ(animation.connectingRodRotation());
         return instance.translate(-0.5F, -PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, -0.5F);
     }
 
@@ -152,8 +155,16 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
             PistonHeadAnimation.State animation
     ) {
         instance.center();
-        instance.rotateX(animation.crankRotation());
+        yawLinkageFrame(instance, animation.shaftAxis());
+        instance.rotateZ(animation.crankRotation());
         return instance.uncenter();
+    }
+
+    private static TransformedInstance yawLinkageFrame(TransformedInstance instance, Direction.Axis axis) {
+        if (axis == Direction.Axis.X) {
+            instance.rotateY((float) (Math.PI / 2.0D));
+        }
+        return instance;
     }
 
     private static void setVisible(TransformedInstance instance, boolean visible) {

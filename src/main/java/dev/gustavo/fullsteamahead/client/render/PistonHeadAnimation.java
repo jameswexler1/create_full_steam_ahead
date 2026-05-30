@@ -33,17 +33,17 @@ public final class PistonHeadAnimation {
     }
 
     public static State state(boolean visible, float angle, Direction.Axis shaftAxis) {
-        float crankHorizontal = CRANK_RADIUS * Mth.cos(angle);
+        float crankDepth = CRANK_RADIUS * Mth.cos(angle);
         float crankVertical = CRANK_RADIUS * Mth.sin(angle);
         float rodVertical = Mth.sqrt(Math.max(
                 0.0F,
-                CONNECTING_ROD_LENGTH * CONNECTING_ROD_LENGTH - crankHorizontal * crankHorizontal
+                CONNECTING_ROD_LENGTH * CONNECTING_ROD_LENGTH - crankDepth * crankDepth
         ));
         float wristY = SHAFT_CENTER_Y + crankVertical - rodVertical;
         float pistonY = wristY - PISTON_WRIST_PIN_Y;
         float headY = pistonY - HEAD_TO_PISTON_BODY_Y;
         float connectingRodY = wristY - CONNECTING_ROD_SMALL_END_Y;
-        float connectingRodAngle = (float) Math.asin(Mth.clamp(crankHorizontal / CONNECTING_ROD_LENGTH, -1.0F, 1.0F));
+        float connectingRodAngle = (float) Math.asin(Mth.clamp(crankDepth / CONNECTING_ROD_LENGTH, -1.0F, 1.0F));
         return new State(
                 visible,
                 angle,

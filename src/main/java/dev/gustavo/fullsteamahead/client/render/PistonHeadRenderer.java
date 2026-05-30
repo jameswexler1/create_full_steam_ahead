@@ -100,7 +100,7 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
     ) {
         SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.connectingRod(), state);
         rotateConnectingRod(
-                orientForShaft(buffer.translate(0, animation.connectingRodY(), 0), animation.shaftAxis()),
+                buffer.translate(0, animation.connectingRodY(), 0),
                 animation
         )
                 .light(light)
@@ -118,7 +118,7 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
     ) {
         SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.crank(), state);
         rotateCrank(
-                orientForShaft(buffer.translate(0, animation.crankY(), 0), animation.shaftAxis()),
+                buffer.translate(0, animation.crankY(), 0),
                 animation
         )
                 .light(light)
@@ -139,8 +139,11 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             SuperByteBuffer buffer,
             PistonHeadAnimation.State animation
     ) {
+        buffer.center();
+        yawLinkageFrame(buffer, animation.shaftAxis());
+        buffer.uncenter();
         buffer.translate(0.5F, PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, 0.5F);
-        buffer.rotateX(animation.connectingRodRotation());
+        buffer.rotateZ(animation.connectingRodRotation());
         return buffer.translate(-0.5F, -PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, -0.5F);
     }
 
@@ -149,8 +152,16 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             PistonHeadAnimation.State animation
     ) {
         buffer.center();
-        buffer.rotateX(animation.crankRotation());
+        yawLinkageFrame(buffer, animation.shaftAxis());
+        buffer.rotateZ(animation.crankRotation());
         return buffer.uncenter();
+    }
+
+    private static SuperByteBuffer yawLinkageFrame(SuperByteBuffer buffer, Direction.Axis axis) {
+        if (axis == Direction.Axis.X) {
+            buffer.rotateY((float) (Math.PI / 2.0D));
+        }
+        return buffer;
     }
 
     private static int partLight(Level level, BlockPos basePos, float y, int fallbackLight) {

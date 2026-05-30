@@ -49,6 +49,7 @@ Completed animation proxy slice:
 - [x] Added dynamic `Steam_Connecting_Rod` and `Steam_Crank` partials and drove them from the linked shaft phase with slider-crank geometry.
 - [x] Corrected `Steam_Crank` and `Steam_Connecting_Rod` phase from the modeled geometry: the crank's authored pin starts below the shaft, then rotates from the raw linked shaft angle.
 - [x] Corrected the crank/linkage rotation plane after video comparison: the connector now uses the same frontal-plane rotation style as Create instead of lateral shaft-axis spin.
+- [x] Fixed the transform order for the modeled linkage: shaft-frame yaw is now applied before local crank/rod rotation in the Flywheel visual and fallback renderer, so an X-axis shaft throws front/back instead of along the shaft.
 - [x] Replaced piston/head proxy animation with dynamic rendering of the actual `piston` and `piston_head` models.
 - [x] Hid assembled static piston/head block models so the moving dynamic visuals do not overlap fixed geometry.
 
@@ -137,6 +138,7 @@ Automated results:
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-30 after adding the modeled piston body, connecting rod, and crank animation.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-30 after correcting the modeled crank/linkage rotation phase.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-30 after correcting the crank/linkage rotation plane from the comparison videos.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-30 after correcting the modeled linkage transform order for X-axis shafts.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after replacing proxy piston animation with dynamic actual piston/head partials.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-23 after the shaft-link remodel.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-23 after the shaft-link remodel.
