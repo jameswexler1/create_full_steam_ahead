@@ -1,5 +1,5 @@
 {
-  "credit": "Converted from Steam_Piston_Body.bbmodel",
+  "credit": "Converted from Steam_Crank.bbmodel",
   "ambientocclusion": true,
   "textures": {
     "mechanical": "full_steam_ahead:block/piston/piston_body",
@@ -7,137 +7,137 @@
   },
   "elements": [
     {
-      "name": "rod",
+      "name": "clamp",
       "from": [
-        5,
-        0,
-        5
+        4,
+        4,
+        3
       ],
       "to": [
-        11,
         12,
-        11
+        12,
+        13
       ],
       "faces": {
         "north": {
           "uv": [
-            0,
-            0,
-            3,
-            8
+            8,
+            8,
+            12,
+            16
           ],
           "texture": "#mechanical"
         },
         "east": {
           "uv": [
+            8,
             0,
-            0,
-            3,
+            12,
             8
           ],
           "texture": "#mechanical"
         },
         "south": {
           "uv": [
-            0,
-            0,
-            3,
-            8
+            8,
+            8,
+            12,
+            16
           ],
           "texture": "#mechanical"
         },
         "west": {
           "uv": [
+            8,
             0,
-            0,
-            3,
+            12,
             8
           ],
           "texture": "#mechanical"
         },
         "up": {
           "uv": [
+            8,
             0,
-            0,
-            3,
-            6
+            12,
+            8
           ],
           "texture": "#mechanical"
         },
         "down": {
           "uv": [
+            8,
             0,
-            0,
-            3,
-            6
+            12,
+            8
           ],
           "texture": "#mechanical"
         }
       }
     },
     {
-      "name": "fork_cheek_n",
+      "name": "web_n",
       "from": [
-        5,
-        12,
+        6,
+        -2,
         5
       ],
       "to": [
-        11,
-        16,
+        10,
+        4,
         7
       ],
       "faces": {
         "north": {
           "uv": [
+            8,
             0,
-            0,
-            3,
-            4
+            10,
+            6
           ],
           "texture": "#mechanical"
         },
         "east": {
           "uv": [
+            8,
             0,
-            0,
-            1,
-            4
+            9,
+            6
           ],
           "texture": "#mechanical"
         },
         "south": {
           "uv": [
+            8,
             0,
-            0,
-            3,
-            4
+            10,
+            6
           ],
           "texture": "#mechanical"
         },
         "west": {
           "uv": [
+            8,
             0,
-            0,
-            1,
-            4
+            9,
+            6
           ],
           "texture": "#mechanical"
         },
         "up": {
           "uv": [
+            8,
             0,
-            0,
-            3,
+            10,
             2
           ],
           "texture": "#mechanical"
         },
         "down": {
           "uv": [
+            8,
             0,
-            0,
-            3,
+            10,
             2
           ],
           "texture": "#mechanical"
@@ -145,68 +145,68 @@
       }
     },
     {
-      "name": "fork_cheek_s",
+      "name": "web_s",
       "from": [
-        5,
-        12,
+        6,
+        -2,
         9
       ],
       "to": [
-        11,
-        16,
+        10,
+        4,
         11
       ],
       "faces": {
         "north": {
           "uv": [
+            8,
             0,
-            0,
-            3,
-            4
+            10,
+            6
           ],
           "texture": "#mechanical"
         },
         "east": {
           "uv": [
+            8,
             0,
-            0,
-            1,
-            4
+            9,
+            6
           ],
           "texture": "#mechanical"
         },
         "south": {
           "uv": [
+            8,
             0,
-            0,
-            3,
-            4
+            10,
+            6
           ],
           "texture": "#mechanical"
         },
         "west": {
           "uv": [
+            8,
             0,
-            0,
-            1,
-            4
+            9,
+            6
           ],
           "texture": "#mechanical"
         },
         "up": {
           "uv": [
+            8,
             0,
-            0,
-            3,
+            10,
             2
           ],
           "texture": "#mechanical"
         },
         "down": {
           "uv": [
+            8,
             0,
-            0,
-            3,
+            10,
             2
           ],
           "texture": "#mechanical"
@@ -214,15 +214,15 @@
       }
     },
     {
-      "name": "wrist_pin_n",
+      "name": "crank_pin_n",
       "from": [
         7,
-        13,
+        -3,
         3
       ],
       "to": [
         9,
-        15,
+        1,
         5
       ],
       "faces": {
@@ -231,7 +231,7 @@
             12,
             0,
             13,
-            2
+            4
           ],
           "texture": "#mechanical"
         },
@@ -240,7 +240,7 @@
             12,
             0,
             13,
-            2
+            4
           ],
           "texture": "#mechanical"
         },
@@ -249,7 +249,7 @@
             12,
             0,
             13,
-            2
+            4
           ],
           "texture": "#mechanical"
         },
@@ -258,7 +258,7 @@
             12,
             0,
             13,
-            2
+            4
           ],
           "texture": "#mechanical"
         },
@@ -283,15 +283,15 @@
       }
     },
     {
-      "name": "wrist_pin_s",
+      "name": "crank_pin_s",
       "from": [
         7,
-        13,
+        -3,
         11
       ],
       "to": [
         9,
-        15,
+        1,
         13
       ],
       "faces": {
@@ -300,7 +300,7 @@
             12,
             0,
             13,
-            2
+            4
           ],
           "texture": "#mechanical"
         },
@@ -309,7 +309,7 @@
             12,
             0,
             13,
-            2
+            4
           ],
           "texture": "#mechanical"
         },
@@ -318,7 +318,7 @@
             12,
             0,
             13,
-            2
+            4
           ],
           "texture": "#mechanical"
         },
@@ -327,7 +327,7 @@
             12,
             0,
             13,
-            2
+            4
           ],
           "texture": "#mechanical"
         },

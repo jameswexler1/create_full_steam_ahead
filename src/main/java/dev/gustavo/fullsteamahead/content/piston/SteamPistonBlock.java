@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SteamPistonBlock extends Block {
@@ -17,7 +18,13 @@ public class SteamPistonBlock extends Block {
     public static final BooleanProperty ASSEMBLED = BooleanProperty.create("assembled");
     public static final EnumProperty<PistonSection> PISTON_SECTION =
             EnumProperty.create("piston_section", PistonSection.class);
-    private static final VoxelShape SHAPE = Block.box(5, 0, 5, 11, 16, 11);
+    private static final VoxelShape SHAPE = Shapes.or(
+            Block.box(5, 0, 5, 11, 12, 11),
+            Block.box(5, 12, 5, 11, 16, 7),
+            Block.box(5, 12, 9, 11, 16, 11),
+            Block.box(7, 13, 3, 9, 15, 5),
+            Block.box(7, 13, 11, 9, 15, 13)
+    );
 
     public SteamPistonBlock(Properties properties) {
         super(properties);

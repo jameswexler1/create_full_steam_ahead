@@ -14,13 +14,15 @@ import dev.engine_room.flywheel.lib.visualization.SimpleBlockEntityVisualizer;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 
 import java.util.function.Consumer;
 
 public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockEntity> implements SimpleDynamicVisual {
     private final TransformedInstance[] pistons = new TransformedInstance[PistonHeadAnimation.PISTON_BLOCKS];
     private final TransformedInstance head;
-    private final TransformedInstance crankPin;
+    private final TransformedInstance connectingRod;
+    private final TransformedInstance crank;
 
     public PistonHeadVisual(VisualizationContext context, PistonHeadBlockEntity blockEntity, float partialTick) {
         super(context, blockEntity, partialTick);
@@ -28,7 +30,8 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
             pistons[blockIndex] = transformed(FullSteamPartialModels.pistonBody());
         }
         head = transformed(FullSteamPartialModels.pistonHead());
-        crankPin = transformed(FullSteamPartialModels.crankPinProxy());
+        connectingRod = transformed(FullSteamPartialModels.connectingRod());
+        crank = transformed(FullSteamPartialModels.crank());
         animate();
     }
 
@@ -53,7 +56,8 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         PistonHeadAnimation.State animation = PistonHeadAnimation.state(blockEntity);
         relight(partLightPos(base, animation.headY()), head);
         relight(partLightPos(base, animation.pistonY(0)), pistons);
-        relight(base.above(3), crankPin);
+        relight(partLightPos(base, animation.connectingRodY()), connectingRod);
+        relight(base.above(3), crank);
     }
 
     @Override
@@ -62,7 +66,8 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
             piston.delete();
         }
         head.delete();
-        crankPin.delete();
+        connectingRod.delete();
+        crank.delete();
     }
 
     @Override
@@ -71,7 +76,8 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
             consumer.accept(piston);
         }
         consumer.accept(head);
-        consumer.accept(crankPin);
+        consumer.accept(connectingRod);
+        consumer.accept(crank);
     }
 
     private void animate() {
@@ -79,14 +85,18 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         for (int blockIndex = 0; blockIndex < pistons.length; blockIndex++) {
             setVisible(pistons[blockIndex], animation.visible());
             if (animation.visible()) {
-                base(pistons[blockIndex])
-                        .translate(0, animation.pistonY(blockIndex), 0)
+                orientForShaft(
+                        base(pistons[blockIndex])
+                                .translate(0, animation.pistonY(blockIndex), 0),
+                        animation.shaftAxis()
+                )
                         .setChanged();
             }
         }
 
         setVisible(head, animation.visible());
-        setVisible(crankPin, animation.visible());
+        setVisible(connectingRod, animation.visible());
+        setVisible(crank, animation.visible());
         if (!animation.visible()) {
             return;
         }
@@ -94,12 +104,16 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         base(head)
                 .translate(0, animation.headY(), 0)
                 .setChanged();
-        base(crankPin)
-                .translate(0, animation.crankPinY(), 0)
-                .center()
-                .rotateY(animation.angle())
-                .uncenter()
-                .setChanged();
+        rotateConnectingRod(
+                orientForShaft(base(connectingRod)
+                        .translate(0, animation.connectingRodY(), 0), animation.shaftAxis()),
+                animation
+        ).setChanged();
+        rotateCrank(
+                orientForShaft(base(crank)
+                        .translate(0, animation.crankY(), 0), animation.shaftAxis()),
+                animation
+        ).setChanged();
     }
 
     private TransformedInstance transformed(PartialModel partial) {
@@ -113,6 +127,41 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         return instance
                 .setIdentityTransform()
                 .translate(visualPosition.getX(), visualPosition.getY(), visualPosition.getZ());
+    }
+
+    private static TransformedInstance orientForShaft(TransformedInstance instance, Direction.Axis axis) {
+        if (axis == Direction.Axis.X) {
+            instance.center()
+                    .rotateY((float) (Math.PI / 2.0D))
+                    .uncenter();
+        }
+        return instance;
+    }
+
+    private static TransformedInstance rotateConnectingRod(
+            TransformedInstance instance,
+            PistonHeadAnimation.State animation
+    ) {
+        instance.translate(0.5F, PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, 0.5F);
+        if (animation.shaftAxis() == Direction.Axis.X) {
+            instance.rotateX(animation.connectingRodRotation());
+        } else {
+            instance.rotateZ(animation.connectingRodRotation());
+        }
+        return instance.translate(-0.5F, -PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, -0.5F);
+    }
+
+    private static TransformedInstance rotateCrank(
+            TransformedInstance instance,
+            PistonHeadAnimation.State animation
+    ) {
+        instance.center();
+        if (animation.shaftAxis() == Direction.Axis.X) {
+            instance.rotateX(animation.crankRotation());
+        } else {
+            instance.rotateZ(animation.crankRotation());
+        }
+        return instance.uncenter();
     }
 
     private static void setVisible(TransformedInstance instance, boolean visible) {

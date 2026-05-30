@@ -3,41 +3,85 @@ package dev.gustavo.fullsteamahead.client.render;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlockEntity;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 
 public final class PistonHeadAnimation {
     public static final int PISTON_BLOCKS = 1;
+    public static final float CONNECTING_ROD_SMALL_END_Y = 2.0F / 16.0F;
 
-    private static final float STROKE_BLOCKS = 1.25F;
-    private static final float HEAD_BASE_Y = 0.0F;
-    private static final float PISTON_BASE_Y = 1.0F;
-    private static final float CRANK_PIN_BASE_Y = 3.0F;
+    private static final float CRANK_RADIUS = 9.0F / 16.0F;
+    private static final float CONNECTING_ROD_LENGTH = 14.0F / 16.0F;
+    private static final float PISTON_WRIST_PIN_Y = 14.0F / 16.0F;
+    private static final float HEAD_TO_PISTON_BODY_Y = 1.0F;
+    private static final float SHAFT_BASE_Y = 3.0F;
+    private static final float SHAFT_CENTER_Y = SHAFT_BASE_Y + 0.5F;
+    private static final float HALF_PI = (float) (Math.PI / 2.0D);
 
     public static State state(PistonHeadBlockEntity engine) {
         boolean visible = engine.isEngineAssembled();
         FullSteamPoweredShaftBlockEntity shaft = engine.getShaft();
+        Direction.Axis shaftAxis = engine.getShaftAxis();
         float angle = engine.isEngineRunning() && shaft != null
-                ? KineticBlockEntityRenderer.getAngleForBe(shaft, shaft.getBlockPos(), engine.getShaftAxis())
+                ? KineticBlockEntityRenderer.getAngleForBe(shaft, shaft.getBlockPos(), shaftAxis)
                 : 0;
-        return state(visible, angle);
+        return state(visible, angle, shaftAxis);
     }
 
     public static State state(boolean visible, float angle) {
-        float pistonOffset = (1.0F - Mth.cos(angle)) * 0.5F * STROKE_BLOCKS;
-        return new State(visible, angle, pistonOffset);
+        return state(visible, angle, Direction.Axis.Z);
     }
 
-    public record State(boolean visible, float angle, float pistonOffset) {
+    public static State state(boolean visible, float angle, Direction.Axis shaftAxis) {
+        float crankHorizontal = -CRANK_RADIUS * Mth.cos(angle);
+        float crankVertical = CRANK_RADIUS * Mth.sin(angle);
+        float rodVertical = Mth.sqrt(Math.max(
+                0.0F,
+                CONNECTING_ROD_LENGTH * CONNECTING_ROD_LENGTH - crankHorizontal * crankHorizontal
+        ));
+        float wristY = SHAFT_CENTER_Y + crankVertical - rodVertical;
+        float pistonY = wristY - PISTON_WRIST_PIN_Y;
+        float headY = pistonY - HEAD_TO_PISTON_BODY_Y;
+        float connectingRodY = wristY - CONNECTING_ROD_SMALL_END_Y;
+        float connectingRodAngle = (float) Math.asin(Mth.clamp(
+                crankHorizontal / CONNECTING_ROD_LENGTH,
+                -1.0F,
+                1.0F
+        ));
+        return new State(
+                visible,
+                angle,
+                shaftAxis,
+                headY,
+                pistonY,
+                connectingRodY,
+                connectingRodAngle
+        );
+    }
+
+    public record State(
+            boolean visible,
+            float angle,
+            Direction.Axis shaftAxis,
+            float headY,
+            float pistonY,
+            float connectingRodY,
+            float connectingRodAngle
+    ) {
         public float pistonY(int blockIndex) {
-            return PISTON_BASE_Y + blockIndex + pistonOffset;
+            return pistonY + blockIndex;
         }
 
-        public float headY() {
-            return HEAD_BASE_Y + pistonOffset;
+        public float connectingRodRotation() {
+            return shaftAxis == Direction.Axis.X ? connectingRodAngle : -connectingRodAngle;
         }
 
-        public float crankPinY() {
-            return CRANK_PIN_BASE_Y;
+        public float crankY() {
+            return SHAFT_BASE_Y;
+        }
+
+        public float crankRotation() {
+            return shaftAxis == Direction.Axis.X ? angle + HALF_PI : -(angle + HALF_PI);
         }
     }
 

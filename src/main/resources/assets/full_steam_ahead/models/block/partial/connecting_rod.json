@@ -1,0 +1,217 @@
+{
+  "credit": "Converted from Steam_Connecting_Rod.bbmodel",
+  "ambientocclusion": true,
+  "textures": {
+    "mechanical": "full_steam_ahead:block/piston/piston_body",
+    "particle": "full_steam_ahead:block/piston/piston_body"
+  },
+  "elements": [
+    {
+      "name": "small_end",
+      "from": [
+        6,
+        0,
+        7
+      ],
+      "to": [
+        10,
+        4,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            8,
+            8,
+            16
+          ],
+          "texture": "#mechanical"
+        },
+        "east": {
+          "uv": [
+            4,
+            0,
+            5,
+            4
+          ],
+          "texture": "#mechanical"
+        },
+        "south": {
+          "uv": [
+            4,
+            8,
+            8,
+            16
+          ],
+          "texture": "#mechanical"
+        },
+        "west": {
+          "uv": [
+            4,
+            0,
+            5,
+            4
+          ],
+          "texture": "#mechanical"
+        },
+        "up": {
+          "uv": [
+            4,
+            0,
+            6,
+            2
+          ],
+          "texture": "#mechanical"
+        },
+        "down": {
+          "uv": [
+            4,
+            0,
+            6,
+            2
+          ],
+          "texture": "#mechanical"
+        }
+      }
+    },
+    {
+      "name": "shaft",
+      "from": [
+        7,
+        4,
+        7
+      ],
+      "to": [
+        9,
+        14,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            0,
+            5,
+            8
+          ],
+          "texture": "#mechanical"
+        },
+        "east": {
+          "uv": [
+            4,
+            0,
+            5,
+            8
+          ],
+          "texture": "#mechanical"
+        },
+        "south": {
+          "uv": [
+            4,
+            0,
+            5,
+            8
+          ],
+          "texture": "#mechanical"
+        },
+        "west": {
+          "uv": [
+            4,
+            0,
+            5,
+            8
+          ],
+          "texture": "#mechanical"
+        },
+        "up": {
+          "uv": [
+            4,
+            0,
+            5,
+            2
+          ],
+          "texture": "#mechanical"
+        },
+        "down": {
+          "uv": [
+            4,
+            0,
+            5,
+            2
+          ],
+          "texture": "#mechanical"
+        }
+      }
+    },
+    {
+      "name": "big_end",
+      "from": [
+        6,
+        14,
+        7
+      ],
+      "to": [
+        10,
+        18,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            8,
+            8,
+            16
+          ],
+          "texture": "#mechanical"
+        },
+        "east": {
+          "uv": [
+            4,
+            0,
+            5,
+            4
+          ],
+          "texture": "#mechanical"
+        },
+        "south": {
+          "uv": [
+            4,
+            8,
+            8,
+            16
+          ],
+          "texture": "#mechanical"
+        },
+        "west": {
+          "uv": [
+            4,
+            0,
+            5,
+            4
+          ],
+          "texture": "#mechanical"
+        },
+        "up": {
+          "uv": [
+            4,
+            0,
+            6,
+            2
+          ],
+          "texture": "#mechanical"
+        },
+        "down": {
+          "uv": [
+            4,
+            0,
+            6,
+            2
+          ],
+          "texture": "#mechanical"
+        }
+      }
+    }
+  ]
+}

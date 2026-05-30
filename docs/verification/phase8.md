@@ -45,6 +45,8 @@ Completed animation proxy slice:
 - [x] Applied the textured v3 `piston_head` model from `piston_head_for_testing_v3_textured.bbmodel`; existing v2-derived hitbox still matches the unchanged cuboids.
 - [x] Replaced the `piston_head` model and embedded texture from `Steam_Piston_Head.bbmodel`; matched outline/collision to the new crown/step/collar/rod cuboids.
 - [x] Applied the v1 `piston` body model to base and assembled piston section models, with matching 6x16x6 outline/collision shape.
+- [x] Replaced the piston body with `Steam_Piston_Body.bbmodel`; matched its block outline/collision to the rod, fork cheeks, and wrist pins.
+- [x] Added dynamic `Steam_Connecting_Rod` and `Steam_Crank` partials and drove them from the linked shaft phase with slider-crank geometry.
 - [x] Replaced piston/head proxy animation with dynamic rendering of the actual `piston` and `piston_head` models.
 - [x] Hid assembled static piston/head block models so the moving dynamic visuals do not overlap fixed geometry.
 
@@ -130,6 +132,7 @@ Automated results:
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after applying the piston body v1 model and hitbox.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-27 after applying the textured v3 piston head model.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-29 after replacing the piston head with `Steam_Piston_Head.bbmodel`.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-30 after adding the modeled piston body, connecting rod, and crank animation.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after replacing proxy piston animation with dynamic actual piston/head partials.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-23 after the shaft-link remodel.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-23 after the shaft-link remodel.
@@ -168,6 +171,9 @@ Manual runtime checklist:
 - [x] `piston_head` v2 model renders correctly and uses the stepped non-full-block hitbox.
 - [ ] `Steam_Piston_Head` replacement model renders correctly as an item, standalone block, and moving animated partial with the updated hitbox.
 - [x] `piston` v1 body model renders correctly in unassembled placement and uses the narrow 6x16x6 hitbox.
+- [ ] `Steam_Piston_Body` replacement model renders correctly as an item, standalone block, and moving animated partial with the updated fork/wrist-pin hitbox.
+- [ ] The modeled connecting rod stays attached between the piston wrist pin and crank pin through a full rotation.
+- [ ] The modeled crank rotates around the linked Create shaft axis for both X-axis and Z-axis shaft placements.
 - [ ] `steam_cylinder` renders with the custom cylinder texture in both unassembled placement and assembled ring state.
 - [ ] Two or more `Cylinder Wall` blocks in a straight line stay in straight-wall/fence-like mode instead of guessing a ring section.
 - [ ] Adding a 90-degree horizontal turn to a connected `Cylinder Wall` group switches that partial structure into ring-section visuals.
