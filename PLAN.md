@@ -586,6 +586,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Replace `piston_head` with the `Steam_Piston_Head.bbmodel` visual and matching model-derived hitbox
 - [x] Replace the piston body with `Steam_Piston_Body.bbmodel` and add animated `Steam_Connecting_Rod` plus `Steam_Crank` partials using shaft-phase slider-crank motion
 - [x] Correct modeled crank/linkage phase so `Steam_Crank` rotates from its authored pin-below-shaft pose using the raw linked shaft angle
+- [x] Correct crank/linkage rotation plane to the Create-style frontal plane instead of switching to lateral shaft-axis spin
 - [x] Fix dynamic piston/head lighting by relighting each moving partial at its own world position instead of using one block entity light value
 - [x] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
 - [x] Add rhythmic steam sound using Create's normal `STEAM` sound event, slightly louder than the vanilla Create steam engine

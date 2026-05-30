@@ -140,11 +140,7 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             PistonHeadAnimation.State animation
     ) {
         buffer.translate(0.5F, PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, 0.5F);
-        if (animation.shaftAxis() == Direction.Axis.X) {
-            buffer.rotateX(animation.connectingRodRotation());
-        } else {
-            buffer.rotateZ(animation.connectingRodRotation());
-        }
+        buffer.rotateX(animation.connectingRodRotation());
         return buffer.translate(-0.5F, -PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, -0.5F);
     }
 
@@ -153,11 +149,7 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             PistonHeadAnimation.State animation
     ) {
         buffer.center();
-        if (animation.shaftAxis() == Direction.Axis.X) {
-            buffer.rotateX(animation.crankRotation());
-        } else {
-            buffer.rotateZ(animation.crankRotation());
-        }
+        buffer.rotateX(animation.crankRotation());
         return buffer.uncenter();
     }
 

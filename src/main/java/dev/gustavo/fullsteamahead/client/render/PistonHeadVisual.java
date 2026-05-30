@@ -143,11 +143,7 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
             PistonHeadAnimation.State animation
     ) {
         instance.translate(0.5F, PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, 0.5F);
-        if (animation.shaftAxis() == Direction.Axis.X) {
-            instance.rotateX(animation.connectingRodRotation());
-        } else {
-            instance.rotateZ(animation.connectingRodRotation());
-        }
+        instance.rotateX(animation.connectingRodRotation());
         return instance.translate(-0.5F, -PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, -0.5F);
     }
 
@@ -156,11 +152,7 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
             PistonHeadAnimation.State animation
     ) {
         instance.center();
-        if (animation.shaftAxis() == Direction.Axis.X) {
-            instance.rotateX(animation.crankRotation());
-        } else {
-            instance.rotateZ(animation.crankRotation());
-        }
+        instance.rotateX(animation.crankRotation());
         return instance.uncenter();
     }
 
