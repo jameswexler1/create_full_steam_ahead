@@ -1,15 +1,14 @@
 package dev.gustavo.fullsteamahead.client;
 
-import com.simibubi.create.content.kinetics.base.ShaftRenderer;
-import com.simibubi.create.content.kinetics.base.ShaftVisual;
 import dev.engine_room.flywheel.api.visualization.VisualizerRegistry;
 import dev.engine_room.flywheel.lib.visualization.SimpleBlockEntityVisualizer;
 import dev.gustavo.fullsteamahead.FullSteamAhead;
 import dev.gustavo.fullsteamahead.client.render.FullSteamPartialModels;
 import dev.gustavo.fullsteamahead.client.render.PistonHeadRenderer;
 import dev.gustavo.fullsteamahead.client.render.PistonHeadVisual;
+import dev.gustavo.fullsteamahead.client.render.PoweredShaftRenderer;
+import dev.gustavo.fullsteamahead.client.render.PoweredShaftVisual;
 import dev.gustavo.fullsteamahead.client.render.SteppedLeverRenderer;
-import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -29,8 +28,7 @@ public final class FullSteamAheadClient {
             VisualizerRegistry.setVisualizer(
                     ModBlockEntities.POWERED_SHAFT.get(),
                     SimpleBlockEntityVisualizer.builder(ModBlockEntities.POWERED_SHAFT.get())
-                            .factory((context, blockEntity, partialTick) ->
-                                    new ShaftVisual<FullSteamPoweredShaftBlockEntity>(context, blockEntity, partialTick))
+                            .factory(PoweredShaftVisual::new)
                             .apply()
             );
         });
@@ -44,7 +42,7 @@ public final class FullSteamAheadClient {
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ModBlockEntities.PISTON_HEAD.get(), PistonHeadRenderer::new);
-        event.registerBlockEntityRenderer(ModBlockEntities.POWERED_SHAFT.get(), ShaftRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.POWERED_SHAFT.get(), PoweredShaftRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.STEPPED_LEVER.get(), SteppedLeverRenderer::new);
     }
 

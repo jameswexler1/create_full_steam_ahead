@@ -589,6 +589,8 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Correct crank/linkage rotation plane to the Create-style frontal plane instead of switching to lateral shaft-axis spin
 - [x] Apply linkage-frame yaw before local crank/rod rotation so the throw moves front/back relative to an X-axis shaft instead of sliding along the shaft
 - [x] Replace piston body, connecting rod, and crank visuals with the `new_models/` Blockbench set; retune hitbox, crank radius, and local-X linkage transforms to match the new geometry
+- [x] Render the hidden powered shaft with Create's powered-shaft end caps instead of the full shaft model inside the crank
+- [x] Rotate the piston body 90 degrees relative to the connecting rod frame and drive the rod/crank in the visible powered-shaft direction
 - [x] Fix dynamic piston/head lighting by relighting each moving partial at its own world position instead of using one block entity light value
 - [x] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
 - [x] Add rhythmic steam sound using Create's normal `STEAM` sound event, slightly louder than the vanilla Create steam engine

@@ -85,9 +85,11 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         for (int blockIndex = 0; blockIndex < pistons.length; blockIndex++) {
             setVisible(pistons[blockIndex], animation.visible());
             if (animation.visible()) {
-                base(pistons[blockIndex])
-                        .translate(0, animation.pistonY(blockIndex), 0)
-                        .setChanged();
+                orientPistonBody(
+                        base(pistons[blockIndex])
+                                .translate(0, animation.pistonY(blockIndex), 0),
+                        animation.shaftAxis()
+                ).setChanged();
             }
         }
 
@@ -151,6 +153,15 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
     private static TransformedInstance yawLinkageFrame(TransformedInstance instance, Direction.Axis axis) {
         if (axis == Direction.Axis.Z) {
             instance.rotateY((float) (-Math.PI / 2.0D));
+        }
+        return instance;
+    }
+
+    private static TransformedInstance orientPistonBody(TransformedInstance instance, Direction.Axis axis) {
+        if (axis == Direction.Axis.X) {
+            instance.center()
+                    .rotateY((float) (Math.PI / 2.0D))
+                    .uncenter();
         }
         return instance;
     }

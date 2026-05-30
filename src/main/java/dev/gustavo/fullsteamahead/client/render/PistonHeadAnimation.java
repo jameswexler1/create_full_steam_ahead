@@ -34,7 +34,7 @@ public final class PistonHeadAnimation {
 
     public static State state(boolean visible, float angle, Direction.Axis shaftAxis) {
         float crankDepth = CRANK_RADIUS * Mth.cos(angle);
-        float crankVertical = CRANK_RADIUS * Mth.sin(angle);
+        float crankVertical = -CRANK_RADIUS * Mth.sin(angle);
         float rodVertical = Mth.sqrt(Math.max(
                 0.0F,
                 CONNECTING_ROD_LENGTH * CONNECTING_ROD_LENGTH - crankDepth * crankDepth
@@ -77,7 +77,7 @@ public final class PistonHeadAnimation {
         }
 
         public float crankRotation() {
-            return -(angle + HALF_PI);
+            return angle - HALF_PI;
         }
     }
 
