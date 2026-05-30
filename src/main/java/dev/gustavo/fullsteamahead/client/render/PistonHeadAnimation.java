@@ -16,7 +16,6 @@ public final class PistonHeadAnimation {
     private static final float HEAD_TO_PISTON_BODY_Y = 1.0F;
     private static final float SHAFT_BASE_Y = 3.0F;
     private static final float SHAFT_CENTER_Y = SHAFT_BASE_Y + 0.5F;
-    private static final float HALF_PI = (float) (Math.PI / 2.0D);
 
     public static State state(PistonHeadBlockEntity engine) {
         boolean visible = engine.isEngineAssembled();
@@ -33,8 +32,10 @@ public final class PistonHeadAnimation {
     }
 
     public static State state(boolean visible, float angle, Direction.Axis shaftAxis) {
-        float crankHorizontal = -CRANK_RADIUS * Mth.cos(angle);
-        float crankVertical = CRANK_RADIUS * Mth.sin(angle);
+        // The crank model is authored with its pin directly below the shaft center.
+        // Rotate that modeled offset by the shaft angle, then solve the rod from the actual pin position.
+        float crankHorizontal = CRANK_RADIUS * Mth.sin(angle);
+        float crankVertical = -CRANK_RADIUS * Mth.cos(angle);
         float rodVertical = Mth.sqrt(Math.max(
                 0.0F,
                 CONNECTING_ROD_LENGTH * CONNECTING_ROD_LENGTH - crankHorizontal * crankHorizontal
@@ -73,7 +74,7 @@ public final class PistonHeadAnimation {
         }
 
         public float connectingRodRotation() {
-            return shaftAxis == Direction.Axis.X ? connectingRodAngle : -connectingRodAngle;
+            return -connectingRodAngle;
         }
 
         public float crankY() {
@@ -81,7 +82,7 @@ public final class PistonHeadAnimation {
         }
 
         public float crankRotation() {
-            return shaftAxis == Direction.Axis.X ? angle + HALF_PI : -(angle + HALF_PI);
+            return angle;
         }
     }
 
