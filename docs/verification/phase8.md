@@ -159,6 +159,7 @@ Automated results:
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-31 after making unpowered engine linkages follow a rotating linked shaft passively.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-31 after adding scaled inventory/hand display transforms for oversized block items.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-31 after retuning oversized item displays to Create-style block item proportions.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-31 after switching the creative tab icon to a hidden assembled cylinder ring item model.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after replacing proxy piston animation with dynamic actual piston/head partials.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-23 after the shaft-link remodel.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-23 after the shaft-link remodel.
@@ -207,6 +208,7 @@ Manual runtime checklist:
 - [ ] Fixed assembled cylinder ring geometry renders without the previous overlapping/flickering parts.
 - [ ] `steam_inlet` renders with the new textured model as an item, standalone block, and assembled ring member in north/east/south/west-facing shell positions.
 - [ ] Oversized block items render at usable miniature scale in inventory, hotbar, first-person hand, third-person hand, dropped item form, and item frames.
+- [ ] The `Create: Full Steam Ahead` creative tab icon renders as the assembled cylinder ring and the icon-only item does not appear in the tab item list.
 - [ ] Two complete cylinder rings can be built directly adjacent without either ring deforming or stealing the other's section assignments.
 - [ ] Assembled `piston_head` and the `piston` body remain visible at rest and reciprocate while the linked shaft is running.
 - [ ] An assembled engine with no steam output still animates passively when its linked shaft is rotated by another engine on the same shaft network.

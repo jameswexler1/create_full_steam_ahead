@@ -16,7 +16,7 @@ public final class ModCreativeTabs {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN = CREATIVE_TABS.register("main",
             () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.full_steam_ahead.main"))
-                    .icon(() -> new ItemStack(ModBlocks.STEAM_CYLINDER.get()))
+                    .icon(() -> new ItemStack(ModItems.ASSEMBLED_CYLINDER_RING_ICON.get()))
                     .displayItems((parameters, output) -> {
                         output.accept(ModBlocks.STEAM_CYLINDER.get());
                         output.accept(ModBlocks.PISTON.get());

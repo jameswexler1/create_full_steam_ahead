@@ -6,6 +6,7 @@
   "block.full_steam_ahead.piston_head": "Piston Head",
   "block.full_steam_ahead.boiler_outlet": "Boiler Outlet",
   "block.full_steam_ahead.steam_inlet": "Steam Inlet",
+  "item.full_steam_ahead.assembled_cylinder_ring_icon": "Assembled Cylinder Ring",
   "fluid_type.full_steam_ahead.steam": "Steam",
   "fluid.full_steam_ahead.steam": "Steam",
   "block.full_steam_ahead.engine_telegraph": "Engine Order Telegraph",
