@@ -591,6 +591,8 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Replace piston body, connecting rod, and crank visuals with the `new_models/` Blockbench set; retune hitbox, crank radius, and local-X linkage transforms to match the new geometry
 - [x] Render the hidden powered shaft with Create's caps-only `POWERED_SHAFT` partial instead of the full shaft model inside the crank
 - [x] Rotate the piston model texture mapping 90 degrees at the asset level so static and animated piston visuals align with the connecting rod
+- [x] Replace boiler outlet placeholder art with `Steam_outlet.bbmodel`, including embedded texture, directional blockstate rotations, and model-derived hitbox
+- [x] Replace piston head art with `piston_head_LATEST.bbmodel` while preserving the existing model-derived hitbox
 - [x] Fix dynamic piston/head lighting by relighting each moving partial at its own world position instead of using one block entity light value
 - [x] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
 - [x] Add rhythmic steam sound using Create's normal `STEAM` sound event, slightly louder than the vanilla Create steam engine

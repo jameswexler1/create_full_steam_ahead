@@ -53,6 +53,8 @@ Completed animation proxy slice:
 - [x] Replaced the piston body, connecting rod, and crank with the `new_models/` Blockbench set, including extracted local textures, the model-derived piston hitbox, and local-X linkage transforms.
 - [x] Replaced the powered shaft's full-shaft Flywheel visual with Create's caps-only `POWERED_SHAFT` partial; fallback rendering already uses the powered-shaft block model.
 - [x] Rotated the piston model texture mapping 90 degrees at the asset level so the static block, item parent, and animated partial share the same orientation.
+- [x] Replaced the boiler outlet placeholder with `Steam_outlet.bbmodel`, extracted its 64x64 texture, updated directional blockstate rotations, and matched outline/collision to the modeled cuboids.
+- [x] Replaced the piston head model and embedded texture with `piston_head_LATEST.bbmodel`; the existing cuboid-derived hitbox still matches the latest geometry.
 - [x] Replaced piston/head proxy animation with dynamic rendering of the actual `piston` and `piston_head` models.
 - [x] Hid assembled static piston/head block models so the moving dynamic visuals do not overlap fixed geometry.
 
@@ -144,6 +146,7 @@ Automated results:
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-30 after correcting the modeled linkage transform order for X-axis shafts.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-30 after replacing piston, connecting rod, and crank visuals from `new_models/`.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `./gradlew build` passed on 2026-05-31 after correcting powered-shaft end-cap rendering and rotating the piston texture mapping at the asset level.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `./gradlew build` passed on 2026-05-31 after replacing boiler outlet and piston head Blockbench models.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after replacing proxy piston animation with dynamic actual piston/head partials.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-23 after the shaft-link remodel.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-23 after the shaft-link remodel.

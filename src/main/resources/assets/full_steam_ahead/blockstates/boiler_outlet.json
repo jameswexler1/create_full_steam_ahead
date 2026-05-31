@@ -2,28 +2,25 @@
   "variants": {
     "facing=down": {
       "model": "full_steam_ahead:block/boiler_outlet",
-      "x": 180
+      "x": 90
     },
     "facing=up": {
-      "model": "full_steam_ahead:block/boiler_outlet"
+      "model": "full_steam_ahead:block/boiler_outlet",
+      "x": 270
     },
     "facing=north": {
-      "model": "full_steam_ahead:block/boiler_outlet",
-      "x": 90
+      "model": "full_steam_ahead:block/boiler_outlet"
     },
     "facing=south": {
       "model": "full_steam_ahead:block/boiler_outlet",
-      "x": 90,
       "y": 180
     },
     "facing=west": {
       "model": "full_steam_ahead:block/boiler_outlet",
-      "x": 90,
       "y": 270
     },
     "facing=east": {
       "model": "full_steam_ahead:block/boiler_outlet",
-      "x": 90,
       "y": 90
     }
   }
