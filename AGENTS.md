@@ -27,14 +27,14 @@ Use Java 21 and four-space indentation. Keep packages under `dev.gustavo.fullste
 
 ## Current Task — Phase 8 Rendering and Ponder
 
-Flywheel/governor blocks are parked inert placeholders. Do not add mechanics, recipes, requirements, output effects, textures, model work, or rendering work for them unless `PLAN.md` is changed first. The `flywheel` block is explicitly excluded from Phase 8.
+The old `flywheel` and `governor` placeholder blocks have been removed. Do not re-add mechanics, recipes, requirements, output effects, textures, models, registration, or assets for them unless `PLAN.md` is changed first. This does not apply to the Flywheel rendering library used by client visuals.
 
 Implement visual presentation while preserving all current gameplay:
 
 1. Do not change steam generation, SU/RPM output, multiblock validation, Aeronautics movement rules, recipes, or config in Phase 8.
-2. Do not touch `flywheel` code/assets during Phase 8.
+2. Do not reintroduce the removed `flywheel` or `governor` block code/assets during Phase 8.
 3. Keep all Flywheel, renderer, and Ponder code client-only under `dev.gustavo.fullsteamahead.client`.
-4. Register the crankshaft Flywheel visual and a vanilla fallback block entity renderer.
+4. Register piston-head Flywheel visuals and vanilla fallback block entity renderers only from client code.
 5. Reuse Create textures and visual language where possible; add local textures only when Create does not provide a suitable part.
 6. Static piston blocks should become visual guides/sleeves; dynamic piston motion should be rendered from the crankshaft.
 7. Steam particles and chuff sounds must be tied to running state and crank phase, not emitted every tick blindly.

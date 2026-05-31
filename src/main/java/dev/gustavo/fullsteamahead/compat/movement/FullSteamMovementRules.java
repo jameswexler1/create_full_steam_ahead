@@ -161,9 +161,7 @@ public final class FullSteamMovementRules {
                 || state.is(ModBlocks.PISTON.get())
                 || state.is(ModBlocks.PISTON_HEAD.get())
                 || state.is(ModBlocks.POWERED_SHAFT.get())
-                || state.is(ModBlocks.BOILER_OUTLET.get())
-                || state.is(ModBlocks.FLYWHEEL.get())
-                || state.is(ModBlocks.GOVERNOR.get());
+                || state.is(ModBlocks.BOILER_OUTLET.get());
     }
 
     private static boolean attachesToCompactBoiler(

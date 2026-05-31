@@ -2,8 +2,6 @@ package dev.gustavo.fullsteamahead.registry;
 
 import dev.gustavo.fullsteamahead.FullSteamAhead;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlock;
-import dev.gustavo.fullsteamahead.content.flywheel.FlywheelBlock;
-import dev.gustavo.fullsteamahead.content.governor.GovernorBlock;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlock;
 import dev.gustavo.fullsteamahead.content.piston.SteamPistonBlock;
 import dev.gustavo.fullsteamahead.content.redstone.SteppedLeverBlock;
@@ -31,10 +29,6 @@ public final class ModBlocks {
             registerBlock("piston_head", PistonHeadBlock::new, metalProperties().noOcclusion());
     public static final DeferredBlock<FullSteamPoweredShaftBlock> POWERED_SHAFT =
             registerBlockOnly("powered_shaft", FullSteamPoweredShaftBlock::new, metalProperties().noOcclusion());
-    public static final DeferredBlock<FlywheelBlock> FLYWHEEL =
-            registerBlock("flywheel", FlywheelBlock::new, metalProperties());
-    public static final DeferredBlock<GovernorBlock> GOVERNOR =
-            registerBlock("governor", GovernorBlock::new, copperProperties());
     public static final DeferredBlock<BoilerOutletBlock> BOILER_OUTLET =
             registerBlock("boiler_outlet", BoilerOutletBlock::new, copperProperties());
     public static final DeferredBlock<SteamInletBlock> STEAM_INLET =

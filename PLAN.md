@@ -1,6 +1,6 @@
 # Create: Full Steam Ahead — Design Plan
 
-Last updated: 2026-05-28
+Last updated: 2026-05-31
 
 ## Goal
 
@@ -75,9 +75,9 @@ The only automatic pressure source for steam is `boiler_outlet`, and it must onl
 
 For v1, `steam` should be non-placeable and should not need a bucket. It exists for tanks, pipes, gauges, and engine consumption.
 
-### Flywheel and governor are parked
+### Flywheel and governor removed
 
-The already-registered `flywheel` and `governor` blocks remain inert placeholders for now, but no gameplay mechanics should be added for them. They are no longer Phase 5 scope. Before release, decide whether to keep them hidden/inert, remove them, or reintroduce them in a later feature pass.
+The old inert `flywheel` and `governor` placeholders have been removed from registration, creative inventory, Java source, assets, tags, loot tables, and lang. Do not re-add them without a new design pass in this document.
 
 ### Engine orientation: vertical only in v1
 
@@ -104,13 +104,6 @@ Other orientations (horizontal, inverted) are deferred to a future version.
 | `engine_telegraph` | `HorizontalDirectionalBlock` | Inert decorative/control block for ship bridge theming. No engine control mechanics yet. |
 | `stepped_lever` | `FaceAttachedHorizontalDirectionalBlock + IBE<SteppedLeverBlockEntity>` | Create-style stepped analog redstone lever for ship controls and future bridge panels. |
 
-Existing parked placeholders:
-
-| Block | Status |
-|---|---|
-| `flywheel` | Inert placeholder. No mechanics for now. |
-| `governor` | Inert placeholder. No mechanics for now. |
-
 Removed from the old plan (do not re-add without discussion):
 
 - `large_steam_engine_controller` — no controller
@@ -120,6 +113,8 @@ Removed from the old plan (do not re-add without discussion):
 - `output_coupling` — normal Create shafts are the player-facing kinetic output
 - `piston_rod` — renamed and redesigned as `piston`
 - `crankshaft` — removed in favor of vanilla Create shaft placement and a hidden powered shaft, matching Create's own steam engine pattern
+- `flywheel` — removed inert placeholder
+- `governor` — removed inert placeholder
 
 ---
 
@@ -299,11 +294,11 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
   - RPM uses burner-equivalent tiers from consumed steam units, clamped to 9 equivalents: 1-2 = 16 rpm, 3-4 = 32 rpm, 5-8 = 48 rpm, 9+ = 64 rpm
 - Goggle overlay: ring link status, steam buffer, accepted steam rate, engine link.
 
-### Parked `Flywheel` and `Governor`
+### Removed placeholders
 
-- Both existing blocks are inert placeholders.
-- Do not add mechanics, recipes, balance effects, or required validation for them during the steam-fluid pivot.
-- Decide later whether they remain decorative, become future mechanics, or are removed before release.
+- The old inert `flywheel` and `governor` block placeholders are removed.
+- They have no registration, item forms, assets, loot tables, mining tags, lang entries, recipes, or movement rules.
+- Any future inertia/regulator feature needs a fresh design section before new blocks are added.
 
 ---
 
@@ -339,10 +334,6 @@ src/main/java/dev/gustavo/fullsteamahead/
       SteamInletBlockEntity.java
     telegraph/
       EngineTelegraphBlock.java        ← inert directional ship control block
-    flywheel/
-      FlywheelBlock.java               ← parked inert placeholder
-    governor/
-      GovernorBlock.java               ← parked inert placeholder
   compat/
     create/
       FullSteamBoilerIntegration.java
@@ -447,8 +438,7 @@ Tasks:
 - [x] Add: `SteamCylinderBlock` with `ASSEMBLED` BooleanProperty blockstate
 - [x] Add: `SteamPistonBlock` with `ASSEMBLED` BooleanProperty and `PISTON_SECTION` EnumProperty blockstate
 - [x] Add current shaft output: player-facing Create shaft with hidden `full_steam_ahead:powered_shaft` kinetic generator
-- [x] Add: `FlywheelBlock` inert stub
-- [x] Add: `GovernorBlock` inert stub
+- [x] Superseded: the old inert `flywheel` and `governor` stubs were later removed entirely
 - [x] Add: `PistonSection.java` enum
 - [x] Add: `ModBlockEntities.java` stub register, no block entity types yet
 - [x] Rewrite `ModBlocks.java` to register only the 5 new blocks with correct base classes
@@ -496,11 +486,11 @@ Tasks:
 - [x] Add piston block state updates: set `ASSEMBLED` and section/head state on the moving piston stack when piston head validates
 - [x] Add visible placeholder models for assembled piston section states
 - [x] Add revalidation on neighbour changes
-- [x] Add goggle overlay: assembly status, active burners, heat units, water supply, RPM, SU, flywheel placeholder
+- [x] Add goggle overlay: assembly status, active burners, heat units, water supply, RPM, SU
 - [x] Verify exact output tiers: no passive output, 1-9 normal fired burners match SU/RPM table, and Blaze Cake burners double SU individually
 - [ ] Optional hardening verify: break piston → shaft stops; break boiler → shaft stops; restore/reload → state recovers
 
-Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerData.evaluate()` recognizes valid Full Steam Ahead piston-head engines as attached steam engines. This lets Create's own Fluid Tank switch to active boiler visuals/capabilities and lets the compact 3x3x1 boiler footprint behave as the intended v1 boiler size. The flywheel and governor are parked inert placeholders and currently do not change output.
+Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerData.evaluate()` recognizes valid Full Steam Ahead piston-head engines as attached steam engines. This lets Create's own Fluid Tank switch to active boiler visuals/capabilities and lets the compact 3x3x1 boiler footprint behave as the intended v1 boiler size.
 
 ### Phase 5: Steam Fluid and Boiler Outlet
 
@@ -566,7 +556,7 @@ Implementation notes:
 
 Phase 8 is visual/presentation only. It must not change steam generation, output tables, multiblock rules, movement compatibility, recipes, or config.
 
-- [x] Exclude `flywheel` from Phase 8 work; leave existing placeholder code/assets untouched until a later removal or redesign pass
+- [x] Remove the old inert `flywheel` and `governor` placeholders from registration, creative tab, source, assets, loot tables, tags, and lang
 - [x] Add client-only bootstrap under `dev.gustavo.fullsteamahead.client`; never load client/Flywheel/Ponder classes from dedicated-server common code
 - [x] Add `FullSteamPartialModels` for dynamic piston/crank partials under `assets/full_steam_ahead/models/block/partial/`
 - [x] Initial Create-style model pass using Create copper/brass/andesite/shaft textures where possible
@@ -651,7 +641,6 @@ Deferred idea after visuals: inline shared-wall cylinder banks, where adjacent c
 | Cylinder ring scan too expensive | Run only on placement/removal, not every tick; cache result |
 | Piston animation desync | Drive animation entirely from linked shaft rotation angle on client |
 | Sable assembly splits engine parts | Register Create and Simulated movement checks early |
-| Parked flywheel/governor confuse players | Hide/remove or clearly mark before release if they remain inert |
 
 ---
 

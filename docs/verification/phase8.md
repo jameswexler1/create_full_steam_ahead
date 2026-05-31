@@ -9,7 +9,7 @@ Planned scope:
 - Add running steam particles and Create-style steam-engine sound.
 - Add Ponder scenes after visuals are stable.
 - Preserve all Phase 7 mechanics and Aeronautics compatibility.
-- Exclude `flywheel` from this phase; leave its placeholder code and assets untouched.
+- Remove the old inert `flywheel` and `governor` placeholder blocks.
 
 Automated checks to run:
 
@@ -22,7 +22,7 @@ find src/main/resources -name '*.json' -exec jq empty {} +
 
 Completed first slice:
 
-- [x] Excluded `flywheel` from Phase 8 code and asset work.
+- [x] Removed `flywheel` and `governor` block registration, creative entries, source files, blockstates, models, item models, loot tables, mining tags, and lang entries.
 - [x] Added client-only event bootstrap under `dev.gustavo.fullsteamahead.client`.
 - [x] Replaced active engine cube placeholders with Create-style multipart JSON models.
 - [x] Updated static piston models to read more like guide/sleeve blocks.
@@ -56,6 +56,7 @@ Completed animation proxy slice:
 - [x] Replaced the boiler outlet placeholder with `Steam_outlet.bbmodel`, extracted its 64x64 texture, updated directional blockstate rotations, and matched outline/collision to the modeled cuboids.
 - [x] Replaced the piston head model and embedded texture with `piston_head_LATEST.bbmodel`; the existing cuboid-derived hitbox still matches the latest geometry.
 - [x] Corrected Blockbench UV conversion for the 64x64 boiler outlet texture and 32x32 piston head texture so Minecraft model UVs stay inside the required 0-16 range.
+- [x] Removed the old inert `flywheel` and `governor` placeholder blocks entirely from active source/resources.
 - [x] Replaced piston/head proxy animation with dynamic rendering of the actual `piston` and `piston_head` models.
 - [x] Hid assembled static piston/head block models so the moving dynamic visuals do not overlap fixed geometry.
 
@@ -149,6 +150,7 @@ Automated results:
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `./gradlew build` passed on 2026-05-31 after correcting powered-shaft end-cap rendering and rotating the piston texture mapping at the asset level.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `./gradlew build` passed on 2026-05-31 after replacing boiler outlet and piston head Blockbench models.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `./gradlew build` passed on 2026-05-31 after correcting scaled UVs for the boiler outlet and piston head textures.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `./gradlew build` passed on 2026-05-31 after removing the old `flywheel` and `governor` block registrations/assets.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after replacing proxy piston animation with dynamic actual piston/head partials.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-23 after the shaft-link remodel.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-23 after the shaft-link remodel.

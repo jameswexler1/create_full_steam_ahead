@@ -16,7 +16,7 @@ Implemented:
 - Crankshaft RPM now follows active burner count exactly: 1-2 burners = 16 RPM, 3-4 = 32 RPM, 5-8 = 48 RPM, 9 = 64 RPM.
 - Crankshaft SU now follows exact heat units: each normal fired burner adds 16,384 SU, each Blaze Cake burner adds 32,768 SU, up to 294,912 SU at 9 Blaze Cake burners.
 - Assembled piston sections now use distinct placeholder models for visible testing.
-- Goggles show crankshaft assembly status, active burners, heat units, water supply, RPM, SU capacity, and current flywheel placeholder state.
+- Goggles show crankshaft assembly status, active burners, heat units, water supply, RPM, and SU capacity.
 
 Automated checks to run:
 
@@ -58,7 +58,7 @@ Manual runtime checklist:
 - [x] Confirm 9 normal fired Blaze Burners produce 147,456 SU at 64 RPM.
 - [x] Confirm 1 Blaze Cake burner produces 32,768 SU while RPM still follows active burner count.
 - [x] Confirm 9 Blaze Cake burners produce 294,912 SU at 64 RPM.
-- [x] Check goggles show assembled status, active burners, heat units, water supply, RPM, SU capacity, and flywheel placeholder state.
+- [x] Check goggles show assembled status, active burners, heat units, water supply, RPM, and SU capacity.
 - [ ] Break one piston and confirm the crankshaft stops and piston states clear.
 - [ ] Break one cylinder and confirm the crankshaft stops.
 - [ ] Break or remove one boiler tank below the ring and confirm the crankshaft stops within one lazy revalidation interval.

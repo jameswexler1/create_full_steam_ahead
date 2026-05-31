@@ -290,7 +290,6 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
                 .withStyle(getTargetCapacitySu() > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
         tooltip.add(Component.literal(shaftPos == null ? "No shaft link" : "Shaft linked")
                 .withStyle(shaftPos == null ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY));
-        tooltip.add(Component.literal("Flywheel: deferred").withStyle(ChatFormatting.DARK_GRAY));
         return true;
     }
 

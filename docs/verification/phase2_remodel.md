@@ -5,7 +5,7 @@ Date: 2026-05-20
 Implemented:
 
 - Removed the old controller/firebox/boiler/output/casing/piston-rod block set.
-- Added the five remodel blocks: Steam Cylinder, Steam Piston, Crankshaft, Flywheel, Governor.
+- Added the then-current remodel blocks: Steam Cylinder, Steam Piston, Crankshaft, and two inert placeholders that were removed in a later phase.
 - Updated block registration, item registration, creative tab ordering, lang, mining tags, blockstates, models, and self-drop loot tables.
 - Added a `ModBlockEntities` deferred-register stub with no block entity types yet.
 
@@ -36,7 +36,7 @@ Manual runtime checklist:
 - [x] Confirm `Create: Full Steam Ahead` appears in the Mods list.
 - [x] Open a creative world.
 - [x] Confirm the `Create: Full Steam Ahead` creative tab exists.
-- [x] Confirm exactly five block items appear in order: Steam Cylinder, Steam Piston, Crankshaft, Flywheel, Governor.
+- [x] Confirm the then-current Phase 2 block items appeared in the creative tab. This checklist was superseded after placeholder removal.
 - [x] Place all five blocks and confirm placement works without crashes.
 - [x] Confirm none of the removed old blocks appear.
 
