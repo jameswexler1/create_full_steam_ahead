@@ -5,19 +5,18 @@ import com.simibubi.create.content.fluids.FluidPropagator;
 import com.simibubi.create.content.fluids.FluidTransportBehaviour;
 import com.simibubi.create.content.fluids.tank.BoilerData;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
-import com.simibubi.create.content.kinetics.steamEngine.SteamJetParticleData;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import dev.gustavo.fullsteamahead.compat.create.FullSteamBoilerIntegration;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModFluids;
+import dev.gustavo.fullsteamahead.registry.ModParticleTypes;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -639,14 +638,14 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         double y = sourcePos.getY() + 0.5 + normal.y * 0.58;
         double z = sourcePos.getZ() + 0.5 + normal.z * 0.58;
         double intensity = Math.min(1.0D, Math.max(0.25D, amount / 90.0D));
-        int jets = 2 + (int) Math.round(intensity * 2.0D);
+        int jets = 7 + (int) Math.round(intensity * 7.0D);
         for (int i = 0; i < jets; i++) {
-            double jitterX = (serverLevel.random.nextDouble() - 0.5D) * 0.08D;
-            double jitterY = (serverLevel.random.nextDouble() - 0.5D) * 0.08D;
-            double jitterZ = (serverLevel.random.nextDouble() - 0.5D) * 0.08D;
-            double speed = 0.16D + serverLevel.random.nextDouble() * 0.08D + intensity * 0.09D;
+            double jitterX = (serverLevel.random.nextDouble() - 0.5D) * 0.11D;
+            double jitterY = (serverLevel.random.nextDouble() - 0.5D) * 0.11D;
+            double jitterZ = (serverLevel.random.nextDouble() - 0.5D) * 0.11D;
+            double speed = 0.055D + serverLevel.random.nextDouble() * 0.035D + intensity * 0.055D;
             serverLevel.sendParticles(
-                    new SteamJetParticleData(0.45F + serverLevel.random.nextFloat() * 0.3F),
+                    ModParticleTypes.STEAM_LEAK.get(),
                     x + jitterX,
                     y + jitterY,
                     z + jitterZ,
@@ -657,18 +656,6 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                     1.0D
             );
         }
-
-        serverLevel.sendParticles(
-                ParticleTypes.CLOUD,
-                x,
-                y,
-                z,
-                3 + (int) Math.round(intensity * 4.0D),
-                0.09D,
-                0.09D,
-                0.09D,
-                0.022D
-        );
     }
 
     @Override

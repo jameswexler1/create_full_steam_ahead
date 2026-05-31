@@ -10,6 +10,7 @@ import dev.gustavo.fullsteamahead.registry.ModCapabilities;
 import dev.gustavo.fullsteamahead.registry.ModCreativeTabs;
 import dev.gustavo.fullsteamahead.registry.ModFluids;
 import dev.gustavo.fullsteamahead.registry.ModItems;
+import dev.gustavo.fullsteamahead.registry.ModParticleTypes;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.ModContainer;
@@ -23,6 +24,7 @@ public final class FullSteamAhead {
 
     public FullSteamAhead(IEventBus modEventBus, ModContainer modContainer) {
         ModFluids.register(modEventBus);
+        ModParticleTypes.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModItems.register(modEventBus);

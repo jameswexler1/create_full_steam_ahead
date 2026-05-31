@@ -3,6 +3,7 @@ package dev.gustavo.fullsteamahead.client;
 import dev.engine_room.flywheel.api.visualization.VisualizerRegistry;
 import dev.engine_room.flywheel.lib.visualization.SimpleBlockEntityVisualizer;
 import dev.gustavo.fullsteamahead.FullSteamAhead;
+import dev.gustavo.fullsteamahead.client.particle.SteamLeakParticle;
 import dev.gustavo.fullsteamahead.client.render.FullSteamPartialModels;
 import dev.gustavo.fullsteamahead.client.render.PistonHeadRenderer;
 import dev.gustavo.fullsteamahead.client.render.PistonHeadVisual;
@@ -10,12 +11,14 @@ import dev.gustavo.fullsteamahead.client.render.PoweredShaftRenderer;
 import dev.gustavo.fullsteamahead.client.render.PoweredShaftVisual;
 import dev.gustavo.fullsteamahead.client.render.SteppedLeverRenderer;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
+import dev.gustavo.fullsteamahead.registry.ModParticleTypes;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 
 @SuppressWarnings("removal")
 @EventBusSubscriber(modid = FullSteamAhead.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
@@ -44,6 +47,11 @@ public final class FullSteamAheadClient {
         event.registerBlockEntityRenderer(ModBlockEntities.PISTON_HEAD.get(), PistonHeadRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.POWERED_SHAFT.get(), PoweredShaftRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.STEPPED_LEVER.get(), SteppedLeverRenderer::new);
+    }
+
+    @SubscribeEvent
+    public static void registerParticleFactories(RegisterParticleProvidersEvent event) {
+        event.registerSpriteSet(ModParticleTypes.STEAM_LEAK.get(), SteamLeakParticle.Provider::new);
     }
 
     private FullSteamAheadClient() {

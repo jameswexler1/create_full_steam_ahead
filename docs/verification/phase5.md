@@ -14,9 +14,9 @@ Implemented:
 - Outlet exposes output-only `IFluidHandler`; it does not accept steam input.
 - Outlet applies Create pipe pressure so generated steam can render inside connected pipes.
 - Outlet keeps a bounded direct pipe traversal fallback up to 30 blocks if the Create pipe network does not drain immediately.
-- Open/unconnected steam vents show Create-style jet puffs plus cloud particles through the outlet and Create open-pipe effect hook.
+- Open/unconnected steam vents show custom translucent steam leak particles through the outlet and Create open-pipe effect hook.
 - Outlet pressure traversal respects Create fluid valves; closed valves block steam instead of being bypassed or treated as open vents.
-- Steam fluid visuals now use a custom animated gas texture sheet in tanks and pipes instead of tinted vanilla water textures.
+- Steam in Create tanks and fluid pipes uses the original tinted water-based fluid texture path so pipe contents remain visible.
 - Goggles show outlet status, steam buffer, production, pushed amount, and pressure range.
 - Outlet production now scales by boiler height: `active burner units * boiler height`.
 - Outlet production is water-gated by Create's boiler water heat level, multiplied by boiler height.
@@ -42,7 +42,7 @@ Results:
 - Latest automated run on 2026-05-31 after fixing pipe-fed per-engine caps, boiler-height water scaling, and alternating piston phase: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-05-31 after fair steam distribution, per-inlet intake caps, and proportional pipe-fed SU: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-05-31 after enhancing open steam particles and making boiler outlet pressure respect Create fluid valves: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
-- Latest automated run on 2026-05-31 after switching steam to a custom animated gas texture: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
+- Latest automated run on 2026-05-31 after switching steam leak vents to custom particles and restoring pipe fluid visibility: `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 
 Manual runtime checklist:
 
@@ -63,11 +63,11 @@ Polish runtime checklist:
 - [x] Confirm an outlet facing open air vents steam particles instead of silently filling its buffer.
 - [x] Confirm a pipe connected to the outlet but ending open vents steam particles from the open pipe end.
 - [x] Confirm a pipe connected to a tank still moves steam without a mechanical pump after the visibility change.
-- [ ] Confirm open boiler outlets and open pipe ends use the denser jet/cloud steam plume instead of the old small cloud-only puff.
+- [ ] Confirm open boiler outlets and open pipe ends use the custom translucent steam leak particles instead of the old cloud/jet puff mix.
 - [ ] Confirm a closed Create fluid valve between the outlet and an engine/tank stops steam transfer.
 - [ ] Confirm reopening the same valve restores steam transfer without replacing the pipes.
 - [ ] Confirm a closed valve does not make the outlet vent as if the pipe end were open.
-- [ ] Confirm steam in Create tanks and fluid pipes uses the animated gas texture rather than the old tinted water texture.
+- [ ] Confirm steam remains visible inside Create tanks and fluid pipes after restoring the tinted water-based fluid texture path.
 
 User report after polish runtime test: everything works.
 

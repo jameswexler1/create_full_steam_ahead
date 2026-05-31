@@ -286,8 +286,8 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - Boiler outlet pressure traversal respects Create pipe blockers such as closed fluid valves by consulting each pipe behaviour's flow permission before crossing a side. A closed valve blocks steam; it is not treated as an open vent.
 - Exposes an output-only `IFluidHandler` for `steam`.
 - Applies pressure to the connected Create pipe network so the player does not need a mechanical pump directly at the boiler outlet.
-- Open-pipe visual: when outlet or pipe end vents to air, spawn directional Create-style steam jet particles with a small cloud plume.
-- Steam fluid visual: use a custom animated gas texture sheet in tanks and pipes, mirroring TFMG's gas-fluid presentation while keeping steam non-placeable.
+- Open-pipe visual: when outlet or pipe end vents to air, spawn custom translucent steam leak particles inspired by TFMG-style gas visuals.
+- Steam fluid visual: keep the original tinted water-based texture path for tanks and pipes so steam remains visible in Create fluid pipes.
 - Default pressure range target: 30 blocks. This must become a server config value.
 - Goggle overlay: boiler linked/missing, outlet steam units, total boiler steam units, attached outlet count, steam production rate, internal buffer, output pressure state.
 
@@ -525,8 +525,8 @@ Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerD
 - [x] Apply Create `FluidTransportBehaviour` pressure so generated steam is visible in connected Create pipes
 - [x] Register steam open-pipe effect and outlet vent particles for open/unconnected steam leaks
 - [x] Verify: steam visibly flows through pipes and open pipe ends vent steam particles
-- [x] Enhance steam leak visuals with Create-style jet puffs plus soft cloud volume for boiler outlets and open pipe ends
-- [x] Replace tinted vanilla water fluid visuals with a custom animated gas texture sheet for non-placeable steam
+- [x] Enhance steam leak visuals with a custom translucent particle sheet for boiler outlets and open pipe ends
+- [x] Restore tinted vanilla water fluid visuals for non-placeable steam in tanks and pipes
 - [x] Make boiler outlet pressure traversal respect Create fluid valves so closed valves block steam instead of being bypassed
 - [x] Scale boiler outlet production by boiler height: active burner units × tank height
 - [x] Gate scaled steam production by measured water supply at 10 mB/t per steam unit
