@@ -281,6 +281,7 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
   - `3x3x6` with 9 Blaze Cake burners produces 108 units, enough for twelve full pipe-fed engines
 - Pipe-fed steam is generic stored steam in v1: one engine consumes at most 9 units or 90 mB/t and produces at most 147,456 SU. Blaze Cakes increase total steam-stream capacity; they do not make one pipe-fed engine exceed normal full output without a future superheated-steam design.
 - Multiple `boiler_outlet` blocks attached to one boiler split the same total steam unit budget in a stable position order; they must not duplicate steam.
+- Connected pipe networks split active boiler outlet steam evenly across reachable assembled `steam_inlet` blocks, capped at 90 mB/t per inlet from all sources combined, before sending surplus to passive storage. Multiple boilers on the same pipe network contribute additive outlet budgets; no single boiler or outlet may duplicate steam.
 - Exposes an output-only `IFluidHandler` for `steam`.
 - Applies pressure to the connected Create pipe network so the player does not need a mechanical pump directly at the boiler outlet.
 - Default pressure range target: 30 blocks. This must become a server config value.
@@ -298,9 +299,9 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - When the ring assembles, the inlet caches the ring origin and cylinder root. When the ring disassembles, it clears that link and stops accepting steam.
 - The piston head prefers consuming steam from the linked inlet. If no usable inlet steam exists and a direct boiler is present, direct compact mode remains the fallback.
 - Pipe-fed balance maps consumed steam rate to output:
-  - 10 mB/t consumed steam = 1 heat unit = 16,384 SU
+  - 10 mB/t consumed steam = 1 steam unit = 16,384 SU, with partial mB/t contributing proportional SU
   - Maximum consumed steam for one pipe-fed engine = 90 mB/t = 9 heat units = 147,456 SU
-  - RPM uses burner-equivalent tiers from consumed steam units: 1-2 = 16 rpm, 3-4 = 32 rpm, 5-8 = 48 rpm, 9 = 64 rpm
+  - RPM uses burner-equivalent tiers from consumed steam units, rounded up from exact consumed mB/t: 1-2 = 16 rpm, 3-4 = 32 rpm, 5-8 = 48 rpm, 9 = 64 rpm
 - Goggle overlay: ring link status, steam buffer, accepted steam rate, engine link.
 
 ### Removed placeholders

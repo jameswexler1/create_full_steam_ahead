@@ -23,7 +23,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation {
-    public static final int BUFFER_CAPACITY = 8_000;
+    public static final int BUFFER_CAPACITY = 360;
+    private static final int MAX_ACCEPTED_STEAM_PER_TICK = 90;
     private static final String ASSEMBLED_KEY = "Assembled";
     private static final String ROOT_POS_KEY = "RootPos";
     private static final String RING_ORIGIN_KEY = "RingOrigin";
@@ -46,6 +47,8 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
     private BlockPos boilerPos;
     private int acceptedLastTick;
     private int consumedLastTick;
+    private long acceptedGameTime = Long.MIN_VALUE;
+    private int acceptedThisGameTick;
 
     public SteamInletBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STEAM_INLET.get(), pos, state);
@@ -212,6 +215,10 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         ringOrigin = readPos(tag, RING_ORIGIN_KEY);
         boilerPos = readPos(tag, BOILER_POS_KEY);
         steamBuffer.readFromNBT(registries, tag.getCompound(BUFFER_KEY));
+        int overflow = steamBuffer.getFluidAmount() - BUFFER_CAPACITY;
+        if (overflow > 0) {
+            steamBuffer.drain(overflow, IFluidHandler.FluidAction.EXECUTE);
+        }
         acceptedLastTick = tag.getInt(ACCEPTED_LAST_TICK_KEY);
         consumedLastTick = tag.getInt(CONSUMED_LAST_TICK_KEY);
     }
@@ -255,9 +262,16 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
                 return 0;
             }
 
-            int filled = steamBuffer.fill(resource, action);
+            int tickAllowance = acceptedSteamAllowance();
+            if (tickAllowance <= 0) {
+                return 0;
+            }
+
+            int fillAmount = Math.min(resource.getAmount(), tickAllowance);
+            int filled = steamBuffer.fill(new FluidStack(ModFluids.STEAM.get(), fillAmount), action);
             if (!action.simulate() && filled > 0) {
                 acceptedLastTick += filled;
+                acceptedThisGameTick += filled;
             }
             return filled;
         }
@@ -270,6 +284,19 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         @Override
         public FluidStack drain(int maxDrain, FluidAction action) {
             return FluidStack.EMPTY;
+        }
+
+        private int acceptedSteamAllowance() {
+            if (level == null) {
+                return MAX_ACCEPTED_STEAM_PER_TICK;
+            }
+
+            long gameTime = level.getGameTime();
+            if (acceptedGameTime != gameTime) {
+                acceptedGameTime = gameTime;
+                acceptedThisGameTick = 0;
+            }
+            return Math.max(0, MAX_ACCEPTED_STEAM_PER_TICK - acceptedThisGameTick);
         }
     }
 }

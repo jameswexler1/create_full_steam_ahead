@@ -39,6 +39,8 @@ Steam is a real fluid and uses a simple unit model:
 - One pipe-fed engine consumes up to `9 steam units` or `90 mB/t`
 - A full normal engine output is `9 units = 90 mB/t = 147,456 SU`
 - In pipe-fed mode, surplus steam powers additional engines instead of making one generic steam cylinder exceed normal full output
+- Pipe networks distribute outlet steam evenly across reachable assembled `steam_inlet` blocks, capped at `90 mB/t` per inlet from all sources combined, before filling passive storage tanks
+- If supply is short, every reachable engine receives the same share as closely as whole mB/t allows; SU scales from exact consumed mB/t
 
 Boiler outlets produce steam from the attached Create Fluid Tank boiler:
 
@@ -49,3 +51,4 @@ total steam units = min(active burner units, water supply heat level) * boiler h
 Normal Blaze Burners contribute `1` burner unit each. Blaze Cake burners contribute `2` each. Boiler height multiplies the burner footprint, so a `3x3x6` boiler with 9 normal active burners produces `54` steam units, enough for six full normal engines. With 9 Blaze Cake burners it produces `108` units, enough for twelve full pipe-fed engines. Direct compact engines still use the direct burner table, including Blaze Cake SU doubling.
 
 Multiple `boiler_outlet` blocks on the same boiler split the same total steam budget deterministically. They do not duplicate steam output.
+Multiple boilers can feed the same pipe network; each valid outlet contributes only its own boiler's budget, and the shared stream is then split across the reachable engine inlets.

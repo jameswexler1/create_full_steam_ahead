@@ -27,6 +27,8 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
@@ -35,6 +37,7 @@ import java.util.Set;
 public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation {
     public static final int STEAM_PER_HEAT_UNIT = 10;
     public static final int PRESSURE_RANGE = 30;
+    private static final int ENGINE_STEAM_INTAKE_PER_TICK = 9 * STEAM_PER_HEAT_UNIT;
     private static final float PRESSURE_PER_MB = 2.0f;
     private static final int BUFFER_CAPACITY = 16_000;
     private static final int PRESSURE_REFRESH_TICKS = 20;
@@ -276,9 +279,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                 venting = true;
             }
             if (result.hasEndpoint()) {
-                int fallbackMoved = networkMovedLastTick == 0
-                        ? tryFillTargetsThroughPipes(startPos, facing.getOpposite(), remaining)
-                        : 0;
+                int fallbackMoved = tryFillTargetsThroughPipes(startPos, facing.getOpposite(), remaining);
                 return new SteamOutput(fallbackMoved, result.openEnd());
             }
             return ventSteam(worldPosition, facing, remaining);
@@ -399,13 +400,46 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
 
     private int tryFillTargetsThroughPipes(BlockPos startPos, Direction sourceSide, int maxAmount) {
         int remaining = Math.min(maxAmount, steamBuffer.getFluidAmount());
-        int moved = 0;
+        if (remaining <= 0) {
+            return 0;
+        }
+
+        List<FillTarget> targets = collectFillTargetsThroughPipes(startPos, sourceSide);
+        if (targets.isEmpty()) {
+            return 0;
+        }
+
+        List<FillTarget> steamInlets = targets.stream()
+                .filter(FillTarget::steamInlet)
+                .toList();
+        if (steamInlets.isEmpty()) {
+            return fillTargetsEvenly(targets, remaining);
+        }
+
+        int moved = fillTargetsEvenly(steamInlets, remaining);
+        remaining -= moved;
+        if (remaining <= 0) {
+            return moved;
+        }
+
+        List<FillTarget> passiveTargets = targets.stream()
+                .filter(target -> !target.steamInlet())
+                .toList();
+        if (!passiveTargets.isEmpty()) {
+            moved += fillTargetsEvenly(passiveTargets, remaining);
+        }
+        return moved;
+    }
+
+    private List<FillTarget> collectFillTargetsThroughPipes(BlockPos startPos, Direction sourceSide) {
+        List<FillTarget> targets = new ArrayList<>();
         Set<BlockPos> visited = new HashSet<>();
+        Set<BlockPos> seenTargets = new HashSet<>();
         Queue<PipeNode> queue = new ArrayDeque<>();
         visited.add(startPos);
         queue.add(new PipeNode(startPos, sourceSide, 0));
 
-        while (!queue.isEmpty() && remaining > 0) {
+        while (!queue.isEmpty()) {
             PipeNode node = queue.remove();
             if (!level.isLoaded(node.pos())) {
                 continue;
@@ -434,16 +468,90 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                     continue;
                 }
 
-                int filled = tryFillTarget(next, direction.getOpposite(), remaining);
-                moved += filled;
-                remaining -= filled;
-                if (remaining <= 0) {
-                    break;
+                IFluidHandler target = level.getCapability(Capabilities.FluidHandler.BLOCK, next, direction.getOpposite());
+                if (target == null) {
+                    continue;
                 }
+                if (!seenTargets.add(next)) {
+                    continue;
+                }
+
+                boolean steamInlet = level.getBlockEntity(next) instanceof SteamInletBlockEntity inlet
+                        && inlet.isInletAssembled();
+                int maxFillPerTick = steamInlet ? ENGINE_STEAM_INTAKE_PER_TICK : Integer.MAX_VALUE;
+                targets.add(new FillTarget(next, direction.getOpposite(), steamInlet, maxFillPerTick));
             }
         }
 
+        targets.sort(Comparator
+                .comparing((FillTarget target) -> !target.steamInlet())
+                .thenComparingInt(target -> target.pos().getY())
+                .thenComparingInt(target -> target.pos().getX())
+                .thenComparingInt(target -> target.pos().getZ())
+                .thenComparingInt(target -> target.side().ordinal()));
+        return targets;
+    }
+
+    private int fillTargetsEvenly(List<FillTarget> targets, int maxAmount) {
+        int remaining = Math.min(maxAmount, steamBuffer.getFluidAmount());
+        int moved = 0;
+        int[] delivered = new int[targets.size()];
+        List<Integer> openTargetIndexes = new ArrayList<>();
+        for (int i = 0; i < targets.size(); i++) {
+            openTargetIndexes.add(i);
+        }
+        int offset = targetOrderOffset(openTargetIndexes.size());
+
+        while (remaining > 0 && !openTargetIndexes.isEmpty()) {
+            int targetCount = openTargetIndexes.size();
+            int share = remaining / targetCount;
+            int remainder = remaining % targetCount;
+            if (share <= 0 && remainder <= 0) {
+                break;
+            }
+
+            List<Integer> nextOpenTargetIndexes = new ArrayList<>();
+            int movedThisPass = 0;
+            for (int i = 0; i < targetCount && remaining > 0; i++) {
+                int requested = share + (i < remainder ? 1 : 0);
+                if (requested <= 0) {
+                    continue;
+                }
+
+                int targetIndex = openTargetIndexes.get(Math.floorMod(i + offset, targetCount));
+                FillTarget target = targets.get(targetIndex);
+                int targetRemaining = target.maxFillPerTick() - delivered[targetIndex];
+                if (targetRemaining <= 0) {
+                    continue;
+                }
+
+                int allowance = Math.min(requested, targetRemaining);
+                int filled = tryFillTarget(target.pos(), target.side(), allowance);
+                moved += filled;
+                movedThisPass += filled;
+                remaining -= filled;
+                delivered[targetIndex] += filled;
+                if (filled == allowance && delivered[targetIndex] < target.maxFillPerTick()) {
+                    nextOpenTargetIndexes.add(targetIndex);
+                }
+            }
+
+            if (movedThisPass <= 0) {
+                break;
+            }
+            openTargetIndexes = nextOpenTargetIndexes;
+            offset = 0;
+        }
+
         return moved;
+    }
+
+    private int targetOrderOffset(int targetCount) {
+        if (targetCount <= 1) {
+            return 0;
+        }
+        int hash = worldPosition.getX() * 31 + worldPosition.getY() * 17 + worldPosition.getZ() * 13;
+        return Math.floorMod(hash, targetCount);
     }
 
     private int tryFillTarget(BlockPos targetPos, Direction side, int maxAmount) {
@@ -536,6 +644,9 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     }
 
     private record PipeNode(BlockPos pos, Direction incomingSide, int distance) {
+    }
+
+    private record FillTarget(BlockPos pos, Direction side, boolean steamInlet, int maxFillPerTick) {
     }
 
     private record PipePressureResult(boolean hasEndpoint, boolean openEnd) {

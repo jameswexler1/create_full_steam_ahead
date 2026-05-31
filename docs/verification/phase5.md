@@ -38,6 +38,7 @@ Results:
 - JSON validation: passed
 - Latest automated run on 2026-05-31 after scaled boiler outlet production: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-05-31 after fixing pipe-fed per-engine caps, boiler-height water scaling, and alternating piston phase: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
+- Latest automated run on 2026-05-31 after fair steam distribution, per-inlet intake caps, and proportional pipe-fed SU: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 
 Manual runtime checklist:
 
@@ -67,7 +68,10 @@ Scaled production checklist:
 - [ ] Confirm a `3x3x1` boiler with 9 normal active burners produces `90 mB/t` steam and one piped engine reports `147,456 SU`.
 - [ ] Confirm one engine on a larger normal boiler still caps at `90 mB/t`, `147,456 SU`, and `64 RPM`.
 - [ ] Confirm a `3x3x3` boiler with 9 normal active burners feeds three full engines at `147,456 SU` each and `64 RPM`.
+- [ ] Confirm a short stream such as `26` steam units across three reachable engines is shared across all three engines instead of filling two engines and starving the third.
+- [ ] Confirm each short-fed engine reports proportional SU from exact consumed steam, while RPM follows the rounded consumed-unit tier.
 - [ ] Confirm a `3x3x6` boiler with 9 normal active burners produces `540 mB/t` total steam and can feed six full normal engines.
 - [ ] Confirm a `3x3x6` boiler with 9 Blaze Cake burners produces `1080 mB/t` total steam and can feed twelve full pipe-fed engines.
 - [ ] Confirm two outlets on one boiler split the same total steam budget instead of each producing the full amount.
+- [ ] Confirm two independent boilers feeding the same pipe network both contribute steam and the combined stream is still shared across reachable engine inlets.
 - [ ] Confirm adjacent engines on one shaft alternate piston phase instead of rising and falling together.

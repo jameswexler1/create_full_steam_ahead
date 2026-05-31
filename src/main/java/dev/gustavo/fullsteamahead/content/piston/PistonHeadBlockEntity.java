@@ -53,7 +53,9 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private static final int MAX_ACTIVE_BURNERS = 9;
     private static final int MAX_HEAT_UNITS = 18;
     private static final int MAX_PIPED_HEAT_UNITS = 9;
+    private static final int MAX_PIPED_STEAM_PER_TICK = MAX_PIPED_HEAT_UNITS * STEAM_PER_HEAT_UNIT;
     private static final float SU_PER_HEAT_UNIT = 16_384.0F;
+    private static final float SU_PER_STEAM_MB = SU_PER_HEAT_UNIT / STEAM_PER_HEAT_UNIT;
     private static final float REGULAR_MAX_CAPACITY_SU = 147_456.0F;
     private static final float MAX_RPM = 64.0F;
     private static final int MIN_STEAM_SOUND_INTERVAL_TICKS = 5;
@@ -331,25 +333,36 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
         BurnerHeat burnerHeat = scanBurners();
         boolean hasWater = data.getMaxHeatLevelForWaterSupply() > 0;
-        return new SteamOutput(SourceMode.DIRECT_BOILER, burnerHeat.activeBurners(), burnerHeat.heatUnits(), hasWater, 0);
+        return new SteamOutput(
+                SourceMode.DIRECT_BOILER,
+                burnerHeat.activeBurners(),
+                burnerHeat.heatUnits(),
+                hasWater,
+                0,
+                burnerHeat.heatUnits() * SU_PER_HEAT_UNIT
+        );
     }
 
     private SteamOutput calculatePipedSteamOutput(SteamInletBlockEntity inlet, boolean execute) {
-        int availableUnits = Math.min(MAX_PIPED_HEAT_UNITS, inlet.getSteamAmount() / STEAM_PER_HEAT_UNIT);
-        if (availableUnits <= 0) {
+        int targetSteam = Math.min(MAX_PIPED_STEAM_PER_TICK, inlet.getSteamAmount());
+        if (targetSteam <= 0) {
             return SteamOutput.none(SourceMode.PIPED_STEAM);
         }
 
-        int targetSteam = availableUnits * STEAM_PER_HEAT_UNIT;
         int consumed = inlet.consumeSteam(targetSteam, execute).getAmount();
-        int heat = Math.min(MAX_PIPED_HEAT_UNITS, consumed / STEAM_PER_HEAT_UNIT);
+        if (consumed <= 0) {
+            return SteamOutput.none(SourceMode.PIPED_STEAM);
+        }
+
+        int heat = Mth.clamp(Mth.ceil(consumed / (float) STEAM_PER_HEAT_UNIT), 1, MAX_PIPED_HEAT_UNITS);
         int activeEquivalent = Math.min(MAX_ACTIVE_BURNERS, heat);
         return new SteamOutput(
                 SourceMode.PIPED_STEAM,
                 activeEquivalent,
                 heat,
                 true,
-                heat * STEAM_PER_HEAT_UNIT
+                consumed,
+                Math.min(REGULAR_MAX_CAPACITY_SU, consumed * SU_PER_STEAM_MB)
         );
     }
 
@@ -757,10 +770,11 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
             int activeBurners,
             int heatUnits,
             boolean hasWaterSupply,
-            int steamConsumedRate
+            int steamConsumedRate,
+            float targetCapacitySu
     ) {
         private static SteamOutput none(SourceMode sourceMode) {
-            return new SteamOutput(sourceMode, 0, 0, false, 0);
+            return new SteamOutput(sourceMode, 0, 0, false, 0, 0);
         }
 
         private float generatedSpeed() {
@@ -768,13 +782,13 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
 
         private float capacitySu() {
-            return canRun() ? heatUnits * SU_PER_HEAT_UNIT : 0;
+            return canRun() ? targetCapacitySu : 0;
         }
 
         private boolean canRun() {
             return switch (sourceMode) {
-                case DIRECT_BOILER -> hasWaterSupply && activeBurners > 0 && heatUnits > 0;
-                case PIPED_STEAM -> steamConsumedRate > 0 && heatUnits > 0;
+                case DIRECT_BOILER -> hasWaterSupply && activeBurners > 0 && heatUnits > 0 && targetCapacitySu > 0;
+                case PIPED_STEAM -> steamConsumedRate > 0 && targetCapacitySu > 0;
                 case NONE -> false;
             };
         }
