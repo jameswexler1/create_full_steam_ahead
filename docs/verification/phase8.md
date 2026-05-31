@@ -156,6 +156,7 @@ Automated results:
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `./gradlew build` passed on 2026-05-31 after removing the old `flywheel` and `governor` block registrations/assets.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `./gradlew build` passed on 2026-05-31 after adding piston axis state and shaft-aligned dynamic piston rotation.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `./gradlew build` passed on 2026-05-31 after correcting the piston bolt-face axis mapping.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-31 after making unpowered engine linkages follow a rotating linked shaft passively.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after replacing proxy piston animation with dynamic actual piston/head partials.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-23 after the shaft-link remodel.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-23 after the shaft-link remodel.
@@ -205,13 +206,14 @@ Manual runtime checklist:
 - [ ] `steam_inlet` renders with the new textured model as an item, standalone block, and assembled ring member in north/east/south/west-facing shell positions.
 - [ ] Two complete cylinder rings can be built directly adjacent without either ring deforming or stealing the other's section assignments.
 - [ ] Assembled `piston_head` and the `piston` body remain visible at rest and reciprocate while the linked shaft is running.
+- [ ] An assembled engine with no steam output still animates passively when its linked shaft is rotated by another engine on the same shaft network.
 - [x] Existing pipe-fed engines still assemble and run.
 - [ ] Pipe connected to a `steam_inlet` reconnects automatically after breaking and repairing one cylinder wall block in the ring.
 - [x] Old worlds with existing engines load without blockstate/model errors.
 - [x] Piston motion was synchronized with crankshaft rotation at 16, 32, 48, and 64 RPM before the shaft-link remodel.
 - [ ] Piston motion is synchronized with linked Create shaft rotation at 16, 32, 48, and 64 RPM after the shaft-link remodel.
 - [ ] The custom crankshaft item no longer appears in the creative tab, and the top output behaves as a normal Create shaft.
-- [x] Piston motion stops when the engine has no steam.
+- [x] Piston motion stops when the engine has no steam and the linked shaft is not being driven by another source.
 - [x] Steam particles appear only while running and scale reasonably with speed.
 - [x] Steam sound matches Create's vanilla steam-engine style, is slightly louder, and only plays while running.
 - [ ] `engine_telegraph` renders without bad black/shadow artifacts on a Simulated contraption and has a selection/collision shape that follows the model in all four facings.

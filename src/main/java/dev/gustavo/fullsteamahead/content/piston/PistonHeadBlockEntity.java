@@ -224,6 +224,11 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         return assembled && generatedSpeed != 0;
     }
 
+    public boolean isLinkageMoving() {
+        FullSteamPoweredShaftBlockEntity shaft = getShaft();
+        return assembled && shaft != null && shaft.getSpeed() != 0;
+    }
+
     public float getGeneratedSpeed() {
         return assembled ? generatedSpeed : 0;
     }

@@ -22,7 +22,7 @@ public final class PistonHeadAnimation {
         boolean visible = engine.isEngineAssembled();
         FullSteamPoweredShaftBlockEntity shaft = engine.getShaft();
         Direction.Axis shaftAxis = engine.getShaftAxis();
-        float angle = engine.isEngineRunning() && shaft != null
+        float angle = engine.isLinkageMoving() && shaft != null
                 ? KineticBlockEntityRenderer.getAngleForBe(shaft, shaft.getBlockPos(), shaftAxis)
                 : 0;
         angle += engine.getAnimationPhaseOffset();
