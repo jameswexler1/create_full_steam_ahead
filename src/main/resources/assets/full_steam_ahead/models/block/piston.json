@@ -21,24 +21,15 @@
       "faces": {
         "north": {
           "uv": [
-            4,
+            1,
             6.5,
-            7,
+            4,
             16
           ],
           "texture": "#mechanical"
         },
         "east": {
           "uv": [
-            1,
-            6.5,
-            4,
-            16
-          ],
-          "texture": "#mechanical"
-        },
-        "south": {
-          "uv": [
             4,
             6.5,
             7,
@@ -46,11 +37,20 @@
           ],
           "texture": "#mechanical"
         },
-        "west": {
+        "south": {
           "uv": [
             1,
             6.5,
             4,
+            16
+          ],
+          "texture": "#mechanical"
+        },
+        "west": {
+          "uv": [
+            4,
+            6.5,
+            7,
             16
           ],
           "texture": "#mechanical"
@@ -62,7 +62,8 @@
             7,
             6.5
           ],
-          "texture": "#mechanical"
+          "texture": "#mechanical",
+          "rotation": 90
         }
       }
     }
