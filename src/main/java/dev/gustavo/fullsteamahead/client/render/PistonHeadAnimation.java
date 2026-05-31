@@ -25,6 +25,7 @@ public final class PistonHeadAnimation {
         float angle = engine.isEngineRunning() && shaft != null
                 ? KineticBlockEntityRenderer.getAngleForBe(shaft, shaft.getBlockPos(), shaftAxis)
                 : 0;
+        angle += engine.getAnimationPhaseOffset();
         return state(visible, angle, shaftAxis);
     }
 

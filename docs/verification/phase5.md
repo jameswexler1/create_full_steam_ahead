@@ -17,8 +17,9 @@ Implemented:
 - Open/unconnected steam vents show cloud particles through the outlet and Create open-pipe effect hook.
 - Goggles show outlet status, steam buffer, production, pushed amount, and pressure range.
 - Outlet production now scales by boiler height: `active burner units * boiler height`.
-- Outlet production is water-gated at `10 mB/t` water supply per steam unit.
+- Outlet production is water-gated by Create's boiler water heat level, multiplied by boiler height.
 - Multiple outlets on the same boiler split one shared steam budget instead of duplicating output.
+- One pipe-fed engine consumes at most `90 mB/t`, producing at most `147,456 SU`; surplus steam is for additional engines.
 
 Automated checks run:
 
@@ -36,6 +37,7 @@ Results:
 - `build`: passed
 - JSON validation: passed
 - Latest automated run on 2026-05-31 after scaled boiler outlet production: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
+- Latest automated run on 2026-05-31 after fixing pipe-fed per-engine caps, boiler-height water scaling, and alternating piston phase: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 
 Manual runtime checklist:
 
@@ -63,6 +65,9 @@ Scaled production checklist:
 
 - [ ] Confirm a `1x1x1` boiler with one normal active burner produces `10 mB/t` steam and one piped engine reports `16,384 SU`.
 - [ ] Confirm a `3x3x1` boiler with 9 normal active burners produces `90 mB/t` steam and one piped engine reports `147,456 SU`.
+- [ ] Confirm one engine on a larger normal boiler still caps at `90 mB/t`, `147,456 SU`, and `64 RPM`.
+- [ ] Confirm a `3x3x3` boiler with 9 normal active burners feeds three full engines at `147,456 SU` each and `64 RPM`.
 - [ ] Confirm a `3x3x6` boiler with 9 normal active burners produces `540 mB/t` total steam and can feed six full normal engines.
-- [ ] Confirm a `3x3x6` boiler with 9 Blaze Cake burners produces `1080 mB/t` total steam and can feed six doubled engines.
+- [ ] Confirm a `3x3x6` boiler with 9 Blaze Cake burners produces `1080 mB/t` total steam and can feed twelve full pipe-fed engines.
 - [ ] Confirm two outlets on one boiler split the same total steam budget instead of each producing the full amount.
+- [ ] Confirm adjacent engines on one shaft alternate piston phase instead of rising and falling together.

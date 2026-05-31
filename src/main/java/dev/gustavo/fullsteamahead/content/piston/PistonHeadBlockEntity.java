@@ -52,10 +52,12 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private static final int STEAM_PER_HEAT_UNIT = 10;
     private static final int MAX_ACTIVE_BURNERS = 9;
     private static final int MAX_HEAT_UNITS = 18;
+    private static final int MAX_PIPED_HEAT_UNITS = 9;
     private static final float SU_PER_HEAT_UNIT = 16_384.0F;
     private static final float REGULAR_MAX_CAPACITY_SU = 147_456.0F;
     private static final float MAX_RPM = 64.0F;
     private static final int MIN_STEAM_SOUND_INTERVAL_TICKS = 5;
+    private static final float HALF_TURN_RADIANS = (float) Math.PI;
 
     private boolean assembled;
     private BlockPos ringOrigin;
@@ -251,6 +253,12 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         return EngineValidator.shaftAxis(level, shaftPos);
     }
 
+    public float getAnimationPhaseOffset() {
+        Direction.Axis shaftAxis = getShaftAxis();
+        int coordinate = shaftAxis == Direction.Axis.X ? worldPosition.getX() : worldPosition.getZ();
+        return (Math.floorDiv(coordinate, 3) & 1) == 0 ? 0.0F : HALF_TURN_RADIANS;
+    }
+
     public FullSteamPoweredShaftBlockEntity getShaft() {
         if (level == null || shaftPos == null || !level.isLoaded(shaftPos)) {
             return null;
@@ -274,7 +282,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         if (sourceMode == SourceMode.PIPED_STEAM) {
             tooltip.add(Component.literal("Steam consumed: " + steamConsumedRate + " mB/t")
                     .withStyle(steamConsumedRate > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
-            tooltip.add(Component.literal("Steam units: " + heatUnits + "/" + MAX_HEAT_UNITS)
+            tooltip.add(Component.literal("Steam units: " + heatUnits + "/" + MAX_PIPED_HEAT_UNITS)
                     .withStyle(heatUnits > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
         } else {
             tooltip.add(Component.literal("Active burners: " + activeBurners + "/" + MAX_ACTIVE_BURNERS)
@@ -327,14 +335,14 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     private SteamOutput calculatePipedSteamOutput(SteamInletBlockEntity inlet, boolean execute) {
-        int availableUnits = Math.min(MAX_HEAT_UNITS, inlet.getSteamAmount() / STEAM_PER_HEAT_UNIT);
+        int availableUnits = Math.min(MAX_PIPED_HEAT_UNITS, inlet.getSteamAmount() / STEAM_PER_HEAT_UNIT);
         if (availableUnits <= 0) {
             return SteamOutput.none(SourceMode.PIPED_STEAM);
         }
 
         int targetSteam = availableUnits * STEAM_PER_HEAT_UNIT;
         int consumed = inlet.consumeSteam(targetSteam, execute).getAmount();
-        int heat = Math.min(MAX_HEAT_UNITS, consumed / STEAM_PER_HEAT_UNIT);
+        int heat = Math.min(MAX_PIPED_HEAT_UNITS, consumed / STEAM_PER_HEAT_UNIT);
         int activeEquivalent = Math.min(MAX_ACTIVE_BURNERS, heat);
         return new SteamOutput(
                 SourceMode.PIPED_STEAM,
@@ -657,6 +665,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
 
         float radians = KineticBlockEntityRenderer.getAngleForBe(shaft, shaft.getBlockPos(), getShaftAxis());
+        radians += getAnimationPhaseOffset();
         return Mth.positiveModulo((float) Math.toDegrees(radians), 360.0F);
     }
 

@@ -33,9 +33,10 @@ Implement steam output using the unit rules in `PLAN.md` and `README.md`:
 
 1. `1 steam unit = 10 mB/t steam = 16,384 SU when consumed`.
 2. `boiler_outlet` production scales as active burner units multiplied by Create Fluid Tank boiler height.
-3. Water supply gates the scaled budget at 10 mB/t per steam unit.
+3. Water supply gates the scaled budget by Create's boiler water heat level multiplied by boiler height.
 4. Multiple outlets attached to one boiler split one shared budget and must not duplicate steam.
-5. Preserve direct compact engine mode and current piston/cylinder validation.
+5. One pipe-fed engine consumes at most 9 steam units; surplus steam powers additional engines.
+6. Preserve direct compact engine mode and current piston/cylinder validation.
 
 Record automated and manual results in `docs/verification/phase5.md`.
 

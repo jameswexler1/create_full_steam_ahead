@@ -18,7 +18,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -244,8 +243,9 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
             return SteamBudget.withOutlets(FullSteamBoilerIntegration.countAttachedOutlets(boiler));
         }
 
-        int thermalUnits = data.activeHeat * Math.max(1, boiler.getHeight());
-        int waterLimitedUnits = Mth.ceil(data.waterSupply) / STEAM_PER_HEAT_UNIT;
+        int boilerHeight = Math.max(1, boiler.getHeight());
+        int thermalUnits = data.activeHeat * boilerHeight;
+        int waterLimitedUnits = data.getMaxHeatLevelForWaterSupply() * boilerHeight;
         int totalUnits = Math.min(thermalUnits, waterLimitedUnits);
         int outlets = FullSteamBoilerIntegration.countAttachedOutlets(boiler);
         if (totalUnits <= 0 || outlets <= 0) {

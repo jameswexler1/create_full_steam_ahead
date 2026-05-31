@@ -275,10 +275,11 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - Steam unit model:
   - `1 steam unit = 10 mB/t steam`
   - Normal active burner heat contributes 1 burner unit; Blaze Cake heat contributes 2 burner units
-  - Total boiler steam units = `min(active burner units × boiler height, water supply / 10)`
+  - Total boiler steam units = `min(active burner units, water supply heat level) × boiler height`
   - `3x3x1` with 9 normal burners produces 9 units, or 90 mB/t
   - `3x3x6` with 9 normal burners produces 54 units, enough for six full normal engines
-  - `3x3x6` with 9 Blaze Cake burners produces 108 units, enough for six doubled engines
+  - `3x3x6` with 9 Blaze Cake burners produces 108 units, enough for twelve full pipe-fed engines
+- Pipe-fed steam is generic stored steam in v1: one engine consumes at most 9 units or 90 mB/t and produces at most 147,456 SU. Blaze Cakes increase total steam-stream capacity; they do not make one pipe-fed engine exceed normal full output without a future superheated-steam design.
 - Multiple `boiler_outlet` blocks attached to one boiler split the same total steam unit budget in a stable position order; they must not duplicate steam.
 - Exposes an output-only `IFluidHandler` for `steam`.
 - Applies pressure to the connected Create pipe network so the player does not need a mechanical pump directly at the boiler outlet.
@@ -298,8 +299,8 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - The piston head prefers consuming steam from the linked inlet. If no usable inlet steam exists and a direct boiler is present, direct compact mode remains the fallback.
 - Pipe-fed balance maps consumed steam rate to output:
   - 10 mB/t consumed steam = 1 heat unit = 16,384 SU
-  - Maximum consumed steam for one engine = 180 mB/t = 18 heat units = 294,912 SU
-  - RPM uses burner-equivalent tiers from consumed steam units, clamped to 9 equivalents: 1-2 = 16 rpm, 3-4 = 32 rpm, 5-8 = 48 rpm, 9+ = 64 rpm
+  - Maximum consumed steam for one pipe-fed engine = 90 mB/t = 9 heat units = 147,456 SU
+  - RPM uses burner-equivalent tiers from consumed steam units: 1-2 = 16 rpm, 3-4 = 32 rpm, 5-8 = 48 rpm, 9 = 64 rpm
 - Goggle overlay: ring link status, steam buffer, accepted steam rate, engine link.
 
 ### Removed placeholders
@@ -530,7 +531,7 @@ Implementation notes:
 - The outlet is a boiler pressure source, not a general-purpose pump.
 - The outlet applies Create pipe pressure for normal pipe flow rendering and keeps a bounded `IFluidHandler` transfer as a no-drain fallback.
 - The outlet production model is unit-based: `10 mB/t = 1 steam unit = 16,384 SU when consumed by an engine`.
-- `BoilerData.activeHeat` is multiplied by boiler controller height for pipe-fed steam production. Water supply is not capped at Create's vanilla 18-level display cap for outlet budgeting.
+- `BoilerData.activeHeat` and `BoilerData.getMaxHeatLevelForWaterSupply()` are multiplied by boiler controller height for pipe-fed steam production. This keeps taller boilers from being incorrectly capped by a single-layer water budget.
 
 ### Phase 6: Steam Inlet and Pipe-Fed Engine
 
@@ -601,6 +602,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Fix dynamic piston/head lighting by relighting each moving partial at its own world position instead of using one block entity light value
 - [x] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
 - [x] Add rhythmic steam sound using Create's normal `STEAM` sound event, slightly louder than the vanilla Create steam engine
+- [x] Offset adjacent engine piston animation phases by shaft-line position so multi-cylinder rows alternate instead of moving in lockstep
 - [x] Add inert `engine_telegraph` block scaffold, model, textures, loot, lang, creative entry, mining tags, and directional placement
 - [x] Polish `engine_telegraph` contraption rendering with cutout/AO model settings and a detailed model-derived hitbox
 - [x] Add `stepped_lever` scaffold with analog redstone state, goggle tooltip, block entity renderer, model assets, loot, recipe, tags, lang, and creative entry

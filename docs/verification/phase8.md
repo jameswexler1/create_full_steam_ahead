@@ -50,6 +50,7 @@ Completed animation proxy slice:
 - [x] Corrected `Steam_Crank` and `Steam_Connecting_Rod` phase from the modeled geometry: the crank's authored pin starts below the shaft, then rotates from the raw linked shaft angle.
 - [x] Corrected the crank/linkage rotation plane after video comparison: the connector now uses the same frontal-plane rotation style as Create instead of lateral shaft-axis spin.
 - [x] Fixed the transform order for the modeled linkage: shaft-frame yaw is now applied before local crank/rod rotation in the Flywheel visual and fallback renderer, so an X-axis shaft throws front/back instead of along the shaft.
+- [x] Added alternating 180-degree animation phase offsets for adjacent engines along the same shaft axis.
 - [x] Replaced the piston body, connecting rod, and crank with the `new_models/` Blockbench set, including extracted local textures, the model-derived piston hitbox, and local-X linkage transforms.
 - [x] Replaced the powered shaft's full-shaft Flywheel visual with Create's caps-only `POWERED_SHAFT` partial; fallback rendering already uses the powered-shaft block model.
 - [x] Rotated the piston model texture mapping 90 degrees at the asset level so the static block, item parent, and animated partial share the same orientation.
