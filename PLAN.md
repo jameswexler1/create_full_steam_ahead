@@ -283,8 +283,10 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - Pipe-fed steam is generic stored steam in v1: one engine consumes at most 9 units or 90 mB/t and produces at most 147,456 SU. Blaze Cakes increase total steam-stream capacity; they do not make one pipe-fed engine exceed normal full output without a future superheated-steam design.
 - Multiple `boiler_outlet` blocks attached to one boiler split the same total steam unit budget in a stable position order; they must not duplicate steam.
 - Connected pipe networks split active boiler outlet steam evenly across reachable assembled `steam_inlet` blocks, capped at 90 mB/t per inlet from all sources combined, before sending surplus to passive storage. Multiple boilers on the same pipe network contribute additive outlet budgets; no single boiler or outlet may duplicate steam.
+- Boiler outlet pressure traversal respects Create pipe blockers such as closed fluid valves by consulting each pipe behaviour's flow permission before crossing a side. A closed valve blocks steam; it is not treated as an open vent.
 - Exposes an output-only `IFluidHandler` for `steam`.
 - Applies pressure to the connected Create pipe network so the player does not need a mechanical pump directly at the boiler outlet.
+- Open-pipe visual: when outlet or pipe end vents to air, spawn directional Create-style steam jet particles with a small cloud plume.
 - Default pressure range target: 30 blocks. This must become a server config value.
 - Goggle overlay: boiler linked/missing, outlet steam units, total boiler steam units, attached outlet count, steam production rate, internal buffer, output pressure state.
 
@@ -522,6 +524,8 @@ Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerD
 - [x] Apply Create `FluidTransportBehaviour` pressure so generated steam is visible in connected Create pipes
 - [x] Register steam open-pipe effect and outlet vent particles for open/unconnected steam leaks
 - [x] Verify: steam visibly flows through pipes and open pipe ends vent steam particles
+- [x] Enhance steam leak visuals with Create-style jet puffs plus soft cloud volume for boiler outlets and open pipe ends
+- [x] Make boiler outlet pressure traversal respect Create fluid valves so closed valves block steam instead of being bypassed
 - [x] Scale boiler outlet production by boiler height: active burner units × tank height
 - [x] Gate scaled steam production by measured water supply at 10 mB/t per steam unit
 - [x] Split one boiler's steam budget across all attached boiler outlets so multiple outlets cannot duplicate output
