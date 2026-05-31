@@ -1,8 +1,21 @@
 package dev.gustavo.fullsteamahead.content.piston;
 
 import com.mojang.serialization.MapCodec;
+import com.simibubi.create.AllBlocks;
+import com.simibubi.create.content.kinetics.simpleRelays.ShaftBlock;
+import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
+import dev.gustavo.fullsteamahead.registry.ModBlocks;
+import net.createmod.catnip.placement.IPlacementHelper;
+import net.createmod.catnip.placement.PlacementHelpers;
+import net.createmod.catnip.placement.PlacementOffset;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -11,9 +24,11 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+
+import java.util.function.Predicate;
 
 public class SteamPistonBlock extends Block {
     public static final MapCodec<SteamPistonBlock> CODEC = simpleCodec(SteamPistonBlock::new);
@@ -21,6 +36,7 @@ public class SteamPistonBlock extends Block {
     public static final EnumProperty<PistonSection> PISTON_SECTION =
             EnumProperty.create("piston_section", PistonSection.class);
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.HORIZONTAL_AXIS;
+    private static final int PLACEMENT_HELPER_ID = PlacementHelpers.register(new ShaftPlacementHelper());
     private static final VoxelShape SHAPE = Block.box(5, 0, 5, 11, 16, 11);
 
     public SteamPistonBlock(Properties properties) {
@@ -62,6 +78,25 @@ public class SteamPistonBlock extends Block {
     }
 
     @Override
+    protected ItemInteractionResult useItemOn(
+            ItemStack stack,
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player,
+            InteractionHand hand,
+            BlockHitResult hit
+    ) {
+        IPlacementHelper placementHelper = PlacementHelpers.get(PLACEMENT_HELPER_ID);
+        if (placementHelper.matchesItem(stack) && stack.getItem() instanceof BlockItem blockItem) {
+            return placementHelper.getOffset(player, level, state, pos, hit)
+                    .placeInWorld(level, blockItem, player, hand, hit);
+        }
+
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         if (!level.isClientSide() && !state.is(oldState.getBlock())) {
             PistonHeadBlockEntity.revalidateNearbyEngines(level, pos);
@@ -78,5 +113,41 @@ public class SteamPistonBlock extends Block {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(ASSEMBLED, PISTON_SECTION, AXIS);
+    }
+
+    private static class ShaftPlacementHelper implements IPlacementHelper {
+        @Override
+        public Predicate<ItemStack> getItemPredicate() {
+            return AllBlocks.SHAFT::isIn;
+        }
+
+        @Override
+        public Predicate<BlockState> getStatePredicate() {
+            return state -> state.is(ModBlocks.PISTON.get());
+        }
+
+        @Override
+        public PlacementOffset getOffset(
+                Player player,
+                Level level,
+                BlockState state,
+                BlockPos pos,
+                BlockHitResult ray
+        ) {
+            if (!EngineValidator.isReadyForShaftPlacement(level, pos)) {
+                return PlacementOffset.fail();
+            }
+
+            Direction.Axis axis = state.getValue(AXIS);
+            BlockPos shaftPos = EngineValidator.pistonPositionsFromBody(pos).shaft();
+            return PlacementOffset.success(shaftPos, placedState -> {
+                BlockState shaftState = AllBlocks.SHAFT.getDefaultState()
+                        .setValue(ShaftBlock.AXIS, axis);
+                if (level.isClientSide()) {
+                    return shaftState;
+                }
+                return FullSteamPoweredShaftBlock.equivalentOf(shaftState);
+            });
+        }
     }
 }

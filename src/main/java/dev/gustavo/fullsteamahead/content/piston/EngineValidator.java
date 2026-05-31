@@ -71,9 +71,6 @@ public final class EngineValidator {
         }
 
         BoilerScan boiler = findDirectBoiler(level, ringOrigin);
-        if (!boiler.valid() && inletPos == null) {
-            return Result.invalid(boiler.message());
-        }
 
         BlockPos cylinderRoot = cylinderPositions.stream()
                 .min(ROOT_ORDER)
@@ -100,6 +97,26 @@ public final class EngineValidator {
                 pistonHeadPos.above(2),
                 pistonHeadPos.above(3)
         );
+    }
+
+    public static PistonPositions pistonPositionsFromBody(BlockPos pistonPos) {
+        return pistonPositions(pistonPos.below());
+    }
+
+    public static boolean isReadyForShaftPlacement(Level level, BlockPos pistonPos) {
+        PistonPositions pistons = pistonPositionsFromBody(pistonPos);
+        if (!isPistonHead(level, pistons.pistonHead()) || !isPiston(level, pistons.piston())) {
+            return false;
+        }
+        if (!isEmpty(level, pistons.emptyStroke())) {
+            return false;
+        }
+        if (!level.isLoaded(pistons.shaft()) || !level.getBlockState(pistons.shaft()).canBeReplaced()) {
+            return false;
+        }
+
+        BlockPos ringOrigin = pistons.pistonHead().offset(-1, 0, -1);
+        return isRingReady(level, ringOrigin);
     }
 
     public static List<BlockPos> candidatePistonHeadsNear(BlockPos changedPos) {
@@ -170,6 +187,30 @@ public final class EngineValidator {
             }
         }
         return positions;
+    }
+
+    private static boolean isRingReady(Level level, BlockPos origin) {
+        int inlets = 0;
+        for (BlockPos pos : ringPositions(origin)) {
+            if (!level.isLoaded(pos)) {
+                return false;
+            }
+
+            BlockState state = level.getBlockState(pos);
+            if (state.is(ModBlocks.STEAM_CYLINDER.get())
+                    && isAssembled(state, SteamCylinderBlock.ASSEMBLED)) {
+                continue;
+            }
+
+            if (state.is(ModBlocks.STEAM_INLET.get())
+                    && isAssembled(state, SteamInletBlock.ASSEMBLED)
+                    && ++inlets <= 1) {
+                continue;
+            }
+
+            return false;
+        }
+        return true;
     }
 
     private static List<BlockPos> boilerShellPositions(BlockPos ringOrigin) {

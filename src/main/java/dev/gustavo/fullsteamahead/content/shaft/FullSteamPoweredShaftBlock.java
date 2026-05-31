@@ -6,6 +6,7 @@ import com.simibubi.create.AllShapes;
 import com.simibubi.create.content.kinetics.steamEngine.PoweredShaftBlock;
 import com.simibubi.create.content.kinetics.simpleRelays.ShaftBlock;
 import dev.gustavo.fullsteamahead.content.piston.EngineValidator;
+import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
@@ -54,6 +55,14 @@ public class FullSteamPoweredShaftBlock extends PoweredShaftBlock {
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.ENTITYBLOCK_ANIMATED;
+    }
+
+    @Override
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        if (!level.isClientSide() && !state.is(oldState.getBlock())) {
+            PistonHeadBlockEntity.revalidateNearbyEngines(level, pos);
+        }
     }
 
     @Override

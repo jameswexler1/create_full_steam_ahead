@@ -203,17 +203,18 @@ When the `piston_head` block entity revalidates, it scans upward along its Y axi
 2. Expects one empty stroke block above the piston
 3. Expects a horizontal regular Create shaft or hidden Full Steam Ahead powered shaft above the empty stroke space
 4. Expects a valid assembled `SteamCylinder` ring around the lower piston head and upper piston body
-5. Expects either a valid Create fluid tank layer directly below the ring's bottom layer, or one assembled `steam_inlet` occupying a cylinder shell slot
+5. Checks for either a valid Create fluid tank layer directly below the ring's bottom layer, or one assembled `steam_inlet` occupying a cylinder shell slot, but a missing steam source does not block mechanical assembly
 
-If all checks pass: the piston head stores references to the cylinder root, inlet, boiler, and shaft. If the player placed a normal Create shaft, it is swapped to `full_steam_ahead:powered_shaft` and powered from our exact steam output calculation. Direct compact mode reads boiler heat/water. Pipe-fed mode consumes stored `steam` from the inlet. If both sources exist, piped steam is preferred while available, with direct boiler output as fallback.
+If all mechanical checks pass: the piston head stores references to the cylinder root, inlet, boiler, and shaft. If the player placed a normal Create shaft, it is swapped to `full_steam_ahead:powered_shaft`. The piston/head/linkage visuals assemble around the shaft even with no active steam source, matching Create's own passive linkage behavior. Direct compact mode reads boiler heat/water when present. Pipe-fed mode consumes stored `steam` from the inlet when present. If both sources exist, piped steam is preferred while available, with direct boiler output as fallback. If neither source can supply steam, the engine remains assembled but generates 0 RPM and 0 SU.
 
-If any check fails: the piston head clears assembly, restores the hidden powered shaft back to a normal Create shaft when it owns that shaft, and shows an incomplete-structure goggle overlay.
+If any mechanical check fails: the piston head clears assembly, restores the hidden powered shaft back to a normal Create shaft when it owns that shaft, and shows an incomplete-structure goggle overlay.
 
 **Revalidation triggers:**
 - Any `piston` or `piston_head` block placed or removed
 - Any `steam_cylinder` block placed or removed within the expected positions
 - Any Create fluid tank block placed or removed directly below the cylinder's bottom ring
 - Piston head block entity loads from disk or lazy-ticks after the player places the shaft
+- Looking at the completed piston body with a Create shaft in hand uses Create's placement-helper preview to show the shaft ghost at the required top-link position, then places the shaft into that position on right-click
 
 Pipe-fed mode accepts either the direct boiler below the ring or a valid steam inlet occupying one assembled cylinder shell slot. Direct compact mode must remain working during the transition.
 
@@ -583,6 +584,8 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Add `PistonHeadVisual` using Flywheel `SimpleBlockEntityVisualizer`, `TransformedInstance`, and `PartialModel`; drive it from `KineticBlockEntityRenderer.getAngleForBe(...)` on the linked shaft
 - [x] Add `PistonHeadRenderer` fallback for non-visualized rendering so piston motion is still visible if Flywheel visualization is disabled
 - [x] Remove the custom `crankshaft` block and use a regular Create shaft as the player-facing output
+- [x] Add a Create-style shaft placement helper: looking at a mechanically complete piston body with a Create shaft in hand previews and places the shaft at the required top-link position
+- [x] Allow a mechanically complete piston/head/ring/shaft structure to assemble its linkage with no steam source; steam availability only controls generated RPM/SU
 - [x] Expose minimal client-safe getters on `PistonHeadBlockEntity`: assembled state, source mode/running state, active speed, ring origin, inlet position, and shaft position
 - [x] Hide or simplify static assembled piston block geometry so it does not fight the moving visual
 - [x] Add `piston_head` as a separate structural block in the lower cylinder bore
@@ -613,6 +616,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Correct assembled cylinder section UV clipping so the split in-game models match the Blockbench texture orientation
 - [x] Apply the latest hand-authored assembled cylinder ring texture PNG to the implemented runtime atlas
 - [x] Apply the `_v2` hand-authored assembled cylinder ring texture PNG revision
+- [x] Use a hidden assembled cylinder ring item model as the creative tab icon and tune its display scale to match neighboring tab icons
 - [x] Reuse the 16 assembled cylinder subunit models for progressive `Cylinder Wall` construction visuals
 - [x] Infer partial cylinder-wall section visuals from connected wall/inlet groups without enabling engine mechanics
 - [x] Apply the exposed-parts fix: v3 assembled cylinder atlas plus generated cut faces for all 16 section models

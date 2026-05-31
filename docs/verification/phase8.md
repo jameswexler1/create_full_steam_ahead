@@ -67,6 +67,8 @@ Completed shaft-link remodel slice:
 
 - [x] Removed the custom `crankshaft` block from registration, creative tab, loot, blockstates, item models, mining tags, and lang.
 - [x] Added hidden `powered_shaft`, which replaces a player-placed Create shaft when the piston head validates the engine.
+- [x] Added Create-style shaft placement helper for the piston body: holding a Create shaft previews the required top-link shaft position and right-click places it there.
+- [x] Allowed the mechanically complete piston/head/ring/shaft structure to assemble its linkage with no steam source; no source still means zero generated RPM/SU.
 - [x] Moved validation and steam output ownership to `PistonHeadBlockEntity`.
 - [x] Updated the current stack to `piston_head -> piston -> empty stroke -> Create shaft`.
 - [x] Replaced crankshaft renderer/visual/animation with piston-head renderer/visual/animation driven from the linked shaft angle.
@@ -160,6 +162,7 @@ Automated results:
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-31 after adding scaled inventory/hand display transforms for oversized block items.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-31 after retuning oversized item displays to Create-style block item proportions.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-31 after switching the creative tab icon to a hidden assembled cylinder ring item model.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-31 after enlarging the creative tab icon, adding piston-body shaft ghost placement, and allowing source-less mechanical linkage assembly.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-23 after replacing proxy piston animation with dynamic actual piston/head partials.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-23 after the shaft-link remodel.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-23 after the shaft-link remodel.
@@ -209,6 +212,9 @@ Manual runtime checklist:
 - [ ] `steam_inlet` renders with the new textured model as an item, standalone block, and assembled ring member in north/east/south/west-facing shell positions.
 - [ ] Oversized block items render at usable miniature scale in inventory, hotbar, first-person hand, third-person hand, dropped item form, and item frames.
 - [ ] The `Create: Full Steam Ahead` creative tab icon renders as the assembled cylinder ring and the icon-only item does not appear in the tab item list.
+- [ ] The creative tab icon now reads slightly larger and visually matches neighboring Create-style tab icons.
+- [ ] Holding a Create shaft while looking at the completed piston body previews a ghost shaft at the required top-link position.
+- [ ] Right-clicking the piston body with that Create shaft places the shaft at the top-link position, converts it to the hidden powered shaft, and forms the rod/crank linkage even with no boiler or steam inlet.
 - [ ] Two complete cylinder rings can be built directly adjacent without either ring deforming or stealing the other's section assignments.
 - [ ] Assembled `piston_head` and the `piston` body remain visible at rest and reciprocate while the linked shaft is running.
 - [ ] An assembled engine with no steam output still animates passively when its linked shaft is rotated by another engine on the same shaft network.
