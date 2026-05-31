@@ -7,6 +7,7 @@ import com.simibubi.create.content.fluids.tank.BoilerData;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import dev.gustavo.fullsteamahead.compat.create.FullSteamBoilerIntegration;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModFluids;
 import net.minecraft.ChatFormatting;
@@ -17,6 +18,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -33,14 +35,15 @@ import java.util.Set;
 
 public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation {
     public static final int STEAM_PER_HEAT_UNIT = 10;
-    public static final int MAX_HEAT_UNITS = 18;
     public static final int PRESSURE_RANGE = 30;
     private static final float PRESSURE_PER_MB = 2.0f;
-    private static final int BUFFER_CAPACITY = 4_000;
+    private static final int BUFFER_CAPACITY = 16_000;
     private static final int PRESSURE_REFRESH_TICKS = 20;
     private static final String BOILER_POS_KEY = "BoilerPos";
     private static final String BUFFER_KEY = "SteamBuffer";
     private static final String HEAT_UNITS_KEY = "HeatUnits";
+    private static final String TOTAL_HEAT_UNITS_KEY = "TotalHeatUnits";
+    private static final String OUTLET_COUNT_KEY = "OutletCount";
     private static final String PRODUCTION_RATE_KEY = "ProductionRate";
     private static final String PUSHED_RATE_KEY = "PushedRate";
     private static final String STATUS_KEY = "Status";
@@ -55,6 +58,8 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
 
     private BlockPos boilerPos;
     private int heatUnits;
+    private int totalHeatUnits;
+    private int outletCount;
     private int productionRate;
     private int pushedRate;
     private int externallyDrainedSteam;
@@ -89,6 +94,8 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         }
 
         int previousHeatUnits = heatUnits;
+        int previousTotalHeatUnits = totalHeatUnits;
+        int previousOutletCount = outletCount;
         int previousProduction = productionRate;
         int previousPushed = pushedRate;
         int previousBuffer = steamBuffer.getFluidAmount();
@@ -102,7 +109,10 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         venting = false;
 
         FluidTankBlockEntity boiler = getBoiler();
-        heatUnits = calculateHeatUnits(boiler);
+        SteamBudget budget = calculateSteamBudget(boiler);
+        heatUnits = budget.outletUnits();
+        totalHeatUnits = budget.totalUnits();
+        outletCount = budget.outletCount();
         productionRate = heatUnits * STEAM_PER_HEAT_UNIT;
         if (productionRate > 0) {
             steamBuffer.fill(new FluidStack(ModFluids.STEAM.get(), productionRate), IFluidHandler.FluidAction.EXECUTE);
@@ -121,6 +131,8 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         }
 
         if (previousHeatUnits != heatUnits
+                || previousTotalHeatUnits != totalHeatUnits
+                || previousOutletCount != outletCount
                 || previousProduction != productionRate
                 || previousPushed != pushedRate
                 || previousBuffer != steamBuffer.getFluidAmount()
@@ -159,6 +171,8 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         FluidTankBlockEntity boiler = getBoiler();
         boilerPos = null;
         heatUnits = 0;
+        totalHeatUnits = 0;
+        outletCount = 0;
         productionRate = 0;
         pushedRate = 0;
         status = "Outlet removed";
@@ -198,6 +212,10 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                 .withStyle(productionRate > 0 ? ChatFormatting.GREEN : ChatFormatting.YELLOW));
         tooltip.add(Component.literal("Steam: " + steamBuffer.getFluidAmount() + "/" + steamBuffer.getCapacity() + " mB")
                 .withStyle(steamBuffer.getFluidAmount() > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.literal("Steam units: " + heatUnits + "/" + totalHeatUnits)
+                .withStyle(heatUnits > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
+        tooltip.add(Component.literal("Attached outlets: " + outletCount)
+                .withStyle(outletCount > 1 ? ChatFormatting.GRAY : ChatFormatting.DARK_GRAY));
         tooltip.add(Component.literal("Production: " + productionRate + " mB/t")
                 .withStyle(productionRate > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
         tooltip.add(Component.literal("Pushed: " + pushedRate + " mB/t")
@@ -211,9 +229,9 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         return true;
     }
 
-    private int calculateHeatUnits(FluidTankBlockEntity boiler) {
+    private SteamBudget calculateSteamBudget(FluidTankBlockEntity boiler) {
         if (boiler == null || boiler.boiler == null) {
-            return 0;
+            return SteamBudget.NONE;
         }
 
         BoilerData data = boiler.boiler;
@@ -223,15 +241,19 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         }
 
         if (data.activeHeat <= 0) {
-            return 0;
+            return SteamBudget.withOutlets(FullSteamBoilerIntegration.countAttachedOutlets(boiler));
         }
 
-        int waterLimitedHeat = data.getMaxHeatLevelForWaterSupply();
-        if (waterLimitedHeat <= 0) {
-            return 0;
+        int thermalUnits = data.activeHeat * Math.max(1, boiler.getHeight());
+        int waterLimitedUnits = Mth.ceil(data.waterSupply) / STEAM_PER_HEAT_UNIT;
+        int totalUnits = Math.min(thermalUnits, waterLimitedUnits);
+        int outlets = FullSteamBoilerIntegration.countAttachedOutlets(boiler);
+        if (totalUnits <= 0 || outlets <= 0) {
+            return SteamBudget.withOutlets(outlets);
         }
 
-        return Math.min(MAX_HEAT_UNITS, Math.min(data.activeHeat, waterLimitedHeat));
+        int outletUnits = FullSteamBoilerIntegration.steamUnitsForOutlet(boiler, worldPosition, totalUnits);
+        return new SteamBudget(outletUnits, totalUnits, outlets);
     }
 
     private SteamOutput pushSteam(int maxAmount, int networkMovedLastTick) {
@@ -493,6 +515,8 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         }
         tag.put(BUFFER_KEY, steamBuffer.writeToNBT(registries, new CompoundTag()));
         tag.putInt(HEAT_UNITS_KEY, heatUnits);
+        tag.putInt(TOTAL_HEAT_UNITS_KEY, totalHeatUnits);
+        tag.putInt(OUTLET_COUNT_KEY, outletCount);
         tag.putInt(PRODUCTION_RATE_KEY, productionRate);
         tag.putInt(PUSHED_RATE_KEY, pushedRate);
         tag.putString(STATUS_KEY, status);
@@ -504,6 +528,8 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         boilerPos = tag.contains(BOILER_POS_KEY) ? BlockPos.of(tag.getLong(BOILER_POS_KEY)) : null;
         steamBuffer.readFromNBT(registries, tag.getCompound(BUFFER_KEY));
         heatUnits = tag.getInt(HEAT_UNITS_KEY);
+        totalHeatUnits = tag.getInt(TOTAL_HEAT_UNITS_KEY);
+        outletCount = tag.getInt(OUTLET_COUNT_KEY);
         productionRate = tag.getInt(PRODUCTION_RATE_KEY);
         pushedRate = tag.getInt(PUSHED_RATE_KEY);
         status = tag.contains(STATUS_KEY) ? tag.getString(STATUS_KEY) : "Missing boiler";
@@ -518,6 +544,14 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
 
     private record SteamOutput(int moved, boolean venting) {
         private static final SteamOutput NONE = new SteamOutput(0, false);
+    }
+
+    private record SteamBudget(int outletUnits, int totalUnits, int outletCount) {
+        private static final SteamBudget NONE = new SteamBudget(0, 0, 0);
+
+        private static SteamBudget withOutlets(int outletCount) {
+            return new SteamBudget(0, 0, outletCount);
+        }
     }
 
     private class OutputOnlySteamHandler implements IFluidHandler {

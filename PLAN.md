@@ -270,12 +270,20 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - Block entity: `BoilerOutletBlockEntity extends SmartBlockEntity`
 - Placed on a Create Fluid Tank block face. The block's back side must touch a `FluidTankBlockEntity`; the front side outputs steam.
 - Validates the attached tank's controller and reads its `BoilerData`.
-- Counts as an attached boiler device in our Create boiler integration so Create's own tank visuals and compact boiler sizing still activate.
+- Counts as an attached boiler device in our Create boiler integration so Create's own tank visuals and compact boiler sizing activate even for small outlet-only boilers.
 - Generates `steam` fluid only from valid boiler heat and water supply. It must never drain or re-pressurize steam from normal storage tanks.
+- Steam unit model:
+  - `1 steam unit = 10 mB/t steam`
+  - Normal active burner heat contributes 1 burner unit; Blaze Cake heat contributes 2 burner units
+  - Total boiler steam units = `min(active burner units × boiler height, water supply / 10)`
+  - `3x3x1` with 9 normal burners produces 9 units, or 90 mB/t
+  - `3x3x6` with 9 normal burners produces 54 units, enough for six full normal engines
+  - `3x3x6` with 9 Blaze Cake burners produces 108 units, enough for six doubled engines
+- Multiple `boiler_outlet` blocks attached to one boiler split the same total steam unit budget in a stable position order; they must not duplicate steam.
 - Exposes an output-only `IFluidHandler` for `steam`.
 - Applies pressure to the connected Create pipe network so the player does not need a mechanical pump directly at the boiler outlet.
 - Default pressure range target: 30 blocks. This must become a server config value.
-- Goggle overlay: boiler linked/missing, active heat, water supply, steam production rate, internal buffer, output pressure state.
+- Goggle overlay: boiler linked/missing, outlet steam units, total boiler steam units, attached outlet count, steam production rate, internal buffer, output pressure state.
 
 ### `SteamInlet` (`steam_inlet`)
 
@@ -511,6 +519,9 @@ Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerD
 - [x] Apply Create `FluidTransportBehaviour` pressure so generated steam is visible in connected Create pipes
 - [x] Register steam open-pipe effect and outlet vent particles for open/unconnected steam leaks
 - [x] Verify: steam visibly flows through pipes and open pipe ends vent steam particles
+- [x] Scale boiler outlet production by boiler height: active burner units × tank height
+- [x] Gate scaled steam production by measured water supply at 10 mB/t per steam unit
+- [x] Split one boiler's steam budget across all attached boiler outlets so multiple outlets cannot duplicate output
 
 Implementation notes:
 
@@ -518,6 +529,8 @@ Implementation notes:
 - Create's mechanical pump range is exposed through `FluidPropagator.getPumpRange()`, but our outlet should have its own configurable default target of 30 blocks.
 - The outlet is a boiler pressure source, not a general-purpose pump.
 - The outlet applies Create pipe pressure for normal pipe flow rendering and keeps a bounded `IFluidHandler` transfer as a no-drain fallback.
+- The outlet production model is unit-based: `10 mB/t = 1 steam unit = 16,384 SU when consumed by an engine`.
+- `BoilerData.activeHeat` is multiplied by boiler controller height for pipe-fed steam production. Water supply is not capped at Create's vanilla 18-level display cap for outlet budgeting.
 
 ### Phase 6: Steam Inlet and Pipe-Fed Engine
 

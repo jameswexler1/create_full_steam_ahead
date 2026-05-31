@@ -46,7 +46,7 @@ public abstract class BoilerDataMixin {
 
     @Inject(method = "getMaxHeatLevelForBoilerSize", at = @At("HEAD"), cancellable = true)
     private void fullSteamAhead$useCompactBoilerSizing(int size, CallbackInfoReturnable<Integer> cir) {
-        if (fullSteamAhead$compactBoiler && size >= FullSteamBoilerIntegration.MIN_BOILER_TANKS) {
+        if (fullSteamAhead$compactBoiler && size > 0) {
             cir.setReturnValue(FullSteamBoilerIntegration.compactBoilerHeatLimit(size));
         }
     }

@@ -25,22 +25,19 @@ Use `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew ...` when matching the curr
 
 Use Java 21 and four-space indentation. Keep packages under `dev.gustavo.fullsteamahead`. Use `FullSteamAhead.MOD_ID` instead of repeating `"full_steam_ahead"`. Classes use `PascalCase`, methods/fields use `camelCase`, constants use `UPPER_SNAKE_CASE`, and resource paths use `lower_snake_case`.
 
-## Current Task — Phase 8 Rendering and Ponder
+## Current Task — Steam Scaling
 
 The old `flywheel` and `governor` placeholder blocks have been removed. Do not re-add mechanics, recipes, requirements, output effects, textures, models, registration, or assets for them unless `PLAN.md` is changed first. This does not apply to the Flywheel rendering library used by client visuals.
 
-Implement visual presentation while preserving all current gameplay:
+Implement steam output using the unit rules in `PLAN.md` and `README.md`:
 
-1. Do not change steam generation, SU/RPM output, multiblock validation, Aeronautics movement rules, recipes, or config in Phase 8.
-2. Do not reintroduce the removed `flywheel` or `governor` block code/assets during Phase 8.
-3. Keep all Flywheel, renderer, and Ponder code client-only under `dev.gustavo.fullsteamahead.client`.
-4. Register piston-head Flywheel visuals and vanilla fallback block entity renderers only from client code.
-5. Reuse Create textures and visual language where possible; add local textures only when Create does not provide a suitable part.
-6. Static piston blocks should become visual guides/sleeves; dynamic piston motion should be rendered from the crankshaft.
-7. Steam particles and chuff sounds must be tied to running state and crank phase, not emitted every tick blindly.
-8. Ponder scenes come after the visual models are stable.
+1. `1 steam unit = 10 mB/t steam = 16,384 SU when consumed`.
+2. `boiler_outlet` production scales as active burner units multiplied by Create Fluid Tank boiler height.
+3. Water supply gates the scaled budget at 10 mB/t per steam unit.
+4. Multiple outlets attached to one boiler split one shared budget and must not duplicate steam.
+5. Preserve direct compact engine mode and current piston/cylinder validation.
 
-Record automated and manual results in `docs/verification/phase8.md`.
+Record automated and manual results in `docs/verification/phase5.md`.
 
 ## Testing Guidelines
 

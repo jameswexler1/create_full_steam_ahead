@@ -16,6 +16,9 @@ Implemented:
 - Outlet keeps a bounded direct pipe traversal fallback up to 30 blocks if the Create pipe network does not drain immediately.
 - Open/unconnected steam vents show cloud particles through the outlet and Create open-pipe effect hook.
 - Goggles show outlet status, steam buffer, production, pushed amount, and pressure range.
+- Outlet production now scales by boiler height: `active burner units * boiler height`.
+- Outlet production is water-gated at `10 mB/t` water supply per steam unit.
+- Multiple outlets on the same boiler split one shared steam budget instead of duplicating output.
 
 Automated checks run:
 
@@ -32,6 +35,7 @@ Results:
 - `processResources`: passed
 - `build`: passed
 - JSON validation: passed
+- Latest automated run on 2026-05-31 after scaled boiler outlet production: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 
 Manual runtime checklist:
 
@@ -54,3 +58,11 @@ Polish runtime checklist:
 - [x] Confirm a pipe connected to a tank still moves steam without a mechanical pump after the visibility change.
 
 User report after polish runtime test: everything works.
+
+Scaled production checklist:
+
+- [ ] Confirm a `1x1x1` boiler with one normal active burner produces `10 mB/t` steam and one piped engine reports `16,384 SU`.
+- [ ] Confirm a `3x3x1` boiler with 9 normal active burners produces `90 mB/t` steam and one piped engine reports `147,456 SU`.
+- [ ] Confirm a `3x3x6` boiler with 9 normal active burners produces `540 mB/t` total steam and can feed six full normal engines.
+- [ ] Confirm a `3x3x6` boiler with 9 Blaze Cake burners produces `1080 mB/t` total steam and can feed six doubled engines.
+- [ ] Confirm two outlets on one boiler split the same total steam budget instead of each producing the full amount.

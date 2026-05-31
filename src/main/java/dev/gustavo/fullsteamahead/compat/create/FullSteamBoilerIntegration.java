@@ -11,11 +11,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public final class FullSteamBoilerIntegration {
-    public static final int MIN_BOILER_TANKS = 9;
     public static final int MAX_COMPACT_HEAT_LEVEL = 18;
 
     public static int countAttachedEngines(FluidTankBlockEntity boiler) {
@@ -29,6 +31,11 @@ public final class FullSteamBoilerIntegration {
             return 0;
         }
 
+        return countAttachedDirectEngines(controller) + countAttachedOutlets(controller);
+    }
+
+    private static int countAttachedDirectEngines(FluidTankBlockEntity controller) {
+        Level level = controller.getLevel();
         int width = controller.getWidth();
         int height = controller.getHeight();
         if (width < 3 || height < 1) {
@@ -53,11 +60,43 @@ public final class FullSteamBoilerIntegration {
             }
         }
 
-        return engines.size() + countAttachedOutlets(controller);
+        return engines.size();
     }
 
-    private static int countAttachedOutlets(FluidTankBlockEntity controller) {
+    public static int countAttachedOutlets(FluidTankBlockEntity controller) {
+        return attachedOutletPositions(controller).size();
+    }
+
+    public static int steamUnitsForOutlet(FluidTankBlockEntity controller, BlockPos outletPos, int totalSteamUnits) {
+        if (totalSteamUnits <= 0) {
+            return 0;
+        }
+
+        List<BlockPos> outlets = attachedOutletPositions(controller);
+        if (outlets.isEmpty()) {
+            return 0;
+        }
+
+        int index = outlets.indexOf(outletPos);
+        if (index < 0) {
+            return 0;
+        }
+
+        int baseShare = totalSteamUnits / outlets.size();
+        int remainder = totalSteamUnits % outlets.size();
+        return baseShare + (index < remainder ? 1 : 0);
+    }
+
+    public static List<BlockPos> attachedOutletPositions(FluidTankBlockEntity controller) {
+        if (controller == null) {
+            return List.of();
+        }
+
         Level level = controller.getLevel();
+        if (level == null) {
+            return List.of();
+        }
+
         BlockPos controllerPos = controller.getBlockPos();
         int width = controller.getWidth();
         int height = controller.getHeight();
@@ -89,7 +128,12 @@ public final class FullSteamBoilerIntegration {
             }
         }
 
-        return outlets.size();
+        List<BlockPos> sorted = new ArrayList<>(outlets);
+        sorted.sort(Comparator
+                .comparingInt((BlockPos pos) -> pos.getY())
+                .thenComparingInt(pos -> pos.getX())
+                .thenComparingInt(pos -> pos.getZ()));
+        return sorted;
     }
 
     public static int compactBoilerHeatLimit(int tankSize) {
