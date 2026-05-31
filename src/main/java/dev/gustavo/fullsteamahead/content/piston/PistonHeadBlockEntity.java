@@ -486,7 +486,8 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
     private void setPistonsAssembled(EngineValidator.Result result) {
         setPistonHead(result.pistonHead(), true);
-        setPiston(result.piston(), true, PistonSection.INSIDE_HIGH);
+        Direction.Axis shaftAxis = EngineValidator.shaftAxis(level, result.shaft());
+        setPiston(result.piston(), true, PistonSection.INSIDE_HIGH, shaftAxis);
     }
 
     private void clearPistonStates(BlockPos skippedPistonPos) {
@@ -498,7 +499,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
     private void clearPiston(BlockPos pos, BlockPos skippedPistonPos) {
         if (!pos.equals(skippedPistonPos)) {
-            setPiston(pos, false, PistonSection.INSIDE_LOW);
+            setPiston(pos, false, PistonSection.INSIDE_LOW, null);
         }
     }
 
@@ -508,7 +509,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
     }
 
-    private void setPiston(BlockPos pos, boolean assembled, PistonSection section) {
+    private void setPiston(BlockPos pos, boolean assembled, PistonSection section, Direction.Axis axis) {
         if (level == null || pos == null || !level.isLoaded(pos)) {
             return;
         }
@@ -521,6 +522,9 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         BlockState newState = state
                 .setValue(SteamPistonBlock.ASSEMBLED, assembled)
                 .setValue(SteamPistonBlock.PISTON_SECTION, section);
+        if (axis != null && state.hasProperty(SteamPistonBlock.AXIS)) {
+            newState = newState.setValue(SteamPistonBlock.AXIS, axis);
+        }
         if (newState != state) {
             level.setBlock(pos, newState, Block.UPDATE_CLIENTS);
         }

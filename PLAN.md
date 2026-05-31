@@ -572,6 +572,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Hide or simplify static assembled piston block geometry so it does not fight the moving visual
 - [x] Add `piston_head` as a separate structural block in the lower cylinder bore
 - [x] Animate the actual `piston_head` and `piston` body up and down from linked shaft phase, using Flywheel and fallback rendering
+- [x] Add horizontal piston orientation so the piston can be placed north-south or east-west and assembled piston visuals align their bolt axis to the linked shaft axis
 - [x] Apply the textured v3 Blockbench `piston_head` model and embedded texture while preserving the existing hitbox
 - [x] Replace `piston_head` with the `Steam_Piston_Head.bbmodel` visual and matching model-derived hitbox
 - [x] Replace the piston body with `Steam_Piston_Body.bbmodel` and add animated `Steam_Connecting_Rod` plus `Steam_Crank` partials using shaft-phase slider-crank motion

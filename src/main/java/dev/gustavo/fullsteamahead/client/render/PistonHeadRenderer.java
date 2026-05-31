@@ -84,7 +84,10 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             int blockIndex
     ) {
         SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.pistonBody(), state);
-        buffer.translate(0, animation.pistonY(blockIndex), 0)
+        rotatePistonBody(
+                buffer.translate(0, animation.pistonY(blockIndex), 0),
+                animation.shaftAxis()
+        )
                 .light(light)
                 .overlay(overlay)
                 .renderInto(poseStack, vertexConsumer);
@@ -145,6 +148,12 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
         buffer.center();
         yawLinkageFrame(buffer, animation.shaftAxis());
         buffer.rotateX(animation.crankRotation());
+        return buffer.uncenter();
+    }
+
+    private static SuperByteBuffer rotatePistonBody(SuperByteBuffer buffer, Direction.Axis axis) {
+        buffer.center();
+        yawLinkageFrame(buffer, axis);
         return buffer.uncenter();
     }
 
