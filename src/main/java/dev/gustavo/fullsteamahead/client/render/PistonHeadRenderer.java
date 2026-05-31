@@ -153,8 +153,15 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
 
     private static SuperByteBuffer rotatePistonBody(SuperByteBuffer buffer, Direction.Axis axis) {
         buffer.center();
-        yawLinkageFrame(buffer, axis);
+        yawPistonBodyFrame(buffer, axis);
         return buffer.uncenter();
+    }
+
+    private static SuperByteBuffer yawPistonBodyFrame(SuperByteBuffer buffer, Direction.Axis axis) {
+        if (axis == Direction.Axis.X) {
+            buffer.rotateY((float) (-Math.PI / 2.0D));
+        }
+        return buffer;
     }
 
     private static SuperByteBuffer yawLinkageFrame(SuperByteBuffer buffer, Direction.Axis axis) {

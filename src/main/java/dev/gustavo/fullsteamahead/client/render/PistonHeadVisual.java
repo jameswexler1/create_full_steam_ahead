@@ -152,8 +152,15 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
 
     private static TransformedInstance rotatePistonBody(TransformedInstance instance, Direction.Axis axis) {
         instance.center();
-        yawLinkageFrame(instance, axis);
+        yawPistonBodyFrame(instance, axis);
         return instance.uncenter();
+    }
+
+    private static TransformedInstance yawPistonBodyFrame(TransformedInstance instance, Direction.Axis axis) {
+        if (axis == Direction.Axis.X) {
+            instance.rotateY((float) (-Math.PI / 2.0D));
+        }
+        return instance;
     }
 
     private static TransformedInstance yawLinkageFrame(TransformedInstance instance, Direction.Axis axis) {
