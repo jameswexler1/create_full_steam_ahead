@@ -41,6 +41,7 @@ Steam is a real fluid and uses a simple unit model:
 - In pipe-fed mode, surplus steam powers additional engines instead of making one generic steam cylinder exceed normal full output
 - Pipe networks distribute outlet steam evenly across reachable assembled `steam_inlet` blocks, capped at `90 mB/t` per inlet from all sources combined, before filling passive storage tanks
 - If supply is short, every reachable engine receives the same share as closely as whole mB/t allows; SU scales from exact consumed mB/t
+- Steam uses a custom animated non-placeable gas texture in Create tanks and pipes, following the TFMG-style gas-fluid presentation without adding a world-placeable steam block.
 - Boiler outlet pressure respects Create fluid valves. A closed valve blocks the pressure path instead of leaking or bypassing steam.
 - Unconnected boiler outlets and open pipe ends vent visible Create-style steam jet and cloud particles.
 

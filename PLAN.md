@@ -287,6 +287,7 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - Exposes an output-only `IFluidHandler` for `steam`.
 - Applies pressure to the connected Create pipe network so the player does not need a mechanical pump directly at the boiler outlet.
 - Open-pipe visual: when outlet or pipe end vents to air, spawn directional Create-style steam jet particles with a small cloud plume.
+- Steam fluid visual: use a custom animated gas texture sheet in tanks and pipes, mirroring TFMG's gas-fluid presentation while keeping steam non-placeable.
 - Default pressure range target: 30 blocks. This must become a server config value.
 - Goggle overlay: boiler linked/missing, outlet steam units, total boiler steam units, attached outlet count, steam production rate, internal buffer, output pressure state.
 
@@ -525,6 +526,7 @@ Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerD
 - [x] Register steam open-pipe effect and outlet vent particles for open/unconnected steam leaks
 - [x] Verify: steam visibly flows through pipes and open pipe ends vent steam particles
 - [x] Enhance steam leak visuals with Create-style jet puffs plus soft cloud volume for boiler outlets and open pipe ends
+- [x] Replace tinted vanilla water fluid visuals with a custom animated gas texture sheet for non-placeable steam
 - [x] Make boiler outlet pressure traversal respect Create fluid valves so closed valves block steam instead of being bypassed
 - [x] Scale boiler outlet production by boiler height: active burner units × tank height
 - [x] Gate scaled steam production by measured water supply at 10 mB/t per steam unit

@@ -16,6 +16,7 @@ Implemented:
 - Outlet keeps a bounded direct pipe traversal fallback up to 30 blocks if the Create pipe network does not drain immediately.
 - Open/unconnected steam vents show Create-style jet puffs plus cloud particles through the outlet and Create open-pipe effect hook.
 - Outlet pressure traversal respects Create fluid valves; closed valves block steam instead of being bypassed or treated as open vents.
+- Steam fluid visuals now use a custom animated gas texture sheet in tanks and pipes instead of tinted vanilla water textures.
 - Goggles show outlet status, steam buffer, production, pushed amount, and pressure range.
 - Outlet production now scales by boiler height: `active burner units * boiler height`.
 - Outlet production is water-gated by Create's boiler water heat level, multiplied by boiler height.
@@ -41,6 +42,7 @@ Results:
 - Latest automated run on 2026-05-31 after fixing pipe-fed per-engine caps, boiler-height water scaling, and alternating piston phase: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-05-31 after fair steam distribution, per-inlet intake caps, and proportional pipe-fed SU: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-05-31 after enhancing open steam particles and making boiler outlet pressure respect Create fluid valves: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
+- Latest automated run on 2026-05-31 after switching steam to a custom animated gas texture: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 
 Manual runtime checklist:
 
@@ -65,6 +67,7 @@ Polish runtime checklist:
 - [ ] Confirm a closed Create fluid valve between the outlet and an engine/tank stops steam transfer.
 - [ ] Confirm reopening the same valve restores steam transfer without replacing the pipes.
 - [ ] Confirm a closed valve does not make the outlet vent as if the pipe end were open.
+- [ ] Confirm steam in Create tanks and fluid pipes uses the animated gas texture rather than the old tinted water texture.
 
 User report after polish runtime test: everything works.
 

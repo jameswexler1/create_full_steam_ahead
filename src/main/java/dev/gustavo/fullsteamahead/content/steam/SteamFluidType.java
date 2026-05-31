@@ -8,9 +8,9 @@ import net.neoforged.neoforge.fluids.FluidType;
 import java.util.function.Consumer;
 
 public class SteamFluidType extends FluidType {
-    private static final ResourceLocation STILL_TEXTURE = ResourceLocation.withDefaultNamespace("block/water_still");
-    private static final ResourceLocation FLOWING_TEXTURE = ResourceLocation.withDefaultNamespace("block/water_flow");
-    private static final int STEAM_TINT = 0x99D8E7EE;
+    private static final ResourceLocation STEAM_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(FullSteamAhead.MOD_ID, "fluid/steam_gas");
+    private static final int STEAM_TINT = 0xFFFFFFFF;
 
     public SteamFluidType() {
         super(Properties.create()
@@ -29,12 +29,12 @@ public class SteamFluidType extends FluidType {
         consumer.accept(new IClientFluidTypeExtensions() {
             @Override
             public ResourceLocation getStillTexture() {
-                return STILL_TEXTURE;
+                return STEAM_TEXTURE;
             }
 
             @Override
             public ResourceLocation getFlowingTexture() {
-                return FLOWING_TEXTURE;
+                return STEAM_TEXTURE;
             }
 
             @Override

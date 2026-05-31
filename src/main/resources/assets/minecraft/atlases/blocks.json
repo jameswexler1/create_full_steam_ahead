@@ -1,0 +1,8 @@
+{
+  "sources": [
+    {
+      "type": "single",
+      "resource": "full_steam_ahead:fluid/steam_gas"
+    }
+  ]
+}
