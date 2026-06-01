@@ -1,6 +1,7 @@
 package dev.gustavo.fullsteamahead.content.cylinder;
 
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
+import dev.gustavo.fullsteamahead.content.piston.EngineValidator;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlockEntity;
@@ -220,7 +221,7 @@ public final class CylinderConnectivity {
             CylinderWallShape wallShape = partialWallShapes.getOrDefault(pos, CylinderWallShape.STANDALONE);
             withCylinderBlockEntity(level, pos, SteamCylinderBlockEntity::clearRingState);
             withInletBlockEntity(level, pos, SteamInletBlockEntity::clearRingState);
-            setRingState(level, pos, state, false, section, wallShape);
+            setRingState(level, pos, state, false, section, wallShape, Direction.UP);
         }
     }
 
@@ -230,7 +231,8 @@ public final class CylinderConnectivity {
                 .filter(pos -> level.getBlockState(pos).is(ModBlocks.STEAM_CYLINDER.get()))
                 .min(ROOT_ORDER)
                 .orElse(origin);
-        BlockPos boilerPos = findBoiler(level, origin).orElse(null);
+        Direction ringFacing = ringFacing(level, origin);
+        BlockPos boilerPos = ringFacing == Direction.UP ? findBoiler(level, origin).orElse(null) : null;
         BlockPos inletPos = findInlet(level, positions).orElse(null);
 
         for (BlockPos pos : positions) {
@@ -239,13 +241,37 @@ public final class CylinderConnectivity {
             if (state.is(ModBlocks.STEAM_INLET.get())) {
                 withInletBlockEntity(level, pos,
                         be -> be.applyRingState(origin, root, boilerPos));
-                setRingState(level, pos, state, true, section, CylinderWallShape.STANDALONE);
+                setRingState(level, pos, state, true, section, CylinderWallShape.STANDALONE, ringFacing);
             } else {
-                setRingState(level, pos, state, true, section, CylinderWallShape.STANDALONE);
+                setRingState(level, pos, state, true, section, CylinderWallShape.STANDALONE, ringFacing);
                 withCylinderBlockEntity(level, pos,
                         be -> be.applyRingState(origin, root, boilerPos, inletPos, pos.equals(root)));
             }
         }
+    }
+
+    private static Direction ringFacing(Level level, BlockPos origin) {
+        BlockPos lowerCenter = origin.offset(1, 0, 1);
+        if (isPistonHeadFacing(level, lowerCenter, Direction.UP)) {
+            return Direction.UP;
+        }
+
+        BlockPos upperCenter = origin.offset(1, 1, 1);
+        if (isPistonHeadFacing(level, upperCenter, Direction.DOWN)) {
+            return Direction.DOWN;
+        }
+
+        return Direction.UP;
+    }
+
+    private static boolean isPistonHeadFacing(Level level, BlockPos pos, Direction facing) {
+        if (!level.isLoaded(pos)) {
+            return false;
+        }
+
+        BlockState state = level.getBlockState(pos);
+        return state.is(ModBlocks.PISTON_HEAD.get())
+                && EngineValidator.pistonHeadFacing(state) == facing;
     }
 
     private static Optional<BlockPos> findInlet(Level level, List<BlockPos> positions) {
@@ -446,7 +472,8 @@ public final class CylinderConnectivity {
             BlockState state,
             boolean assembled,
             CylinderSection section,
-            CylinderWallShape wallShape
+            CylinderWallShape wallShape,
+            Direction facing
     ) {
         if (state.is(ModBlocks.STEAM_CYLINDER.get())) {
             setRingState(
@@ -456,9 +483,11 @@ public final class CylinderConnectivity {
                     SteamCylinderBlock.ASSEMBLED,
                     SteamCylinderBlock.SECTION,
                     SteamCylinderBlock.WALL_SHAPE,
+                    SteamCylinderBlock.FACING,
                     assembled,
                     section,
-                    wallShape
+                    wallShape,
+                    facing
             );
         } else if (state.is(ModBlocks.STEAM_INLET.get())) {
             setRingState(
@@ -468,9 +497,11 @@ public final class CylinderConnectivity {
                     SteamInletBlock.ASSEMBLED,
                     SteamInletBlock.SECTION,
                     SteamInletBlock.WALL_SHAPE,
+                    SteamInletBlock.FACING,
                     assembled,
                     section,
-                    wallShape
+                    wallShape,
+                    facing
             );
         }
     }
@@ -482,18 +513,24 @@ public final class CylinderConnectivity {
             net.minecraft.world.level.block.state.properties.BooleanProperty property,
             net.minecraft.world.level.block.state.properties.EnumProperty<CylinderSection> sectionProperty,
             net.minecraft.world.level.block.state.properties.EnumProperty<CylinderWallShape> wallShapeProperty,
+            net.minecraft.world.level.block.state.properties.DirectionProperty facingProperty,
             boolean assembled,
             CylinderSection section,
-            CylinderWallShape wallShape
+            CylinderWallShape wallShape,
+            Direction facing
     ) {
-        if (!state.hasProperty(property) || !state.hasProperty(sectionProperty) || !state.hasProperty(wallShapeProperty)) {
+        if (!state.hasProperty(property)
+                || !state.hasProperty(sectionProperty)
+                || !state.hasProperty(wallShapeProperty)
+                || !state.hasProperty(facingProperty)) {
             return;
         }
 
         BlockState newState = state
                 .setValue(property, assembled)
                 .setValue(sectionProperty, section)
-                .setValue(wallShapeProperty, wallShape);
+                .setValue(wallShapeProperty, wallShape)
+                .setValue(facingProperty, facing);
         if (newState == state) {
             return;
         }
@@ -508,9 +545,11 @@ public final class CylinderConnectivity {
     private static void notifyEngines(Level level, Set<BlockPos> candidateOrigins) {
         Set<BlockPos> notified = new LinkedHashSet<>();
         for (BlockPos origin : candidateOrigins) {
-            BlockPos pistonHeadPos = origin.offset(1, 0, 1);
-            if (notified.add(pistonHeadPos)) {
-                PistonHeadBlockEntity.revalidateAt(level, pistonHeadPos);
+            for (int y = 0; y <= 1; y++) {
+                BlockPos pistonHeadPos = origin.offset(1, y, 1);
+                if (notified.add(pistonHeadPos)) {
+                    PistonHeadBlockEntity.revalidateAt(level, pistonHeadPos);
+                }
             }
         }
     }

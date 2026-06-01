@@ -23,22 +23,26 @@ public final class EngineValidator {
             .thenComparingInt(pos -> pos.getZ());
 
     public static Result validate(Level level, BlockPos pistonHeadPos) {
-        PistonPositions pistons = pistonPositions(pistonHeadPos);
-
-        if (!isPistonHead(level, pistons.pistonHead())) {
+        if (!isPistonHead(level, pistonHeadPos)) {
             return Result.invalid("Missing piston head");
         }
+
+        Direction strokeDirection = pistonHeadFacing(level.getBlockState(pistonHeadPos));
+        PistonPositions pistons = pistonPositions(pistonHeadPos, strokeDirection);
         if (!isPiston(level, pistons.piston())) {
             return Result.invalid("Missing piston body");
         }
+        if (pistonFacing(level.getBlockState(pistons.piston())) != strokeDirection) {
+            return Result.invalid("Piston body faces the wrong direction");
+        }
         if (!isEmpty(level, pistons.emptyStroke())) {
-            return Result.invalid("Stroke space above piston must be empty");
+            return Result.invalid("Stroke space must be empty");
         }
         if (!isValidShaft(level, pistons.shaft())) {
             return Result.invalid("Missing horizontal Create shaft");
         }
 
-        BlockPos ringOrigin = pistonHeadPos.offset(-1, 0, -1);
+        BlockPos ringOrigin = ringOriginFor(pistonHeadPos, strokeDirection);
         List<BlockPos> ringPositions = ringPositions(ringOrigin);
         List<BlockPos> cylinderPositions = new ArrayList<>(16);
         BlockPos inletPos = null;
@@ -70,7 +74,13 @@ public final class EngineValidator {
             return Result.invalid("Missing steam cylinder ring");
         }
 
-        BoilerScan boiler = findDirectBoiler(level, ringOrigin);
+        if (strokeDirection == Direction.DOWN && inletPos == null) {
+            return Result.invalid("Upside-down engines need a steam inlet");
+        }
+
+        BoilerScan boiler = strokeDirection == Direction.UP
+                ? findDirectBoiler(level, ringOrigin)
+                : BoilerScan.invalid("Upside-down engines are pipe-fed only");
 
         BlockPos cylinderRoot = cylinderPositions.stream()
                 .min(ROOT_ORDER)
@@ -83,6 +93,7 @@ public final class EngineValidator {
                 cylinderRoot,
                 boiler.boilerPos(),
                 inletPos,
+                strokeDirection,
                 pistons.pistonHead(),
                 pistons.piston(),
                 pistons.emptyStroke(),
@@ -91,11 +102,15 @@ public final class EngineValidator {
     }
 
     public static PistonPositions pistonPositions(BlockPos pistonHeadPos) {
+        return pistonPositions(pistonHeadPos, Direction.UP);
+    }
+
+    public static PistonPositions pistonPositions(BlockPos pistonHeadPos, Direction strokeDirection) {
         return new PistonPositions(
                 pistonHeadPos,
-                pistonHeadPos.above(),
-                pistonHeadPos.above(2),
-                pistonHeadPos.above(3)
+                pistonHeadPos.relative(strokeDirection),
+                pistonHeadPos.relative(strokeDirection, 2),
+                pistonHeadPos.relative(strokeDirection, 3)
         );
     }
 
@@ -103,8 +118,16 @@ public final class EngineValidator {
         return pistonPositions(pistonPos.below());
     }
 
+    public static PistonPositions pistonPositionsFromBody(Level level, BlockPos pistonPos) {
+        Direction strokeDirection = Direction.UP;
+        if (level.isLoaded(pistonPos)) {
+            strokeDirection = pistonFacing(level.getBlockState(pistonPos));
+        }
+        return pistonPositions(pistonPos.relative(strokeDirection.getOpposite()), strokeDirection);
+    }
+
     public static boolean isReadyForShaftPlacement(Level level, BlockPos pistonPos) {
-        PistonPositions pistons = pistonPositionsFromBody(pistonPos);
+        PistonPositions pistons = pistonPositionsFromBody(level, pistonPos);
         if (!isPistonHead(level, pistons.pistonHead()) || !isPiston(level, pistons.piston())) {
             return false;
         }
@@ -115,8 +138,13 @@ public final class EngineValidator {
             return false;
         }
 
-        BlockPos ringOrigin = pistons.pistonHead().offset(-1, 0, -1);
-        return isRingReady(level, ringOrigin);
+        Direction strokeDirection = pistonHeadFacing(level.getBlockState(pistons.pistonHead()));
+        if (pistonFacing(level.getBlockState(pistons.piston())) != strokeDirection) {
+            return false;
+        }
+
+        BlockPos ringOrigin = ringOriginFor(pistons.pistonHead(), strokeDirection);
+        return isRingReady(level, ringOrigin, strokeDirection);
     }
 
     public static List<BlockPos> candidatePistonHeadsNear(BlockPos changedPos) {
@@ -168,6 +196,18 @@ public final class EngineValidator {
         return Direction.Axis.X;
     }
 
+    public static Direction pistonHeadFacing(BlockState state) {
+        return state.hasProperty(PistonHeadBlock.FACING) ? state.getValue(PistonHeadBlock.FACING) : Direction.UP;
+    }
+
+    public static Direction pistonFacing(BlockState state) {
+        return state.hasProperty(SteamPistonBlock.FACING) ? state.getValue(SteamPistonBlock.FACING) : Direction.UP;
+    }
+
+    public static BlockPos ringOriginFor(BlockPos pistonHeadPos, Direction strokeDirection) {
+        return pistonHeadPos.offset(-1, strokeDirection == Direction.DOWN ? -1 : 0, -1);
+    }
+
     private static boolean isAssembled(
             BlockState state,
             net.minecraft.world.level.block.state.properties.BooleanProperty property
@@ -189,7 +229,7 @@ public final class EngineValidator {
         return positions;
     }
 
-    private static boolean isRingReady(Level level, BlockPos origin) {
+    private static boolean isRingReady(Level level, BlockPos origin, Direction strokeDirection) {
         int inlets = 0;
         for (BlockPos pos : ringPositions(origin)) {
             if (!level.isLoaded(pos)) {
@@ -210,7 +250,7 @@ public final class EngineValidator {
 
             return false;
         }
-        return true;
+        return strokeDirection == Direction.UP || inlets == 1;
     }
 
     private static List<BlockPos> boilerShellPositions(BlockPos ringOrigin) {
@@ -265,13 +305,14 @@ public final class EngineValidator {
             BlockPos cylinderRoot,
             BlockPos boilerPos,
             BlockPos inletPos,
+            Direction strokeDirection,
             BlockPos pistonHead,
             BlockPos piston,
             BlockPos emptyStroke,
             BlockPos shaft
     ) {
         public static Result invalid(String message) {
-            return new Result(false, message, null, null, null, null, null, null, null, null);
+            return new Result(false, message, null, null, null, null, Direction.UP, null, null, null, null);
         }
     }
 

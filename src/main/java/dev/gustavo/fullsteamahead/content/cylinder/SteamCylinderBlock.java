@@ -6,6 +6,7 @@ import com.simibubi.create.foundation.block.IBE;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -13,6 +14,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -24,6 +26,7 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
     public static final EnumProperty<CylinderSection> SECTION = EnumProperty.create("section", CylinderSection.class);
     public static final EnumProperty<CylinderWallShape> WALL_SHAPE =
             EnumProperty.create("wall_shape", CylinderWallShape.class);
+    public static final DirectionProperty FACING = DirectionProperty.create("facing", Direction.UP, Direction.DOWN);
     private static final VoxelShape STANDALONE_SHAPE = Shapes.or(
             Block.box(4, 0, 0, 12, 15, 16),
             Block.box(5, 15, 0, 11, 16, 16)
@@ -38,7 +41,8 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(ASSEMBLED, false)
                 .setValue(SECTION, CylinderSection.NONE)
-                .setValue(WALL_SHAPE, CylinderWallShape.STANDALONE));
+                .setValue(WALL_SHAPE, CylinderWallShape.STANDALONE)
+                .setValue(FACING, Direction.UP));
     }
 
     @Override
@@ -77,7 +81,8 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
         BlockState neighborState = level.getBlockState(neighborPos);
         if (neighborState.is(ModBlocks.STEAM_CYLINDER.get())
                 || neighborState.is(ModBlocks.STEAM_INLET.get())
-                || neighborState.is(ModBlocks.PISTON.get())) {
+                || neighborState.is(ModBlocks.PISTON.get())
+                || neighborState.is(ModBlocks.PISTON_HEAD.get())) {
             return true;
         }
 
@@ -113,7 +118,7 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
             CollisionContext context
     ) {
         if (state.getValue(SECTION) != CylinderSection.NONE) {
-            return CylinderRingShapes.forSection(state.getValue(SECTION));
+            return CylinderRingShapes.forSection(state.getValue(SECTION), state.getValue(FACING));
         }
 
         return state.getValue(WALL_SHAPE) == CylinderWallShape.STRAIGHT_X ? STRAIGHT_X_SHAPE : STANDALONE_SHAPE;
@@ -131,7 +136,7 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(ASSEMBLED, SECTION, WALL_SHAPE);
+        builder.add(ASSEMBLED, SECTION, WALL_SHAPE, FACING);
     }
 
     @Override

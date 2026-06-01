@@ -79,17 +79,17 @@ For v1, `steam` should be non-placeable and should not need a bucket. It exists 
 
 The old inert `flywheel` and `governor` placeholders have been removed from registration, creative inventory, Java source, assets, tags, loot tables, and lang. Do not re-add them without a new design pass in this document.
 
-### Engine orientation: vertical only in v1
+### Engine orientation: vertical upright or inverted in v1
 
-The cylinder, piston column, and shaft link remain vertical in v1:
+The cylinder, piston column, and shaft link remain vertical in v1. Upright engines support both direct compact boiler mode and pipe-fed mode. Upside-down engines are pipe-fed only and require one assembled `steam_inlet`.
 
 - Steam Cylinder frame
-- Piston column rising through the cylinder
-- A regular horizontal Create shaft above the piston stroke space
+- Piston column running vertically through the cylinder
+- A regular horizontal Create shaft at the stroke end above upright engines or below inverted engines
 
 In direct compact mode, the Create Fluid Tank boiler still sits directly below the cylinder and Blaze Burners still heat upward below the tank. In pipe-fed mode, the boiler can be remote, but the engine assembly itself is still vertical.
 
-Other orientations (horizontal, inverted) are deferred to a future version.
+Horizontal orientations are deferred to a future version.
 
 ### Block list
 
@@ -336,7 +336,7 @@ src/main/java/dev/gustavo/fullsteamahead/
       SteamPistonBlock.java
       PistonHeadBlock.java
       PistonHeadBlockEntity.java       ← validates the engine, reads direct boiler or steam inlet, owns powered shaft
-      EngineValidator.java             ← fixed vertical engine validation
+      EngineValidator.java             ← vertical upright/inverted engine validation
       PistonSection.java               ← enum: INSIDE_LOW, INSIDE_HIGH, PROTRUDE_LOW, PROTRUDE_HIGH
     shaft/
       FullSteamPoweredShaftBlock.java  ← hidden replacement for player-placed Create shaft
@@ -637,6 +637,19 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [ ] Verify dedicated server startup remains clean with no client-class loading
 - [ ] Verify resource reload/F3+T does not break partial models or visuals
 - [ ] Verify old worlds with existing engines still load and animate
+
+### Phase 8.5: Upside-Down Pipe-Fed Engines
+
+**Goal**: Allow the same vertical engine to assemble upside down for ship and aircraft builds while preserving all existing upright behavior.
+
+- [x] Add vertical `facing=up/down` state to piston head, piston body, cylinder wall, and steam inlet blocks
+- [x] Piston head and piston placement use stair-like vertical placement: underside/upper-half side placement faces down; otherwise faces up
+- [x] Refactor engine validation around stroke direction so upright engines use head → piston → empty → shaft upward and inverted engines use the same sequence downward
+- [x] Keep inverted engines pipe-fed only; inverted validation requires one assembled `steam_inlet` and never direct-reads a compact boiler
+- [x] Keep upright direct compact mode and upright pipe-fed mode unchanged
+- [x] Make shaft placement helper, hidden powered shaft survival, movement checks, lighting, particles, and piston/linkage rendering direction-aware
+- [x] Mirror assembled cylinder ring hitboxes and reuse mirrored existing assembled cylinder section models for inverted visuals
+- [ ] Verify inverted pipe-fed engine in a standalone world and on an Aeronautics/Simulated contraption
 
 Deferred idea after visuals: inline shared-wall cylinder banks, where adjacent cylinders can share one cylinder wall block instead of requiring independent 3x3 rings.
 

@@ -27,6 +27,7 @@ Use a Java 21 runtime. The first build downloads and prepares the NeoForge Minec
 - Required runtime mod: Create
 - Optional runtime compatibility targets: Sable and Create Aeronautics
 - v1 engine shape: vertical `3x3x2` hollow cylinder ring, piston head, piston body, empty stroke space, and a horizontal Create shaft
+- Engine orientation: upright engines support direct compact boiler and pipe-fed modes; upside-down engines are pipe-fed only and require a `steam_inlet`
 - Visual direction: close to base Create's copper, andesite, brass, shafts, gauges, and steam engine style
 - Engine RPM tiers: `16`, `32`, `48`, `64`
 

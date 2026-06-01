@@ -3,8 +3,10 @@ package dev.gustavo.fullsteamahead.compat.movement;
 import com.simibubi.create.api.contraption.BlockMovementChecks;
 import com.simibubi.create.content.fluids.FluidPropagator;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
+import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlock;
 import dev.gustavo.fullsteamahead.content.piston.EngineValidator;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
+import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -170,7 +172,7 @@ public final class FullSteamMovementRules {
             BlockPos neighborPos,
             Direction direction
     ) {
-        if (direction != Direction.DOWN || !isCylinderShellBlock(state)) {
+        if (direction != Direction.DOWN || !isCylinderShellBlock(state) || isCylinderShellFacingDown(state)) {
             return false;
         }
 
@@ -207,6 +209,7 @@ public final class FullSteamMovementRules {
     ) {
         return direction == Direction.UP
                 && isCylinderShellBlock(neighborState)
+                && !isCylinderShellFacingDown(neighborState)
                 && level.getBlockEntity(pos) instanceof FluidTankBlockEntity;
     }
 
@@ -238,6 +241,16 @@ public final class FullSteamMovementRules {
 
     private static boolean isCylinderShellBlock(BlockState state) {
         return state.is(ModBlocks.STEAM_CYLINDER.get()) || state.is(ModBlocks.STEAM_INLET.get());
+    }
+
+    private static boolean isCylinderShellFacingDown(BlockState state) {
+        if (state.hasProperty(SteamCylinderBlock.FACING)) {
+            return state.getValue(SteamCylinderBlock.FACING) == Direction.DOWN;
+        }
+        if (state.hasProperty(SteamInletBlock.FACING)) {
+            return state.getValue(SteamInletBlock.FACING) == Direction.DOWN;
+        }
+        return false;
     }
 
     private static Direction unitDirection(BlockPos offset) {

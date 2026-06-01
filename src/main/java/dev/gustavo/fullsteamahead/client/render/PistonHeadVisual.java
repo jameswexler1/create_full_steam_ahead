@@ -57,7 +57,7 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         relight(partLightPos(base, animation.headY()), head);
         relight(partLightPos(base, animation.pistonY(0)), pistons);
         relight(partLightPos(base, animation.connectingRodY()), connectingRod);
-        relight(base.above(3), crank);
+        relight(base.relative(animation.strokeDirection(), 3), crank);
     }
 
     @Override
@@ -175,7 +175,8 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
     }
 
     private static BlockPos partLightPos(BlockPos basePos, float y) {
-        int blockOffset = Math.max(0, Math.min(3, Math.round(y)));
-        return basePos.above(blockOffset);
+        int blockOffset = Math.max(0, Math.min(3, Math.round(Math.abs(y))));
+        Direction direction = y < 0 ? Direction.DOWN : Direction.UP;
+        return basePos.relative(direction, blockOffset);
     }
 }

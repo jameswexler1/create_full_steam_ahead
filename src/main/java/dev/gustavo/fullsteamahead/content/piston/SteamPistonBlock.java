@@ -23,6 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -36,6 +37,7 @@ public class SteamPistonBlock extends Block {
     public static final EnumProperty<PistonSection> PISTON_SECTION =
             EnumProperty.create("piston_section", PistonSection.class);
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.HORIZONTAL_AXIS;
+    public static final DirectionProperty FACING = DirectionProperty.create("facing", Direction.UP, Direction.DOWN);
     private static final int PLACEMENT_HELPER_ID = PlacementHelpers.register(new ShaftPlacementHelper());
     private static final VoxelShape SHAPE = Block.box(5, 0, 5, 11, 16, 11);
 
@@ -44,7 +46,8 @@ public class SteamPistonBlock extends Block {
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(ASSEMBLED, false)
                 .setValue(PISTON_SECTION, PistonSection.INSIDE_LOW)
-                .setValue(AXIS, Direction.Axis.X));
+                .setValue(AXIS, Direction.Axis.X)
+                .setValue(FACING, Direction.UP));
     }
 
     @Override
@@ -54,7 +57,29 @@ public class SteamPistonBlock extends Block {
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(AXIS, context.getHorizontalDirection().getAxis());
+        Direction facing = adjacentPistonHeadFacing(context.getLevel(), context.getClickedPos());
+        if (facing == null) {
+            facing = PistonHeadBlock.placementFacing(context);
+        }
+        return defaultBlockState()
+                .setValue(AXIS, context.getHorizontalDirection().getAxis())
+                .setValue(FACING, facing);
+    }
+
+    private Direction adjacentPistonHeadFacing(Level level, BlockPos pos) {
+        for (Direction direction : new Direction[]{Direction.UP, Direction.DOWN}) {
+            BlockPos headPos = pos.relative(direction.getOpposite());
+            if (!level.isLoaded(headPos)) {
+                continue;
+            }
+
+            BlockState headState = level.getBlockState(headPos);
+            if (headState.is(ModBlocks.PISTON_HEAD.get())
+                    && EngineValidator.pistonHeadFacing(headState) == direction) {
+                return direction;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -112,7 +137,7 @@ public class SteamPistonBlock extends Block {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(ASSEMBLED, PISTON_SECTION, AXIS);
+        builder.add(ASSEMBLED, PISTON_SECTION, AXIS, FACING);
     }
 
     private static class ShaftPlacementHelper implements IPlacementHelper {
@@ -139,7 +164,7 @@ public class SteamPistonBlock extends Block {
             }
 
             Direction.Axis axis = state.getValue(AXIS);
-            BlockPos shaftPos = EngineValidator.pistonPositionsFromBody(pos).shaft();
+            BlockPos shaftPos = EngineValidator.pistonPositionsFromBody(level, pos).shaft();
             return PlacementOffset.success(shaftPos, placedState -> {
                 BlockState shaftState = AllBlocks.SHAFT.getDefaultState()
                         .setValue(ShaftBlock.AXIS, axis);

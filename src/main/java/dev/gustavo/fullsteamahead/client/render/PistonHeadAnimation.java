@@ -26,7 +26,7 @@ public final class PistonHeadAnimation {
                 ? KineticBlockEntityRenderer.getAngleForBe(shaft, shaft.getBlockPos(), shaftAxis)
                 : 0;
         angle += engine.getAnimationPhaseOffset();
-        return state(visible, angle, shaftAxis);
+        return state(visible, angle, shaftAxis, engine.getStrokeDirection());
     }
 
     public static State state(boolean visible, float angle) {
@@ -34,6 +34,10 @@ public final class PistonHeadAnimation {
     }
 
     public static State state(boolean visible, float angle, Direction.Axis shaftAxis) {
+        return state(visible, angle, shaftAxis, Direction.UP);
+    }
+
+    public static State state(boolean visible, float angle, Direction.Axis shaftAxis, Direction strokeDirection) {
         float crankDepth = CRANK_RADIUS * Mth.cos(angle);
         float crankVertical = -CRANK_RADIUS * Mth.sin(angle);
         float rodVertical = Mth.sqrt(Math.max(
@@ -45,14 +49,16 @@ public final class PistonHeadAnimation {
         float headY = pistonY - HEAD_TO_PISTON_BODY_Y;
         float connectingRodY = wristY - CONNECTING_ROD_SMALL_END_Y;
         float connectingRodAngle = (float) Math.asin(Mth.clamp(crankDepth / CONNECTING_ROD_LENGTH, -1.0F, 1.0F));
+        float strokeSign = strokeDirection == Direction.DOWN ? -1.0F : 1.0F;
         return new State(
                 visible,
                 angle,
                 shaftAxis,
-                headY,
-                pistonY,
-                connectingRodY,
-                connectingRodAngle
+                strokeDirection,
+                headY * strokeSign,
+                pistonY * strokeSign,
+                connectingRodY * strokeSign,
+                connectingRodAngle * strokeSign
         );
     }
 
@@ -60,6 +66,7 @@ public final class PistonHeadAnimation {
             boolean visible,
             float angle,
             Direction.Axis shaftAxis,
+            Direction strokeDirection,
             float headY,
             float pistonY,
             float connectingRodY,
@@ -74,11 +81,11 @@ public final class PistonHeadAnimation {
         }
 
         public float crankY() {
-            return SHAFT_BASE_Y;
+            return strokeDirection == Direction.DOWN ? -SHAFT_BASE_Y : SHAFT_BASE_Y;
         }
 
         public float crankRotation() {
-            return angle - HALF_PI;
+            return (strokeDirection == Direction.DOWN ? -angle : angle) - HALF_PI;
         }
     }
 

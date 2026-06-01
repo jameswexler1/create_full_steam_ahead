@@ -97,10 +97,11 @@ public class FullSteamPoweredShaftBlock extends PoweredShaftBlock {
             if (!level.getBlockState(headPos).is(ModBlocks.PISTON_HEAD.get())) {
                 continue;
             }
-            if (headPos.above(3).equals(shaftPos)
-                    && level instanceof Level loadedLevel
-                    && EngineValidator.validate(loadedLevel, headPos).valid()) {
-                return true;
+            if (level instanceof Level loadedLevel) {
+                EngineValidator.Result result = EngineValidator.validate(loadedLevel, headPos);
+                if (result.valid() && shaftPos.equals(result.shaft())) {
+                    return true;
+                }
             }
         }
         return false;

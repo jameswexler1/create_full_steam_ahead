@@ -1,12 +1,14 @@
 package dev.gustavo.fullsteamahead.content.cylinder;
 
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public final class CylinderRingShapes {
     private static final double SHIFT = 16.0D;
-    private static final VoxelShape[] SHAPES = new VoxelShape[CylinderSection.values().length];
+    private static final VoxelShape[] UP_SHAPES = new VoxelShape[CylinderSection.values().length];
+    private static final VoxelShape[] DOWN_SHAPES = new VoxelShape[CylinderSection.values().length];
     private static final RingBox[] ASSEMBLED_BOXES = {
             new RingBox(0, 0, -9, 16, 31, 0),
             new RingBox(0, 31, -8, 16, 32, 0),
@@ -72,18 +74,23 @@ public final class CylinderRingShapes {
 
     static {
         for (CylinderSection section : CylinderSection.values()) {
-            SHAPES[section.ordinal()] = createShape(section);
+            UP_SHAPES[section.ordinal()] = createShape(section, Direction.UP);
+            DOWN_SHAPES[section.ordinal()] = createShape(section, Direction.DOWN);
         }
     }
 
     public static VoxelShape forSection(CylinderSection section) {
+        return forSection(section, Direction.UP);
+    }
+
+    public static VoxelShape forSection(CylinderSection section, Direction facing) {
         if (section == null || section == CylinderSection.NONE) {
             return Shapes.block();
         }
-        return SHAPES[section.ordinal()];
+        return facing == Direction.DOWN ? DOWN_SHAPES[section.ordinal()] : UP_SHAPES[section.ordinal()];
     }
 
-    private static VoxelShape createShape(CylinderSection section) {
+    private static VoxelShape createShape(CylinderSection section, Direction facing) {
         if (section == CylinderSection.NONE) {
             return Shapes.block();
         }
@@ -97,7 +104,8 @@ public final class CylinderRingShapes {
 
         VoxelShape shape = Shapes.empty();
         for (RingBox source : ASSEMBLED_BOXES) {
-            RingBox shifted = source.shift(SHIFT, 0, SHIFT);
+            RingBox oriented = facing == Direction.DOWN ? source.mirrorY(32.0D) : source;
+            RingBox shifted = oriented.shift(SHIFT, 0, SHIFT);
             double minX = Math.max(shifted.minX, cellMinX);
             double minY = Math.max(shifted.minY, cellMinY);
             double minZ = Math.max(shifted.minZ, cellMinZ);
@@ -124,6 +132,10 @@ public final class CylinderRingShapes {
     private record RingBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
         RingBox shift(double x, double y, double z) {
             return new RingBox(minX + x, minY + y, minZ + z, maxX + x, maxY + y, maxZ + z);
+        }
+
+        RingBox mirrorY(double height) {
+            return new RingBox(minX, height - maxY, minZ, maxX, height - minY, maxZ);
         }
     }
 

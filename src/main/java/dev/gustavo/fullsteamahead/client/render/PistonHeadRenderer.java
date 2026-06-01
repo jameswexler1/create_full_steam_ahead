@@ -42,7 +42,9 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
         int headLight = partLight(level, headPos, animation.headY(), light);
         int pistonLight = partLight(level, headPos, animation.pistonY(0), light);
         int rodLight = partLight(level, headPos, animation.connectingRodY(), light);
-        int shaftLight = level == null ? light : LevelRenderer.getLightColor(level, headPos.above(3));
+        int shaftLight = level == null
+                ? light
+                : LevelRenderer.getLightColor(level, headPos.relative(animation.strokeDirection(), 3));
 
         renderTranslated(FullSteamPartialModels.pistonHead(), state, poseStack, solid, headLight, overlay,
                 animation.headY());
@@ -55,7 +57,9 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
 
     @Override
     public AABB getRenderBoundingBox(PistonHeadBlockEntity engine) {
-        return new AABB(engine.getBlockPos()).inflate(2.0D, 5.0D, 2.0D);
+        return new AABB(engine.getBlockPos())
+                .minmax(new AABB(engine.getBlockPos().relative(engine.getStrokeDirection(), 3)))
+                .inflate(2.0D);
     }
 
     private static void renderTranslated(
@@ -176,7 +180,8 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             return fallbackLight;
         }
 
-        int blockOffset = Math.max(0, Math.min(3, Math.round(y)));
-        return LevelRenderer.getLightColor(level, basePos.above(blockOffset));
+        int blockOffset = Math.max(0, Math.min(3, Math.round(Math.abs(y))));
+        Direction direction = y < 0 ? Direction.DOWN : Direction.UP;
+        return LevelRenderer.getLightColor(level, basePos.relative(direction, blockOffset));
     }
 }

@@ -123,7 +123,14 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     public BlockPos getEnginePos() {
-        return ringOrigin == null ? null : ringOrigin.offset(1, 0, 1);
+        if (ringOrigin == null) {
+            return null;
+        }
+
+        Direction facing = getBlockState().hasProperty(SteamInletBlock.FACING)
+                ? getBlockState().getValue(SteamInletBlock.FACING)
+                : Direction.UP;
+        return ringOrigin.offset(1, facing == Direction.DOWN ? 1 : 0, 1);
     }
 
     public int getSteamAmount() {

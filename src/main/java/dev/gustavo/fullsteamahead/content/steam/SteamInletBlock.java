@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -28,6 +29,7 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
     public static final EnumProperty<CylinderSection> SECTION = EnumProperty.create("section", CylinderSection.class);
     public static final EnumProperty<CylinderWallShape> WALL_SHAPE =
             EnumProperty.create("wall_shape", CylinderWallShape.class);
+    public static final DirectionProperty FACING = DirectionProperty.create("facing", Direction.UP, Direction.DOWN);
     private static final VoxelShape NORTH_SHAPE = Shapes.or(
             Block.box(0, 0, 7, 16, 16, 16),
             Block.box(2, 2, 5, 14, 14, 7),
@@ -58,7 +60,8 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
         registerDefaultState(stateDefinition.any()
                 .setValue(ASSEMBLED, false)
                 .setValue(SECTION, CylinderSection.NONE)
-                .setValue(WALL_SHAPE, CylinderWallShape.STANDALONE));
+                .setValue(WALL_SHAPE, CylinderWallShape.STANDALONE)
+                .setValue(FACING, Direction.UP));
     }
 
     @Override
@@ -97,7 +100,8 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
         BlockState neighborState = level.getBlockState(neighborPos);
         if (neighborState.is(ModBlocks.STEAM_CYLINDER.get())
                 || neighborState.is(ModBlocks.STEAM_INLET.get())
-                || neighborState.is(ModBlocks.PISTON.get())) {
+                || neighborState.is(ModBlocks.PISTON.get())
+                || neighborState.is(ModBlocks.PISTON_HEAD.get())) {
             return true;
         }
 
@@ -147,7 +151,7 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(ASSEMBLED, SECTION, WALL_SHAPE);
+        builder.add(ASSEMBLED, SECTION, WALL_SHAPE, FACING);
     }
 
     private VoxelShape shapeForSection(CylinderSection section) {

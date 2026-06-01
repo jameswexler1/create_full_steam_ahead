@@ -253,6 +253,10 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         return shaftPos;
     }
 
+    public Direction getStrokeDirection() {
+        return EngineValidator.pistonHeadFacing(getBlockState());
+    }
+
     public Direction.Axis getShaftAxis() {
         if (level == null || shaftPos == null || !level.isLoaded(shaftPos)) {
             return Direction.Axis.X;
@@ -284,6 +288,8 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
 
         tooltip.add(Component.literal("Engine assembled").withStyle(ChatFormatting.GREEN));
+        tooltip.add(Component.literal(getStrokeDirection() == Direction.DOWN ? "Orientation: upside down" : "Orientation: upright")
+                .withStyle(ChatFormatting.DARK_GRAY));
         tooltip.add(Component.literal("Source: " + sourceMode.displayName())
                 .withStyle(sourceMode == SourceMode.NONE ? ChatFormatting.YELLOW : ChatFormatting.AQUA));
         if (sourceMode == SourceMode.PIPED_STEAM) {
@@ -312,9 +318,13 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         SteamInletBlockEntity inlet = getInlet();
         if (inlet != null && inlet.isInletAssembled()) {
             SteamOutput piped = calculatePipedSteamOutput(inlet, executePiped);
-            if (piped.canRun() || boilerPos == null) {
+            if (piped.canRun() || boilerPos == null || getStrokeDirection() == Direction.DOWN) {
                 return piped;
             }
+        }
+
+        if (getStrokeDirection() == Direction.DOWN) {
+            return SteamOutput.none(inlet == null ? SourceMode.NONE : SourceMode.PIPED_STEAM);
         }
 
         FluidTankBlockEntity boiler = getBoiler();
@@ -513,19 +523,21 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private void setPistonsAssembled(EngineValidator.Result result) {
         setPistonHead(result.pistonHead(), true);
         Direction.Axis shaftAxis = EngineValidator.shaftAxis(level, result.shaft());
-        setPiston(result.piston(), true, PistonSection.INSIDE_HIGH, shaftAxis);
+        setPiston(result.piston(), true, PistonSection.INSIDE_HIGH, shaftAxis, result.strokeDirection());
     }
 
     private void clearPistonStates(BlockPos skippedPistonPos) {
-        EngineValidator.PistonPositions pistons = EngineValidator.pistonPositions(worldPosition);
-        clearPistonHead(pistons.pistonHead(), skippedPistonPos);
-        clearPiston(pistons.piston(), skippedPistonPos);
-        clearPiston(pistons.emptyStroke(), skippedPistonPos);
+        for (Direction direction : new Direction[]{Direction.UP, Direction.DOWN}) {
+            EngineValidator.PistonPositions pistons = EngineValidator.pistonPositions(worldPosition, direction);
+            clearPistonHead(pistons.pistonHead(), skippedPistonPos);
+            clearPiston(pistons.piston(), skippedPistonPos);
+            clearPiston(pistons.emptyStroke(), skippedPistonPos);
+        }
     }
 
     private void clearPiston(BlockPos pos, BlockPos skippedPistonPos) {
         if (!pos.equals(skippedPistonPos)) {
-            setPiston(pos, false, PistonSection.INSIDE_LOW, null);
+            setPiston(pos, false, PistonSection.INSIDE_LOW, null, null);
         }
     }
 
@@ -535,7 +547,13 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
     }
 
-    private void setPiston(BlockPos pos, boolean assembled, PistonSection section, Direction.Axis axis) {
+    private void setPiston(
+            BlockPos pos,
+            boolean assembled,
+            PistonSection section,
+            Direction.Axis axis,
+            Direction strokeDirection
+    ) {
         if (level == null || pos == null || !level.isLoaded(pos)) {
             return;
         }
@@ -550,6 +568,9 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
                 .setValue(SteamPistonBlock.PISTON_SECTION, section);
         if (axis != null && state.hasProperty(SteamPistonBlock.AXIS)) {
             newState = newState.setValue(SteamPistonBlock.AXIS, axis);
+        }
+        if (strokeDirection != null && state.hasProperty(SteamPistonBlock.FACING)) {
+            newState = newState.setValue(SteamPistonBlock.FACING, strokeDirection);
         }
         if (newState != state) {
             level.setBlock(pos, newState, Block.UPDATE_CLIENTS);
@@ -699,9 +720,10 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
         float intensity = getEffectIntensity();
         Direction exhaustDirection = getExhaustDirection(getShaftAxis());
+        Direction strokeDirection = getStrokeDirection();
         Vec3 normal = Vec3.atLowerCornerOf(exhaustDirection.getNormal());
         Vec3 origin = Vec3.atCenterOf(worldPosition)
-                .add(0.0D, 0.95D, 0.0D)
+                .add(Vec3.atLowerCornerOf(strokeDirection.getNormal()).scale(0.95D))
                 .add(normal.scale(0.68D));
         Vec3 jitter = new Vec3(
                 (level.random.nextDouble() - 0.5D) * 0.08D,

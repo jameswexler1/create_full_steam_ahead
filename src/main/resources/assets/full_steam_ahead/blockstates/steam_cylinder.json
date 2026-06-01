@@ -28,133 +28,38 @@
         "y": 90
       }
     },
-    {
-      "when": {
-        "section": "lower_north_west"
-      },
-      "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north_west"
-      }
-    },
-    {
-      "when": {
-        "section": "lower_north"
-      },
-      "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north"
-      }
-    },
-    {
-      "when": {
-        "section": "lower_north_east"
-      },
-      "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north_east"
-      }
-    },
-    {
-      "when": {
-        "section": "lower_west"
-      },
-      "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_west"
-      }
-    },
-    {
-      "when": {
-        "section": "lower_east"
-      },
-      "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_east"
-      }
-    },
-    {
-      "when": {
-        "section": "lower_south_west"
-      },
-      "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south_west"
-      }
-    },
-    {
-      "when": {
-        "section": "lower_south"
-      },
-      "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south"
-      }
-    },
-    {
-      "when": {
-        "section": "lower_south_east"
-      },
-      "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south_east"
-      }
-    },
-    {
-      "when": {
-        "section": "upper_north_west"
-      },
-      "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north_west"
-      }
-    },
-    {
-      "when": {
-        "section": "upper_north"
-      },
-      "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north"
-      }
-    },
-    {
-      "when": {
-        "section": "upper_north_east"
-      },
-      "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north_east"
-      }
-    },
-    {
-      "when": {
-        "section": "upper_west"
-      },
-      "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_west"
-      }
-    },
-    {
-      "when": {
-        "section": "upper_east"
-      },
-      "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_east"
-      }
-    },
-    {
-      "when": {
-        "section": "upper_south_west"
-      },
-      "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south_west"
-      }
-    },
-    {
-      "when": {
-        "section": "upper_south"
-      },
-      "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south"
-      }
-    },
-    {
-      "when": {
-        "section": "upper_south_east"
-      },
-      "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south_east"
-      }
-    }
+    { "when": { "section": "lower_north_west", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north_west" } },
+    { "when": { "section": "lower_north", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north" } },
+    { "when": { "section": "lower_north_east", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north_east" } },
+    { "when": { "section": "lower_west", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_west" } },
+    { "when": { "section": "lower_east", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_east" } },
+    { "when": { "section": "lower_south_west", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south_west" } },
+    { "when": { "section": "lower_south", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south" } },
+    { "when": { "section": "lower_south_east", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south_east" } },
+    { "when": { "section": "upper_north_west", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north_west" } },
+    { "when": { "section": "upper_north", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north" } },
+    { "when": { "section": "upper_north_east", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north_east" } },
+    { "when": { "section": "upper_west", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_west" } },
+    { "when": { "section": "upper_east", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_east" } },
+    { "when": { "section": "upper_south_west", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south_west" } },
+    { "when": { "section": "upper_south", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south" } },
+    { "when": { "section": "upper_south_east", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south_east" } },
+
+    { "when": { "section": "lower_north_west", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south_west", "x": 180 } },
+    { "when": { "section": "lower_north", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south", "x": 180 } },
+    { "when": { "section": "lower_north_east", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south_east", "x": 180 } },
+    { "when": { "section": "lower_west", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_west", "x": 180 } },
+    { "when": { "section": "lower_east", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_east", "x": 180 } },
+    { "when": { "section": "lower_south_west", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north_west", "x": 180 } },
+    { "when": { "section": "lower_south", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north", "x": 180 } },
+    { "when": { "section": "lower_south_east", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north_east", "x": 180 } },
+    { "when": { "section": "upper_north_west", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south_west", "x": 180 } },
+    { "when": { "section": "upper_north", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south", "x": 180 } },
+    { "when": { "section": "upper_north_east", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south_east", "x": 180 } },
+    { "when": { "section": "upper_west", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_west", "x": 180 } },
+    { "when": { "section": "upper_east", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_east", "x": 180 } },
+    { "when": { "section": "upper_south_west", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north_west", "x": 180 } },
+    { "when": { "section": "upper_south", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north", "x": 180 } },
+    { "when": { "section": "upper_south_east", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north_east", "x": 180 } }
   ]
 }

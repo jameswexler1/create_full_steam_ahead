@@ -1,20 +1,48 @@
 {
-  "variants": {
-    "assembled=false,axis=x,piston_section=inside_low": { "model": "full_steam_ahead:block/piston", "y": 270 },
-    "assembled=false,axis=x,piston_section=inside_high": { "model": "full_steam_ahead:block/piston", "y": 270 },
-    "assembled=false,axis=x,piston_section=protrude_low": { "model": "full_steam_ahead:block/piston", "y": 270 },
-    "assembled=false,axis=x,piston_section=protrude_high": { "model": "full_steam_ahead:block/piston", "y": 270 },
-    "assembled=false,axis=z,piston_section=inside_low": { "model": "full_steam_ahead:block/piston" },
-    "assembled=false,axis=z,piston_section=inside_high": { "model": "full_steam_ahead:block/piston" },
-    "assembled=false,axis=z,piston_section=protrude_low": { "model": "full_steam_ahead:block/piston" },
-    "assembled=false,axis=z,piston_section=protrude_high": { "model": "full_steam_ahead:block/piston" },
-    "assembled=true,axis=x,piston_section=inside_low": { "model": "full_steam_ahead:block/empty" },
-    "assembled=true,axis=x,piston_section=inside_high": { "model": "full_steam_ahead:block/empty" },
-    "assembled=true,axis=x,piston_section=protrude_low": { "model": "full_steam_ahead:block/empty" },
-    "assembled=true,axis=x,piston_section=protrude_high": { "model": "full_steam_ahead:block/empty" },
-    "assembled=true,axis=z,piston_section=inside_low": { "model": "full_steam_ahead:block/empty" },
-    "assembled=true,axis=z,piston_section=inside_high": { "model": "full_steam_ahead:block/empty" },
-    "assembled=true,axis=z,piston_section=protrude_low": { "model": "full_steam_ahead:block/empty" },
-    "assembled=true,axis=z,piston_section=protrude_high": { "model": "full_steam_ahead:block/empty" }
-  }
+  "multipart": [
+    {
+      "when": {
+        "assembled": "false",
+        "axis": "x",
+        "facing": "up"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/piston",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "assembled": "false",
+        "axis": "z",
+        "facing": "up"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/piston"
+      }
+    },
+    {
+      "when": {
+        "assembled": "false",
+        "axis": "x",
+        "facing": "down"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/piston",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "assembled": "false",
+        "axis": "z",
+        "facing": "down"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/piston",
+        "x": 180
+      }
+    }
+  ]
 }

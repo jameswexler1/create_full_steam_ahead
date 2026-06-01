@@ -2,8 +2,10 @@ package dev.gustavo.fullsteamahead.content.piston;
 
 import com.mojang.serialization.MapCodec;
 import com.simibubi.create.foundation.block.IBE;
+import dev.gustavo.fullsteamahead.content.cylinder.CylinderConnectivity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -11,6 +13,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -18,21 +22,46 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class PistonHeadBlock extends Block implements IBE<PistonHeadBlockEntity> {
     public static final MapCodec<PistonHeadBlock> CODEC = simpleCodec(PistonHeadBlock::new);
     public static final BooleanProperty ASSEMBLED = BooleanProperty.create("assembled");
-    private static final VoxelShape SHAPE = Shapes.or(
+    public static final DirectionProperty FACING = DirectionProperty.create("facing", Direction.UP, Direction.DOWN);
+    private static final VoxelShape UP_SHAPE = Shapes.or(
             Block.box(0, 0, 0, 16, 3, 16),
             Block.box(2, 3, 2, 14, 5, 14),
             Block.box(4, 5, 4, 12, 7, 12),
             Block.box(5, 7, 5, 11, 16, 11)
     );
+    private static final VoxelShape DOWN_SHAPE = Shapes.or(
+            Block.box(0, 13, 0, 16, 16, 16),
+            Block.box(2, 11, 2, 14, 13, 14),
+            Block.box(4, 9, 4, 12, 11, 12),
+            Block.box(5, 0, 5, 11, 9, 11)
+    );
 
     public PistonHeadBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(ASSEMBLED, false));
+        registerDefaultState(stateDefinition.any()
+                .setValue(ASSEMBLED, false)
+                .setValue(FACING, Direction.UP));
     }
 
     @Override
     protected MapCodec<? extends Block> codec() {
         return CODEC;
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return defaultBlockState().setValue(FACING, placementFacing(context));
+    }
+
+    static Direction placementFacing(BlockPlaceContext context) {
+        Direction clickedFace = context.getClickedFace();
+        if (clickedFace == Direction.DOWN) {
+            return Direction.DOWN;
+        }
+        if (clickedFace != Direction.UP && context.getClickLocation().y - context.getClickedPos().getY() > 0.5D) {
+            return Direction.DOWN;
+        }
+        return Direction.UP;
     }
 
     @Override
@@ -42,7 +71,7 @@ public class PistonHeadBlock extends Block implements IBE<PistonHeadBlockEntity>
             BlockPos pos,
             CollisionContext context
     ) {
-        return SHAPE;
+        return state.getValue(FACING) == Direction.DOWN ? DOWN_SHAPE : UP_SHAPE;
     }
 
     @Override
@@ -52,13 +81,14 @@ public class PistonHeadBlock extends Block implements IBE<PistonHeadBlockEntity>
             BlockPos pos,
             CollisionContext context
     ) {
-        return SHAPE;
+        return getShape(state, level, pos, context);
     }
 
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         if (!level.isClientSide() && !state.is(oldState.getBlock())) {
+            CylinderConnectivity.refreshFrom(level, pos);
             withBlockEntityDo(level, pos, PistonHeadBlockEntity::revalidateStructure);
             PistonHeadBlockEntity.revalidateNearbyEngines(level, pos);
         }
@@ -69,6 +99,7 @@ public class PistonHeadBlock extends Block implements IBE<PistonHeadBlockEntity>
         if (!state.is(newState.getBlock())) {
             if (!level.isClientSide()) {
                 withBlockEntityDo(level, pos, PistonHeadBlockEntity::clearAssembly);
+                CylinderConnectivity.refreshFromRemoval(level, pos);
             }
             IBE.onRemove(state, level, pos, newState);
         }
@@ -76,7 +107,7 @@ public class PistonHeadBlock extends Block implements IBE<PistonHeadBlockEntity>
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(ASSEMBLED);
+        builder.add(ASSEMBLED, FACING);
     }
 
     @Override
