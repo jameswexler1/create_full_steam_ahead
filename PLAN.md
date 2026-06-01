@@ -624,7 +624,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Apply the `_v2` hand-authored assembled cylinder ring texture PNG revision
 - [x] Use a hidden assembled cylinder ring item model as the creative tab icon and tune its display scale to match neighboring tab icons
 - [x] Reuse the 16 assembled cylinder subunit models for progressive `Cylinder Wall` construction visuals
-- [x] Infer partial cylinder-wall section visuals from connected wall/inlet groups without enabling engine mechanics
+- [x] Infer partial cylinder-wall section visuals from connected wall groups, including at most one inlet, without enabling engine mechanics
 - [x] Apply the exposed-parts fix: v3 assembled cylinder atlas plus generated cut faces for all 16 section models
 - [x] Replace the standalone `Cylinder Wall` block with the v1 textured wall model and matching hitbox
 - [x] Refresh adjacent Create pipe connections when `steam_inlet` fluid capability changes during cylinder ring disassembly/reassembly

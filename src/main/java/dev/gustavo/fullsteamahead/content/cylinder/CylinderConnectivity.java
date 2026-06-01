@@ -361,7 +361,7 @@ public final class CylinderConnectivity {
 
         Map<BlockPos, CylinderSection> assignments = new HashMap<>();
         for (Set<BlockPos> component : connectedComponents(members)) {
-            if (!hasRingIntent(component)) {
+            if (!canShowPartialRingVisuals(level, component) || !hasRingIntent(component)) {
                 continue;
             }
 
@@ -400,6 +400,10 @@ public final class CylinderConnectivity {
 
         Map<BlockPos, CylinderWallShape> assignments = new HashMap<>();
         for (Set<BlockPos> component : connectedComponents(members)) {
+            if (!canShowPartialRingVisuals(level, component)) {
+                continue;
+            }
+
             CylinderWallShape shape = straightWallShape(component);
             if (shape == CylinderWallShape.STANDALONE) {
                 continue;
@@ -440,6 +444,17 @@ public final class CylinderConnectivity {
         }
 
         return components;
+    }
+
+    private static boolean canShowPartialRingVisuals(Level level, Set<BlockPos> component) {
+        int inlets = 0;
+        for (BlockPos pos : component) {
+            if (level.getBlockState(pos).is(ModBlocks.STEAM_INLET.get()) && ++inlets > 1) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static boolean hasRingIntent(Set<BlockPos> component) {

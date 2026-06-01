@@ -133,6 +133,11 @@ Completed adjacent cylinder reliability slice:
 - [x] Expanded refresh candidates with existing assembled ring origins before clearing partial states.
 - [x] Preserved neighboring valid rings while still clearing invalid/stale rings when their own structure is broken.
 
+Completed steam inlet partial-visual reliability slice:
+
+- [x] Diagnosed side-by-side `steam_inlet` blocks entering partial ring-section visuals through the generic cylinder-wall visual inference path.
+- [x] Kept complete rings valid with exactly one inlet, but blocked partial section and straight-wall visual inference for connected components containing multiple inlets.
+
 Automated results:
 
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-21 after technical partials, the axial crankshaft fix, crank-phase steam effects, and the steam sound correction.
@@ -188,6 +193,7 @@ Automated results:
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-01 after regenerating assembled cylinder sections from the manually painted Monday Blockbench model.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-29 after replacing the steam inlet placeholder model.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-29 after protecting adjacent assembled cylinder rings during connectivity refresh.
+- [x] `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-01 after blocking multi-inlet partial ring visuals.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
