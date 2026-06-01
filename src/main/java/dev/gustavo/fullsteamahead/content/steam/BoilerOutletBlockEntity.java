@@ -38,9 +38,10 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     public static final int STEAM_PER_HEAT_UNIT = 10;
     public static final int PRESSURE_RANGE = 30;
     private static final int ENGINE_STEAM_INTAKE_PER_TICK = 9 * STEAM_PER_HEAT_UNIT;
+    private static final int MIN_PIPE_FLOW_RESERVE = ENGINE_STEAM_INTAKE_PER_TICK;
     private static final float PRESSURE_PER_MB = 2.0f;
     private static final int BUFFER_CAPACITY = 16_000;
-    private static final int PRESSURE_REFRESH_TICKS = 20;
+    private static final int PRESSURE_REFRESH_TICKS = 5;
     private static final String BOILER_POS_KEY = "BoilerPos";
     private static final String BUFFER_KEY = "SteamBuffer";
     private static final String HEAT_UNITS_KEY = "HeatUnits";
@@ -286,7 +287,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                 venting = true;
             }
             if (result.hasEndpoint()) {
-                int fallbackMoved = tryFillTargetsThroughPipes(startPos, facing.getOpposite(), remaining);
+                int fallbackMoved = tryFillTargetsThroughPipes(startPos, facing.getOpposite(), pipeFallbackBudget(remaining));
                 boolean blockedOnly = result.blocked() && fallbackMoved == 0 && !result.openEnd();
                 return new SteamOutput(fallbackMoved, result.openEnd(), blockedOnly);
             }
@@ -348,6 +349,17 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         pipePressureCooldown = 0;
         lastPressureAmount = 0;
         cachedPipePressure = PipePressureResult.NONE;
+    }
+
+    private int pipeFallbackBudget(int requested) {
+        if (requested <= 0) {
+            return 0;
+        }
+
+        // Keep live source fluid available so Create's pipe flow renderer can show steam in pipes.
+        int flowReserve = Math.max(productionRate, MIN_PIPE_FLOW_RESERVE);
+        int transferable = steamBuffer.getFluidAmount() - flowReserve;
+        return Math.max(0, Math.min(requested, transferable));
     }
 
     private PipePressureResult applyPipePressure(BlockPos startPos, Direction sourceSide, int maxAmount) {

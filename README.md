@@ -42,6 +42,7 @@ Steam is a real fluid and uses a simple unit model:
 - Pipe networks distribute outlet steam evenly across reachable assembled `steam_inlet` blocks, capped at `90 mB/t` per inlet from all sources combined, before filling passive storage tanks
 - If supply is short, every reachable engine receives the same share as closely as whole mB/t allows; SU scales from exact consumed mB/t
 - Boiler outlet pressure respects Create fluid valves. A closed valve blocks the pressure path instead of leaking or bypassing steam.
+- Steam remains visible in Create tanks and pipes through a high-visibility tinted vanilla water render path; outlet fallback transfer preserves a live source buffer so Create's native pipe flow renderer can animate it.
 - Unconnected boiler outlets and open pipe ends vent custom translucent steam leak particles inspired by TFMG-style gas visuals.
 
 Boiler outlets produce steam from the attached Create Fluid Tank boiler:

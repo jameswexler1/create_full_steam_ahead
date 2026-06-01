@@ -17,6 +17,7 @@ Implemented:
 - Open/unconnected steam vents show custom translucent steam leak particles through the outlet and Create open-pipe effect hook.
 - Outlet pressure traversal respects Create fluid valves; closed valves block steam instead of being bypassed or treated as open vents.
 - Steam in Create tanks and fluid pipes uses the original tinted water-based fluid texture path so pipe contents remain visible.
+- Steam fluid rendering now explicitly handles stack-based and world-based render lookups, and the outlet's direct fallback preserves a live source reserve for Create pipe flow visuals.
 - Goggles show outlet status, steam buffer, production, pushed amount, and pressure range.
 - Outlet production now scales by boiler height: `active burner units * boiler height`.
 - Outlet production is water-gated by Create's boiler water heat level, multiplied by boiler height.
@@ -43,6 +44,7 @@ Results:
 - Latest automated run on 2026-05-31 after fair steam distribution, per-inlet intake caps, and proportional pipe-fed SU: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-05-31 after enhancing open steam particles and making boiler outlet pressure respect Create fluid valves: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-05-31 after switching steam leak vents to custom particles and restoring pipe fluid visibility: `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
+- Latest automated run on 2026-06-01 after preserving pipe-flow source steam and adding explicit fluid render overrides: `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 
 Manual runtime checklist:
 
@@ -67,7 +69,7 @@ Polish runtime checklist:
 - [ ] Confirm a closed Create fluid valve between the outlet and an engine/tank stops steam transfer.
 - [ ] Confirm reopening the same valve restores steam transfer without replacing the pipes.
 - [ ] Confirm a closed valve does not make the outlet vent as if the pipe end were open.
-- [ ] Confirm steam remains visible inside Create tanks and fluid pipes after restoring the tinted water-based fluid texture path.
+- [ ] Confirm steam remains visible inside Create tanks and fluid pipes after the pipe-flow reserve and explicit fluid render override fix.
 
 User report after polish runtime test: everything works.
 

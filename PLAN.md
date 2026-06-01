@@ -287,7 +287,7 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - Exposes an output-only `IFluidHandler` for `steam`.
 - Applies pressure to the connected Create pipe network so the player does not need a mechanical pump directly at the boiler outlet.
 - Open-pipe visual: when outlet or pipe end vents to air, spawn custom translucent steam leak particles inspired by TFMG-style gas visuals.
-- Steam fluid visual: keep the original tinted water-based texture path for tanks and pipes so steam remains visible in Create fluid pipes.
+- Steam fluid visual: keep the tinted vanilla water render path for tanks and pipes, with explicit stack/world render overrides and enough outlet buffer reserve for Create's native pipe flow renderer to keep showing steam.
 - Default pressure range target: 30 blocks. This must become a server config value.
 - Goggle overlay: boiler linked/missing, outlet steam units, total boiler steam units, attached outlet count, steam production rate, internal buffer, output pressure state.
 
@@ -537,7 +537,7 @@ Implementation notes:
 - Create's `BoilerData.BoilerFluidHandler` records water supply rate; it does not expose a stored steam inventory. Use `BoilerData` as the source of truth.
 - Create's mechanical pump range is exposed through `FluidPropagator.getPumpRange()`, but our outlet should have its own configurable default target of 30 blocks.
 - The outlet is a boiler pressure source, not a general-purpose pump.
-- The outlet applies Create pipe pressure for normal pipe flow rendering and keeps a bounded `IFluidHandler` transfer as a no-drain fallback.
+- The outlet applies Create pipe pressure for normal pipe flow rendering and keeps a bounded `IFluidHandler` transfer as a no-drain fallback. The fallback must not drain the outlet below its pipe-flow reserve, because Create needs live source fluid to keep pipe/tank contents visible.
 - The outlet production model is unit-based: `10 mB/t = 1 steam unit = 16,384 SU when consumed by an engine`.
 - `BoilerData.activeHeat` and `BoilerData.getMaxHeatLevelForWaterSupply()` are multiplied by boiler controller height for pipe-fed steam production. This keeps taller boilers from being incorrectly capped by a single-layer water budget.
 
