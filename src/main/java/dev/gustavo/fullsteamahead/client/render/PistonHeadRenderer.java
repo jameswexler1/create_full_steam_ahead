@@ -107,7 +107,7 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             PistonHeadAnimation.State animation
     ) {
         SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.connectingRod(), state);
-        orientForStroke(rotateConnectingRod(
+        mirrorLinkageForStroke(rotateConnectingRod(
                 buffer.translate(0, animation.connectingRodY(), 0),
                 animation
         ), animation)
@@ -125,7 +125,7 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             PistonHeadAnimation.State animation
     ) {
         SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.crank(), state);
-        orientForStroke(rotateCrank(
+        mirrorLinkageForStroke(rotateCrank(
                 buffer.translate(0, animation.crankY(), 0),
                 animation
         ), animation)
@@ -169,6 +169,18 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
         if (animation.strokeDirection() == Direction.DOWN) {
             buffer.center();
             buffer.rotateX((float) Math.PI);
+            buffer.uncenter();
+        }
+        return buffer;
+    }
+
+    private static SuperByteBuffer mirrorLinkageForStroke(
+            SuperByteBuffer buffer,
+            PistonHeadAnimation.State animation
+    ) {
+        if (animation.strokeDirection() == Direction.DOWN) {
+            buffer.center();
+            buffer.scale(1.0F, -1.0F, 1.0F);
             buffer.uncenter();
         }
         return buffer;
