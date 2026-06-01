@@ -54,10 +54,11 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
     public void updateLight(float partialTick) {
         BlockPos base = blockEntity.getBlockPos();
         PistonHeadAnimation.State animation = PistonHeadAnimation.state(blockEntity);
-        relight(partLightPos(base, animation.headY()), head);
-        relight(partLightPos(base, animation.pistonY(0)), pistons);
-        relight(partLightPos(base, animation.connectingRodY()), connectingRod);
-        relight(base.relative(animation.strokeDirection(), 3), crank);
+        Direction strokeDirection = animation.strokeDirection();
+        relight(partLightPos(base, animation.headY(), strokeDirection), head);
+        relight(partLightPos(base, animation.pistonY(0), strokeDirection), pistons);
+        relight(partLightPos(base, animation.connectingRodY(), strokeDirection), connectingRod);
+        relight(base.relative(strokeDirection, 3), crank);
     }
 
     @Override
@@ -85,11 +86,12 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         for (int blockIndex = 0; blockIndex < pistons.length; blockIndex++) {
             setVisible(pistons[blockIndex], animation.visible());
             if (animation.visible()) {
-                orientForStroke(rotatePistonBody(
-                        base(pistons[blockIndex])
-                                .translate(0, animation.pistonY(blockIndex), 0),
+                TransformedInstance piston = base(pistons[blockIndex]);
+                orientForStroke(piston, animation);
+                rotatePistonBody(
+                        piston.translate(0, animation.pistonY(blockIndex), 0),
                         animation.shaftAxis()
-                ), animation).setChanged();
+                ).setChanged();
             }
         }
 
@@ -100,21 +102,23 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
             return;
         }
 
-        orientForStroke(
-                base(head).translate(0, animation.headY(), 0),
+        TransformedInstance headInstance = base(head);
+        orientForStroke(headInstance, animation);
+        headInstance.translate(0, animation.headY(), 0).setChanged();
+
+        TransformedInstance rodInstance = base(connectingRod);
+        orientForStroke(rodInstance, animation);
+        rotateConnectingRod(
+                rodInstance.translate(0, animation.connectingRodY(), 0),
                 animation
-        )
-                .setChanged();
-        orientForStroke(rotateConnectingRod(
-                base(connectingRod)
-                        .translate(0, animation.connectingRodY(), 0),
+        ).setChanged();
+
+        TransformedInstance crankInstance = base(crank);
+        orientForStroke(crankInstance, animation);
+        rotateCrank(
+                crankInstance.translate(0, animation.crankY(), 0),
                 animation
-        ), animation).setChanged();
-        orientForStroke(rotateCrank(
-                base(crank)
-                        .translate(0, animation.crankY(), 0),
-                animation
-        ), animation).setChanged();
+        ).setChanged();
     }
 
     private TransformedInstance transformed(PartialModel partial) {
@@ -158,6 +162,9 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         return instance.uncenter();
     }
 
+    // Applied right after base() and before per-part positioning so it remains the outermost
+    // local transform: the upright-posed linkage is rigidly flipped 180 degrees about the head
+    // block center, inverting head, piston, rod, and crank together with their joints intact.
     private static TransformedInstance orientForStroke(
             TransformedInstance instance,
             PistonHeadAnimation.State animation
@@ -188,9 +195,8 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         instance.setVisible(visible);
     }
 
-    private static BlockPos partLightPos(BlockPos basePos, float y) {
+    private static BlockPos partLightPos(BlockPos basePos, float y, Direction strokeDirection) {
         int blockOffset = Math.max(0, Math.min(3, Math.round(Math.abs(y))));
-        Direction direction = y < 0 ? Direction.DOWN : Direction.UP;
-        return basePos.relative(direction, blockOffset);
+        return basePos.relative(strokeDirection, blockOffset);
     }
 }

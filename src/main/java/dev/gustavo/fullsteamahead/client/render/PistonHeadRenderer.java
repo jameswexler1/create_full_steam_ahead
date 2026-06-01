@@ -39,9 +39,10 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
         BlockState state = engine.getBlockState();
         Level level = engine.getLevel();
         BlockPos headPos = engine.getBlockPos();
-        int headLight = partLight(level, headPos, animation.headY(), light);
-        int pistonLight = partLight(level, headPos, animation.pistonY(0), light);
-        int rodLight = partLight(level, headPos, animation.connectingRodY(), light);
+        Direction strokeDirection = animation.strokeDirection();
+        int headLight = partLight(level, headPos, animation.headY(), strokeDirection, light);
+        int pistonLight = partLight(level, headPos, animation.pistonY(0), strokeDirection, light);
+        int rodLight = partLight(level, headPos, animation.connectingRodY(), strokeDirection, light);
         int shaftLight = level == null
                 ? light
                 : LevelRenderer.getLightColor(level, headPos.relative(animation.strokeDirection(), 3));
@@ -72,8 +73,9 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             PistonHeadAnimation.State animation,
             float y
     ) {
-        orientForStroke(CachedBuffers.partial(partial, state)
-                .translate(0, y, 0), animation)
+        SuperByteBuffer buffer = CachedBuffers.partial(partial, state);
+        orientForStroke(buffer, animation);
+        buffer.translate(0, y, 0)
                 .light(light)
                 .overlay(overlay)
                 .renderInto(poseStack, vertexConsumer);
@@ -89,10 +91,11 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             int blockIndex
     ) {
         SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.pistonBody(), state);
-        orientForStroke(rotatePistonBody(
+        orientForStroke(buffer, animation);
+        rotatePistonBody(
                 buffer.translate(0, animation.pistonY(blockIndex), 0),
                 animation.shaftAxis()
-        ), animation)
+        )
                 .light(light)
                 .overlay(overlay)
                 .renderInto(poseStack, vertexConsumer);
@@ -107,10 +110,11 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             PistonHeadAnimation.State animation
     ) {
         SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.connectingRod(), state);
-        orientForStroke(rotateConnectingRod(
+        orientForStroke(buffer, animation);
+        rotateConnectingRod(
                 buffer.translate(0, animation.connectingRodY(), 0),
                 animation
-        ), animation)
+        )
                 .light(light)
                 .overlay(overlay)
                 .renderInto(poseStack, vertexConsumer);
@@ -125,10 +129,11 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             PistonHeadAnimation.State animation
     ) {
         SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.crank(), state);
-        orientForStroke(rotateCrank(
+        orientForStroke(buffer, animation);
+        rotateCrank(
                 buffer.translate(0, animation.crankY(), 0),
                 animation
-        ), animation)
+        )
                 .light(light)
                 .overlay(overlay)
                 .renderInto(poseStack, vertexConsumer);
@@ -162,6 +167,9 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
         return buffer.uncenter();
     }
 
+    // Must be applied before the per-part positioning so it stays the outermost transform:
+    // the upright-posed linkage is rigidly rotated 180 degrees about the head block center,
+    // flipping head, piston, rod, and crank together while keeping every joint connected.
     private static SuperByteBuffer orientForStroke(
             SuperByteBuffer buffer,
             PistonHeadAnimation.State animation
@@ -188,13 +196,12 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
         return buffer;
     }
 
-    private static int partLight(Level level, BlockPos basePos, float y, int fallbackLight) {
+    private static int partLight(Level level, BlockPos basePos, float y, Direction strokeDirection, int fallbackLight) {
         if (level == null) {
             return fallbackLight;
         }
 
         int blockOffset = Math.max(0, Math.min(3, Math.round(Math.abs(y))));
-        Direction direction = y < 0 ? Direction.DOWN : Direction.UP;
-        return LevelRenderer.getLightColor(level, basePos.relative(direction, blockOffset));
+        return LevelRenderer.getLightColor(level, basePos.relative(strokeDirection, blockOffset));
     }
 }

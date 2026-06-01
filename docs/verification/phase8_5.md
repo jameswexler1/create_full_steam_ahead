@@ -12,6 +12,7 @@ Implemented:
 - Reused mirrored existing cylinder section models for upside-down assembled ring visuals.
 - Follow-up fix: cylinder assembly now corrects stale piston head/body facing from the actual center position, validation retries the opposite stroke direction when placement state is stale, and animated partial models are explicitly flipped for inverted engines.
 - Follow-up fix: regular shaft placement now revalidates nearby engines immediately instead of waiting for piston-head lazy validation.
+- Follow-up fix: inverted linkage now renders as a single rigid 180-degree flip of the fully posed upright assembly about the head block center, applied as the outermost transform. The slider-crank is solved only in the upright frame; the previous approach negated per-part heights and crank rotation while flipping the raw model innermost, which pivoted the connecting rod about its big end and broke the joints. Connecting rod, crank, piston, and head now stay connected and the crank lands on the inverted shaft. Upright rendering is byte-identical (`orientForStroke` is a no-op for upward stroke).
 
 Automated checks:
 
@@ -20,6 +21,8 @@ Automated checks:
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` after inverted power/render fix
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` after shaft placement fix
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` after inverted linkage rigid-flip fix
+- [x] Offline kinematic check: rod small end meets piston wrist pin and rod big end meets the crank pin at all crank angles for both orientations (max joint error 2.2e-16); inverted crank pivot resolves to the inverted shaft block center.
 
 Manual runtime checklist:
 

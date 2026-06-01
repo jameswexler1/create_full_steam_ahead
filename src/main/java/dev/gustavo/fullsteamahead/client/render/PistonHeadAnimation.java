@@ -49,16 +49,18 @@ public final class PistonHeadAnimation {
         float headY = pistonY - HEAD_TO_PISTON_BODY_Y;
         float connectingRodY = wristY - CONNECTING_ROD_SMALL_END_Y;
         float connectingRodAngle = (float) Math.asin(Mth.clamp(crankDepth / CONNECTING_ROD_LENGTH, -1.0F, 1.0F));
-        float strokeSign = strokeDirection == Direction.DOWN ? -1.0F : 1.0F;
+        // The slider-crank is always solved in the upright frame. Inverted engines are
+        // rendered by rigidly flipping the fully posed linkage 180 degrees about the head
+        // block center (see orientForStroke), which keeps every joint connected.
         return new State(
                 visible,
                 angle,
                 shaftAxis,
                 strokeDirection,
-                headY * strokeSign,
-                pistonY * strokeSign,
-                connectingRodY * strokeSign,
-                connectingRodAngle * strokeSign
+                headY,
+                pistonY,
+                connectingRodY,
+                connectingRodAngle
         );
     }
 
@@ -81,11 +83,11 @@ public final class PistonHeadAnimation {
         }
 
         public float crankY() {
-            return strokeDirection == Direction.DOWN ? -SHAFT_BASE_Y : SHAFT_BASE_Y;
+            return SHAFT_BASE_Y;
         }
 
         public float crankRotation() {
-            return (strokeDirection == Direction.DOWN ? -angle : angle) - HALF_PI;
+            return angle - HALF_PI;
         }
     }
 
