@@ -521,7 +521,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     private void setPistonsAssembled(EngineValidator.Result result) {
-        setPistonHead(result.pistonHead(), true);
+        setPistonHead(result.pistonHead(), true, result.strokeDirection());
         Direction.Axis shaftAxis = EngineValidator.shaftAxis(level, result.shaft());
         setPiston(result.piston(), true, PistonSection.INSIDE_HIGH, shaftAxis, result.strokeDirection());
     }
@@ -543,7 +543,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
     private void clearPistonHead(BlockPos pos, BlockPos skippedPistonPos) {
         if (!pos.equals(skippedPistonPos)) {
-            setPistonHead(pos, false);
+            setPistonHead(pos, false, null);
         }
     }
 
@@ -577,7 +577,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
     }
 
-    private void setPistonHead(BlockPos pos, boolean assembled) {
+    private void setPistonHead(BlockPos pos, boolean assembled, Direction strokeDirection) {
         if (level == null || pos == null || !level.isLoaded(pos)) {
             return;
         }
@@ -588,6 +588,9 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
 
         BlockState newState = state.setValue(PistonHeadBlock.ASSEMBLED, assembled);
+        if (strokeDirection != null && state.hasProperty(PistonHeadBlock.FACING)) {
+            newState = newState.setValue(PistonHeadBlock.FACING, strokeDirection);
+        }
         if (newState != state) {
             level.setBlock(pos, newState, Block.UPDATE_CLIENTS);
         }

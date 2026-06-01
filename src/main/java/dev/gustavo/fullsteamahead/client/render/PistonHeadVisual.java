@@ -85,11 +85,11 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         for (int blockIndex = 0; blockIndex < pistons.length; blockIndex++) {
             setVisible(pistons[blockIndex], animation.visible());
             if (animation.visible()) {
-                rotatePistonBody(
+                orientForStroke(rotatePistonBody(
                         base(pistons[blockIndex])
                                 .translate(0, animation.pistonY(blockIndex), 0),
                         animation.shaftAxis()
-                ).setChanged();
+                ), animation).setChanged();
             }
         }
 
@@ -100,19 +100,21 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
             return;
         }
 
-        base(head)
-                .translate(0, animation.headY(), 0)
+        orientForStroke(
+                base(head).translate(0, animation.headY(), 0),
+                animation
+        )
                 .setChanged();
-        rotateConnectingRod(
+        orientForStroke(rotateConnectingRod(
                 base(connectingRod)
                         .translate(0, animation.connectingRodY(), 0),
                 animation
-        ).setChanged();
-        rotateCrank(
+        ), animation).setChanged();
+        orientForStroke(rotateCrank(
                 base(crank)
                         .translate(0, animation.crankY(), 0),
                 animation
-        ).setChanged();
+        ), animation).setChanged();
     }
 
     private TransformedInstance transformed(PartialModel partial) {
@@ -154,6 +156,18 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         instance.center();
         yawPistonBodyFrame(instance, axis);
         return instance.uncenter();
+    }
+
+    private static TransformedInstance orientForStroke(
+            TransformedInstance instance,
+            PistonHeadAnimation.State animation
+    ) {
+        if (animation.strokeDirection() == Direction.DOWN) {
+            instance.center();
+            instance.rotateX((float) Math.PI);
+            instance.uncenter();
+        }
+        return instance;
     }
 
     private static TransformedInstance yawPistonBodyFrame(TransformedInstance instance, Direction.Axis axis) {

@@ -27,13 +27,20 @@ public final class EngineValidator {
             return Result.invalid("Missing piston head");
         }
 
-        Direction strokeDirection = pistonHeadFacing(level.getBlockState(pistonHeadPos));
+        Direction preferredDirection = pistonHeadFacing(level.getBlockState(pistonHeadPos));
+        Result preferred = validate(level, pistonHeadPos, preferredDirection);
+        if (preferred.valid()) {
+            return preferred;
+        }
+
+        Result opposite = validate(level, pistonHeadPos, preferredDirection.getOpposite());
+        return opposite.valid() ? opposite : preferred;
+    }
+
+    private static Result validate(Level level, BlockPos pistonHeadPos, Direction strokeDirection) {
         PistonPositions pistons = pistonPositions(pistonHeadPos, strokeDirection);
         if (!isPiston(level, pistons.piston())) {
             return Result.invalid("Missing piston body");
-        }
-        if (pistonFacing(level.getBlockState(pistons.piston())) != strokeDirection) {
-            return Result.invalid("Piston body faces the wrong direction");
         }
         if (!isEmpty(level, pistons.emptyStroke())) {
             return Result.invalid("Stroke space must be empty");
@@ -119,6 +126,13 @@ public final class EngineValidator {
     }
 
     public static PistonPositions pistonPositionsFromBody(Level level, BlockPos pistonPos) {
+        for (Direction direction : new Direction[]{Direction.UP, Direction.DOWN}) {
+            BlockPos headPos = pistonPos.relative(direction.getOpposite());
+            if (isPistonHead(level, headPos)) {
+                return pistonPositions(headPos, direction);
+            }
+        }
+
         Direction strokeDirection = Direction.UP;
         if (level.isLoaded(pistonPos)) {
             strokeDirection = pistonFacing(level.getBlockState(pistonPos));
@@ -138,11 +152,7 @@ public final class EngineValidator {
             return false;
         }
 
-        Direction strokeDirection = pistonHeadFacing(level.getBlockState(pistons.pistonHead()));
-        if (pistonFacing(level.getBlockState(pistons.piston())) != strokeDirection) {
-            return false;
-        }
-
+        Direction strokeDirection = strokeDirectionFor(pistons);
         BlockPos ringOrigin = ringOriginFor(pistons.pistonHead(), strokeDirection);
         return isRingReady(level, ringOrigin, strokeDirection);
     }
@@ -206,6 +216,10 @@ public final class EngineValidator {
 
     public static BlockPos ringOriginFor(BlockPos pistonHeadPos, Direction strokeDirection) {
         return pistonHeadPos.offset(-1, strokeDirection == Direction.DOWN ? -1 : 0, -1);
+    }
+
+    private static Direction strokeDirectionFor(PistonPositions pistons) {
+        return pistons.piston().getY() < pistons.pistonHead().getY() ? Direction.DOWN : Direction.UP;
     }
 
     private static boolean isAssembled(

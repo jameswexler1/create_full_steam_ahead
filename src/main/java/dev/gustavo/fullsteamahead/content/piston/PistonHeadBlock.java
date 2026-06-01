@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.simibubi.create.foundation.block.IBE;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderConnectivity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
+import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
@@ -50,7 +51,8 @@ public class PistonHeadBlock extends Block implements IBE<PistonHeadBlockEntity>
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, placementFacing(context));
+        Direction inferredFacing = adjacentPistonFacing(context.getLevel(), context.getClickedPos());
+        return defaultBlockState().setValue(FACING, inferredFacing == null ? placementFacing(context) : inferredFacing);
     }
 
     static Direction placementFacing(BlockPlaceContext context) {
@@ -62,6 +64,16 @@ public class PistonHeadBlock extends Block implements IBE<PistonHeadBlockEntity>
             return Direction.DOWN;
         }
         return Direction.UP;
+    }
+
+    private static Direction adjacentPistonFacing(Level level, BlockPos pos) {
+        if (level.isLoaded(pos.below()) && level.getBlockState(pos.below()).is(ModBlocks.PISTON.get())) {
+            return Direction.DOWN;
+        }
+        if (level.isLoaded(pos.above()) && level.getBlockState(pos.above()).is(ModBlocks.PISTON.get())) {
+            return Direction.UP;
+        }
+        return null;
     }
 
     @Override

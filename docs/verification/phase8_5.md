@@ -10,12 +10,14 @@ Implemented:
 - Added upside-down pipe-fed-only validation requiring one assembled `steam_inlet`.
 - Updated shaft placement helper, powered shaft survival, movement checks, cylinder hitboxes, and piston/linkage rendering for vertical inversion.
 - Reused mirrored existing cylinder section models for upside-down assembled ring visuals.
+- Follow-up fix: cylinder assembly now corrects stale piston head/body facing from the actual center position, validation retries the opposite stroke direction when placement state is stale, and animated partial models are explicitly flipped for inverted engines.
 
 Automated checks:
 
 - [x] `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`
 - [x] `git diff --check`
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` after inverted power/render fix
 
 Manual runtime checklist:
 

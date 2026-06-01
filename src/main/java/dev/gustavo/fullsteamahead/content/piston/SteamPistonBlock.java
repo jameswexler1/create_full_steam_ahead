@@ -74,8 +74,7 @@ public class SteamPistonBlock extends Block {
             }
 
             BlockState headState = level.getBlockState(headPos);
-            if (headState.is(ModBlocks.PISTON_HEAD.get())
-                    && EngineValidator.pistonHeadFacing(headState) == direction) {
+            if (headState.is(ModBlocks.PISTON_HEAD.get())) {
                 return direction;
             }
         }

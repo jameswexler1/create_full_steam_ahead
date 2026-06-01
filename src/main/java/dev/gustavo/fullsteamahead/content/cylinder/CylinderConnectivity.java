@@ -1,8 +1,9 @@
 package dev.gustavo.fullsteamahead.content.cylinder;
 
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
-import dev.gustavo.fullsteamahead.content.piston.EngineValidator;
+import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlock;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
+import dev.gustavo.fullsteamahead.content.piston.SteamPistonBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
@@ -248,30 +249,56 @@ public final class CylinderConnectivity {
                         be -> be.applyRingState(origin, root, boilerPos, inletPos, pos.equals(root)));
             }
         }
+
+        alignPistonColumn(level, origin, ringFacing);
     }
 
     private static Direction ringFacing(Level level, BlockPos origin) {
         BlockPos lowerCenter = origin.offset(1, 0, 1);
-        if (isPistonHeadFacing(level, lowerCenter, Direction.UP)) {
-            return Direction.UP;
-        }
-
         BlockPos upperCenter = origin.offset(1, 1, 1);
-        if (isPistonHeadFacing(level, upperCenter, Direction.DOWN)) {
+
+        boolean lowerHead = isPistonHead(level, lowerCenter);
+        boolean upperHead = isPistonHead(level, upperCenter);
+        if (upperHead && !lowerHead) {
             return Direction.DOWN;
         }
-
         return Direction.UP;
     }
 
-    private static boolean isPistonHeadFacing(Level level, BlockPos pos, Direction facing) {
+    private static boolean isPistonHead(Level level, BlockPos pos) {
         if (!level.isLoaded(pos)) {
             return false;
         }
 
+        return level.getBlockState(pos).is(ModBlocks.PISTON_HEAD.get());
+    }
+
+    private static void alignPistonColumn(Level level, BlockPos origin, Direction ringFacing) {
+        BlockPos pistonHeadPos = origin.offset(1, ringFacing == Direction.DOWN ? 1 : 0, 1);
+        BlockPos pistonPos = pistonHeadPos.relative(ringFacing);
+        setFacing(level, pistonHeadPos, PistonHeadBlock.FACING, ringFacing);
+        setFacing(level, pistonPos, SteamPistonBlock.FACING, ringFacing);
+    }
+
+    private static void setFacing(
+            Level level,
+            BlockPos pos,
+            net.minecraft.world.level.block.state.properties.DirectionProperty property,
+            Direction facing
+    ) {
+        if (!level.isLoaded(pos)) {
+            return;
+        }
+
         BlockState state = level.getBlockState(pos);
-        return state.is(ModBlocks.PISTON_HEAD.get())
-                && EngineValidator.pistonHeadFacing(state) == facing;
+        if (!state.hasProperty(property)) {
+            return;
+        }
+
+        BlockState newState = state.setValue(property, facing);
+        if (newState != state) {
+            level.setBlock(pos, newState, Block.UPDATE_CLIENTS);
+        }
     }
 
     private static Optional<BlockPos> findInlet(Level level, List<BlockPos> positions) {

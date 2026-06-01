@@ -46,7 +46,7 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
                 ? light
                 : LevelRenderer.getLightColor(level, headPos.relative(animation.strokeDirection(), 3));
 
-        renderTranslated(FullSteamPartialModels.pistonHead(), state, poseStack, solid, headLight, overlay,
+        renderTranslated(FullSteamPartialModels.pistonHead(), state, poseStack, solid, headLight, overlay, animation,
                 animation.headY());
         for (int blockIndex = 0; blockIndex < PistonHeadAnimation.PISTON_BLOCKS; blockIndex++) {
             renderPistonBody(state, poseStack, solid, pistonLight, overlay, animation, blockIndex);
@@ -69,10 +69,11 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             VertexConsumer vertexConsumer,
             int light,
             int overlay,
+            PistonHeadAnimation.State animation,
             float y
     ) {
-        CachedBuffers.partial(partial, state)
-                .translate(0, y, 0)
+        orientForStroke(CachedBuffers.partial(partial, state)
+                .translate(0, y, 0), animation)
                 .light(light)
                 .overlay(overlay)
                 .renderInto(poseStack, vertexConsumer);
@@ -88,10 +89,10 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             int blockIndex
     ) {
         SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.pistonBody(), state);
-        rotatePistonBody(
+        orientForStroke(rotatePistonBody(
                 buffer.translate(0, animation.pistonY(blockIndex), 0),
                 animation.shaftAxis()
-        )
+        ), animation)
                 .light(light)
                 .overlay(overlay)
                 .renderInto(poseStack, vertexConsumer);
@@ -106,10 +107,10 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             PistonHeadAnimation.State animation
     ) {
         SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.connectingRod(), state);
-        rotateConnectingRod(
+        orientForStroke(rotateConnectingRod(
                 buffer.translate(0, animation.connectingRodY(), 0),
                 animation
-        )
+        ), animation)
                 .light(light)
                 .overlay(overlay)
                 .renderInto(poseStack, vertexConsumer);
@@ -124,10 +125,10 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             PistonHeadAnimation.State animation
     ) {
         SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.crank(), state);
-        rotateCrank(
+        orientForStroke(rotateCrank(
                 buffer.translate(0, animation.crankY(), 0),
                 animation
-        )
+        ), animation)
                 .light(light)
                 .overlay(overlay)
                 .renderInto(poseStack, vertexConsumer);
@@ -159,6 +160,18 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
         buffer.center();
         yawPistonBodyFrame(buffer, axis);
         return buffer.uncenter();
+    }
+
+    private static SuperByteBuffer orientForStroke(
+            SuperByteBuffer buffer,
+            PistonHeadAnimation.State animation
+    ) {
+        if (animation.strokeDirection() == Direction.DOWN) {
+            buffer.center();
+            buffer.rotateX((float) Math.PI);
+            buffer.uncenter();
+        }
+        return buffer;
     }
 
     private static SuperByteBuffer yawPistonBodyFrame(SuperByteBuffer buffer, Direction.Axis axis) {
