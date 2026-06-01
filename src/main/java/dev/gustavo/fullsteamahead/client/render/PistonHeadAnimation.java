@@ -49,11 +49,7 @@ public final class PistonHeadAnimation {
         float headY = pistonY - HEAD_TO_PISTON_BODY_Y;
         float connectingRodY = wristY - CONNECTING_ROD_SMALL_END_Y;
         float connectingRodAngle = (float) Math.asin(Mth.clamp(crankDepth / CONNECTING_ROD_LENGTH, -1.0F, 1.0F));
-        boolean inverted = strokeDirection == Direction.DOWN;
-        float strokeSign = inverted ? -1.0F : 1.0F;
-        float renderedConnectingRodY = inverted
-                ? -wristY - (1.0F - CONNECTING_ROD_SMALL_END_Y)
-                : connectingRodY;
+        float strokeSign = strokeDirection == Direction.DOWN ? -1.0F : 1.0F;
         return new State(
                 visible,
                 angle,
@@ -61,7 +57,7 @@ public final class PistonHeadAnimation {
                 strokeDirection,
                 headY * strokeSign,
                 pistonY * strokeSign,
-                renderedConnectingRodY,
+                connectingRodY * strokeSign,
                 connectingRodAngle * strokeSign
         );
     }

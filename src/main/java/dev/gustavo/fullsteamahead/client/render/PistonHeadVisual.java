@@ -105,12 +105,12 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
                 animation
         )
                 .setChanged();
-        mirrorLinkageForStroke(rotateConnectingRod(
+        orientForStroke(rotateConnectingRod(
                 base(connectingRod)
                         .translate(0, animation.connectingRodY(), 0),
                 animation
         ), animation).setChanged();
-        mirrorLinkageForStroke(rotateCrank(
+        orientForStroke(rotateCrank(
                 base(crank)
                         .translate(0, animation.crankY(), 0),
                 animation
@@ -165,18 +165,6 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         if (animation.strokeDirection() == Direction.DOWN) {
             instance.center();
             instance.rotateX((float) Math.PI);
-            instance.uncenter();
-        }
-        return instance;
-    }
-
-    private static TransformedInstance mirrorLinkageForStroke(
-            TransformedInstance instance,
-            PistonHeadAnimation.State animation
-    ) {
-        if (animation.strokeDirection() == Direction.DOWN) {
-            instance.center();
-            instance.scale(1.0F, -1.0F, 1.0F);
             instance.uncenter();
         }
         return instance;
