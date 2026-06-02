@@ -580,7 +580,7 @@ public final class CylinderConnectivity {
     ) {
         Map<BlockPos, PartialRingCandidate> candidates = new LinkedHashMap<>();
         for (BlockPos pos : members) {
-            for (BlockPos origin : partialOriginsFromLocalCorners(members, pos)) {
+            for (BlockPos origin : partialCandidateOrigins(level, members, pos)) {
                 List<BlockPos> positions = partialRingPositions(origin, members);
                 if (positions.size() < 3 || hasTooManyInlets(level, positions)) {
                     continue;
@@ -628,6 +628,17 @@ public final class CylinderConnectivity {
             }
         }
         return selected;
+    }
+
+    private static Set<BlockPos> partialCandidateOrigins(Level level, Set<BlockPos> members, BlockPos pos) {
+        Set<BlockPos> origins = new LinkedHashSet<>(partialOriginsFromLocalCorners(members, pos));
+        BlockState state = level.getBlockState(pos);
+        if (state.is(ModBlocks.STEAM_CYLINDER.get())
+                && state.hasProperty(SteamCylinderBlock.SHARED_WALL)
+                && state.getValue(SteamCylinderBlock.SHARED_WALL) != CylinderSharedWall.NONE) {
+            origins.addAll(trackedPartialRingOrigins(state, pos));
+        }
+        return origins;
     }
 
     private static List<PartialRingGroup> partialRingGroups(
