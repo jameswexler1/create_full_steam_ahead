@@ -13,12 +13,36 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
     private static final String GENERATED_SPEED_KEY = "GeneratedSpeed";
     private static final String GENERATED_CAPACITY_KEY = "GeneratedCapacity";
 
+    // Ticks after placement/load during which we re-assert the generated rotation if the
+    // kinetic network has not picked it up yet. See tick().
+    private static final int INITIAL_SYNC_TICKS = 5;
+
     private BlockPos enginePos;
     private float generatedSpeed;
     private float generatedCapacitySu;
+    private int initialTicks = INITIAL_SYNC_TICKS;
 
     public FullSteamPoweredShaftBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.POWERED_SHAFT.get(), pos, state);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (level == null || level.isClientSide() || initialTicks <= 0) {
+            return;
+        }
+        initialTicks--;
+        // This block entity is created the instant the engine assembles, which happens
+        // inside a block-place event before the entity has been attached to the kinetic
+        // network. The engine's initial power push can therefore be lost, leaving the
+        // engine assembled but never turning until it is broken and replaced. While the
+        // shaft is freshly placed or loaded, re-assert the generated rotation whenever we
+        // should be producing speed but the network still reports a standstill, so
+        // activation is deterministic instead of timing-dependent.
+        if (getGeneratedSpeed() != 0 && getSpeed() == 0) {
+            updateGeneratedRotation();
+        }
     }
 
     public void update(BlockPos engineWorldPos, float speed, float capacitySu) {
@@ -94,5 +118,8 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
         enginePos = tag.contains(ENGINE_POS_KEY) ? BlockPos.of(tag.getLong(ENGINE_POS_KEY)) : null;
         generatedSpeed = tag.getFloat(GENERATED_SPEED_KEY);
         generatedCapacitySu = tag.getFloat(GENERATED_CAPACITY_KEY);
+        if (!clientPacket) {
+            initialTicks = INITIAL_SYNC_TICKS;
+        }
     }
 }
