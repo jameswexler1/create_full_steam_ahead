@@ -4,6 +4,7 @@ import dev.engine_room.flywheel.api.visualization.VisualizerRegistry;
 import dev.engine_room.flywheel.lib.visualization.SimpleBlockEntityVisualizer;
 import dev.gustavo.fullsteamahead.FullSteamAhead;
 import dev.gustavo.fullsteamahead.client.particle.SteamLeakParticle;
+import dev.gustavo.fullsteamahead.client.ponder.FullSteamPonderPlugin;
 import dev.gustavo.fullsteamahead.client.render.FullSteamPartialModels;
 import dev.gustavo.fullsteamahead.client.render.PistonHeadRenderer;
 import dev.gustavo.fullsteamahead.client.render.PistonHeadVisual;
@@ -12,6 +13,7 @@ import dev.gustavo.fullsteamahead.client.render.PoweredShaftVisual;
 import dev.gustavo.fullsteamahead.client.render.SteppedLeverRenderer;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModParticleTypes;
+import net.createmod.ponder.foundation.PonderIndex;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
@@ -27,6 +29,7 @@ public final class FullSteamAheadClient {
     public static void onClientSetup(FMLClientSetupEvent event) {
         FullSteamAhead.LOGGER.info("Initializing Create: Full Steam Ahead client");
         event.enqueueWork(() -> {
+            PonderIndex.addPlugin(new FullSteamPonderPlugin());
             PistonHeadVisual.register();
             VisualizerRegistry.setVisualizer(
                     ModBlockEntities.POWERED_SHAFT.get(),
