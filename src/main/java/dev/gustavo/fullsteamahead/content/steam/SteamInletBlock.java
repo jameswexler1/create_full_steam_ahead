@@ -7,7 +7,6 @@ import dev.gustavo.fullsteamahead.content.common.FullSteamWrenchable;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderConnectivity;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderSection;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderWallShape;
-import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlock;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
@@ -20,6 +19,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
@@ -34,6 +34,7 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
     public static final EnumProperty<CylinderWallShape> WALL_SHAPE =
             EnumProperty.create("wall_shape", CylinderWallShape.class);
     public static final DirectionProperty FACING = DirectionProperty.create("facing", Direction.UP, Direction.DOWN);
+    public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
     private static final VoxelShape NORTH_SHAPE = Shapes.or(
             Block.box(0, 0, 7, 16, 16, 16),
             Block.box(2, 2, 5, 14, 14, 7),
@@ -65,7 +66,8 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
                 .setValue(ASSEMBLED, false)
                 .setValue(SECTION, CylinderSection.NONE)
                 .setValue(WALL_SHAPE, CylinderWallShape.STANDALONE)
-                .setValue(FACING, Direction.UP));
+                .setValue(FACING, Direction.UP)
+                .setValue(HORIZONTAL_FACING, Direction.NORTH));
     }
 
     @Override
@@ -75,15 +77,18 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Direction facing = FullSteamWrenchable.isPlacingShifted(context)
-                ? PistonHeadBlock.placementFacing(context).getOpposite()
-                : PistonHeadBlock.placementFacing(context);
-        return defaultBlockState().setValue(FACING, facing);
+        // Standalone inlets aim their port by the player's look direction (faces the player by
+        // default, away when sneaking). Assembly later drives the visual through the section.
+        Direction port = FullSteamWrenchable.flipIfShifted(context, context.getHorizontalDirection().getOpposite());
+        return defaultBlockState().setValue(HORIZONTAL_FACING, port);
     }
 
     @Override
     public BlockState getRotatedBlockState(BlockState state, Direction targetedFace) {
-        return state.setValue(FACING, state.getValue(FACING).getOpposite());
+        if (state.getValue(SECTION) != CylinderSection.NONE) {
+            return state;
+        }
+        return state.setValue(HORIZONTAL_FACING, state.getValue(HORIZONTAL_FACING).getClockWise());
     }
 
     @Override
@@ -174,7 +179,7 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(ASSEMBLED, SECTION, WALL_SHAPE, FACING);
+        builder.add(ASSEMBLED, SECTION, WALL_SHAPE, FACING, HORIZONTAL_FACING);
     }
 
     private VoxelShape shapeForSection(CylinderSection section) {

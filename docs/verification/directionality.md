@@ -49,9 +49,30 @@ No asset changes: every facing value used already exists in the blockstate JSONs
 Cylinder wall blocks (facing is set automatically during ring assembly) and the powered shaft
 (already Create's `PoweredShaftBlock`).
 
+## Follow-up: flexible placement for outlet / inlet / cylinder (2026-06-02)
+
+Fixes for placement orientation that ignored the player's aim:
+
+- **Boiler outlet**: was placed by the clicked surface, so a floor placement always faced up.
+  Now aims by `getNearestLookingDirection()` (faces the player by default, away when sneaking),
+  so it can face any of six directions regardless of the surface. Wrench still cycles around the
+  clicked face; the block entity still reads `FACING` to find the attached boiler.
+- **Steam inlet**: had no horizontal property, so a standalone inlet always rendered north. Added
+  a `HORIZONTAL_FACING` property with four blockstate rotations for the `section=none` variant;
+  placement sets it from the look direction (shift flips), and the wrench rotates it. When the
+  inlet joins a ring the section drives the visual as before, and connectivity never writes
+  `horizontal_facing`, so the decorative orientation survives assembly/disassembly.
+- **Steam cylinder**: standalone walls were forced back to `STANDALONE` (north) by connectivity.
+  Placement now picks the X/Z axis from the look direction (shift swaps), and
+  `CylinderConnectivity` preserves an isolated block's `WALL_SHAPE` instead of resetting it.
+  Ring assembly still sets `STANDALONE` on members, and the straight-run inference for adjacent
+  walls is unchanged. The cylinder now implements `FullSteamWrenchable` too: wrench toggles the
+  axis (standalone only) and sneak-wrench collects it.
+
 ## Checks
 
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +`
 - [ ] In-world (`runClient`): for each block, place normally then while sneaking and confirm the
   facing is opposite.
 - [ ] Wrench each block — confirm the orientation cycles as in the table and the rotate sound

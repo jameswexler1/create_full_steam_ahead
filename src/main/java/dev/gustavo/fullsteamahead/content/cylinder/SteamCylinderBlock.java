@@ -3,10 +3,12 @@ package dev.gustavo.fullsteamahead.content.cylinder;
 import com.mojang.serialization.MapCodec;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
+import dev.gustavo.fullsteamahead.content.common.FullSteamWrenchable;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -20,7 +22,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockEntity> {
+public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockEntity>, FullSteamWrenchable {
     public static final MapCodec<SteamCylinderBlock> CODEC = simpleCodec(SteamCylinderBlock::new);
     public static final BooleanProperty ASSEMBLED = BooleanProperty.create("assembled");
     public static final EnumProperty<CylinderSection> SECTION = EnumProperty.create("section", CylinderSection.class);
@@ -48,6 +50,35 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
     @Override
     protected MapCodec<? extends Block> codec() {
         return CODEC;
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        // Decorative walls can be placed along either axis (like a fence rail); connectivity
+        // only overrides this when the block actually joins a ring. Looking along Z presents a
+        // wall facing the player (it runs along X); sneaking swaps the axis.
+        boolean alongX = context.getHorizontalDirection().getAxis() == Direction.Axis.Z;
+        if (FullSteamWrenchable.isPlacingShifted(context)) {
+            alongX = !alongX;
+        }
+        return defaultBlockState()
+                .setValue(WALL_SHAPE, alongX ? CylinderWallShape.STRAIGHT_X : CylinderWallShape.STRAIGHT_Z);
+    }
+
+    @Override
+    public BlockState getRotatedBlockState(BlockState state, Direction targetedFace) {
+        if (state.getValue(SECTION) != CylinderSection.NONE) {
+            return state;
+        }
+        CylinderWallShape next = state.getValue(WALL_SHAPE) == CylinderWallShape.STRAIGHT_X
+                ? CylinderWallShape.STRAIGHT_Z
+                : CylinderWallShape.STRAIGHT_X;
+        return state.setValue(WALL_SHAPE, next);
+    }
+
+    @Override
+    public void onAfterWrench(Level level, BlockPos pos) {
+        CylinderConnectivity.refreshFrom(level, pos);
     }
 
     @Override

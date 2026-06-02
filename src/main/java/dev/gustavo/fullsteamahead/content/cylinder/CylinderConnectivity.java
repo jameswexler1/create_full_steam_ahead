@@ -219,7 +219,11 @@ public final class CylinderConnectivity {
             }
 
             CylinderSection section = partialSections.getOrDefault(pos, CylinderSection.NONE);
-            CylinderWallShape wallShape = partialWallShapes.getOrDefault(pos, CylinderWallShape.STANDALONE);
+            // For blocks not part of a ring or inferred straight run, keep the player's chosen
+            // orientation instead of snapping back to STANDALONE, so decorative walls stay put.
+            CylinderWallShape wallShape = partialWallShapes.containsKey(pos)
+                    ? partialWallShapes.get(pos)
+                    : (section == CylinderSection.NONE ? currentWallShape(state) : CylinderWallShape.STANDALONE);
             withCylinderBlockEntity(level, pos, SteamCylinderBlockEntity::clearRingState);
             withInletBlockEntity(level, pos, SteamInletBlockEntity::clearRingState);
             setRingState(level, pos, state, false, section, wallShape, Direction.UP);
@@ -582,6 +586,16 @@ public final class CylinderConnectivity {
 
     private static boolean isRingMember(BlockState state) {
         return state.is(ModBlocks.STEAM_CYLINDER.get()) || state.is(ModBlocks.STEAM_INLET.get());
+    }
+
+    private static CylinderWallShape currentWallShape(BlockState state) {
+        if (state.hasProperty(SteamCylinderBlock.WALL_SHAPE)) {
+            return state.getValue(SteamCylinderBlock.WALL_SHAPE);
+        }
+        if (state.hasProperty(SteamInletBlock.WALL_SHAPE)) {
+            return state.getValue(SteamInletBlock.WALL_SHAPE);
+        }
+        return CylinderWallShape.STANDALONE;
     }
 
     private static void notifyEngines(Level level, Set<BlockPos> candidateOrigins) {

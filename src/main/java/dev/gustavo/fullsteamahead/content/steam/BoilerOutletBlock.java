@@ -46,7 +46,12 @@ public class BoilerOutletBlock extends Block implements IBE<BoilerOutletBlockEnt
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, FullSteamWrenchable.flipIfShifted(context, context.getClickedFace()));
+        // Aim by where the player looks (any of six directions) instead of the clicked surface,
+        // so it can face horizontally even when placed on a floor or ceiling. Default faces the
+        // player; sneaking faces away, matching Create directional blocks.
+        Direction look = context.getNearestLookingDirection();
+        Direction facing = FullSteamWrenchable.isPlacingShifted(context) ? look : look.getOpposite();
+        return defaultBlockState().setValue(FACING, facing);
     }
 
     @Override

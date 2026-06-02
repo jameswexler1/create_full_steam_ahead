@@ -2,10 +2,41 @@
   "multipart": [
     {
       "when": {
-        "section": "none"
+        "section": "none",
+        "horizontal_facing": "north"
       },
       "apply": {
         "model": "full_steam_ahead:block/steam_inlet"
+      }
+    },
+    {
+      "when": {
+        "section": "none",
+        "horizontal_facing": "east"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "section": "none",
+        "horizontal_facing": "south"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "section": "none",
+        "horizontal_facing": "west"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_inlet",
+        "y": 270
       }
     },
     {
