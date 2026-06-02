@@ -673,6 +673,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Keep using the existing assembled partial section models when a local corner implies a ring section
 - [x] Keep straight-only cylinder wall runs in fence-like `section=none` wall mode until a corner appears
 - [x] Preserve early shared-wall partial pairs when extra nearby corners are placed during construction
+- [x] Allow the middle partial ring in an inline bank to remain selected while it shares with both neighboring rings
 - [ ] Verify two-engine and three-engine inline banks in X and Z directions in game
 - [ ] Verify breaking a shared wall disassembles both affected engines, while breaking a non-shared wall leaves neighbors intact
 - [ ] Verify shared-wall banks on Aeronautics/Simulated contraptions

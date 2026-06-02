@@ -118,6 +118,40 @@ public final class CylinderConnectivity {
             BlockPos ringOrigin = inlet.getRingOrigin();
             return ringOrigin == null ? Set.of() : Set.of(ringOrigin);
         }
+        return trackedPartialRingOrigins(level.getBlockState(pos), pos);
+    }
+
+    private static Set<BlockPos> trackedPartialRingOrigins(BlockState state, BlockPos pos) {
+        CylinderSection section = currentSection(state);
+        if (section == CylinderSection.NONE) {
+            return Set.of();
+        }
+
+        BlockPos primaryOrigin = pos.offset(-section.xOffset(), -section.yOffset(), -section.zOffset());
+        if (!state.is(ModBlocks.STEAM_CYLINDER.get()) || !state.hasProperty(SteamCylinderBlock.SHARED_WALL)) {
+            return Set.of(primaryOrigin);
+        }
+
+        CylinderSharedWall sharedWall = state.getValue(SteamCylinderBlock.SHARED_WALL);
+        if (sharedWall == CylinderSharedWall.NONE) {
+            return Set.of(primaryOrigin);
+        }
+        if (sharedWall == CylinderSharedWall.STRIP_Z) {
+            if (section.xOffset() == 2) {
+                return Set.of(primaryOrigin, primaryOrigin.east(2));
+            }
+            if (section.xOffset() == 0) {
+                return Set.of(primaryOrigin.west(2), primaryOrigin);
+            }
+        }
+        if (sharedWall == CylinderSharedWall.STRIP_X) {
+            if (section.zOffset() == 2) {
+                return Set.of(primaryOrigin, primaryOrigin.south(2));
+            }
+            if (section.zOffset() == 0) {
+                return Set.of(primaryOrigin.north(2), primaryOrigin);
+            }
+        }
         return Set.of();
     }
 
@@ -583,12 +617,12 @@ public final class CylinderConnectivity {
         Map<BlockPos, RingData> selected = new LinkedHashMap<>();
         Map<BlockPos, List<RingData>> memberships = new LinkedHashMap<>();
         for (PartialRingGroup group : sorted) {
-            if (group.rings().stream().anyMatch(ring -> selected.containsKey(ring.origin()))
-                    || !canAddPartialGroup(level, group.rings(), memberships)) {
+            List<RingData> ringsToAdd = unselectedRings(group, selected);
+            if (ringsToAdd.isEmpty() || !canAddPartialGroup(level, ringsToAdd, memberships)) {
                 continue;
             }
 
-            for (RingData ring : group.rings()) {
+            for (RingData ring : ringsToAdd) {
                 selected.put(ring.origin(), ring);
                 addRingMembership(memberships, ring);
             }
@@ -615,7 +649,11 @@ public final class CylinderConnectivity {
 
                 groups.add(new PartialRingGroup(
                         List.of(first.ring(), second.ring()),
-                        first.score() + second.score() + 500 + sharedBlocks * 50
+                        first.score()
+                                + second.score()
+                                + 500
+                                + sharedBlocks * 50
+                                + existingSharedWallBlockCount(level, first.ring(), second.ring()) * 300
                 ));
             }
         }
@@ -624,6 +662,16 @@ public final class CylinderConnectivity {
             groups.add(new PartialRingGroup(List.of(candidate.ring()), candidate.score()));
         }
         return groups;
+    }
+
+    private static List<RingData> unselectedRings(PartialRingGroup group, Map<BlockPos, RingData> selected) {
+        List<RingData> rings = new ArrayList<>(group.rings().size());
+        for (RingData ring : group.rings()) {
+            if (!selected.containsKey(ring.origin())) {
+                rings.add(ring);
+            }
+        }
+        return rings;
     }
 
     private static Set<BlockPos> partialOriginsFromLocalCorners(Set<BlockPos> members, BlockPos pos) {
@@ -831,6 +879,29 @@ public final class CylinderConnectivity {
             sharedBlocks++;
         }
         return sharedBlocks;
+    }
+
+    private static int existingSharedWallBlockCount(Level level, RingData first, RingData second) {
+        CylinderSharedWall expectedSharedWall = sharedWallFor(List.of(first, second));
+        if (expectedSharedWall == CylinderSharedWall.NONE) {
+            return 0;
+        }
+
+        Set<BlockPos> firstPositions = new LinkedHashSet<>(first.positions());
+        int matches = 0;
+        for (BlockPos pos : second.positions()) {
+            if (!firstPositions.contains(pos) || !level.isLoaded(pos)) {
+                continue;
+            }
+
+            BlockState state = level.getBlockState(pos);
+            if (state.is(ModBlocks.STEAM_CYLINDER.get())
+                    && state.hasProperty(SteamCylinderBlock.SHARED_WALL)
+                    && state.getValue(SteamCylinderBlock.SHARED_WALL) == expectedSharedWall) {
+                matches++;
+            }
+        }
+        return matches;
     }
 
     private static CylinderWallShape localStraightWallShape(Level level, BlockPos pos, Set<BlockPos> members) {
