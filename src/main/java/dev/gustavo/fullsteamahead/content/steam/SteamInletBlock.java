@@ -19,7 +19,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
@@ -34,7 +33,8 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
     public static final EnumProperty<CylinderWallShape> WALL_SHAPE =
             EnumProperty.create("wall_shape", CylinderWallShape.class);
     public static final DirectionProperty FACING = DirectionProperty.create("facing", Direction.UP, Direction.DOWN);
-    public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final DirectionProperty HORIZONTAL_FACING =
+            DirectionProperty.create("horizontal_facing", Direction.Plane.HORIZONTAL);
     private static final VoxelShape NORTH_SHAPE = Shapes.or(
             Block.box(0, 0, 7, 16, 16, 16),
             Block.box(2, 2, 5, 14, 14, 7),
