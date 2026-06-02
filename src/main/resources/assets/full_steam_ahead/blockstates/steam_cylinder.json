@@ -33,6 +33,67 @@
     },
     {
       "when": {
+        "section": "none",
+        "wall_shape": "corner_north_east",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder"
+      }
+    },
+    {
+      "when": {
+        "section": "none",
+        "wall_shape": "corner_south_east",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder"
+      }
+    },
+    {
+      "when": {
+        "section": "none",
+        "wall_shape": "corner_south_west",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder"
+      }
+    },
+    {
+      "when": {
+        "section": "none",
+        "wall_shape": "corner_north_west",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder"
+      }
+    },
+    {
+      "when": {
+        "section": "none",
+        "wall_shape": "shared_strip_z",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder"
+      }
+    },
+    {
+      "when": {
+        "section": "none",
+        "wall_shape": "shared_strip_x",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder",
+        "y": 90
+      }
+    },
+    {
+      "when": {
         "section": "lower_north_west",
         "facing": "up",
         "shared_wall": "none"

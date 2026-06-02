@@ -7,7 +7,13 @@ import java.util.Locale;
 public enum CylinderWallShape implements StringRepresentable {
     STANDALONE,
     STRAIGHT_X,
-    STRAIGHT_Z;
+    STRAIGHT_Z,
+    CORNER_NORTH_EAST,
+    CORNER_SOUTH_EAST,
+    CORNER_SOUTH_WEST,
+    CORNER_NORTH_WEST,
+    SHARED_STRIP_X,
+    SHARED_STRIP_Z;
 
     private final String serializedName;
 

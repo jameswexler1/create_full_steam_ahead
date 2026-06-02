@@ -14,7 +14,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -57,17 +56,14 @@ public final class CylinderConnectivity {
         Map<BlockPos, List<RingData>> memberships = buildMemberships(validRings.values());
         Set<BlockPos> validRingPositions = new LinkedHashSet<>(memberships.keySet());
 
-        Map<BlockPos, CylinderSection> partialSections =
-                inferPartialSections(level, candidates, validRingPositions, ignoredRingMemberPos);
-        Map<BlockPos, CylinderWallShape> partialWallShapes =
-                inferPartialWallShapes(level, candidates, validRingPositions, ignoredRingMemberPos, partialSections);
+        Map<BlockPos, PartialVisual> partialVisuals =
+                inferPartialVisuals(level, candidateRingPositions(candidates), validRingPositions, ignoredRingMemberPos);
 
-        clearOrApplyPartialSections(
+        clearOrApplyPartialVisuals(
                 level,
                 candidateRingPositions(candidates),
                 validRingPositions,
-                partialSections,
-                partialWallShapes
+                partialVisuals
         );
 
         assemble(level, validRings.values(), memberships);
@@ -290,12 +286,11 @@ public final class CylinderConnectivity {
         return positions;
     }
 
-    private static void clearOrApplyPartialSections(
+    private static void clearOrApplyPartialVisuals(
             Level level,
             Set<BlockPos> positions,
             Set<BlockPos> protectedPositions,
-            Map<BlockPos, CylinderSection> partialSections,
-            Map<BlockPos, CylinderWallShape> partialWallShapes
+            Map<BlockPos, PartialVisual> partialVisuals
     ) {
         for (BlockPos pos : positions) {
             if (protectedPositions.contains(pos) || !level.isLoaded(pos)) {
@@ -307,15 +302,13 @@ public final class CylinderConnectivity {
                 continue;
             }
 
-            CylinderSection section = partialSections.getOrDefault(pos, CylinderSection.NONE);
-            // For blocks not part of a ring or inferred straight run, keep the player's chosen
-            // orientation instead of snapping back to STANDALONE, so decorative walls stay put.
-            CylinderWallShape wallShape = partialWallShapes.containsKey(pos)
-                    ? partialWallShapes.get(pos)
-                    : (section == CylinderSection.NONE ? currentWallShape(state) : CylinderWallShape.STANDALONE);
+            PartialVisual partial = partialVisuals.get(pos);
+            CylinderSection section = partial == null ? CylinderSection.NONE : partial.section();
+            CylinderWallShape wallShape = partial == null ? currentStandaloneShape(state) : partial.wallShape();
+            CylinderSharedWall sharedWall = partial == null ? CylinderSharedWall.NONE : partial.sharedWall();
             withCylinderBlockEntity(level, pos, SteamCylinderBlockEntity::clearRingState);
             withInletBlockEntity(level, pos, SteamInletBlockEntity::clearRingState);
-            setRingState(level, pos, state, false, section, wallShape, Direction.UP, CylinderSharedWall.NONE);
+            setRingState(level, pos, state, false, section, wallShape, Direction.UP, sharedWall);
         }
     }
 
@@ -499,14 +492,14 @@ public final class CylinderConnectivity {
         );
     }
 
-    private static Map<BlockPos, CylinderSection> inferPartialSections(
+    private static Map<BlockPos, PartialVisual> inferPartialVisuals(
             Level level,
-            Set<BlockPos> candidateOrigins,
+            Set<BlockPos> positions,
             Set<BlockPos> protectedPositions,
             BlockPos ignoredRingMemberPos
     ) {
         Set<BlockPos> members = new LinkedHashSet<>();
-        for (BlockPos pos : candidateRingPositions(candidateOrigins)) {
+        for (BlockPos pos : positions) {
             if (!protectedPositions.contains(pos)
                     && level.isLoaded(pos)
                     && getRingMemberAt(level, pos, ignoredRingMemberPos) != RingMember.NONE) {
@@ -514,153 +507,116 @@ public final class CylinderConnectivity {
             }
         }
 
-        Map<BlockPos, CylinderSection> assignments = new HashMap<>();
-        for (Set<BlockPos> component : connectedComponents(members)) {
-            if (!canShowPartialRingVisuals(level, component) || !hasRingIntent(component)) {
+        Map<BlockPos, RingData> partialRings = resolveSharedRings(level, findPartialRings(members));
+        Map<BlockPos, List<RingData>> memberships = buildMemberships(partialRings.values());
+        Map<BlockPos, PartialVisual> assignments = new LinkedHashMap<>();
+        for (Map.Entry<BlockPos, List<RingData>> entry : memberships.entrySet()) {
+            BlockPos pos = entry.getKey();
+            if (!level.isLoaded(pos) || !isRingMember(level.getBlockState(pos))) {
                 continue;
             }
 
-            Optional<BlockPos> bestOrigin = bestVisualOrigin(component);
-            if (bestOrigin.isEmpty()) {
+            List<RingData> owners = entry.getValue();
+            RingData primary = owners.getFirst();
+            CylinderSection section = sectionFor(primary.origin(), pos);
+            if (section == CylinderSection.NONE) {
                 continue;
             }
 
-            for (BlockPos pos : component) {
-                CylinderSection section = sectionFor(bestOrigin.get(), pos);
-                if (section != CylinderSection.NONE) {
-                    assignments.put(pos, section);
-                }
+            CylinderSharedWall sharedWall = level.getBlockState(pos).is(ModBlocks.STEAM_CYLINDER.get())
+                    ? sharedWallFor(owners)
+                    : CylinderSharedWall.NONE;
+            assignments.put(pos, new PartialVisual(section, CylinderWallShape.STANDALONE, sharedWall));
+        }
+        for (BlockPos pos : members) {
+            if (!assignments.containsKey(pos) && level.getBlockState(pos).is(ModBlocks.STEAM_CYLINDER.get())) {
+                assignments.put(pos, new PartialVisual(
+                        CylinderSection.NONE,
+                        localStraightWallShape(level, pos, members),
+                        CylinderSharedWall.NONE
+                ));
             }
         }
-
         return assignments;
     }
 
-    private static Map<BlockPos, CylinderWallShape> inferPartialWallShapes(
-            Level level,
-            Set<BlockPos> candidateOrigins,
-            Set<BlockPos> protectedPositions,
-            BlockPos ignoredRingMemberPos,
-            Map<BlockPos, CylinderSection> partialSections
+    private static Map<BlockPos, RingData> findPartialRings(
+            Set<BlockPos> members
     ) {
-        Set<BlockPos> members = new LinkedHashSet<>();
-        for (BlockPos pos : candidateRingPositions(candidateOrigins)) {
-            if (!protectedPositions.contains(pos)
-                    && !partialSections.containsKey(pos)
-                    && level.isLoaded(pos)
-                    && getRingMemberAt(level, pos, ignoredRingMemberPos) != RingMember.NONE) {
-                members.add(pos);
-            }
-        }
-
-        Map<BlockPos, CylinderWallShape> assignments = new HashMap<>();
-        for (Set<BlockPos> component : connectedComponents(members)) {
-            if (!canShowPartialRingVisuals(level, component)) {
-                continue;
-            }
-
-            CylinderWallShape shape = straightWallShape(component);
-            if (shape == CylinderWallShape.STANDALONE) {
-                continue;
-            }
-
-            for (BlockPos pos : component) {
-                assignments.put(pos, shape);
-            }
-        }
-
-        return assignments;
-    }
-
-    private static List<Set<BlockPos>> connectedComponents(Set<BlockPos> members) {
-        List<Set<BlockPos>> components = new ArrayList<>();
-        Set<BlockPos> unvisited = new LinkedHashSet<>(members);
-
-        while (!unvisited.isEmpty()) {
-            BlockPos start = unvisited.iterator().next();
-            Set<BlockPos> component = new LinkedHashSet<>();
-            ArrayDeque<BlockPos> queue = new ArrayDeque<>();
-            queue.add(start);
-            unvisited.remove(start);
-
-            while (!queue.isEmpty()) {
-                BlockPos pos = queue.removeFirst();
-                component.add(pos);
-
-                for (Direction direction : Direction.values()) {
-                    BlockPos neighbor = pos.relative(direction);
-                    if (unvisited.remove(neighbor)) {
-                        queue.add(neighbor);
-                    }
+        Map<BlockPos, RingData> rings = new LinkedHashMap<>();
+        for (BlockPos pos : members) {
+            for (BlockPos origin : partialOriginsFromLocalCorners(members, pos)) {
+                List<BlockPos> positions = partialRingPositions(origin, members);
+                if (positions.size() < 3) {
+                    continue;
                 }
-            }
-
-            components.add(component);
-        }
-
-        return components;
-    }
-
-    private static boolean canShowPartialRingVisuals(Level level, Set<BlockPos> component) {
-        int inlets = 0;
-        for (BlockPos pos : component) {
-            if (level.getBlockState(pos).is(ModBlocks.STEAM_INLET.get()) && ++inlets > 1) {
-                return false;
+                rings.putIfAbsent(origin, new RingData(origin, positions, Direction.UP, null, null));
             }
         }
-
-        return true;
+        return rings;
     }
 
-    private static boolean hasRingIntent(Set<BlockPos> component) {
-        return component.size() >= 3 && hasHorizontalAxis(component, Direction.Axis.X)
-                && hasHorizontalAxis(component, Direction.Axis.Z);
-    }
-
-    private static CylinderWallShape straightWallShape(Set<BlockPos> component) {
-        boolean hasX = hasHorizontalAxis(component, Direction.Axis.X);
-        boolean hasZ = hasHorizontalAxis(component, Direction.Axis.Z);
-
-        if (hasX == hasZ) {
-            return CylinderWallShape.STANDALONE;
-        }
-
-        return hasX ? CylinderWallShape.STRAIGHT_X : CylinderWallShape.STRAIGHT_Z;
-    }
-
-    private static boolean hasHorizontalAxis(Set<BlockPos> component, Direction.Axis axis) {
-        for (BlockPos pos : component) {
-            Direction negative = axis == Direction.Axis.X ? Direction.WEST : Direction.NORTH;
-            Direction positive = axis == Direction.Axis.X ? Direction.EAST : Direction.SOUTH;
-            if (component.contains(pos.relative(negative)) || component.contains(pos.relative(positive))) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static Optional<BlockPos> bestVisualOrigin(Set<BlockPos> component) {
+    private static Set<BlockPos> partialOriginsFromLocalCorners(Set<BlockPos> members, BlockPos pos) {
         Set<BlockPos> origins = new LinkedHashSet<>();
-        for (BlockPos pos : component) {
-            origins.addAll(candidateOrigins(pos));
-        }
+        boolean north = hasNeighbor(members, pos, Direction.NORTH);
+        boolean east = hasNeighbor(members, pos, Direction.EAST);
+        boolean south = hasNeighbor(members, pos, Direction.SOUTH);
+        boolean west = hasNeighbor(members, pos, Direction.WEST);
 
-        return origins.stream()
-                .filter(origin -> visualScore(origin, component) >= 2)
-                .max(Comparator
-                        .comparingInt((BlockPos origin) -> visualScore(origin, component))
-                        .thenComparing(ROOT_ORDER.reversed()));
+        if (east && south) {
+            origins.add(pos);
+        }
+        if (south && west) {
+            origins.add(pos.offset(-2, 0, 0));
+        }
+        if (west && north) {
+            origins.add(pos.offset(-2, 0, -2));
+        }
+        if (north && east) {
+            origins.add(pos.offset(0, 0, -2));
+        }
+        return origins;
     }
 
-    private static int visualScore(BlockPos origin, Set<BlockPos> component) {
-        int score = 0;
-        for (BlockPos pos : component) {
-            if (sectionFor(origin, pos) != CylinderSection.NONE) {
-                score++;
+    private static List<BlockPos> partialRingPositions(BlockPos origin, Set<BlockPos> members) {
+        List<BlockPos> positions = new ArrayList<>(16);
+        for (BlockPos ringPos : ringPositions(origin)) {
+            if (members.contains(ringPos)) {
+                positions.add(ringPos);
             }
         }
-        return score;
+        return positions;
+    }
+
+    private static CylinderWallShape localStraightWallShape(Level level, BlockPos pos, Set<BlockPos> members) {
+        boolean east = hasNeighbor(members, pos, Direction.EAST);
+        boolean west = hasNeighbor(members, pos, Direction.WEST);
+        boolean north = hasNeighbor(members, pos, Direction.NORTH);
+        boolean south = hasNeighbor(members, pos, Direction.SOUTH);
+
+        if (east || west) {
+            return CylinderWallShape.STRAIGHT_X;
+        }
+        if (north || south) {
+            return CylinderWallShape.STRAIGHT_Z;
+        }
+        return currentStandaloneShape(level.getBlockState(pos));
+    }
+
+    private static CylinderWallShape currentStandaloneShape(BlockState state) {
+        if (state.hasProperty(SteamCylinderBlock.WALL_SHAPE)) {
+            CylinderWallShape shape = state.getValue(SteamCylinderBlock.WALL_SHAPE);
+            return switch (shape) {
+                case STRAIGHT_X, SHARED_STRIP_X -> CylinderWallShape.STRAIGHT_X;
+                case STRAIGHT_Z, SHARED_STRIP_Z -> CylinderWallShape.STRAIGHT_Z;
+                default -> CylinderWallShape.STANDALONE;
+            };
+        }
+        return CylinderWallShape.STANDALONE;
+    }
+
+    private static boolean hasNeighbor(Set<BlockPos> members, BlockPos pos, Direction direction) {
+        return members.contains(pos.relative(direction));
     }
 
     private static void setRingState(
@@ -751,16 +707,6 @@ public final class CylinderConnectivity {
         return state.is(ModBlocks.STEAM_CYLINDER.get()) || state.is(ModBlocks.STEAM_INLET.get());
     }
 
-    private static CylinderWallShape currentWallShape(BlockState state) {
-        if (state.hasProperty(SteamCylinderBlock.WALL_SHAPE)) {
-            return state.getValue(SteamCylinderBlock.WALL_SHAPE);
-        }
-        if (state.hasProperty(SteamInletBlock.WALL_SHAPE)) {
-            return state.getValue(SteamInletBlock.WALL_SHAPE);
-        }
-        return CylinderWallShape.STANDALONE;
-    }
-
     private static void notifyEngines(Level level, Set<BlockPos> candidateOrigins) {
         Set<BlockPos> notified = new LinkedHashSet<>();
         for (BlockPos origin : candidateOrigins) {
@@ -799,6 +745,13 @@ public final class CylinderConnectivity {
         NONE,
         CYLINDER,
         INLET
+    }
+
+    private record PartialVisual(
+            CylinderSection section,
+            CylinderWallShape wallShape,
+            CylinderSharedWall sharedWall
+    ) {
     }
 
     private record RingData(

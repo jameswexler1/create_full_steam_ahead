@@ -87,7 +87,7 @@ Completed static cylinder art slice:
 - [x] Applied the latest hand-authored `assembled_cylinder_ring.png` runtime texture for the assembled multiblock cylinder ring.
 - [x] Replaced the assembled multiblock cylinder runtime texture with the `_v2` hand-authored PNG revision.
 - [x] Reused the 16 assembled cylinder section models as progressive `Cylinder Wall` construction visuals.
-- [x] Added best-fit partial section assignment for connected cylinder wall/inlet groups while keeping `assembled=true` reserved for complete valid rings.
+- [x] Replaced best-fit partial section guessing with local-corner partial section assignment for connected cylinder wall/inlet groups while keeping `assembled=true` reserved for complete valid rings.
 - [x] Applied `cylinder_exposed_parts_fix.zip`: v3 assembled cylinder atlas plus exposed cut faces for all 16 section models.
 - [x] Applied `Stean_cylinder_wall_v1.bbmodel` as the standalone `Cylinder Wall` model and matched the hitbox to its two cuboids.
 
@@ -225,6 +225,8 @@ Automated results:
 - [x] `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after rebuilding the testing Ponder staging around Create-style independent section reveals, a checkered base plate, and localized text.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after adding shared-wall cylinder bank support.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after fixing upside-down shaft placement axis selection and shaft-line revalidation.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after replacing guessed partial cylinder-ring visuals with local construction topology.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after restoring existing assembled/shared partial models with stable local-corner section assignment.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
@@ -246,7 +248,9 @@ Manual runtime checklist:
 - [ ] The modeled crank rotates around the linked Create shaft axis for both X-axis and Z-axis shaft placements.
 - [ ] `steam_cylinder` renders with the custom cylinder texture in both unassembled placement and assembled ring state.
 - [ ] Two or more `Cylinder Wall` blocks in a straight line stay in straight-wall/fence-like mode instead of guessing a ring section.
-- [ ] Adding a 90-degree horizontal turn to a connected `Cylinder Wall` group switches that partial structure into ring-section visuals.
+- [ ] Adding a 90-degree horizontal turn to a connected `Cylinder Wall` group switches the implied blocks into stable existing assembled partials, not a jumping guessed ring.
+- [ ] Early shared-wall patterns use the existing shared-wall partial models with correct orientation, not temporary construction connector models.
+- [ ] Straight-only `Cylinder Wall` runs remain in `section=none` fence-like wall mode until a corner implies a ring section.
 - [ ] Assembled `steam_cylinder` ring uses the slim section-aware model in all 16 positions, disassembles back to the standalone block model, and has a slim outline/collision shape.
 - [ ] Fixed assembled cylinder ring geometry renders without the previous overlapping/flickering parts.
 - [ ] `steam_inlet` renders with the new textured model as an item, standalone block, and assembled ring member in north/east/south/west-facing shell positions.

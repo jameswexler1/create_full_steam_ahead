@@ -73,9 +73,10 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
         if (state.getValue(SECTION) != CylinderSection.NONE) {
             return state;
         }
-        CylinderWallShape next = state.getValue(WALL_SHAPE) == CylinderWallShape.STRAIGHT_X
-                ? CylinderWallShape.STRAIGHT_Z
-                : CylinderWallShape.STRAIGHT_X;
+        CylinderWallShape next = switch (state.getValue(WALL_SHAPE)) {
+            case STRAIGHT_X, SHARED_STRIP_X -> CylinderWallShape.STRAIGHT_Z;
+            default -> CylinderWallShape.STRAIGHT_X;
+        };
         return state.setValue(WALL_SHAPE, next);
     }
 
@@ -160,7 +161,10 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
             );
         }
 
-        return state.getValue(WALL_SHAPE) == CylinderWallShape.STRAIGHT_X ? STRAIGHT_X_SHAPE : STANDALONE_SHAPE;
+        return state.getValue(WALL_SHAPE) == CylinderWallShape.STRAIGHT_X
+                || state.getValue(WALL_SHAPE) == CylinderWallShape.SHARED_STRIP_X
+                ? STRAIGHT_X_SHAPE
+                : STANDALONE_SHAPE;
     }
 
     @Override
