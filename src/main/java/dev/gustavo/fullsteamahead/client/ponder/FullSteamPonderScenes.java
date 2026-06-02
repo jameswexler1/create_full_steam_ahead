@@ -7,16 +7,19 @@ import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.createmod.ponder.api.scene.Selection;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.level.block.Blocks;
 
 /**
  * Ponder storyboard for the pipe-fed steam engine, using the {@code testing_ponder_v2} structure.
  *
- * <p>Structure layout (6x5x6): a snow/light-gray-concrete checkerboard floor at y=0; the cylinder
- * ring around the piston at x1-3/z3-5 (head 2,1,4; body 2,2,4; shaft 2,4,4; steam inlet 3,1,4 on
- * the east face); a boiler of Blaze Burners (y=1) under Fluid Tanks (y=2) at x0-1/z0-1 with a
- * boiler outlet at 2,2,1; and a fluid-pipe run linking the outlet to the inlet. Nothing but the
- * floor is shown on load; the machine is then assembled piece by piece and finally driven.</p>
+ * <p>Structure layout (6x5x6): a snow/white-concrete checkerboard floor at y=0; the cylinder ring
+ * around the piston at x1-3/z3-5 (head 2,1,4; body 2,2,4; shaft 2,4,4; steam inlet 3,1,4 on the
+ * east face); a boiler of Blaze Burners (y=1) under Fluid Tanks (y=2) at x0-1/z0-1 with a boiler
+ * outlet at 2,2,1; and a fluid-pipe run linking the outlet to the inlet.</p>
+ *
+ * <p>Reveals follow Create's own pattern: un-shown sections are hidden by default (only the base
+ * plate is shown on load), and each part is brought in with {@code showIndependentSection}, which
+ * uses Ponder's standard 15-tick fade — no manual block hiding/restoring, which would pop blocks
+ * in instead of fading them.</p>
  */
 public final class FullSteamPonderScenes {
 
@@ -29,6 +32,7 @@ public final class FullSteamPonderScenes {
         // yaw is 145 (a 55-degree tilt); 235 keeps that exact tilt while turning toward the inlet.
         scene.addInstruction(ponderScene -> ponderScene.getTransform().yRotation.startWithValue(235));
         scene.world().modifyEntities(ItemEntity.class, ItemEntity::discard);
+        scene.idle(10);
 
         Selection pistonHead = util.select().position(2, 1, 4);
         Selection pistonBody = util.select().position(2, 2, 4);
@@ -47,71 +51,60 @@ public final class FullSteamPonderScenes {
                 .add(util.select().fromTo(4, 1, 1, 4, 1, 4))
                 .add(util.select().position(3, 2, 1));
 
-        // Hide everything above the floor; reveal it in build order.
-        scene.world().setBlocks(util.select().fromTo(0, 1, 0, 5, 4, 5), Blocks.AIR.defaultBlockState(), false);
-        scene.idle(15);
-
-        scene.world().restoreBlocks(lowerRing);
         scene.world().showIndependentSection(lowerRing, Direction.DOWN);
         scene.effects().indicateSuccess(util.grid().at(2, 1, 4));
-        scene.idle(18);
+        scene.idle(20);
         scene.overlay().showText(90)
                 .text("The engine body is a ring of Cylinder Walls around a Piston Head; one wall is a Steam Inlet")
                 .colored(PonderPalette.GREEN)
                 .pointAt(util.vector().blockSurface(util.grid().at(3, 1, 4), Direction.EAST))
                 .placeNearTarget()
                 .attachKeyFrame();
-        scene.idle(95);
+        scene.idle(100);
 
-        scene.world().restoreBlocks(upperRing);
         scene.world().showIndependentSection(upperRing, Direction.DOWN);
-        scene.idle(14);
+        scene.idle(20);
         scene.overlay().showText(80)
                 .text("A second layer of Cylinder Walls closes around the Piston Body")
                 .colored(PonderPalette.GREEN)
                 .pointAt(util.vector().centerOf(2, 2, 4))
                 .placeNearTarget()
                 .attachKeyFrame();
-        scene.idle(85);
+        scene.idle(90);
 
-        scene.world().restoreBlocks(shaft);
         scene.world().showIndependentSection(shaft, Direction.DOWN);
-        scene.idle(16);
+        scene.idle(20);
         scene.overlay().showText(80)
                 .text("Above an empty stroke space, a Create shaft becomes the engine's power output")
                 .colored(PonderPalette.OUTPUT)
                 .pointAt(util.vector().topOf(2, 4, 4))
                 .placeNearTarget()
                 .attachKeyFrame();
-        scene.idle(85);
+        scene.idle(90);
 
-        scene.world().restoreBlocks(burners);
         scene.world().showIndependentSection(burners, Direction.DOWN);
-        scene.idle(16);
+        scene.idle(20);
         scene.overlay().showText(75)
                 .text("Beside it, Blaze Burners provide the heat")
                 .colored(PonderPalette.FAST)
                 .pointAt(util.vector().topOf(1, 1, 1))
                 .placeNearTarget()
                 .attachKeyFrame();
-        scene.idle(80);
+        scene.idle(85);
 
-        scene.world().restoreBlocks(boilerTanks);
         scene.world().showIndependentSection(boilerTanks, Direction.DOWN);
-        scene.idle(14);
-        scene.world().restoreBlocks(outlet);
+        scene.idle(20);
         scene.world().showIndependentSection(outlet, Direction.DOWN);
         scene.effects().indicateSuccess(util.grid().at(2, 2, 1));
-        scene.idle(18);
+        scene.idle(20);
         scene.overlay().showText(95)
                 .text("Fluid Tanks over the burners form a boiler; a Boiler Outlet draws off its pressurized steam")
                 .colored(PonderPalette.MEDIUM)
                 .pointAt(util.vector().centerOf(2, 2, 1))
                 .placeNearTarget()
                 .attachKeyFrame();
-        scene.idle(100);
+        scene.idle(105);
 
-        scene.world().restoreBlocks(pipes);
         scene.world().showIndependentSection(pipes, Direction.DOWN);
         scene.idle(20);
         scene.overlay().showText(90)
@@ -120,7 +113,7 @@ public final class FullSteamPonderScenes {
                 .pointAt(util.vector().blockSurface(util.grid().at(3, 1, 4), Direction.EAST))
                 .placeNearTarget()
                 .attachKeyFrame();
-        scene.idle(95);
+        scene.idle(100);
 
         // Steam reaches the engine: drive the shaft so the piston linkage runs.
         scene.world().setKineticSpeed(shaft, 32.0F);
