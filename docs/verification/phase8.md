@@ -224,6 +224,7 @@ Automated results:
 - [x] `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after removing the animated testing Ponder camera turn and staging the outlet/pipe reveal explicitly.
 - [x] `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after rebuilding the testing Ponder staging around Create-style independent section reveals, a checkered base plate, and localized text.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after adding shared-wall cylinder bank support.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after fixing upside-down shaft placement axis selection and shaft-line revalidation.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
@@ -254,6 +255,9 @@ Manual runtime checklist:
 - [ ] The creative tab icon now reads slightly larger and visually matches neighboring Create-style tab icons.
 - [ ] Holding a Create shaft while looking at the completed piston body previews a ghost shaft at the required top-link position.
 - [ ] Right-clicking the piston body with that Create shaft places the shaft at the top-link position, converts it to the hidden powered shaft, and forms the rod/crank linkage even with no boiler or steam inlet.
+- [ ] Upside-down pipe-fed engines accept both X-axis and Z-axis horizontal shafts from the piston-body shaft placement helper.
+- [ ] Upside-down pipe-fed engines claim a shaft brought in through an existing shaft line without requiring the piston-body shaft placement helper.
+- [ ] Wrench-rotating the linked shaft near an upside-down engine revalidates the engine without breaking and replacing the shaft.
 - [ ] Two complete cylinder rings can be built directly adjacent without either ring deforming or stealing the other's section assignments.
 - [ ] Two adjacent engines along X assemble with the shared-wall visual and both engines validate independently.
 - [ ] Two adjacent engines along Z assemble with the rotated shared-wall visual and both engines validate independently.

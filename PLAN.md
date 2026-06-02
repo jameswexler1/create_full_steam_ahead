@@ -652,6 +652,8 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Keep inverted engines pipe-fed only; inverted validation requires one assembled `steam_inlet` and never direct-reads a compact boiler
 - [x] Keep upright direct compact mode and upright pipe-fed mode unchanged
 - [x] Make shaft placement helper, hidden powered shaft survival, movement checks, lighting, particles, and piston/linkage rendering direction-aware
+- [x] Make the shaft placement helper derive the desired horizontal shaft axis from the clicked/player-facing side instead of the piston body's stale stored axis
+- [x] Revalidate nearby engines when horizontal shafts notify neighbors, so inverted engines can claim shafts added through an existing shaft line or changed with a wrench
 - [x] Mirror assembled cylinder ring hitboxes and reuse mirrored existing assembled cylinder section models for inverted visuals
 - [x] Verify inverted pipe-fed engine in a standalone world and on an Aeronautics/Simulated contraption
 

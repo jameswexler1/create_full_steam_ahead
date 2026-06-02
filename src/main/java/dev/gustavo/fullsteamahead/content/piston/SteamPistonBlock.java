@@ -179,7 +179,7 @@ public class SteamPistonBlock extends Block implements FullSteamWrenchable {
                 return PlacementOffset.fail();
             }
 
-            Direction.Axis axis = state.getValue(AXIS);
+            Direction.Axis axis = preferredShaftAxis(player, state, ray);
             BlockPos shaftPos = EngineValidator.pistonPositionsFromBody(level, pos).shaft();
             return PlacementOffset.success(shaftPos, placedState -> {
                 BlockState shaftState = AllBlocks.SHAFT.getDefaultState()
@@ -189,6 +189,20 @@ public class SteamPistonBlock extends Block implements FullSteamWrenchable {
                 }
                 return FullSteamPoweredShaftBlock.equivalentOf(shaftState);
             });
+        }
+
+        private Direction.Axis preferredShaftAxis(Player player, BlockState pistonState, BlockHitResult ray) {
+            Direction.Axis clickedAxis = ray.getDirection().getAxis();
+            if (clickedAxis.isHorizontal()) {
+                return clickedAxis;
+            }
+
+            Direction.Axis playerAxis = player.getDirection().getAxis();
+            if (playerAxis.isHorizontal()) {
+                return playerAxis;
+            }
+
+            return pistonState.getValue(AXIS);
         }
     }
 }
