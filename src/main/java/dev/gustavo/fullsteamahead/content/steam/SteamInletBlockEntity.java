@@ -5,6 +5,7 @@ import com.simibubi.create.content.fluids.FluidPropagator;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
+import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderConnectivity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModFluids;
@@ -25,7 +26,6 @@ import java.util.Objects;
 
 public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation {
     public static final int BUFFER_CAPACITY = 360;
-    private static final int MAX_ACCEPTED_STEAM_PER_TICK = 90;
     private static final String ASSEMBLED_KEY = "Assembled";
     private static final String ROOT_POS_KEY = "RootPos";
     private static final String RING_ORIGIN_KEY = "RingOrigin";
@@ -306,8 +306,9 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
 
         private int acceptedSteamAllowance() {
+            int maxPerTick = FullSteamConfig.maxPipedSteamPerTick();
             if (level == null) {
-                return MAX_ACCEPTED_STEAM_PER_TICK;
+                return maxPerTick;
             }
 
             long gameTime = level.getGameTime();
@@ -315,7 +316,7 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
                 acceptedGameTime = gameTime;
                 acceptedThisGameTick = 0;
             }
-            return Math.max(0, MAX_ACCEPTED_STEAM_PER_TICK - acceptedThisGameTick);
+            return Math.max(0, maxPerTick - acceptedThisGameTick);
         }
     }
 }

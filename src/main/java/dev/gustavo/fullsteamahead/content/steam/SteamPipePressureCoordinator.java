@@ -2,6 +2,7 @@ package dev.gustavo.fullsteamahead.content.steam;
 
 import com.simibubi.create.content.fluids.FluidPropagator;
 import com.simibubi.create.content.fluids.FluidTransportBehaviour;
+import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -43,7 +44,7 @@ public final class SteamPipePressureCoordinator {
 
             refreshAdjacentOutlets(level, node.pos());
 
-            if (node.distance() >= BoilerOutletBlockEntity.PRESSURE_RANGE) {
+            if (node.distance() >= FullSteamConfig.boilerOutletPressureRange()) {
                 continue;
             }
 

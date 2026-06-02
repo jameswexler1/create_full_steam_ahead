@@ -3,6 +3,7 @@ package dev.gustavo.fullsteamahead;
 import com.mojang.logging.LogUtils;
 import dev.gustavo.fullsteamahead.compat.create.CreateMovementCompat;
 import dev.gustavo.fullsteamahead.compat.simulated.SimulatedMovementCompat;
+import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import dev.gustavo.fullsteamahead.content.piston.EngineShaftEventHandler;
 import dev.gustavo.fullsteamahead.content.steam.SteamOpenPipeEffectHandler;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
@@ -13,6 +14,7 @@ import dev.gustavo.fullsteamahead.registry.ModFluids;
 import dev.gustavo.fullsteamahead.registry.ModItems;
 import dev.gustavo.fullsteamahead.registry.ModParticleTypes;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -33,6 +35,8 @@ public final class FullSteamAhead {
         ModCreativeTabs.register(modEventBus);
         modEventBus.addListener(ModCapabilities::register);
         modEventBus.addListener(this::commonSetup);
+
+        modContainer.registerConfig(ModConfig.Type.SERVER, FullSteamConfig.SPEC);
 
         LOGGER.info("Initializing Create: Full Steam Ahead");
     }

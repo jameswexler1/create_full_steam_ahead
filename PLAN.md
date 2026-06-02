@@ -653,15 +653,15 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Keep upright direct compact mode and upright pipe-fed mode unchanged
 - [x] Make shaft placement helper, hidden powered shaft survival, movement checks, lighting, particles, and piston/linkage rendering direction-aware
 - [x] Mirror assembled cylinder ring hitboxes and reuse mirrored existing assembled cylinder section models for inverted visuals
-- [ ] Verify inverted pipe-fed engine in a standalone world and on an Aeronautics/Simulated contraption
+- [x] Verify inverted pipe-fed engine in a standalone world and on an Aeronautics/Simulated contraption
 
 Deferred idea after visuals: inline shared-wall cylinder banks, where adjacent cylinders can share one cylinder wall block instead of requiring independent 3x3 rings.
 
 ### Phase 9: Balance, Config, Recipes
 
-- [ ] Server config for: base capacity, steam production rate, boiler outlet pressure range, direct mode enablement, max piston height
-- [ ] Recipes for active blocks balanced against vanilla Create steam engine
-- [ ] JEI/EMI display
+- [x] Server config for: base capacity, steam production rate, boiler outlet pressure range, direct mode enablement (max piston height deferred — v1 uses a fixed single-piston stroke, so there is no column height to cap yet)
+- [x] Recipes for active blocks balanced against vanilla Create steam engine
+- [x] JEI/EMI display (crafting recipes are vanilla recipe types and display automatically; JEI added as a runtime-only test dependency to verify in-game, no shipped plugin)
 
 ### Phase 10: Hardening and Release
 

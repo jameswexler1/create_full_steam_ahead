@@ -9,6 +9,7 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
 import dev.gustavo.fullsteamahead.compat.create.FullSteamBoilerIntegration;
+import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModFluids;
 import dev.gustavo.fullsteamahead.registry.ModParticleTypes;
@@ -36,10 +37,6 @@ import java.util.Queue;
 import java.util.Set;
 
 public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation {
-    public static final int STEAM_PER_HEAT_UNIT = 10;
-    public static final int PRESSURE_RANGE = 30;
-    private static final int ENGINE_STEAM_INTAKE_PER_TICK = 9 * STEAM_PER_HEAT_UNIT;
-    private static final int MIN_PIPE_FLOW_RESERVE = ENGINE_STEAM_INTAKE_PER_TICK;
     private static final float PRESSURE_PER_MB = 2.0f;
     private static final int BUFFER_CAPACITY = 16_000;
     private static final int PRESSURE_REFRESH_TICKS = 5;
@@ -117,7 +114,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         heatUnits = budget.outletUnits();
         totalHeatUnits = budget.totalUnits();
         outletCount = budget.outletCount();
-        productionRate = heatUnits * STEAM_PER_HEAT_UNIT;
+        productionRate = heatUnits * FullSteamConfig.steamPerHeatUnit();
         if (productionRate > 0) {
             steamBuffer.fill(new FluidStack(ModFluids.STEAM.get(), productionRate), IFluidHandler.FluidAction.EXECUTE);
             SteamOutput output = pushSteam(productionRate, networkMovedLastTick);
@@ -235,7 +232,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         if (venting) {
             CreateLang.text("Venting open steam").style(ChatFormatting.GOLD).forGoggles(tooltip, 1);
         }
-        CreateLang.text("Pressure range: " + PRESSURE_RANGE + " blocks")
+        CreateLang.text("Pressure range: " + FullSteamConfig.boilerOutletPressureRange() + " blocks")
                 .style(ChatFormatting.DARK_GRAY)
                 .forGoggles(tooltip, 1);
         return true;
@@ -364,7 +361,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         }
 
         // Keep live source fluid available so Create's pipe flow renderer can show steam in pipes.
-        int flowReserve = Math.max(productionRate, MIN_PIPE_FLOW_RESERVE);
+        int flowReserve = Math.max(productionRate, FullSteamConfig.maxPipedSteamPerTick());
         int transferable = steamBuffer.getFluidAmount() - flowReserve;
         return Math.max(0, Math.min(requested, transferable));
     }
@@ -413,7 +410,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                         continue;
                     }
                     pipe.addPressure(direction, false, pressure);
-                    if (node.distance() + 1 <= PRESSURE_RANGE && visited.add(next)) {
+                    if (node.distance() + 1 <= FullSteamConfig.boilerOutletPressureRange() && visited.add(next)) {
                         queue.add(new PipeNode(next, direction.getOpposite(), node.distance() + 1));
                     }
                     continue;
@@ -509,7 +506,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                     if (!canSteamPassThrough(nextPipe, level.getBlockState(next), direction.getOpposite())) {
                         continue;
                     }
-                    if (node.distance() + 1 <= PRESSURE_RANGE && visited.add(next)) {
+                    if (node.distance() + 1 <= FullSteamConfig.boilerOutletPressureRange() && visited.add(next)) {
                         queue.add(new PipeNode(next, direction.getOpposite(), node.distance() + 1));
                     }
                     continue;
@@ -525,7 +522,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
 
                 boolean steamInlet = level.getBlockEntity(next) instanceof SteamInletBlockEntity inlet
                         && inlet.isInletAssembled();
-                int maxFillPerTick = steamInlet ? ENGINE_STEAM_INTAKE_PER_TICK : Integer.MAX_VALUE;
+                int maxFillPerTick = steamInlet ? FullSteamConfig.maxPipedSteamPerTick() : Integer.MAX_VALUE;
                 targets.add(new FillTarget(next, direction.getOpposite(), steamInlet, maxFillPerTick));
             }
         }

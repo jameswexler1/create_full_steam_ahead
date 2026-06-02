@@ -11,6 +11,7 @@ import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
+import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlockEntity;
@@ -50,14 +51,9 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private static final String LEGACY_STEAM_POWER_KEY = "SteamPower";
     private static final String STATUS_KEY = "Status";
 
-    private static final int STEAM_PER_HEAT_UNIT = 10;
     private static final int MAX_ACTIVE_BURNERS = 9;
     private static final int MAX_HEAT_UNITS = 18;
     private static final int MAX_PIPED_HEAT_UNITS = 9;
-    private static final int MAX_PIPED_STEAM_PER_TICK = MAX_PIPED_HEAT_UNITS * STEAM_PER_HEAT_UNIT;
-    private static final float SU_PER_HEAT_UNIT = 16_384.0F;
-    private static final float SU_PER_STEAM_MB = SU_PER_HEAT_UNIT / STEAM_PER_HEAT_UNIT;
-    private static final float REGULAR_MAX_CAPACITY_SU = 147_456.0F;
     private static final float MAX_RPM = 64.0F;
     private static final int MIN_STEAM_SOUND_INTERVAL_TICKS = 5;
     private static final float HALF_TURN_RADIANS = (float) Math.PI;
@@ -338,9 +334,11 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
             return SteamOutput.none(inlet == null ? SourceMode.NONE : SourceMode.PIPED_STEAM);
         }
 
-        FluidTankBlockEntity boiler = getBoiler();
-        if (boiler != null && boiler.boiler != null) {
-            return calculateDirectSteamOutput(boiler);
+        if (FullSteamConfig.directCompactModeEnabled()) {
+            FluidTankBlockEntity boiler = getBoiler();
+            if (boiler != null && boiler.boiler != null) {
+                return calculateDirectSteamOutput(boiler);
+            }
         }
 
         return SteamOutput.none(inlet == null ? SourceMode.NONE : SourceMode.PIPED_STEAM);
@@ -365,12 +363,12 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
                 burnerHeat.heatUnits(),
                 hasWater,
                 0,
-                burnerHeat.heatUnits() * SU_PER_HEAT_UNIT
+                burnerHeat.heatUnits() * FullSteamConfig.SU_PER_HEAT_UNIT
         );
     }
 
     private SteamOutput calculatePipedSteamOutput(SteamInletBlockEntity inlet, boolean execute) {
-        int targetSteam = Math.min(MAX_PIPED_STEAM_PER_TICK, inlet.getSteamAmount());
+        int targetSteam = Math.min(FullSteamConfig.maxPipedSteamPerTick(), inlet.getSteamAmount());
         if (targetSteam <= 0) {
             return SteamOutput.none(SourceMode.PIPED_STEAM);
         }
@@ -380,7 +378,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
             return SteamOutput.none(SourceMode.PIPED_STEAM);
         }
 
-        int heat = Mth.clamp(Mth.ceil(consumed / (float) STEAM_PER_HEAT_UNIT), 1, MAX_PIPED_HEAT_UNITS);
+        int heat = Mth.clamp(Mth.ceil(consumed / (float) FullSteamConfig.steamPerHeatUnit()), 1, MAX_PIPED_HEAT_UNITS);
         int activeEquivalent = Math.min(MAX_ACTIVE_BURNERS, heat);
         return new SteamOutput(
                 SourceMode.PIPED_STEAM,
@@ -388,7 +386,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
                 heat,
                 true,
                 consumed,
-                Math.min(REGULAR_MAX_CAPACITY_SU, consumed * SU_PER_STEAM_MB)
+                Math.min((float) FullSteamConfig.baseEngineCapacity(), consumed * FullSteamConfig.suPerSteamMb())
         );
     }
 
@@ -685,7 +683,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         if (generatedSpeed == 0 && generatedCapacitySu == 0 && tag.contains(LEGACY_STEAM_POWER_KEY)) {
             float legacySteamPower = tag.getFloat(LEGACY_STEAM_POWER_KEY);
             generatedSpeed = MAX_RPM * Math.min(legacySteamPower, 1.0F);
-            generatedCapacitySu = REGULAR_MAX_CAPACITY_SU * legacySteamPower;
+            generatedCapacitySu = FullSteamConfig.baseEngineCapacity() * legacySteamPower;
             sourceMode = SourceMode.DIRECT_BOILER;
         }
         status = tag.contains(STATUS_KEY) ? tag.getString(STATUS_KEY) : "Incomplete structure";

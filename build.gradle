@@ -30,6 +30,11 @@ repositories {
         name = 'Registrate'
         url = 'https://maven.ithundxr.dev/snapshots'
     }
+    maven {
+        // JEI (test client only)
+        name = 'BlameJared'
+        url = 'https://maven.blamejared.com'
+    }
     exclusiveContent {
         forRepository {
             maven {
@@ -95,6 +100,8 @@ dependencies {
     runtimeOnly("maven.modrinth:create-aeronautics:1.2.1+mc1.21.1")
     // Sable is required by Aeronautics and remains a separate runtime-only test dependency.
     runtimeOnly("maven.modrinth:sable:1.2.2+mc1.21.1")
+    // JEI for the dev/test client so crafting recipes can be browsed in-game (not shipped).
+    runtimeOnly("mezz.jei:jei-1.21.1-neoforge:19.27.0.340")
 }
 
 tasks.withType(JavaCompile).configureEach {
