@@ -255,10 +255,11 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     public Direction.Axis getShaftAxis() {
-        if (level == null || shaftPos == null || !level.isLoaded(shaftPos)) {
+        FullSteamPoweredShaftBlockEntity shaft = getShaft();
+        if (shaft == null || level == null) {
             return Direction.Axis.X;
         }
-        return EngineValidator.shaftAxis(level, shaftPos);
+        return EngineValidator.shaftAxis(level, shaft.getBlockPos());
     }
 
     public float getAnimationPhaseOffset() {
@@ -268,12 +269,20 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     public FullSteamPoweredShaftBlockEntity getShaft() {
-        if (level == null || shaftPos == null || !level.isLoaded(shaftPos)) {
+        FullSteamPoweredShaftBlockEntity shaft = shaftEntityAt(shaftPos);
+        if (shaft != null) {
+            return shaft;
+        }
+        // Fallback for relocated worlds such as Ponder scenes, where the stored absolute shaftPos is
+        // stale: the shaft always sits three blocks along the stroke direction from the head.
+        return shaftEntityAt(worldPosition.relative(getStrokeDirection(), 3));
+    }
+
+    private FullSteamPoweredShaftBlockEntity shaftEntityAt(BlockPos pos) {
+        if (level == null || pos == null || !level.isLoaded(pos)) {
             return null;
         }
-
-        BlockEntity blockEntity = level.getBlockEntity(shaftPos);
-        return blockEntity instanceof FullSteamPoweredShaftBlockEntity shaft ? shaft : null;
+        return level.getBlockEntity(pos) instanceof FullSteamPoweredShaftBlockEntity shaft ? shaft : null;
     }
 
     @Override
