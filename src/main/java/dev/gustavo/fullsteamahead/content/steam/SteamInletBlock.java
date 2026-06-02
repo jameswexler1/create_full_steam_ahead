@@ -3,13 +3,17 @@ package dev.gustavo.fullsteamahead.content.steam;
 import com.mojang.serialization.MapCodec;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
+import dev.gustavo.fullsteamahead.content.common.FullSteamWrenchable;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderConnectivity;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderSection;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderWallShape;
+import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlock;
+import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -23,7 +27,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity> {
+public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>, FullSteamWrenchable {
     public static final MapCodec<SteamInletBlock> CODEC = simpleCodec(SteamInletBlock::new);
     public static final BooleanProperty ASSEMBLED = BooleanProperty.create("assembled");
     public static final EnumProperty<CylinderSection> SECTION = EnumProperty.create("section", CylinderSection.class);
@@ -67,6 +71,25 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
     @Override
     protected MapCodec<? extends Block> codec() {
         return CODEC;
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        Direction facing = FullSteamWrenchable.isPlacingShifted(context)
+                ? PistonHeadBlock.placementFacing(context).getOpposite()
+                : PistonHeadBlock.placementFacing(context);
+        return defaultBlockState().setValue(FACING, facing);
+    }
+
+    @Override
+    public BlockState getRotatedBlockState(BlockState state, Direction targetedFace) {
+        return state.setValue(FACING, state.getValue(FACING).getOpposite());
+    }
+
+    @Override
+    public void onAfterWrench(Level level, BlockPos pos) {
+        CylinderConnectivity.refreshFrom(level, pos);
+        PistonHeadBlockEntity.revalidateNearbyEngines(level, pos);
     }
 
     @Override

@@ -3,6 +3,7 @@ package dev.gustavo.fullsteamahead.content.piston;
 import com.mojang.serialization.MapCodec;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.kinetics.simpleRelays.ShaftBlock;
+import dev.gustavo.fullsteamahead.content.common.FullSteamWrenchable;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.createmod.catnip.placement.IPlacementHelper;
@@ -31,7 +32,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.function.Predicate;
 
-public class SteamPistonBlock extends Block {
+public class SteamPistonBlock extends Block implements FullSteamWrenchable {
     public static final MapCodec<SteamPistonBlock> CODEC = simpleCodec(SteamPistonBlock::new);
     public static final BooleanProperty ASSEMBLED = BooleanProperty.create("assembled");
     public static final EnumProperty<PistonSection> PISTON_SECTION =
@@ -57,13 +58,29 @@ public class SteamPistonBlock extends Block {
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Direction facing = adjacentPistonHeadFacing(context.getLevel(), context.getClickedPos());
-        if (facing == null) {
-            facing = PistonHeadBlock.placementFacing(context);
+        Direction facing;
+        if (FullSteamWrenchable.isPlacingShifted(context)) {
+            // Sneaking flips the stroke orientation and ignores neighbour auto-connect, matching Create.
+            facing = PistonHeadBlock.placementFacing(context).getOpposite();
+        } else {
+            facing = adjacentPistonHeadFacing(context.getLevel(), context.getClickedPos());
+            if (facing == null) {
+                facing = PistonHeadBlock.placementFacing(context);
+            }
         }
         return defaultBlockState()
                 .setValue(AXIS, context.getHorizontalDirection().getAxis())
                 .setValue(FACING, facing);
+    }
+
+    @Override
+    public BlockState getRotatedBlockState(BlockState state, Direction targetedFace) {
+        return state.setValue(FACING, state.getValue(FACING).getOpposite());
+    }
+
+    @Override
+    public void onAfterWrench(Level level, BlockPos pos) {
+        PistonHeadBlockEntity.revalidateNearbyEngines(level, pos);
     }
 
     private Direction adjacentPistonHeadFacing(Level level, BlockPos pos) {

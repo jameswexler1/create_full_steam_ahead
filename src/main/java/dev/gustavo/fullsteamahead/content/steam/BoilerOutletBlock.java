@@ -2,6 +2,7 @@ package dev.gustavo.fullsteamahead.content.steam;
 
 import com.mojang.serialization.MapCodec;
 import com.simibubi.create.foundation.block.IBE;
+import dev.gustavo.fullsteamahead.content.common.FullSteamWrenchable;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,7 +23,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import java.util.EnumMap;
 import java.util.Map;
 
-public class BoilerOutletBlock extends Block implements IBE<BoilerOutletBlockEntity> {
+public class BoilerOutletBlock extends Block implements IBE<BoilerOutletBlockEntity>, FullSteamWrenchable {
     public static final MapCodec<BoilerOutletBlock> CODEC = simpleCodec(BoilerOutletBlock::new);
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     private static final Box[] NORTH_BOXES = new Box[] {
@@ -45,7 +46,17 @@ public class BoilerOutletBlock extends Block implements IBE<BoilerOutletBlockEnt
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        return defaultBlockState().setValue(FACING, context.getClickedFace());
+        return defaultBlockState().setValue(FACING, FullSteamWrenchable.flipIfShifted(context, context.getClickedFace()));
+    }
+
+    @Override
+    public BlockState getRotatedBlockState(BlockState state, Direction targetedFace) {
+        return state.setValue(FACING, state.getValue(FACING).getClockWise(targetedFace.getAxis()));
+    }
+
+    @Override
+    public void onAfterWrench(Level level, BlockPos pos) {
+        withBlockEntityDo(level, pos, BoilerOutletBlockEntity::refreshBoilerState);
     }
 
     @Override

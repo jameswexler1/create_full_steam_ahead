@@ -2,6 +2,7 @@ package dev.gustavo.fullsteamahead.content.piston;
 
 import com.mojang.serialization.MapCodec;
 import com.simibubi.create.foundation.block.IBE;
+import dev.gustavo.fullsteamahead.content.common.FullSteamWrenchable;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderConnectivity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
@@ -20,7 +21,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class PistonHeadBlock extends Block implements IBE<PistonHeadBlockEntity> {
+public class PistonHeadBlock extends Block implements IBE<PistonHeadBlockEntity>, FullSteamWrenchable {
     public static final MapCodec<PistonHeadBlock> CODEC = simpleCodec(PistonHeadBlock::new);
     public static final BooleanProperty ASSEMBLED = BooleanProperty.create("assembled");
     public static final DirectionProperty FACING = DirectionProperty.create("facing", Direction.UP, Direction.DOWN);
@@ -51,11 +52,30 @@ public class PistonHeadBlock extends Block implements IBE<PistonHeadBlockEntity>
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        Direction inferredFacing = adjacentPistonFacing(context.getLevel(), context.getClickedPos());
-        return defaultBlockState().setValue(FACING, inferredFacing == null ? placementFacing(context) : inferredFacing);
+        Direction facing;
+        if (FullSteamWrenchable.isPlacingShifted(context)) {
+            // Sneaking flips the placement orientation and ignores neighbour auto-connect, matching Create.
+            facing = placementFacing(context).getOpposite();
+        } else {
+            Direction inferredFacing = adjacentPistonFacing(context.getLevel(), context.getClickedPos());
+            facing = inferredFacing == null ? placementFacing(context) : inferredFacing;
+        }
+        return defaultBlockState().setValue(FACING, facing);
     }
 
-    static Direction placementFacing(BlockPlaceContext context) {
+    @Override
+    public BlockState getRotatedBlockState(BlockState state, Direction targetedFace) {
+        return state.setValue(FACING, state.getValue(FACING).getOpposite());
+    }
+
+    @Override
+    public void onAfterWrench(Level level, BlockPos pos) {
+        CylinderConnectivity.refreshFrom(level, pos);
+        withBlockEntityDo(level, pos, PistonHeadBlockEntity::revalidateStructure);
+        PistonHeadBlockEntity.revalidateNearbyEngines(level, pos);
+    }
+
+    public static Direction placementFacing(BlockPlaceContext context) {
         Direction clickedFace = context.getClickedFace();
         if (clickedFace == Direction.DOWN) {
             return Direction.DOWN;

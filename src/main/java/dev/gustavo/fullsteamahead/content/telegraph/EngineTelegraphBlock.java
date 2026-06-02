@@ -1,6 +1,7 @@
 package dev.gustavo.fullsteamahead.content.telegraph;
 
 import com.mojang.serialization.MapCodec;
+import dev.gustavo.fullsteamahead.content.common.FullSteamWrenchable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -13,7 +14,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class EngineTelegraphBlock extends HorizontalDirectionalBlock {
+public class EngineTelegraphBlock extends HorizontalDirectionalBlock implements FullSteamWrenchable {
     public static final MapCodec<EngineTelegraphBlock> CODEC =
             simpleCodec(EngineTelegraphBlock::new);
 
@@ -76,9 +77,14 @@ public class EngineTelegraphBlock extends HorizontalDirectionalBlock {
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        // Faces the player when placed
+        // Faces the player when placed; sneaking flips it to face away, matching Create.
         return defaultBlockState().setValue(FACING,
-                context.getHorizontalDirection().getOpposite());
+                FullSteamWrenchable.flipIfShifted(context, context.getHorizontalDirection().getOpposite()));
+    }
+
+    @Override
+    public BlockState getRotatedBlockState(BlockState state, Direction targetedFace) {
+        return state.setValue(FACING, state.getValue(FACING).getClockWise());
     }
 
     @Override

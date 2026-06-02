@@ -1,7 +1,9 @@
 package dev.gustavo.fullsteamahead.content.redstone;
 
 import com.mojang.serialization.MapCodec;
+import com.simibubi.create.content.equipment.wrench.WrenchItem;
 import com.simibubi.create.foundation.block.IBE;
+import dev.gustavo.fullsteamahead.content.common.FullSteamWrenchable;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -9,8 +11,12 @@ import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -27,7 +33,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Vector3f;
 
-public class SteppedLeverBlock extends FaceAttachedHorizontalDirectionalBlock implements IBE<SteppedLeverBlockEntity> {
+public class SteppedLeverBlock extends FaceAttachedHorizontalDirectionalBlock
+        implements IBE<SteppedLeverBlockEntity>, FullSteamWrenchable {
     public static final MapCodec<SteppedLeverBlock> CODEC = simpleCodec(SteppedLeverBlock::new);
 
     private static final VoxelShape FLOOR_Z = Block.box(3, 0, 0, 13, 12, 16);
@@ -54,6 +61,60 @@ public class SteppedLeverBlock extends FaceAttachedHorizontalDirectionalBlock im
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, FACE);
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        BlockState state = null;
+        for (Direction direction : context.getNearestLookingDirections()) {
+            BlockState candidate;
+            if (direction.getAxis() == Direction.Axis.Y) {
+                candidate = defaultBlockState()
+                        .setValue(FACE, direction == Direction.UP ? AttachFace.CEILING : AttachFace.FLOOR)
+                        .setValue(FACING, context.getHorizontalDirection());
+            } else {
+                candidate = defaultBlockState()
+                        .setValue(FACE, AttachFace.WALL)
+                        .setValue(FACING, direction.getOpposite());
+            }
+            if (candidate.canSurvive(context.getLevel(), context.getClickedPos())) {
+                state = candidate;
+                break;
+            }
+        }
+        if (state == null) {
+            state = defaultBlockState();
+        }
+        if (FullSteamWrenchable.isPlacingShifted(context)) {
+            // Sneaking flips the lever to face the opposite way, matching Create.
+            BlockState flipped = state.setValue(FACING, state.getValue(FACING).getOpposite());
+            if (flipped.canSurvive(context.getLevel(), context.getClickedPos())) {
+                state = flipped;
+            }
+        }
+        return state;
+    }
+
+    @Override
+    public BlockState getRotatedBlockState(BlockState state, Direction targetedFace) {
+        return state.setValue(FACING, state.getValue(FACING).getClockWise());
+    }
+
+    @Override
+    protected @NotNull ItemInteractionResult useItemOn(
+            ItemStack stack,
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player,
+            InteractionHand hand,
+            BlockHitResult hit
+    ) {
+        // Let the Create wrench rotate/remove the lever instead of toggling it.
+        if (stack.getItem() instanceof WrenchItem) {
+            return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+        }
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     @Override
