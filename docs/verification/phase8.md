@@ -150,6 +150,7 @@ Completed experimental Ponder scene adjustment:
 - [x] Rotated the testing Ponder camera toward the Steam Inlet side of the engine.
 - [x] Reworked the reveal order so the piston head, piston body, cylinder walls, and Steam Inlet assemble first, followed by the adjacent boiler, then the Boiler Outlet and connecting pipes.
 - [x] Rewrote the testing Ponder text to explain the pipe-fed engine flow more clearly.
+- [x] Replaced the animated camera rotation with an initial camera transform aimed at the Steam Inlet side, and hid/restored the outlet and pipe blocks so they only render during their reveal step.
 
 Automated results:
 
@@ -211,6 +212,7 @@ Automated results:
 - [x] `jq empty new_models/steam_engine_piston_MINE_PERFECT.bbmodel`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after adding the piston body bottom-face UV island.
 - [x] `jq empty new_models/steam_engine_piston_MINE_PERFECT.bbmodel`, embedded/runtime texture hash comparison, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after importing the repainted piston body texture.
 - [x] `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after adjusting the experimental testing Ponder camera, reveal order, and text.
+- [x] `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after removing the animated testing Ponder camera turn and staging the outlet/pipe reveal explicitly.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.

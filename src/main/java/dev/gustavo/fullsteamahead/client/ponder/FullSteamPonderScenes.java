@@ -5,6 +5,7 @@ import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.createmod.ponder.api.scene.Selection;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Blocks;
 
 /**
  * Experimental Ponder storyboards for Create: Full Steam Ahead.
@@ -20,10 +21,9 @@ public final class FullSteamPonderScenes {
         scene.title("testing_ponder", "Building a pipe-fed steam engine");
         scene.configureBasePlate(0, 0, 10);
         scene.scaleSceneView(0.86F);
-        // The inlet in testing_ponder is on the east side of the cylinder ring.
-        scene.rotateCameraY(180);
-        scene.showBasePlate();
-        scene.idle(10);
+        scene.addInstruction(ponderScene ->
+                // The inlet in testing_ponder is on the east side of the cylinder ring.
+                ponderScene.getTransform().yRotation.startWithValue(180));
 
         Selection centerColumn = util.select().fromTo(6, 0, 8, 6, 1, 8);
         Selection inlet = util.select().position(7, 0, 8);
@@ -34,6 +34,16 @@ public final class FullSteamPonderScenes {
         Selection pistonHead = util.select().position(6, 0, 8);
         Selection pistonBody = util.select().position(6, 1, 8);
         Selection shaft = util.select().position(6, 3, 8);
+        Selection outlet = util.select().position(6, 1, 5);
+        Selection pipeRun = util.select()
+                .position(7, 1, 5)
+                .add(util.select().position(7, 0, 5))
+                .add(util.select().fromTo(8, 0, 5, 8, 0, 8));
+        Selection steamConnection = outlet.copy().add(pipeRun);
+
+        scene.world().setBlocks(steamConnection, Blocks.AIR.defaultBlockState(), false);
+        scene.showBasePlate();
+        scene.idle(10);
 
         scene.world().showSection(pistonHead, Direction.UP);
         scene.idle(8);
@@ -80,12 +90,7 @@ public final class FullSteamPonderScenes {
                 .attachKeyFrame();
         scene.idle(100);
 
-        Selection outlet = util.select().position(6, 1, 5);
-        Selection pipeRun = util.select()
-                .position(7, 1, 5)
-                .add(util.select().position(7, 0, 5))
-                .add(util.select().fromTo(8, 0, 5, 8, 0, 8));
-
+        scene.world().restoreBlocks(outlet);
         scene.world().showSection(outlet, Direction.EAST);
         scene.idle(14);
         scene.overlay().showText(95)
@@ -96,6 +101,7 @@ public final class FullSteamPonderScenes {
                 .attachKeyFrame();
         scene.idle(55);
 
+        scene.world().restoreBlocks(pipeRun);
         scene.world().showSection(pipeRun, Direction.EAST);
         scene.idle(18);
         scene.overlay().showText(95)
