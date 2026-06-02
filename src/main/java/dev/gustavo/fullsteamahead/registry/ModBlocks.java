@@ -36,7 +36,7 @@ public final class ModBlocks {
     public static final DeferredBlock<EngineTelegraphBlock> ENGINE_TELEGRAPH =
             registerBlock("engine_telegraph", EngineTelegraphBlock::new,
                     BlockBehaviour.Properties.of()
-                            .strength(2.5f, 6.0f)
+                            .strength(3.0f, 6.0f)
                             .sound(SoundType.METAL)
                             .requiresCorrectToolForDrops()
                             .noOcclusion()
@@ -67,11 +67,10 @@ public final class ModBlocks {
         return BLOCKS.registerBlock(name, factory, properties);
     }
 
+    // Cylinder wall, inlet, outlet, and telegraph break like a copper block: hardness 3.0 and a
+    // stone-or-better pickaxe to drop (minecraft:mineable/pickaxe + minecraft:needs_stone_tool).
     private static BlockBehaviour.Properties cylinderProperties() {
-        return BlockBehaviour.Properties.of()
-                .strength(4.0F, 8.0F)
-                .requiresCorrectToolForDrops()
-                .sound(SoundType.COPPER);
+        return copperProperties();
     }
 
     private static BlockBehaviour.Properties copperProperties() {
@@ -81,9 +80,11 @@ public final class ModBlocks {
                 .sound(SoundType.COPPER);
     }
 
+    // Piston head and body break like a Create shaft (andesite-based, SharedProperties.stone):
+    // hardness 1.5 and any pickaxe drops them (in mineable/pickaxe, no needs_*_tool tag).
     private static BlockBehaviour.Properties metalProperties() {
         return BlockBehaviour.Properties.of()
-                .strength(3.5F, 7.0F)
+                .strength(1.5F, 6.0F)
                 .requiresCorrectToolForDrops()
                 .sound(SoundType.METAL);
     }
