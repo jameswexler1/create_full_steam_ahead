@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "C": { "tag": "c:plates/copper" }
+  },
+  "pattern": [
+    "III",
+    "ICI",
+    " I "
+  ],
+  "result": {
+    "count": 1,
+    "id": "full_steam_ahead:piston_head"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": { "tag": "c:plates/copper" },
+    "P": { "item": "create:fluid_pipe" }
+  },
+  "pattern": [
+    " C ",
+    "CPC",
+    " C "
+  ],
+  "result": {
+    "count": 1,
+    "id": "full_steam_ahead:boiler_outlet"
+  }
+}

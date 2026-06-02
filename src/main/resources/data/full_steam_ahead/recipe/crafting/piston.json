@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": { "item": "minecraft:iron_ingot" },
+    "S": { "item": "create:shaft" }
+  },
+  "pattern": [
+    "I I",
+    "ISI",
+    "I I"
+  ],
+  "result": {
+    "count": 1,
+    "id": "full_steam_ahead:piston"
+  }
+}

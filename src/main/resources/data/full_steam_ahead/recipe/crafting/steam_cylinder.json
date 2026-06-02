@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building_blocks",
+  "key": {
+    "C": { "tag": "c:plates/copper" }
+  },
+  "pattern": [
+    "C C",
+    "C C",
+    "C C"
+  ],
+  "result": {
+    "count": 4,
+    "id": "full_steam_ahead:steam_cylinder"
+  }
+}
