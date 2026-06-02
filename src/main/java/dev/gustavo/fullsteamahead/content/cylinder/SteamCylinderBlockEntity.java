@@ -4,6 +4,7 @@ import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.utility.CreateLang;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -113,28 +114,29 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        tooltip.add(Component.literal("Steam Cylinder").withStyle(ChatFormatting.GRAY));
+        CreateLang.text("Steam Cylinder").style(ChatFormatting.GRAY).forGoggles(tooltip);
 
         if (!assembled) {
-            tooltip.add(Component.literal("Incomplete cylinder ring").withStyle(ChatFormatting.RED));
+            CreateLang.text("Incomplete cylinder ring").style(ChatFormatting.RED).forGoggles(tooltip, 1);
             return true;
         }
 
-        tooltip.add(Component.literal("Cylinder ring assembled").withStyle(ChatFormatting.GREEN));
-        tooltip.add(Component.literal(root ? "Root cylinder block" : "Linked cylinder block")
-                .withStyle(ChatFormatting.DARK_GRAY));
+        CreateLang.text("Cylinder ring assembled").style(ChatFormatting.GREEN).forGoggles(tooltip, 1);
+        CreateLang.text(root ? "Root cylinder block" : "Linked cylinder block")
+                .style(ChatFormatting.DARK_GRAY)
+                .forGoggles(tooltip, 1);
 
         FluidTankBlockEntity boiler = getBoiler();
         if (boiler == null || boiler.boiler == null) {
             if (inletPos == null) {
-                tooltip.add(Component.literal("No steam source").withStyle(ChatFormatting.YELLOW));
+                CreateLang.text("No steam source").style(ChatFormatting.YELLOW).forGoggles(tooltip, 1);
             } else {
-                tooltip.add(Component.literal("Steam inlet linked").withStyle(ChatFormatting.AQUA));
+                CreateLang.text("Steam inlet linked").style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
             }
             return true;
         }
 
-        tooltip.add(Component.literal("Boiler linked").withStyle(ChatFormatting.AQUA));
+        CreateLang.text("Boiler linked").style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         boiler.boiler.addToGoggleTooltip(tooltip, isPlayerSneaking, boiler.getTotalTankSize());
         return true;
     }

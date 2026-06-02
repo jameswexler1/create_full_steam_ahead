@@ -7,6 +7,7 @@ import com.simibubi.create.content.fluids.tank.BoilerData;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.utility.CreateLang;
 import dev.gustavo.fullsteamahead.compat.create.FullSteamBoilerIntegration;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModFluids;
@@ -212,25 +213,31 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        tooltip.add(Component.literal("Boiler Outlet").withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal(status)
-                .withStyle(productionRate > 0 ? ChatFormatting.GREEN : ChatFormatting.YELLOW));
-        tooltip.add(Component.literal("Steam: " + steamBuffer.getFluidAmount() + "/" + steamBuffer.getCapacity() + " mB")
-                .withStyle(steamBuffer.getFluidAmount() > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY));
-        tooltip.add(Component.literal("Steam units: " + heatUnits + "/" + totalHeatUnits)
-                .withStyle(heatUnits > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
-        tooltip.add(Component.literal("Attached outlets: " + outletCount)
-                .withStyle(outletCount > 1 ? ChatFormatting.GRAY : ChatFormatting.DARK_GRAY));
-        tooltip.add(Component.literal("Production: " + productionRate + " mB/t")
-                .withStyle(productionRate > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
-        tooltip.add(Component.literal("Pushed: " + pushedRate + " mB/t")
-                .withStyle(pushedRate > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY));
+        CreateLang.text("Boiler Outlet").style(ChatFormatting.GRAY).forGoggles(tooltip);
+        CreateLang.text(status)
+                .style(productionRate > 0 ? ChatFormatting.GREEN : ChatFormatting.YELLOW)
+                .forGoggles(tooltip, 1);
+        CreateLang.text("Steam: " + steamBuffer.getFluidAmount() + "/" + steamBuffer.getCapacity() + " mB")
+                .style(steamBuffer.getFluidAmount() > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
+                .forGoggles(tooltip, 1);
+        CreateLang.text("Steam units: " + heatUnits + "/" + totalHeatUnits)
+                .style(heatUnits > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
+                .forGoggles(tooltip, 1);
+        CreateLang.text("Attached outlets: " + outletCount)
+                .style(outletCount > 1 ? ChatFormatting.GRAY : ChatFormatting.DARK_GRAY)
+                .forGoggles(tooltip, 1);
+        CreateLang.text("Production: " + productionRate + " mB/t")
+                .style(productionRate > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
+                .forGoggles(tooltip, 1);
+        CreateLang.text("Pushed: " + pushedRate + " mB/t")
+                .style(pushedRate > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
+                .forGoggles(tooltip, 1);
         if (venting) {
-            tooltip.add(Component.literal("Venting open steam")
-                    .withStyle(ChatFormatting.GOLD));
+            CreateLang.text("Venting open steam").style(ChatFormatting.GOLD).forGoggles(tooltip, 1);
         }
-        tooltip.add(Component.literal("Pressure range: " + PRESSURE_RANGE + " blocks")
-                .withStyle(ChatFormatting.DARK_GRAY));
+        CreateLang.text("Pressure range: " + PRESSURE_RANGE + " blocks")
+                .style(ChatFormatting.DARK_GRAY)
+                .forGoggles(tooltip, 1);
         return true;
     }
 

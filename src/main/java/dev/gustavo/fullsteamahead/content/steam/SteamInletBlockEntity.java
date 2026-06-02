@@ -4,6 +4,7 @@ import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.fluids.FluidPropagator;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.utility.CreateLang;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderConnectivity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModFluids;
@@ -47,6 +48,8 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
     private BlockPos boilerPos;
     private int acceptedLastTick;
     private int consumedLastTick;
+    private int acceptedThisTick;
+    private int consumedThisTick;
     private long acceptedGameTime = Long.MIN_VALUE;
     private int acceptedThisGameTick;
 
@@ -73,11 +76,16 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
             return;
         }
 
-        if (acceptedLastTick != 0 || consumedLastTick != 0) {
-            acceptedLastTick = 0;
-            consumedLastTick = 0;
+        // Pipe fills and the engine's draw happen later in the game tick than this method, so the
+        // accumulators now hold the totals from the previous tick. Publish them to the synced
+        // display fields (so the goggle overlay shows real rates) when they change, then reset.
+        if (acceptedLastTick != acceptedThisTick || consumedLastTick != consumedThisTick) {
+            acceptedLastTick = acceptedThisTick;
+            consumedLastTick = consumedThisTick;
             notifyUpdate();
         }
+        acceptedThisTick = 0;
+        consumedThisTick = 0;
     }
 
     public void applyRingState(BlockPos ringOrigin, BlockPos rootPos, BlockPos boilerPos) {
@@ -141,7 +149,7 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         FluidStack drained = steamBuffer.drain(maxAmount,
                 execute ? IFluidHandler.FluidAction.EXECUTE : IFluidHandler.FluidAction.SIMULATE);
         if (execute && !drained.isEmpty()) {
-            consumedLastTick += drained.getAmount();
+            consumedThisTick += drained.getAmount();
             setChanged();
         }
         return drained;
@@ -181,24 +189,28 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        tooltip.add(Component.literal("Steam Inlet").withStyle(ChatFormatting.GRAY));
+        CreateLang.text("Steam Inlet").style(ChatFormatting.GRAY).forGoggles(tooltip);
 
         if (!assembled) {
-            tooltip.add(Component.literal("Not part of assembled cylinder").withStyle(ChatFormatting.RED));
+            CreateLang.text("Not part of assembled cylinder").style(ChatFormatting.RED).forGoggles(tooltip, 1);
         } else {
-            tooltip.add(Component.literal("Cylinder ring linked").withStyle(ChatFormatting.GREEN));
+            CreateLang.text("Cylinder ring linked").style(ChatFormatting.GREEN).forGoggles(tooltip, 1);
         }
 
-        tooltip.add(Component.literal("Steam: " + steamBuffer.getFluidAmount() + "/" + steamBuffer.getCapacity() + " mB")
-                .withStyle(steamBuffer.getFluidAmount() > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY));
-        tooltip.add(Component.literal("Accepted: " + acceptedLastTick + " mB/t")
-                .withStyle(acceptedLastTick > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY));
-        tooltip.add(Component.literal("Consumed: " + consumedLastTick + " mB/t")
-                .withStyle(consumedLastTick > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY));
+        CreateLang.text("Steam: " + steamBuffer.getFluidAmount() + "/" + steamBuffer.getCapacity() + " mB")
+                .style(steamBuffer.getFluidAmount() > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
+                .forGoggles(tooltip, 1);
+        CreateLang.text("Accepted: " + acceptedLastTick + " mB/t")
+                .style(acceptedLastTick > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
+                .forGoggles(tooltip, 1);
+        CreateLang.text("Consumed: " + consumedLastTick + " mB/t")
+                .style(consumedLastTick > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
+                .forGoggles(tooltip, 1);
 
         BlockPos enginePos = getEnginePos();
-        tooltip.add(Component.literal(enginePos == null ? "No engine link" : "Engine linked")
-                .withStyle(enginePos == null ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY));
+        CreateLang.text(enginePos == null ? "No engine link" : "Engine linked")
+                .style(enginePos == null ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY)
+                .forGoggles(tooltip, 1);
         return true;
     }
 
@@ -277,7 +289,7 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
             int fillAmount = Math.min(resource.getAmount(), tickAllowance);
             int filled = steamBuffer.fill(new FluidStack(ModFluids.STEAM.get(), fillAmount), action);
             if (!action.simulate() && filled > 0) {
-                acceptedLastTick += filled;
+                acceptedThisTick += filled;
                 acceptedThisGameTick += filled;
             }
             return filled;

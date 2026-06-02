@@ -10,6 +10,7 @@ import com.simibubi.create.content.kinetics.steamEngine.SteamJetParticleData;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.utility.CreateLang;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlockEntity;
@@ -281,36 +282,46 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        tooltip.add(Component.literal("Full Steam Engine").withStyle(ChatFormatting.GRAY));
+        CreateLang.text("Full Steam Engine").style(ChatFormatting.GRAY).forGoggles(tooltip);
         if (!assembled) {
-            tooltip.add(Component.literal(status).withStyle(ChatFormatting.RED));
+            CreateLang.text(status).style(ChatFormatting.RED).forGoggles(tooltip, 1);
             return true;
         }
 
-        tooltip.add(Component.literal("Engine assembled").withStyle(ChatFormatting.GREEN));
-        tooltip.add(Component.literal(getStrokeDirection() == Direction.DOWN ? "Orientation: upside down" : "Orientation: upright")
-                .withStyle(ChatFormatting.DARK_GRAY));
-        tooltip.add(Component.literal("Source: " + sourceMode.displayName())
-                .withStyle(sourceMode == SourceMode.NONE ? ChatFormatting.YELLOW : ChatFormatting.AQUA));
+        CreateLang.text("Engine assembled").style(ChatFormatting.GREEN).forGoggles(tooltip, 1);
+        CreateLang.text(getStrokeDirection() == Direction.DOWN ? "Orientation: upside down" : "Orientation: upright")
+                .style(ChatFormatting.DARK_GRAY)
+                .forGoggles(tooltip, 1);
+        CreateLang.text("Source: " + sourceMode.displayName())
+                .style(sourceMode == SourceMode.NONE ? ChatFormatting.YELLOW : ChatFormatting.AQUA)
+                .forGoggles(tooltip, 1);
         if (sourceMode == SourceMode.PIPED_STEAM) {
-            tooltip.add(Component.literal("Steam consumed: " + steamConsumedRate + " mB/t")
-                    .withStyle(steamConsumedRate > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
-            tooltip.add(Component.literal("Steam units: " + heatUnits + "/" + MAX_PIPED_HEAT_UNITS)
-                    .withStyle(heatUnits > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
+            CreateLang.text("Steam consumed: " + steamConsumedRate + " mB/t")
+                    .style(steamConsumedRate > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
+                    .forGoggles(tooltip, 1);
+            CreateLang.text("Steam units: " + heatUnits + "/" + MAX_PIPED_HEAT_UNITS)
+                    .style(heatUnits > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
+                    .forGoggles(tooltip, 1);
         } else {
-            tooltip.add(Component.literal("Active burners: " + activeBurners + "/" + MAX_ACTIVE_BURNERS)
-                    .withStyle(activeBurners > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
-            tooltip.add(Component.literal("Heat units: " + heatUnits + "/" + MAX_HEAT_UNITS)
-                    .withStyle(heatUnits > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
-            tooltip.add(Component.literal("Water supply: " + (hasWaterSupply ? "available" : "missing"))
-                    .withStyle(hasWaterSupply ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
+            CreateLang.text("Active burners: " + activeBurners + "/" + MAX_ACTIVE_BURNERS)
+                    .style(activeBurners > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
+                    .forGoggles(tooltip, 1);
+            CreateLang.text("Heat units: " + heatUnits + "/" + MAX_HEAT_UNITS)
+                    .style(heatUnits > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
+                    .forGoggles(tooltip, 1);
+            CreateLang.text("Water supply: " + (hasWaterSupply ? "available" : "missing"))
+                    .style(hasWaterSupply ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
+                    .forGoggles(tooltip, 1);
         }
-        tooltip.add(Component.literal("RPM: " + Math.round(getGeneratedSpeed()))
-                .withStyle(getGeneratedSpeed() > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
-        tooltip.add(Component.literal("Capacity: " + Math.round(getTargetCapacitySu()) + " SU")
-                .withStyle(getTargetCapacitySu() > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
-        tooltip.add(Component.literal(shaftPos == null ? "No shaft link" : "Shaft linked")
-                .withStyle(shaftPos == null ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY));
+        CreateLang.text("RPM: " + Math.round(getGeneratedSpeed()))
+                .style(getGeneratedSpeed() > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
+                .forGoggles(tooltip, 1);
+        CreateLang.text("Capacity: " + Math.round(getTargetCapacitySu()) + " SU")
+                .style(getTargetCapacitySu() > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
+                .forGoggles(tooltip, 1);
+        CreateLang.text(shaftPos == null ? "No shaft link" : "Shaft linked")
+                .style(shaftPos == null ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY)
+                .forGoggles(tooltip, 1);
         return true;
     }
 
