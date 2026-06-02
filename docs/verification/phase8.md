@@ -151,6 +151,7 @@ Completed experimental Ponder scene adjustment:
 - [x] Reworked the reveal order so the piston head, piston body, cylinder walls, and Steam Inlet assemble first, followed by the adjacent boiler, then the Boiler Outlet and connecting pipes.
 - [x] Rewrote the testing Ponder text to explain the pipe-fed engine flow more clearly.
 - [x] Replaced the animated camera rotation with an initial camera transform aimed at the Steam Inlet side, and hid/restored the outlet and pipe blocks so they only render during their reveal step.
+- [x] Reworked the testing Ponder to use Create's `CreateSceneBuilder`, clear staged machine blocks before showing the base plate, restore/reveal components as independent sections, add a scripted checkered floor, remove stray schematic item entities, and localize all testing Ponder text keys.
 
 Automated results:
 
@@ -213,6 +214,7 @@ Automated results:
 - [x] `jq empty new_models/steam_engine_piston_MINE_PERFECT.bbmodel`, embedded/runtime texture hash comparison, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after importing the repainted piston body texture.
 - [x] `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after adjusting the experimental testing Ponder camera, reveal order, and text.
 - [x] `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after removing the animated testing Ponder camera turn and staging the outlet/pipe reveal explicitly.
+- [x] `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after rebuilding the testing Ponder staging around Create-style independent section reveals, a checkered base plate, and localized text.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
