@@ -11,12 +11,12 @@
   "fluid.full_steam_ahead.steam": "Steam",
   "block.full_steam_ahead.engine_telegraph": "Engine Order Telegraph",
   "block.full_steam_ahead.stepped_lever": "Stepped Lever",
-  "full_steam_ahead.ponder.testing_ponder.header": "Building a pipe-fed steam engine",
-  "full_steam_ahead.ponder.testing_ponder.text_1": "Start with the piston head, piston body, and a two-layer ring of Cylinder Walls",
-  "full_steam_ahead.ponder.testing_ponder.text_2": "One wall may be replaced by a Steam Inlet; this is where piped steam enters the engine",
-  "full_steam_ahead.ponder.testing_ponder.text_3": "A regular Create shaft sits above the empty stroke space and becomes the engine output",
-  "full_steam_ahead.ponder.testing_ponder.text_4": "Build a Create boiler beside the engine: Fluid Tanks, Blaze Burners, and a steady water supply",
-  "full_steam_ahead.ponder.testing_ponder.text_5": "The Boiler Outlet turns boiler pressure into steam flow",
-  "full_steam_ahead.ponder.testing_ponder.text_6": "Finally, connect the outlet to the Steam Inlet with Create fluid pipes",
-  "full_steam_ahead.ponder.testing_ponder.text_7": "When steam reaches the inlet, the piston drives the shaft like a large Create steam engine"
+  "full_steam_ahead.ponder.steam_engine.header": "Building a pipe-fed steam engine",
+  "full_steam_ahead.ponder.steam_engine.text_1": "The engine body is a ring of Cylinder Walls around a Piston Head; one wall is a Steam Inlet",
+  "full_steam_ahead.ponder.steam_engine.text_2": "A second layer of Cylinder Walls closes around the Piston Body",
+  "full_steam_ahead.ponder.steam_engine.text_3": "Above an empty stroke space, a Create shaft becomes the engine's power output",
+  "full_steam_ahead.ponder.steam_engine.text_4": "Beside it, Blaze Burners provide the heat",
+  "full_steam_ahead.ponder.steam_engine.text_5": "Fluid Tanks over the burners form a boiler; a Boiler Outlet draws off its pressurized steam",
+  "full_steam_ahead.ponder.steam_engine.text_6": "Fluid pipes carry the steam from the outlet to the engine's Steam Inlet",
+  "full_steam_ahead.ponder.steam_engine.text_7": "Fed with steam, the piston drives the shaft, powering your contraptions like a giant steam engine"
 }

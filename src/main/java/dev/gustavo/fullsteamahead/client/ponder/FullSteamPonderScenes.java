@@ -25,8 +25,9 @@ public final class FullSteamPonderScenes {
         scene.title("steam_engine", "Building a pipe-fed steam engine");
         scene.configureBasePlate(0, 0, 6);
         scene.showBasePlate();
-        // Face the east side of the ring, where the steam inlet is, at Create's usual viewing angle.
-        scene.addInstruction(ponderScene -> ponderScene.getTransform().yRotation.startWithValue(270));
+        // Face the east side of the ring (the steam inlet) at Create's usual 3/4 angle. The default
+        // yaw is 145 (a 55-degree tilt); 235 keeps that exact tilt while turning toward the inlet.
+        scene.addInstruction(ponderScene -> ponderScene.getTransform().yRotation.startWithValue(235));
         scene.world().modifyEntities(ItemEntity.class, ItemEntity::discard);
 
         Selection pistonHead = util.select().position(2, 1, 4);
