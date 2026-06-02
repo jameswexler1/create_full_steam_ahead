@@ -2,13 +2,14 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "I": { "item": "minecraft:iron_ingot" },
-    "C": { "tag": "c:plates/copper" }
+    "S": { "item": "create:shaft" },
+    "B": { "tag": "c:plates/brass" },
+    "I": { "tag": "c:plates/iron" }
   },
   "pattern": [
-    "III",
-    "ICI",
-    " I "
+    " S ",
+    " B ",
+    "III"
   ],
   "result": {
     "count": 1,

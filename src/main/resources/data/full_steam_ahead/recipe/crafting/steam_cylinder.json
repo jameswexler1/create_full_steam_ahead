@@ -2,12 +2,14 @@
   "type": "minecraft:crafting_shaped",
   "category": "building_blocks",
   "key": {
-    "C": { "tag": "c:plates/copper" }
+    "C": { "tag": "c:plates/copper" },
+    "N": { "item": "minecraft:iron_nugget" },
+    "P": { "item": "minecraft:copper_block" }
   },
   "pattern": [
-    "C C",
-    "C C",
-    "C C"
+    " C ",
+    "NPN",
+    " C "
   ],
   "result": {
     "count": 4,

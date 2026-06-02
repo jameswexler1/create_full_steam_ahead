@@ -2,13 +2,11 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": { "tag": "c:plates/copper" },
+    "W": { "item": "full_steam_ahead:steam_cylinder" },
     "P": { "item": "create:fluid_pipe" }
   },
   "pattern": [
-    "C C",
-    "CPC",
-    "C C"
+    "WP"
   ],
   "result": {
     "count": 1,

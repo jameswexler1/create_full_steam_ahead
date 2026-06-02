@@ -2,10 +2,10 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    { "item": "full_steam_ahead:steam_inlet" }
+    { "item": "full_steam_ahead:boiler_outlet" }
   ],
   "result": {
     "count": 1,
-    "id": "full_steam_ahead:boiler_outlet"
+    "id": "full_steam_ahead:steam_inlet"
   }
 }
