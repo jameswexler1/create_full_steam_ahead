@@ -560,26 +560,70 @@ public final class CylinderConnectivity {
             }
         }
 
-        List<PartialRingCandidate> sorted = new ArrayList<>(candidates.values());
-        sorted.sort(Comparator
-                .comparingInt(PartialRingCandidate::score)
-                .reversed()
-                .thenComparing(candidate -> candidate.ring().origin(), ROOT_ORDER));
+        List<PartialRingGroup> sorted = partialRingGroups(level, candidates.values());
+        sorted.sort((first, second) -> {
+            int scoreCompare = Integer.compare(second.score(), first.score());
+            if (scoreCompare != 0) {
+                return scoreCompare;
+            }
+
+            int sizeCompare = Integer.compare(second.rings().size(), first.rings().size());
+            if (sizeCompare != 0) {
+                return sizeCompare;
+            }
+
+            int firstOriginCompare = ROOT_ORDER.compare(first.rings().getFirst().origin(), second.rings().getFirst().origin());
+            if (firstOriginCompare != 0) {
+                return firstOriginCompare;
+            }
+
+            return ROOT_ORDER.compare(first.rings().getLast().origin(), second.rings().getLast().origin());
+        });
 
         Map<BlockPos, RingData> selected = new LinkedHashMap<>();
         Map<BlockPos, List<RingData>> memberships = new LinkedHashMap<>();
-        for (PartialRingCandidate candidate : sorted) {
-            RingData ring = candidate.ring();
-            if (!canAddPartialRing(level, ring, memberships)) {
+        for (PartialRingGroup group : sorted) {
+            if (group.rings().stream().anyMatch(ring -> selected.containsKey(ring.origin()))
+                    || !canAddPartialGroup(level, group.rings(), memberships)) {
                 continue;
             }
 
-            selected.put(ring.origin(), ring);
-            for (BlockPos pos : ring.positions()) {
-                memberships.computeIfAbsent(pos, ignored -> new ArrayList<>(2)).add(ring);
+            for (RingData ring : group.rings()) {
+                selected.put(ring.origin(), ring);
+                addRingMembership(memberships, ring);
             }
         }
         return selected;
+    }
+
+    private static List<PartialRingGroup> partialRingGroups(
+            Level level,
+            Collection<PartialRingCandidate> candidates
+    ) {
+        List<PartialRingCandidate> sortedCandidates = new ArrayList<>(candidates);
+        sortedCandidates.sort(Comparator.comparing(candidate -> candidate.ring().origin(), ROOT_ORDER));
+
+        List<PartialRingGroup> groups = new ArrayList<>();
+        for (int firstIndex = 0; firstIndex < sortedCandidates.size(); firstIndex++) {
+            PartialRingCandidate first = sortedCandidates.get(firstIndex);
+            for (int secondIndex = firstIndex + 1; secondIndex < sortedCandidates.size(); secondIndex++) {
+                PartialRingCandidate second = sortedCandidates.get(secondIndex);
+                int sharedBlocks = sharedPartialWallBlockCount(level, first.ring(), second.ring());
+                if (sharedBlocks == 0) {
+                    continue;
+                }
+
+                groups.add(new PartialRingGroup(
+                        List.of(first.ring(), second.ring()),
+                        first.score() + second.score() + 500 + sharedBlocks * 50
+                ));
+            }
+        }
+
+        for (PartialRingCandidate candidate : sortedCandidates) {
+            groups.add(new PartialRingGroup(List.of(candidate.ring()), candidate.score()));
+        }
+        return groups;
     }
 
     private static Set<BlockPos> partialOriginsFromLocalCorners(Set<BlockPos> members, BlockPos pos) {
@@ -739,6 +783,54 @@ public final class CylinderConnectivity {
             }
         }
         return true;
+    }
+
+    private static boolean canAddPartialGroup(
+            Level level,
+            List<RingData> rings,
+            Map<BlockPos, List<RingData>> selectedMemberships
+    ) {
+        Map<BlockPos, List<RingData>> trialMemberships = copyMemberships(selectedMemberships);
+        for (RingData ring : rings) {
+            if (!canAddPartialRing(level, ring, trialMemberships)) {
+                return false;
+            }
+            addRingMembership(trialMemberships, ring);
+        }
+        return true;
+    }
+
+    private static Map<BlockPos, List<RingData>> copyMemberships(Map<BlockPos, List<RingData>> memberships) {
+        Map<BlockPos, List<RingData>> copy = new LinkedHashMap<>();
+        for (Map.Entry<BlockPos, List<RingData>> entry : memberships.entrySet()) {
+            copy.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+        }
+        return copy;
+    }
+
+    private static void addRingMembership(Map<BlockPos, List<RingData>> memberships, RingData ring) {
+        for (BlockPos pos : ring.positions()) {
+            memberships.computeIfAbsent(pos, ignored -> new ArrayList<>(2)).add(ring);
+        }
+    }
+
+    private static int sharedPartialWallBlockCount(Level level, RingData first, RingData second) {
+        if (sharedBankAxis(first.origin(), second.origin()).isEmpty()) {
+            return 0;
+        }
+
+        Set<BlockPos> firstPositions = new LinkedHashSet<>(first.positions());
+        int sharedBlocks = 0;
+        for (BlockPos pos : second.positions()) {
+            if (!firstPositions.contains(pos)) {
+                continue;
+            }
+            if (!canShareWallAt(level, pos, first, second)) {
+                return 0;
+            }
+            sharedBlocks++;
+        }
+        return sharedBlocks;
     }
 
     private static CylinderWallShape localStraightWallShape(Level level, BlockPos pos, Set<BlockPos> members) {
@@ -909,6 +1001,12 @@ public final class CylinderConnectivity {
 
     private record PartialRingCandidate(
             RingData ring,
+            int score
+    ) {
+    }
+
+    private record PartialRingGroup(
+            List<RingData> rings,
             int score
     ) {
     }

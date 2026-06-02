@@ -147,6 +147,7 @@ Completed shared-wall cylinder bank slice:
 - [x] Blocked unsupported overlaps, grids, T-junctions, and shared steam inlets.
 - [x] Stored secondary ring origins on shared cylinder block entities and made engine validation check ring membership explicitly.
 - [x] Generated shared-wall runtime texture, split block models, and model-derived hitboxes from `Steam_Cylinder_SHARED_WALL.bbmodel`.
+- [x] Preserved legal partial shared-wall pairs as a paired selection during construction, so adding another nearby corner does not steal one side of the shared strip.
 
 Completed steam inlet partial-visual reliability slice:
 
@@ -228,6 +229,7 @@ Automated results:
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after replacing guessed partial cylinder-ring visuals with local construction topology.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after restoring existing assembled/shared partial models with stable local-corner section assignment.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after hardening partial ring candidate selection and adding exposed top faces to lower shared-wall partials.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after preserving partial shared-wall pairs when extra nearby corners are placed.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
