@@ -64,6 +64,15 @@
           ],
           "texture": "#mechanical",
           "rotation": 90
+        },
+        "down": {
+          "uv": [
+            7,
+            5,
+            10,
+            8
+          ],
+          "texture": "#mechanical"
         }
       }
     }

@@ -604,6 +604,8 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Correct crank/linkage rotation plane to the Create-style frontal plane instead of switching to lateral shaft-axis spin
 - [x] Apply linkage-frame yaw before local crank/rod rotation so the throw moves front/back relative to an X-axis shaft instead of sliding along the shaft
 - [x] Replace piston body, connecting rod, and crank visuals with the `new_models/` Blockbench set; retune hitbox, crank radius, and local-X linkage transforms to match the new geometry
+- [x] Add a paintable bottom face UV island to the piston body source/runtime model
+- [x] Apply the repainted embedded piston body texture from `steam_engine_piston_MINE_PERFECT.bbmodel`
 - [x] Render the hidden powered shaft with Create's caps-only `POWERED_SHAFT` partial instead of the full shaft model inside the crank
 - [x] Rotate the piston model texture mapping 90 degrees at the asset level so static and animated piston visuals align with the connecting rod
 - [x] Replace boiler outlet placeholder art with `Steam_outlet.bbmodel`, including embedded texture, directional blockstate rotations, and model-derived hitbox

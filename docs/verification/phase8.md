@@ -122,6 +122,12 @@ Completed fixed assembled cylinder model slice:
 - [x] Replaced the assembled cylinder ring runtime atlas with the manually painted embedded 256x256 texture; cuboid bounds match the existing fixed V2 hitboxes, so `CylinderRingShapes` did not need changes.
 - [x] Applied the revised embedded texture from `Steam_Cylinder_all_faces_manually_painted_monday.bbmodel`; geometry, UV layout, and hitboxes still match the implemented section models.
 
+Completed piston body paintability slice:
+
+- [x] Diagnosed the piston body's missing bottom texture as a `down` face with `texture: null` and zero UV area in the source Blockbench model.
+- [x] Added a dedicated paintable bottom-face UV island to `steam_engine_piston_MINE_PERFECT.bbmodel` and the runtime `piston.json` model.
+- [x] Replaced the runtime `piston_body.png` with the repainted embedded texture from `steam_engine_piston_MINE_PERFECT.bbmodel`.
+
 Completed steam inlet model slice:
 
 - [x] Converted `Steam_Inlet.bbmodel` into the runtime `steam_inlet` block model and embedded texture.
@@ -196,6 +202,8 @@ Automated results:
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-29 after protecting adjacent assembled cylinder rings during connectivity refresh.
 - [x] `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-01 after blocking multi-inlet partial ring visuals.
 - [x] `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after applying the revised manually painted cylinder ring texture.
+- [x] `jq empty new_models/steam_engine_piston_MINE_PERFECT.bbmodel`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after adding the piston body bottom-face UV island.
+- [x] `jq empty new_models/steam_engine_piston_MINE_PERFECT.bbmodel`, embedded/runtime texture hash comparison, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after importing the repainted piston body texture.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
