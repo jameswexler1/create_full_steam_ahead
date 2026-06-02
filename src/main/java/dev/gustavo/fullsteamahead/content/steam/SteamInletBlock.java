@@ -164,7 +164,13 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
             BlockPos pos,
             CollisionContext context
     ) {
-        return shapeForSection(state.getValue(SECTION));
+        CylinderSection section = state.getValue(SECTION);
+        // Standalone inlets follow the player-chosen horizontal facing; assembled ones follow
+        // their ring section, matching the blockstate's model rotation in both cases.
+        Direction facing = section == CylinderSection.NONE
+                ? state.getValue(HORIZONTAL_FACING)
+                : facingForSection(section);
+        return shapeForFacing(facing);
     }
 
     @Override
@@ -182,8 +188,8 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
         builder.add(ASSEMBLED, SECTION, WALL_SHAPE, FACING, HORIZONTAL_FACING);
     }
 
-    private VoxelShape shapeForSection(CylinderSection section) {
-        return switch (facingForSection(section)) {
+    private static VoxelShape shapeForFacing(Direction facing) {
+        return switch (facing) {
             case EAST -> EAST_SHAPE;
             case SOUTH -> SOUTH_SHAPE;
             case WEST -> WEST_SHAPE;
