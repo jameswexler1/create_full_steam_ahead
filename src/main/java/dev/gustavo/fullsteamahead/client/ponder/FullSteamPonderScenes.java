@@ -17,70 +17,101 @@ import net.minecraft.core.Direction;
 public final class FullSteamPonderScenes {
 
     public static void cylinder(SceneBuilder scene, SceneBuildingUtil util) {
-        scene.title("steam_cylinder", "Building a steam engine");
+        scene.title("testing_ponder", "Building a pipe-fed steam engine");
+        scene.configureBasePlate(0, 0, 10);
+        scene.scaleSceneView(0.86F);
+        // The inlet in testing_ponder is on the east side of the cylinder ring.
+        scene.rotateCameraY(180);
         scene.showBasePlate();
         scene.idle(10);
 
-        // The cylinder ring is the subject: reveal the 3x3 x 2-tall body first.
-        Selection ring = util.select().fromTo(5, 0, 7, 7, 1, 9);
-        scene.world().showSection(ring, Direction.DOWN);
-        scene.idle(20);
+        Selection centerColumn = util.select().fromTo(6, 0, 8, 6, 1, 8);
+        Selection inlet = util.select().position(7, 0, 8);
+        Selection cylinderWalls = util.select()
+                .fromTo(5, 0, 7, 7, 1, 9)
+                .substract(centerColumn)
+                .substract(inlet);
+        Selection pistonHead = util.select().position(6, 0, 8);
+        Selection pistonBody = util.select().position(6, 1, 8);
+        Selection shaft = util.select().position(6, 3, 8);
+
+        scene.world().showSection(pistonHead, Direction.UP);
+        scene.idle(8);
+        scene.world().showSection(pistonBody, Direction.UP);
+        scene.idle(8);
+        scene.world().showSection(cylinderWalls, Direction.EAST);
+        scene.idle(12);
+        scene.world().showSection(inlet, Direction.EAST);
+        scene.idle(16);
         scene.overlay().showText(80)
-                .text("Cylinder Walls form the hollow body of a steam engine: a 3x3 ring, two blocks tall")
+                .text("Start with the piston head, piston body, and a two-layer ring of Cylinder Walls")
                 .colored(PonderPalette.GREEN)
-                .pointAt(util.vector().topOf(5, 1, 7))
+                .pointAt(util.vector().centerOf(6, 1, 8))
                 .placeNearTarget()
                 .attachKeyFrame();
-        scene.idle(90);
+        scene.idle(85);
 
-        scene.overlay().showText(70)
-                .text("A piston head sits at the bottom centre, with the piston body in the ring above it")
-                .pointAt(util.vector().centerOf(6, 0, 8))
-                .placeNearTarget();
-        scene.idle(80);
-
-        // Cap the column with the empty stroke space and the output shaft.
-        Selection shaft = util.select().fromTo(6, 2, 8, 6, 3, 8);
-        scene.world().showSection(shaft, Direction.DOWN);
-        scene.idle(15);
         scene.overlay().showText(75)
-                .text("An empty stroke space and a Create shaft cap the engine; the shaft carries the power out")
+                .text("One wall may be replaced by a Steam Inlet; this is where piped steam enters the engine")
+                .colored(PonderPalette.INPUT)
+                .pointAt(util.vector().blockSurface(util.grid().at(7, 0, 8), Direction.EAST))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(85);
+
+        scene.world().showSection(shaft, Direction.DOWN);
+        scene.idle(18);
+        scene.overlay().showText(75)
+                .text("A regular Create shaft sits above the empty stroke space and becomes the engine output")
                 .colored(PonderPalette.OUTPUT)
                 .pointAt(util.vector().topOf(6, 3, 8))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(85);
 
-        scene.overlay().showText(70)
-                .text("One wall is a Steam Inlet; it feeds the ring with steam")
-                .colored(PonderPalette.INPUT)
-                .pointAt(util.vector().blockSurface(util.grid().at(7, 0, 8), Direction.EAST))
-                .placeNearTarget();
-        scene.idle(80);
-
-        // Where the steam comes from: a Create boiler with burners and a water supply.
         Selection boiler = util.select().fromTo(2, 0, 3, 5, 1, 6);
-        scene.world().showSection(boiler, Direction.DOWN);
+        scene.world().showSection(boiler, Direction.WEST);
         scene.idle(20);
         scene.overlay().showText(90)
-                .text("Steam comes from a Create boiler: a Fluid Tank heated by Blaze Burners, with a water supply")
+                .text("Build a Create boiler beside the engine: Fluid Tanks, Blaze Burners, and a steady water supply")
+                .colored(PonderPalette.MEDIUM)
                 .pointAt(util.vector().topOf(4, 1, 4))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(100);
 
-        // The boiler outlet and the pipe run that carries steam to the inlet.
-        scene.world().showSection(util.select().fromTo(6, 1, 5, 7, 1, 5), Direction.DOWN);
-        scene.world().showSection(util.select().position(7, 0, 5), Direction.DOWN);
-        scene.world().showSection(util.select().fromTo(8, 0, 5, 8, 0, 8), Direction.DOWN);
-        scene.idle(20);
+        Selection outlet = util.select().position(6, 1, 5);
+        Selection pipeRun = util.select()
+                .position(7, 1, 5)
+                .add(util.select().position(7, 0, 5))
+                .add(util.select().fromTo(8, 0, 5, 8, 0, 8));
+
+        scene.world().showSection(outlet, Direction.EAST);
+        scene.idle(14);
         scene.overlay().showText(95)
-                .text("A Boiler Outlet pushes steam through pipes into the inlet, and the fed engine spins its shaft")
+                .text("The Boiler Outlet turns boiler pressure into steam flow")
                 .colored(PonderPalette.OUTPUT)
                 .pointAt(util.vector().centerOf(6, 1, 5))
                 .placeNearTarget()
                 .attachKeyFrame();
+        scene.idle(55);
+
+        scene.world().showSection(pipeRun, Direction.EAST);
+        scene.idle(18);
+        scene.overlay().showText(95)
+                .text("Finally, connect the outlet to the Steam Inlet with Create fluid pipes")
+                .colored(PonderPalette.INPUT)
+                .pointAt(util.vector().blockSurface(util.grid().at(7, 0, 8), Direction.EAST))
+                .placeNearTarget()
+                .attachKeyFrame();
         scene.idle(100);
+
+        scene.overlay().showText(80)
+                .text("When steam reaches the inlet, the piston drives the shaft like a large Create steam engine")
+                .colored(PonderPalette.GREEN)
+                .pointAt(util.vector().topOf(6, 3, 8))
+                .placeNearTarget();
+        scene.idle(90);
 
         scene.markAsFinished();
     }
