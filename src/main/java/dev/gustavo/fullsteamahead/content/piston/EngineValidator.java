@@ -4,6 +4,7 @@ import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.kinetics.simpleRelays.AbstractShaftBlock;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlock;
+import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
@@ -60,7 +61,7 @@ public final class EngineValidator {
 
             BlockState state = level.getBlockState(pos);
             if (state.is(ModBlocks.STEAM_CYLINDER.get())) {
-                if (!isAssembled(state, SteamCylinderBlock.ASSEMBLED)) {
+                if (!isCylinderAssembledFor(level, pos, state, ringOrigin)) {
                     return Result.invalid("Cylinder ring is not assembled");
                 }
                 cylinderPositions.add(pos);
@@ -229,6 +230,19 @@ public final class EngineValidator {
         return state.hasProperty(property) && state.getValue(property);
     }
 
+    private static boolean isCylinderAssembledFor(Level level, BlockPos pos, BlockState state, BlockPos ringOrigin) {
+        if (!isAssembled(state, SteamCylinderBlock.ASSEMBLED)) {
+            return false;
+        }
+
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (blockEntity instanceof SteamCylinderBlockEntity cylinder) {
+            return cylinder.belongsToRingOrigin(ringOrigin);
+        }
+
+        return false;
+    }
+
     private static List<BlockPos> ringPositions(BlockPos origin) {
         List<BlockPos> positions = new ArrayList<>(16);
         for (int y = 0; y <= 1; y++) {
@@ -252,7 +266,7 @@ public final class EngineValidator {
 
             BlockState state = level.getBlockState(pos);
             if (state.is(ModBlocks.STEAM_CYLINDER.get())
-                    && isAssembled(state, SteamCylinderBlock.ASSEMBLED)) {
+                    && isCylinderAssembledFor(level, pos, state, origin)) {
                 continue;
             }
 

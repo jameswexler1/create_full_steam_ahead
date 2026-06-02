@@ -655,7 +655,21 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Mirror assembled cylinder ring hitboxes and reuse mirrored existing assembled cylinder section models for inverted visuals
 - [x] Verify inverted pipe-fed engine in a standalone world and on an Aeronautics/Simulated contraption
 
-Deferred idea after visuals: inline shared-wall cylinder banks, where adjacent cylinders can share one cylinder wall block instead of requiring independent 3x3 rings.
+### Phase 8.6: Shared-Wall Cylinder Banks
+
+**Goal**: Allow adjacent vertical cylinders to form inline engine banks by sharing physical cylinder wall blocks instead of requiring separate overlapping 3×3 rings.
+
+- [x] Keep shared walls as a `steam_cylinder` blockstate, not a new block type
+- [x] Add cylinder-only `shared_wall` visual state for X- and Z-running shared wall strips
+- [x] Rework cylinder connectivity into a two-pass resolver so all valid nearby rings are found before blockstates are written
+- [x] Allow one cylinder wall block to belong to two adjacent same-orientation rings whose origins are offset by exactly two blocks on one horizontal axis
+- [x] Reject unsupported overlaps, grids, T-junctions, and shared `steam_inlet` blocks
+- [x] Store primary and secondary ring origins on shared `SteamCylinderBlockEntity` instances
+- [x] Update engine validation so a cylinder block must belong to the specific ring origin being validated
+- [x] Generate shared-wall section models, texture, and model-derived hitboxes from `Steam_Cylinder_SHARED_WALL.bbmodel`
+- [ ] Verify two-engine and three-engine inline banks in X and Z directions in game
+- [ ] Verify breaking a shared wall disassembles both affected engines, while breaking a non-shared wall leaves neighbors intact
+- [ ] Verify shared-wall banks on Aeronautics/Simulated contraptions
 
 ### Phase 9: Balance, Config, Recipes
 

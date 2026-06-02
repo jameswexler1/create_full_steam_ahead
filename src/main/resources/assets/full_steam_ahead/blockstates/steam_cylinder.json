@@ -3,7 +3,8 @@
     {
       "when": {
         "section": "none",
-        "wall_shape": "standalone"
+        "wall_shape": "standalone",
+        "shared_wall": "none"
       },
       "apply": {
         "model": "full_steam_ahead:block/steam_cylinder"
@@ -12,7 +13,8 @@
     {
       "when": {
         "section": "none",
-        "wall_shape": "straight_z"
+        "wall_shape": "straight_z",
+        "shared_wall": "none"
       },
       "apply": {
         "model": "full_steam_ahead:block/steam_cylinder"
@@ -21,45 +23,613 @@
     {
       "when": {
         "section": "none",
-        "wall_shape": "straight_x"
+        "wall_shape": "straight_x",
+        "shared_wall": "none"
       },
       "apply": {
         "model": "full_steam_ahead:block/steam_cylinder",
         "y": 90
       }
     },
-    { "when": { "section": "lower_north_west", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north_west" } },
-    { "when": { "section": "lower_north", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north" } },
-    { "when": { "section": "lower_north_east", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north_east" } },
-    { "when": { "section": "lower_west", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_west" } },
-    { "when": { "section": "lower_east", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_east" } },
-    { "when": { "section": "lower_south_west", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south_west" } },
-    { "when": { "section": "lower_south", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south" } },
-    { "when": { "section": "lower_south_east", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south_east" } },
-    { "when": { "section": "upper_north_west", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north_west" } },
-    { "when": { "section": "upper_north", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north" } },
-    { "when": { "section": "upper_north_east", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north_east" } },
-    { "when": { "section": "upper_west", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_west" } },
-    { "when": { "section": "upper_east", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_east" } },
-    { "when": { "section": "upper_south_west", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south_west" } },
-    { "when": { "section": "upper_south", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south" } },
-    { "when": { "section": "upper_south_east", "facing": "up" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south_east" } },
-
-    { "when": { "section": "lower_north_west", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south_west", "x": 180 } },
-    { "when": { "section": "lower_north", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south", "x": 180 } },
-    { "when": { "section": "lower_north_east", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south_east", "x": 180 } },
-    { "when": { "section": "lower_west", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_west", "x": 180 } },
-    { "when": { "section": "lower_east", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_east", "x": 180 } },
-    { "when": { "section": "lower_south_west", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north_west", "x": 180 } },
-    { "when": { "section": "lower_south", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north", "x": 180 } },
-    { "when": { "section": "lower_south_east", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north_east", "x": 180 } },
-    { "when": { "section": "upper_north_west", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south_west", "x": 180 } },
-    { "when": { "section": "upper_north", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south", "x": 180 } },
-    { "when": { "section": "upper_north_east", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south_east", "x": 180 } },
-    { "when": { "section": "upper_west", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_west", "x": 180 } },
-    { "when": { "section": "upper_east", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_east", "x": 180 } },
-    { "when": { "section": "upper_south_west", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north_west", "x": 180 } },
-    { "when": { "section": "upper_south", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north", "x": 180 } },
-    { "when": { "section": "upper_south_east", "facing": "down" }, "apply": { "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north_east", "x": 180 } }
+    {
+      "when": {
+        "section": "lower_north_west",
+        "facing": "up",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north_west"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_north",
+        "facing": "up",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_north_east",
+        "facing": "up",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north_east"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_west",
+        "facing": "up",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_west"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_east",
+        "facing": "up",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_east"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_south_west",
+        "facing": "up",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south_west"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_south",
+        "facing": "up",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_south_east",
+        "facing": "up",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south_east"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_north_west",
+        "facing": "up",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north_west"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_north",
+        "facing": "up",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_north_east",
+        "facing": "up",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north_east"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_west",
+        "facing": "up",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_west"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_east",
+        "facing": "up",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_east"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_south_west",
+        "facing": "up",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south_west"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_south",
+        "facing": "up",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_south_east",
+        "facing": "up",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south_east"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_north_west",
+        "facing": "down",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south_west",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "lower_north",
+        "facing": "down",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "lower_north_east",
+        "facing": "down",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_south_east",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "lower_west",
+        "facing": "down",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_west",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "lower_east",
+        "facing": "down",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_east",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "lower_south_west",
+        "facing": "down",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north_west",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "lower_south",
+        "facing": "down",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "lower_south_east",
+        "facing": "down",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/upper_north_east",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "upper_north_west",
+        "facing": "down",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south_west",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "upper_north",
+        "facing": "down",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "upper_north_east",
+        "facing": "down",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_south_east",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "upper_west",
+        "facing": "down",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_west",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "upper_east",
+        "facing": "down",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_east",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "upper_south_west",
+        "facing": "down",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north_west",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "upper_south",
+        "facing": "down",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "upper_south_east",
+        "facing": "down",
+        "shared_wall": "none"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/assembled/lower_north_east",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "lower_north_east",
+        "facing": "up",
+        "shared_wall": "strip_z"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_0"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_east",
+        "facing": "up",
+        "shared_wall": "strip_z"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_1"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_south_east",
+        "facing": "up",
+        "shared_wall": "strip_z"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_2"
+      }
+    },
+    {
+      "when": {
+        "section": "lower_south_west",
+        "facing": "up",
+        "shared_wall": "strip_x"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "section": "lower_south",
+        "facing": "up",
+        "shared_wall": "strip_x"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "section": "lower_south_east",
+        "facing": "up",
+        "shared_wall": "strip_x"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "section": "upper_north_east",
+        "facing": "up",
+        "shared_wall": "strip_z"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_0"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_east",
+        "facing": "up",
+        "shared_wall": "strip_z"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_1"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_south_east",
+        "facing": "up",
+        "shared_wall": "strip_z"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_2"
+      }
+    },
+    {
+      "when": {
+        "section": "upper_south_west",
+        "facing": "up",
+        "shared_wall": "strip_x"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_0",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "section": "upper_south",
+        "facing": "up",
+        "shared_wall": "strip_x"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_1",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "section": "upper_south_east",
+        "facing": "up",
+        "shared_wall": "strip_x"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_2",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "section": "lower_north_east",
+        "facing": "down",
+        "shared_wall": "strip_z"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_2",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "lower_east",
+        "facing": "down",
+        "shared_wall": "strip_z"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_1",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "lower_south_east",
+        "facing": "down",
+        "shared_wall": "strip_z"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_0",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "upper_north_east",
+        "facing": "down",
+        "shared_wall": "strip_z"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_2",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "upper_east",
+        "facing": "down",
+        "shared_wall": "strip_z"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_1",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "upper_south_east",
+        "facing": "down",
+        "shared_wall": "strip_z"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_0",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "section": "lower_south_west",
+        "facing": "down",
+        "shared_wall": "strip_x"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_0",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "section": "lower_south",
+        "facing": "down",
+        "shared_wall": "strip_x"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_1",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "section": "lower_south_east",
+        "facing": "down",
+        "shared_wall": "strip_x"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_2",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "section": "upper_south_west",
+        "facing": "down",
+        "shared_wall": "strip_x"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_0",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "section": "upper_south",
+        "facing": "down",
+        "shared_wall": "strip_x"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_1",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "section": "upper_south_east",
+        "facing": "down",
+        "shared_wall": "strip_x"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_2",
+        "x": 180,
+        "y": 90
+      }
+    }
   ]
 }

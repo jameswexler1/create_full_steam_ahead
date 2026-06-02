@@ -16,8 +16,10 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -48,15 +50,12 @@ public final class CylinderConnectivity {
                 candidateOrigins(changedPos),
                 ignoredRingMemberPos
         );
-        Set<BlockPos> validOrigins = new LinkedHashSet<>();
-        Set<BlockPos> validRingPositions = new LinkedHashSet<>();
-
-        for (BlockPos origin : candidates) {
-            if (isValidRing(level, origin, ignoredRingMemberPos)) {
-                validOrigins.add(origin);
-                validRingPositions.addAll(ringPositions(origin));
-            }
-        }
+        Map<BlockPos, RingData> validRings = resolveSharedRings(
+                level,
+                findIndividuallyValidRings(level, candidates, ignoredRingMemberPos)
+        );
+        Map<BlockPos, List<RingData>> memberships = buildMemberships(validRings.values());
+        Set<BlockPos> validRingPositions = new LinkedHashSet<>(memberships.keySet());
 
         Map<BlockPos, CylinderSection> partialSections =
                 inferPartialSections(level, candidates, validRingPositions, ignoredRingMemberPos);
@@ -71,9 +70,7 @@ public final class CylinderConnectivity {
                 partialWallShapes
         );
 
-        for (BlockPos origin : validOrigins) {
-            assemble(level, origin);
-        }
+        assemble(level, validRings.values(), memberships);
 
         notifyEngines(level, candidates);
     }
@@ -105,9 +102,10 @@ public final class CylinderConnectivity {
                     continue;
                 }
 
-                BlockPos ringOrigin = trackedRingOrigin(level, pos);
-                if (ringOrigin != null && expanded.add(ringOrigin)) {
-                    changed = true;
+                for (BlockPos ringOrigin : trackedRingOrigins(level, pos)) {
+                    if (expanded.add(ringOrigin)) {
+                        changed = true;
+                    }
                 }
             }
         } while (changed);
@@ -115,15 +113,106 @@ public final class CylinderConnectivity {
         return expanded;
     }
 
-    private static BlockPos trackedRingOrigin(Level level, BlockPos pos) {
+    private static Set<BlockPos> trackedRingOrigins(Level level, BlockPos pos) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof SteamCylinderBlockEntity cylinder && cylinder.isCylinderAssembled()) {
-            return cylinder.getRingOrigin();
+            return cylinder.getRingOrigins();
         }
         if (blockEntity instanceof SteamInletBlockEntity inlet && inlet.isInletAssembled()) {
-            return inlet.getRingOrigin();
+            BlockPos ringOrigin = inlet.getRingOrigin();
+            return ringOrigin == null ? Set.of() : Set.of(ringOrigin);
         }
-        return null;
+        return Set.of();
+    }
+
+    private static Map<BlockPos, RingData> findIndividuallyValidRings(
+            Level level,
+            Set<BlockPos> candidates,
+            BlockPos ignoredRingMemberPos
+    ) {
+        Map<BlockPos, RingData> rings = new LinkedHashMap<>();
+        for (BlockPos origin : candidates) {
+            if (!isValidRing(level, origin, ignoredRingMemberPos)) {
+                continue;
+            }
+
+            List<BlockPos> positions = ringPositions(origin);
+            Direction facing = ringFacing(level, origin);
+            BlockPos boilerPos = facing == Direction.UP ? findBoiler(level, origin).orElse(null) : null;
+            BlockPos inletPos = findInlet(level, positions).orElse(null);
+            rings.put(origin, new RingData(origin, positions, facing, boilerPos, inletPos));
+        }
+        return rings;
+    }
+
+    private static Map<BlockPos, RingData> resolveSharedRings(Level level, Map<BlockPos, RingData> rings) {
+        Set<BlockPos> invalidOrigins = new LinkedHashSet<>();
+        Map<BlockPos, List<RingData>> memberships = buildMemberships(rings.values());
+
+        for (Map.Entry<BlockPos, List<RingData>> entry : memberships.entrySet()) {
+            List<RingData> owners = entry.getValue();
+            if (owners.size() <= 1) {
+                continue;
+            }
+
+            if (owners.size() > 2 || !canShareWallAt(level, entry.getKey(), owners.get(0), owners.get(1))) {
+                for (RingData owner : owners) {
+                    invalidOrigins.add(owner.origin());
+                }
+            }
+        }
+
+        if (invalidOrigins.isEmpty()) {
+            return rings;
+        }
+
+        Map<BlockPos, RingData> resolved = new LinkedHashMap<>();
+        for (Map.Entry<BlockPos, RingData> entry : rings.entrySet()) {
+            if (!invalidOrigins.contains(entry.getKey())) {
+                resolved.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return resolved;
+    }
+
+    private static Map<BlockPos, List<RingData>> buildMemberships(Collection<RingData> rings) {
+        Map<BlockPos, List<RingData>> memberships = new LinkedHashMap<>();
+        for (RingData ring : rings) {
+            for (BlockPos pos : ring.positions()) {
+                memberships.computeIfAbsent(pos, ignored -> new ArrayList<>(2)).add(ring);
+            }
+        }
+
+        for (List<RingData> owners : memberships.values()) {
+            owners.sort(Comparator.comparing(RingData::origin, ROOT_ORDER));
+        }
+        return memberships;
+    }
+
+    private static boolean canShareWallAt(Level level, BlockPos pos, RingData first, RingData second) {
+        BlockState state = level.getBlockState(pos);
+        if (!state.is(ModBlocks.STEAM_CYLINDER.get())) {
+            return false;
+        }
+
+        return first.facing() == second.facing() && sharedBankAxis(first.origin(), second.origin()).isPresent();
+    }
+
+    private static Optional<Direction.Axis> sharedBankAxis(BlockPos first, BlockPos second) {
+        int dx = Math.abs(first.getX() - second.getX());
+        int dy = Math.abs(first.getY() - second.getY());
+        int dz = Math.abs(first.getZ() - second.getZ());
+
+        if (dy != 0) {
+            return Optional.empty();
+        }
+        if (dx == 2 && dz == 0) {
+            return Optional.of(Direction.Axis.X);
+        }
+        if (dz == 2 && dx == 0) {
+            return Optional.of(Direction.Axis.Z);
+        }
+        return Optional.empty();
     }
 
     private static Set<BlockPos> candidateRingPositions(Set<BlockPos> candidateOrigins) {
@@ -226,35 +315,97 @@ public final class CylinderConnectivity {
                     : (section == CylinderSection.NONE ? currentWallShape(state) : CylinderWallShape.STANDALONE);
             withCylinderBlockEntity(level, pos, SteamCylinderBlockEntity::clearRingState);
             withInletBlockEntity(level, pos, SteamInletBlockEntity::clearRingState);
-            setRingState(level, pos, state, false, section, wallShape, Direction.UP);
+            setRingState(level, pos, state, false, section, wallShape, Direction.UP, CylinderSharedWall.NONE);
         }
     }
 
-    private static void assemble(Level level, BlockPos origin) {
-        List<BlockPos> positions = ringPositions(origin);
-        BlockPos root = positions.stream()
-                .filter(pos -> level.getBlockState(pos).is(ModBlocks.STEAM_CYLINDER.get()))
-                .min(ROOT_ORDER)
-                .orElse(origin);
-        Direction ringFacing = ringFacing(level, origin);
-        BlockPos boilerPos = ringFacing == Direction.UP ? findBoiler(level, origin).orElse(null) : null;
-        BlockPos inletPos = findInlet(level, positions).orElse(null);
+    private static void assemble(
+            Level level,
+            Collection<RingData> rings,
+            Map<BlockPos, List<RingData>> memberships
+    ) {
+        Map<BlockPos, BlockPos> roots = new HashMap<>();
+        for (RingData ring : rings) {
+            roots.put(ring.origin(), rootFor(level, ring, memberships));
+        }
 
-        for (BlockPos pos : positions) {
+        for (Map.Entry<BlockPos, List<RingData>> entry : memberships.entrySet()) {
+            BlockPos pos = entry.getKey();
+            List<RingData> owners = entry.getValue();
+            RingData primary = owners.getFirst();
+            RingData secondary = owners.size() > 1 ? owners.get(1) : null;
             BlockState state = level.getBlockState(pos);
-            CylinderSection section = sectionFor(origin, pos);
+            CylinderSection section = sectionFor(primary.origin(), pos);
+            CylinderSharedWall sharedWall = sharedWallFor(owners);
             if (state.is(ModBlocks.STEAM_INLET.get())) {
                 withInletBlockEntity(level, pos,
-                        be -> be.applyRingState(origin, root, boilerPos));
-                setRingState(level, pos, state, true, section, CylinderWallShape.STANDALONE, ringFacing);
+                        be -> be.applyRingState(primary.origin(), roots.get(primary.origin()), primary.boilerPos()));
+                setRingState(
+                        level,
+                        pos,
+                        state,
+                        true,
+                        section,
+                        CylinderWallShape.STANDALONE,
+                        primary.facing(),
+                        CylinderSharedWall.NONE
+                );
             } else {
-                setRingState(level, pos, state, true, section, CylinderWallShape.STANDALONE, ringFacing);
+                setRingState(
+                        level,
+                        pos,
+                        state,
+                        true,
+                        section,
+                        CylinderWallShape.STANDALONE,
+                        primary.facing(),
+                        sharedWall
+                );
                 withCylinderBlockEntity(level, pos,
-                        be -> be.applyRingState(origin, root, boilerPos, inletPos, pos.equals(root)));
+                        be -> be.applyRingState(
+                                primary.origin(),
+                                secondary == null ? null : secondary.origin(),
+                                roots.get(primary.origin()),
+                                primary.boilerPos(),
+                                primary.inletPos(),
+                                pos.equals(roots.get(primary.origin()))
+                        ));
             }
         }
 
-        alignPistonColumn(level, origin, ringFacing);
+        for (RingData ring : rings) {
+            alignPistonColumn(level, ring.origin(), ring.facing());
+        }
+    }
+
+    private static BlockPos rootFor(
+            Level level,
+            RingData ring,
+            Map<BlockPos, List<RingData>> memberships
+    ) {
+        return ring.positions()
+                .stream()
+                .filter(pos -> level.getBlockState(pos).is(ModBlocks.STEAM_CYLINDER.get()))
+                .filter(pos -> memberships.getOrDefault(pos, List.of()).size() == 1)
+                .min(ROOT_ORDER)
+                .orElseGet(() -> ring.positions()
+                        .stream()
+                        .filter(pos -> level.getBlockState(pos).is(ModBlocks.STEAM_CYLINDER.get()))
+                        .min(ROOT_ORDER)
+                        .orElse(ring.origin()));
+    }
+
+    private static CylinderSharedWall sharedWallFor(List<RingData> owners) {
+        if (owners.size() != 2) {
+            return CylinderSharedWall.NONE;
+        }
+
+        Optional<Direction.Axis> bankAxis = sharedBankAxis(owners.get(0).origin(), owners.get(1).origin());
+        if (bankAxis.isEmpty()) {
+            return CylinderSharedWall.NONE;
+        }
+
+        return bankAxis.get() == Direction.Axis.X ? CylinderSharedWall.STRIP_Z : CylinderSharedWall.STRIP_X;
     }
 
     private static Direction ringFacing(Level level, BlockPos origin) {
@@ -519,31 +670,16 @@ public final class CylinderConnectivity {
             boolean assembled,
             CylinderSection section,
             CylinderWallShape wallShape,
-            Direction facing
+            Direction facing,
+            CylinderSharedWall sharedWall
     ) {
         if (state.is(ModBlocks.STEAM_CYLINDER.get())) {
-            setRingState(
-                    level,
-                    pos,
-                    state,
-                    SteamCylinderBlock.ASSEMBLED,
-                    SteamCylinderBlock.SECTION,
-                    SteamCylinderBlock.WALL_SHAPE,
-                    SteamCylinderBlock.FACING,
-                    assembled,
-                    section,
-                    wallShape,
-                    facing
-            );
+            setCylinderRingState(level, pos, state, assembled, section, wallShape, facing, sharedWall);
         } else if (state.is(ModBlocks.STEAM_INLET.get())) {
-            setRingState(
+            setInletRingState(
                     level,
                     pos,
                     state,
-                    SteamInletBlock.ASSEMBLED,
-                    SteamInletBlock.SECTION,
-                    SteamInletBlock.WALL_SHAPE,
-                    SteamInletBlock.FACING,
                     assembled,
                     section,
                     wallShape,
@@ -552,31 +688,58 @@ public final class CylinderConnectivity {
         }
     }
 
-    private static void setRingState(
+    private static void setCylinderRingState(
             Level level,
             BlockPos pos,
             BlockState state,
-            net.minecraft.world.level.block.state.properties.BooleanProperty property,
-            net.minecraft.world.level.block.state.properties.EnumProperty<CylinderSection> sectionProperty,
-            net.minecraft.world.level.block.state.properties.EnumProperty<CylinderWallShape> wallShapeProperty,
-            net.minecraft.world.level.block.state.properties.DirectionProperty facingProperty,
+            boolean assembled,
+            CylinderSection section,
+            CylinderWallShape wallShape,
+            Direction facing,
+            CylinderSharedWall sharedWall
+    ) {
+        if (!state.hasProperty(SteamCylinderBlock.ASSEMBLED)
+                || !state.hasProperty(SteamCylinderBlock.SECTION)
+                || !state.hasProperty(SteamCylinderBlock.WALL_SHAPE)
+                || !state.hasProperty(SteamCylinderBlock.SHARED_WALL)
+                || !state.hasProperty(SteamCylinderBlock.FACING)) {
+            return;
+        }
+
+        BlockState newState = state
+                .setValue(SteamCylinderBlock.ASSEMBLED, assembled)
+                .setValue(SteamCylinderBlock.SECTION, section)
+                .setValue(SteamCylinderBlock.WALL_SHAPE, wallShape)
+                .setValue(SteamCylinderBlock.SHARED_WALL, sharedWall)
+                .setValue(SteamCylinderBlock.FACING, facing);
+        if (newState == state) {
+            return;
+        }
+
+        level.setBlock(pos, newState, Block.UPDATE_CLIENTS);
+    }
+
+    private static void setInletRingState(
+            Level level,
+            BlockPos pos,
+            BlockState state,
             boolean assembled,
             CylinderSection section,
             CylinderWallShape wallShape,
             Direction facing
     ) {
-        if (!state.hasProperty(property)
-                || !state.hasProperty(sectionProperty)
-                || !state.hasProperty(wallShapeProperty)
-                || !state.hasProperty(facingProperty)) {
+        if (!state.hasProperty(SteamInletBlock.ASSEMBLED)
+                || !state.hasProperty(SteamInletBlock.SECTION)
+                || !state.hasProperty(SteamInletBlock.WALL_SHAPE)
+                || !state.hasProperty(SteamInletBlock.FACING)) {
             return;
         }
 
         BlockState newState = state
-                .setValue(property, assembled)
-                .setValue(sectionProperty, section)
-                .setValue(wallShapeProperty, wallShape)
-                .setValue(facingProperty, facing);
+                .setValue(SteamInletBlock.ASSEMBLED, assembled)
+                .setValue(SteamInletBlock.SECTION, section)
+                .setValue(SteamInletBlock.WALL_SHAPE, wallShape)
+                .setValue(SteamInletBlock.FACING, facing);
         if (newState == state) {
             return;
         }
@@ -636,6 +799,15 @@ public final class CylinderConnectivity {
         NONE,
         CYLINDER,
         INLET
+    }
+
+    private record RingData(
+            BlockPos origin,
+            List<BlockPos> positions,
+            Direction facing,
+            BlockPos boilerPos,
+            BlockPos inletPos
+    ) {
     }
 
     private CylinderConnectivity() {

@@ -140,6 +140,14 @@ Completed adjacent cylinder reliability slice:
 - [x] Expanded refresh candidates with existing assembled ring origins before clearing partial states.
 - [x] Preserved neighboring valid rings while still clearing invalid/stale rings when their own structure is broken.
 
+Completed shared-wall cylinder bank slice:
+
+- [x] Added `shared_wall` as a cylinder-only blockstate for shared X/Z strip visuals.
+- [x] Reworked cylinder connectivity to resolve all valid rings before writing final blockstates, allowing one cylinder wall to belong to two adjacent same-orientation rings.
+- [x] Blocked unsupported overlaps, grids, T-junctions, and shared steam inlets.
+- [x] Stored secondary ring origins on shared cylinder block entities and made engine validation check ring membership explicitly.
+- [x] Generated shared-wall runtime texture, split block models, and model-derived hitboxes from `Steam_Cylinder_SHARED_WALL.bbmodel`.
+
 Completed steam inlet partial-visual reliability slice:
 
 - [x] Diagnosed side-by-side `steam_inlet` blocks entering partial ring-section visuals through the generic cylinder-wall visual inference path.
@@ -215,6 +223,7 @@ Automated results:
 - [x] `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after adjusting the experimental testing Ponder camera, reveal order, and text.
 - [x] `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after removing the animated testing Ponder camera turn and staging the outlet/pipe reveal explicitly.
 - [x] `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after rebuilding the testing Ponder staging around Create-style independent section reveals, a checkered base plate, and localized text.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after adding shared-wall cylinder bank support.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
@@ -246,6 +255,11 @@ Manual runtime checklist:
 - [ ] Holding a Create shaft while looking at the completed piston body previews a ghost shaft at the required top-link position.
 - [ ] Right-clicking the piston body with that Create shaft places the shaft at the top-link position, converts it to the hidden powered shaft, and forms the rod/crank linkage even with no boiler or steam inlet.
 - [ ] Two complete cylinder rings can be built directly adjacent without either ring deforming or stealing the other's section assignments.
+- [ ] Two adjacent engines along X assemble with the shared-wall visual and both engines validate independently.
+- [ ] Two adjacent engines along Z assemble with the rotated shared-wall visual and both engines validate independently.
+- [ ] Three inline engines form a continuous shared-wall bank without invalidating the middle engine.
+- [ ] Placing a `steam_inlet` on a would-be shared wall prevents shared-wall assembly instead of making the inlet belong to two rings.
+- [ ] Breaking one shared wall disassembles both affected engines; breaking one outer wall disassembles only that engine.
 - [ ] Assembled `piston_head` and the `piston` body remain visible at rest and reciprocate while the linked shaft is running.
 - [ ] An assembled engine with no steam output still animates passively when its linked shaft is rotated by another engine on the same shaft network.
 - [x] Existing pipe-fed engines still assemble and run.

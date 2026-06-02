@@ -16,12 +16,14 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation {
     private static final String ASSEMBLED_KEY = "Assembled";
     private static final String ROOT_KEY = "Root";
     private static final String ROOT_POS_KEY = "RootPos";
     private static final String RING_ORIGIN_KEY = "RingOrigin";
+    private static final String SECONDARY_RING_ORIGIN_KEY = "SecondaryRingOrigin";
     private static final String BOILER_POS_KEY = "BoilerPos";
     private static final String INLET_POS_KEY = "InletPos";
 
@@ -29,6 +31,7 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
     private boolean root;
     private BlockPos rootPos;
     private BlockPos ringOrigin;
+    private BlockPos secondaryRingOrigin;
     private BlockPos boilerPos;
     private BlockPos inletPos;
 
@@ -55,10 +58,22 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
             BlockPos inletPos,
             boolean root
     ) {
+        applyRingState(ringOrigin, null, rootPos, boilerPos, inletPos, root);
+    }
+
+    public void applyRingState(
+            BlockPos ringOrigin,
+            BlockPos secondaryRingOrigin,
+            BlockPos rootPos,
+            BlockPos boilerPos,
+            BlockPos inletPos,
+            boolean root
+    ) {
         boolean changed = !assembled
                 || this.root != root
                 || !Objects.equals(this.rootPos, rootPos)
                 || !Objects.equals(this.ringOrigin, ringOrigin)
+                || !Objects.equals(this.secondaryRingOrigin, secondaryRingOrigin)
                 || !Objects.equals(this.boilerPos, boilerPos)
                 || !Objects.equals(this.inletPos, inletPos);
 
@@ -66,6 +81,7 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         this.root = root;
         this.rootPos = rootPos;
         this.ringOrigin = ringOrigin;
+        this.secondaryRingOrigin = secondaryRingOrigin;
         this.boilerPos = boilerPos;
         this.inletPos = inletPos;
 
@@ -75,7 +91,13 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
     }
 
     public void clearRingState() {
-        if (!assembled && !root && rootPos == null && ringOrigin == null && boilerPos == null && inletPos == null) {
+        if (!assembled
+                && !root
+                && rootPos == null
+                && ringOrigin == null
+                && secondaryRingOrigin == null
+                && boilerPos == null
+                && inletPos == null) {
             return;
         }
 
@@ -83,6 +105,7 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         root = false;
         rootPos = null;
         ringOrigin = null;
+        secondaryRingOrigin = null;
         boilerPos = null;
         inletPos = null;
         notifyUpdate();
@@ -102,6 +125,24 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
 
     public BlockPos getRingOrigin() {
         return ringOrigin;
+    }
+
+    public BlockPos getSecondaryRingOrigin() {
+        return secondaryRingOrigin;
+    }
+
+    public Set<BlockPos> getRingOrigins() {
+        if (ringOrigin == null) {
+            return Set.of();
+        }
+        if (secondaryRingOrigin == null || secondaryRingOrigin.equals(ringOrigin)) {
+            return Set.of(ringOrigin);
+        }
+        return Set.of(ringOrigin, secondaryRingOrigin);
+    }
+
+    public boolean belongsToRingOrigin(BlockPos origin) {
+        return origin != null && (origin.equals(ringOrigin) || origin.equals(secondaryRingOrigin));
     }
 
     public BlockPos getBoilerPos() {
@@ -125,6 +166,9 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         CreateLang.text(root ? "Root cylinder block" : "Linked cylinder block")
                 .style(ChatFormatting.DARK_GRAY)
                 .forGoggles(tooltip, 1);
+        if (secondaryRingOrigin != null) {
+            CreateLang.text("Shared cylinder wall").style(ChatFormatting.DARK_GRAY).forGoggles(tooltip, 1);
+        }
 
         FluidTankBlockEntity boiler = getBoiler();
         if (boiler == null || boiler.boiler == null) {
@@ -160,6 +204,7 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         tag.putBoolean(ROOT_KEY, root);
         writePos(tag, ROOT_POS_KEY, rootPos);
         writePos(tag, RING_ORIGIN_KEY, ringOrigin);
+        writePos(tag, SECONDARY_RING_ORIGIN_KEY, secondaryRingOrigin);
         writePos(tag, BOILER_POS_KEY, boilerPos);
         writePos(tag, INLET_POS_KEY, inletPos);
     }
@@ -171,6 +216,7 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         root = tag.getBoolean(ROOT_KEY);
         rootPos = readPos(tag, ROOT_POS_KEY);
         ringOrigin = readPos(tag, RING_ORIGIN_KEY);
+        secondaryRingOrigin = readPos(tag, SECONDARY_RING_ORIGIN_KEY);
         boilerPos = readPos(tag, BOILER_POS_KEY);
         inletPos = readPos(tag, INLET_POS_KEY);
     }

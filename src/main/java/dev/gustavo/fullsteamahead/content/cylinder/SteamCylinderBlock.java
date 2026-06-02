@@ -28,6 +28,8 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
     public static final EnumProperty<CylinderSection> SECTION = EnumProperty.create("section", CylinderSection.class);
     public static final EnumProperty<CylinderWallShape> WALL_SHAPE =
             EnumProperty.create("wall_shape", CylinderWallShape.class);
+    public static final EnumProperty<CylinderSharedWall> SHARED_WALL =
+            EnumProperty.create("shared_wall", CylinderSharedWall.class);
     public static final DirectionProperty FACING = DirectionProperty.create("facing", Direction.UP, Direction.DOWN);
     private static final VoxelShape STANDALONE_SHAPE = Shapes.or(
             Block.box(4, 0, 0, 12, 15, 16),
@@ -44,6 +46,7 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
                 .setValue(ASSEMBLED, false)
                 .setValue(SECTION, CylinderSection.NONE)
                 .setValue(WALL_SHAPE, CylinderWallShape.STANDALONE)
+                .setValue(SHARED_WALL, CylinderSharedWall.NONE)
                 .setValue(FACING, Direction.UP));
     }
 
@@ -105,8 +108,9 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
     private boolean shouldRefreshFromNeighbor(Level level, BlockPos pos, BlockPos neighborPos) {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof SteamCylinderBlockEntity cylinder && cylinder.isCylinderAssembled()) {
-            BlockPos ringOrigin = cylinder.getRingOrigin();
-            return ringOrigin != null && isInsideTrackedStructure(ringOrigin, neighborPos);
+            return cylinder.getRingOrigins()
+                    .stream()
+                    .anyMatch(ringOrigin -> isInsideTrackedStructure(ringOrigin, neighborPos));
         }
 
         BlockState neighborState = level.getBlockState(neighborPos);
@@ -149,7 +153,11 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
             CollisionContext context
     ) {
         if (state.getValue(SECTION) != CylinderSection.NONE) {
-            return CylinderRingShapes.forSection(state.getValue(SECTION), state.getValue(FACING));
+            return CylinderRingShapes.forSection(
+                    state.getValue(SECTION),
+                    state.getValue(FACING),
+                    state.getValue(SHARED_WALL)
+            );
         }
 
         return state.getValue(WALL_SHAPE) == CylinderWallShape.STRAIGHT_X ? STRAIGHT_X_SHAPE : STANDALONE_SHAPE;
@@ -167,7 +175,7 @@ public class SteamCylinderBlock extends Block implements IBE<SteamCylinderBlockE
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(ASSEMBLED, SECTION, WALL_SHAPE, FACING);
+        builder.add(ASSEMBLED, SECTION, WALL_SHAPE, SHARED_WALL, FACING);
     }
 
     @Override
