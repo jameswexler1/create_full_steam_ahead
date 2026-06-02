@@ -120,6 +120,7 @@ Completed fixed assembled cylinder model slice:
 - [x] Reused the embedded assembled ring texture from the fixed model; it matches the current v3 runtime atlas.
 - [x] Regenerated all 16 assembled cylinder section models and the assembled-ring icon model from `Steam_Cylinder_all_faces_manually_painted_monday.bbmodel`.
 - [x] Replaced the assembled cylinder ring runtime atlas with the manually painted embedded 256x256 texture; cuboid bounds match the existing fixed V2 hitboxes, so `CylinderRingShapes` did not need changes.
+- [x] Applied the revised embedded texture from `Steam_Cylinder_all_faces_manually_painted_monday.bbmodel`; geometry, UV layout, and hitboxes still match the implemented section models.
 
 Completed steam inlet model slice:
 
@@ -194,6 +195,7 @@ Automated results:
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-29 after replacing the steam inlet placeholder model.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-29 after protecting adjacent assembled cylinder rings during connectivity refresh.
 - [x] `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-01 after blocking multi-inlet partial ring visuals.
+- [x] `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-02 after applying the revised manually painted cylinder ring texture.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.

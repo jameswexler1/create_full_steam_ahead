@@ -631,6 +631,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Add straight-wall partial construction mode so connected cylinder walls stay fence-like until a horizontal turn implies ring intent
 - [x] Replace assembled cylinder ring section models and hitboxes with the fixed `Steam_Cylinder_all_faces_FIXED_V2.bbmodel` geometry
 - [x] Replace assembled cylinder ring section models and runtime atlas with `Steam_Cylinder_all_faces_manually_painted_monday.bbmodel`
+- [x] Apply the revised embedded texture from `Steam_Cylinder_all_faces_manually_painted_monday.bbmodel` while preserving the existing matching section geometry
 - [x] Replace `steam_inlet` placeholder block/assembled models with the `Steam_Inlet.bbmodel` textured model and matching directional hitboxes
 - [x] Protect already-assembled neighboring cylinder rings during local connectivity refresh so adjacent full engines do not deform each other
 - [ ] Add Ponder plugin and scenes after visual models settle: direct compact engine, boiler outlet pressure, steam storage/pipes, steam inlet, Aeronautics ship use
