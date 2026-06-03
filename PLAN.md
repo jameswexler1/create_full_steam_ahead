@@ -685,6 +685,12 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [ ] Verify breaking a shared wall disassembles both affected engines, while breaking a non-shared wall leaves neighbors intact
 - [ ] Verify shared-wall banks on Aeronautics/Simulated contraptions
 
+### Phase 8.7: Cylinder Placement Quality of Life
+
+- [x] Add Create-style standalone cylinder layer autocomplete when one hollow 3x3x1 shell layer is complete
+- [x] Match Create Fluid Tank placement constraints: no sneaking, no Symmetry Wand, vertical-face placement only, survival inventory checked before autofill
+- [x] Preserve inlets and skip ambiguous/shared-wall bank contexts instead of guessing
+
 ### Phase 9: Balance, Config, Recipes
 
 - [x] Server config for: base capacity, steam production rate, boiler outlet pressure range, direct mode enablement (max piston height deferred — v1 uses a fixed single-piston stroke, so there is no column height to cap yet)

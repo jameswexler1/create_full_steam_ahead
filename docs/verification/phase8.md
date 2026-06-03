@@ -157,6 +157,12 @@ Completed shared-wall cylinder bank slice:
 - [x] Swapped the rotated `strip_x` shared-wall end model assignments so north-south shared corners use the same visual order as east-west shared corners.
 - [x] Reversed the `strip_x` shared-wall voxel-shape slice order so north-south shared corner hitboxes match the corrected models.
 
+Completed cylinder placement quality-of-life slice:
+
+- [x] Added a custom `steam_cylinder` block item that mirrors Create Fluid Tank post-placement autocomplete.
+- [x] Autocomplete fills the missing positions of the opposite standalone hollow 3x3x1 shell layer after one layer is already complete.
+- [x] Survival inventory, sneaking, Symmetry Wand, replaceability, inlet count, and shared-wall/bank guards are checked before extra blocks are placed.
+
 Completed steam inlet partial-visual reliability slice:
 
 - [x] Diagnosed side-by-side `steam_inlet` blocks entering partial ring-section visuals through the generic cylinder-wall visual inference path.
@@ -246,6 +252,7 @@ Automated results:
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after keeping assembled cylinder casings stable when the piston bore is obstructed.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after correcting north-south shared-wall corner model ordering.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after aligning north-south shared-wall hitboxes with the corrected model order.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after adding standalone cylinder layer autocomplete.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
@@ -287,6 +294,9 @@ Manual runtime checklist:
 - [ ] Three inline engines form a continuous shared-wall bank without invalidating the middle engine.
 - [ ] Placing a `steam_inlet` on a would-be shared wall prevents shared-wall assembly instead of making the inlet belong to two rings.
 - [ ] Breaking one shared wall disassembles both affected engines; breaking one outer wall disassembles only that engine.
+- [ ] Completing one standalone hollow 3x3x1 cylinder layer, then placing one cylinder on the second layer, fills the remaining second-layer shell positions.
+- [ ] Cylinder layer autocomplete consumes the required extra cylinders in survival, does not consume in creative, and does nothing while sneaking or with too few cylinders.
+- [ ] Cylinder layer autocomplete preserves one existing `steam_inlet`, never fills the center bore, and does not trigger while constructing shared-wall banks.
 - [ ] Assembled `piston_head` and the `piston` body remain visible at rest and reciprocate while the linked shaft is running.
 - [ ] An assembled engine with no steam output still animates passively when its linked shaft is rotated by another engine on the same shaft network.
 - [x] Existing pipe-fed engines still assemble and run.

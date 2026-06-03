@@ -2,6 +2,7 @@ package dev.gustavo.fullsteamahead.registry;
 
 import dev.gustavo.fullsteamahead.FullSteamAhead;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlock;
+import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlockItem;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlock;
 import dev.gustavo.fullsteamahead.content.piston.SteamPistonBlock;
 import dev.gustavo.fullsteamahead.content.redstone.SteppedLeverBlock;
@@ -9,6 +10,8 @@ import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
 import dev.gustavo.fullsteamahead.content.telegraph.EngineTelegraphBlock;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -22,7 +25,12 @@ public final class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(FullSteamAhead.MOD_ID);
 
     public static final DeferredBlock<SteamCylinderBlock> STEAM_CYLINDER =
-            registerBlock("steam_cylinder", SteamCylinderBlock::new, cylinderProperties().noOcclusion());
+            registerBlock(
+                    "steam_cylinder",
+                    SteamCylinderBlock::new,
+                    cylinderProperties().noOcclusion(),
+                    SteamCylinderBlockItem::new
+            );
     public static final DeferredBlock<SteamPistonBlock> PISTON =
             registerBlock("piston", SteamPistonBlock::new, metalProperties().noOcclusion());
     public static final DeferredBlock<PistonHeadBlock> PISTON_HEAD =
@@ -54,8 +62,17 @@ public final class ModBlocks {
             Function<BlockBehaviour.Properties, T> factory,
             BlockBehaviour.Properties properties
     ) {
+        return registerBlock(name, factory, properties, BlockItem::new);
+    }
+
+    private static <T extends Block> DeferredBlock<T> registerBlock(
+            String name,
+            Function<BlockBehaviour.Properties, T> factory,
+            BlockBehaviour.Properties properties,
+            BlockItemFactory<T> itemFactory
+    ) {
         DeferredBlock<T> block = BLOCKS.registerBlock(name, factory, properties);
-        ModItems.ITEMS.registerSimpleBlockItem(name, block);
+        ModItems.ITEMS.register(name, () -> itemFactory.create(block.get(), new Item.Properties()));
         return block;
     }
 
@@ -94,5 +111,10 @@ public final class ModBlocks {
     }
 
     private ModBlocks() {
+    }
+
+    @FunctionalInterface
+    private interface BlockItemFactory<T extends Block> {
+        BlockItem create(T block, Item.Properties properties);
     }
 }
