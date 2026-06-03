@@ -12,11 +12,11 @@
   "block.full_steam_ahead.engine_telegraph": "Engine Order Telegraph",
   "block.full_steam_ahead.stepped_lever": "Stepped Lever",
   "full_steam_ahead.ponder.steam_engine.header": "Building a pipe-fed steam engine",
-  "full_steam_ahead.ponder.steam_engine.text_1": "The engine body is a ring of Cylinder Walls around a Piston Head; one wall is a Steam Inlet",
-  "full_steam_ahead.ponder.steam_engine.text_2": "A second layer of Cylinder Walls closes around the Piston Body",
-  "full_steam_ahead.ponder.steam_engine.text_3": "Above an empty stroke space, a Create shaft becomes the engine's power output",
-  "full_steam_ahead.ponder.steam_engine.text_4": "Beside it, Blaze Burners provide the heat",
-  "full_steam_ahead.ponder.steam_engine.text_5": "Fluid Tanks over the burners form a boiler; a Boiler Outlet draws off its pressurized steam",
-  "full_steam_ahead.ponder.steam_engine.text_6": "Fluid pipes carry the steam from the outlet to the engine's Steam Inlet",
-  "full_steam_ahead.ponder.steam_engine.text_7": "Fed with steam, the piston drives the shaft, powering your contraptions like a giant steam engine"
+  "full_steam_ahead.ponder.steam_engine.text_1": "The engine body is a 2-block tall cylinder, with one of its faces being the Steam Inlet.",
+  "full_steam_ahead.ponder.steam_engine.text_2": "Above an empty stroke space, place a Shaft to start the engine.",
+  "full_steam_ahead.ponder.steam_engine.text_3": "A boiler provides steam through the Boiler Outlet.",
+  "full_steam_ahead.ponder.steam_engine.text_4": "Fluid Pipes carry the steam from the outlet to the engine's Steam Inlet.",
+  "full_steam_ahead.ponder.steam_engine_bank.header": "Banking cylinders side by side",
+  "full_steam_ahead.ponder.steam_engine_bank.text_1": "The multiblock steam engine can be both single or multiple, sharing a wall between them, forming an engine block.",
+  "full_steam_ahead.ponder.steam_engine_bank.text_2": "Place another cylinder beside it and they will merge into one shared wall."
 }

@@ -16,5 +16,7 @@ public class FullSteamPonderPlugin implements PonderPlugin {
     public void registerScenes(PonderSceneRegistrationHelper<ResourceLocation> helper) {
         // Pipe-fed steam engine scene on the cylinder wall, using the testing_ponder_v2 structure.
         helper.addStoryBoard(ModBlocks.STEAM_CYLINDER.getId(), "testing_ponder_v2", FullSteamPonderScenes::cylinder);
+        // Appended scene: a bank of cylinders sharing walls, using the scene_3 structure.
+        helper.addStoryBoard(ModBlocks.STEAM_CYLINDER.getId(), "scene_3", FullSteamPonderScenes::cylinderBank);
     }
 }
