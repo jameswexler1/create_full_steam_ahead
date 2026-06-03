@@ -472,6 +472,7 @@ public final class CylinderConnectivity {
         RingData mechanicalOwner = mechanicalOwners.getFirst();
         CylinderSharedWall existingSharedWall = currentSharedWall(level.getBlockState(pos));
         List<RingData> visualOwners = null;
+        int bestScore = 0;
         for (RingData partialOwner : visualPartialMemberships.getOrDefault(pos, List.of())) {
             if (partialOwner.origin().equals(mechanicalOwner.origin())) {
                 continue;
@@ -482,19 +483,62 @@ public final class CylinderConnectivity {
 
             List<RingData> candidateOwners = orderedSharedOwners(mechanicalOwner, partialOwner);
             CylinderSharedWall candidateSharedWall = sharedWallFor(candidateOwners);
-            if (existingSharedWall != CylinderSharedWall.NONE && candidateSharedWall != existingSharedWall) {
+            if (!isMechanicalBoundaryForSharedCandidate(mechanicalOwner, partialOwner, pos, candidateSharedWall)) {
                 continue;
             }
             if (!hasSharedModelVariant(candidateOwners.getFirst().origin(), pos, candidateSharedWall)) {
                 continue;
             }
-            if (visualOwners != null) {
+            int candidateScore = visualOwnerScore(mechanicalOwner, partialOwner, pos, candidateSharedWall);
+            if (candidateScore == 0) {
+                continue;
+            }
+            if (candidateSharedWall == existingSharedWall) {
+                candidateScore++;
+            }
+            if (candidateScore == bestScore) {
                 return mechanicalOwners;
             }
+            if (candidateScore < bestScore) {
+                continue;
+            }
+            bestScore = candidateScore;
             visualOwners = candidateOwners;
         }
 
         return visualOwners == null ? mechanicalOwners : visualOwners;
+    }
+
+    private static boolean isMechanicalBoundaryForSharedCandidate(
+            RingData mechanicalOwner,
+            RingData partialOwner,
+            BlockPos pos,
+            CylinderSharedWall sharedWall
+    ) {
+        CylinderSection mechanicalSection = sectionFor(mechanicalOwner.origin(), pos);
+        if (mechanicalSection == CylinderSection.NONE || sharedWall == CylinderSharedWall.NONE) {
+            return false;
+        }
+
+        int dx = partialOwner.origin().getX() - mechanicalOwner.origin().getX();
+        int dz = partialOwner.origin().getZ() - mechanicalOwner.origin().getZ();
+        if (sharedWall == CylinderSharedWall.STRIP_Z) {
+            if (dx == -2 && dz == 0) {
+                return mechanicalSection.xOffset() == 0;
+            }
+            if (dx == 2 && dz == 0) {
+                return mechanicalSection.xOffset() == 2;
+            }
+        }
+        if (sharedWall == CylinderSharedWall.STRIP_X) {
+            if (dz == -2 && dx == 0) {
+                return mechanicalSection.zOffset() == 0;
+            }
+            if (dz == 2 && dx == 0) {
+                return mechanicalSection.zOffset() == 2;
+            }
+        }
+        return false;
     }
 
     private static List<RingData> orderedSharedOwners(RingData first, RingData second) {
@@ -526,6 +570,58 @@ public final class CylinderConnectivity {
             return section.zOffset() == 2;
         }
         return false;
+    }
+
+    private static int visualOwnerScore(
+            RingData mechanicalOwner,
+            RingData partialOwner,
+            BlockPos pos,
+            CylinderSharedWall sharedWall
+    ) {
+        int outsideBlocks = outsidePartialBlockCount(mechanicalOwner, partialOwner);
+        int sharedStripBlocks = sharedStripBlockCount(mechanicalOwner, partialOwner, pos, sharedWall);
+        if (outsideBlocks == 0 || sharedStripBlocks < 2) {
+            return 0;
+        }
+        return outsideBlocks * 100 + sharedStripBlocks * 10;
+    }
+
+    private static int outsidePartialBlockCount(RingData mechanicalOwner, RingData partialOwner) {
+        Set<BlockPos> mechanicalPositions = new LinkedHashSet<>(mechanicalOwner.positions());
+        int count = 0;
+        for (BlockPos partialPos : partialOwner.positions()) {
+            if (!mechanicalPositions.contains(partialPos)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private static int sharedStripBlockCount(
+            RingData mechanicalOwner,
+            RingData partialOwner,
+            BlockPos pos,
+            CylinderSharedWall sharedWall
+    ) {
+        List<RingData> owners = orderedSharedOwners(mechanicalOwner, partialOwner);
+        BlockPos origin = owners.getFirst().origin();
+        int yOffset = pos.getY() - origin.getY();
+        if (yOffset < 0 || yOffset > 1) {
+            return 0;
+        }
+
+        Set<BlockPos> mechanicalPositions = new LinkedHashSet<>(mechanicalOwner.positions());
+        Set<BlockPos> partialPositions = new LinkedHashSet<>(partialOwner.positions());
+        int sharedBlocks = 0;
+        for (int offset = 0; offset <= 2; offset++) {
+            BlockPos sharedPos = sharedWall == CylinderSharedWall.STRIP_Z
+                    ? origin.offset(2, yOffset, offset)
+                    : origin.offset(offset, yOffset, 2);
+            if (mechanicalPositions.contains(sharedPos) && partialPositions.contains(sharedPos)) {
+                sharedBlocks++;
+            }
+        }
+        return sharedBlocks;
     }
 
     private static Direction ringFacing(Level level, BlockPos origin) {
