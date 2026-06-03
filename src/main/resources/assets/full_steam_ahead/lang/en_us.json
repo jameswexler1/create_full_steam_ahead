@@ -1,5 +1,7 @@
 {
   "modmenu.nameTranslation.full_steam_ahead": "Create: Full Steam Ahead",
+  "death.attack.full_steam_ahead.steam": "%1$s was scalded by steam",
+  "death.attack.full_steam_ahead.steam.player": "%1$s was scalded by steam while trying to escape %2$s",
   "itemGroup.full_steam_ahead.main": "Create: Full Steam Ahead",
   "block.full_steam_ahead.steam_cylinder": "Cylinder Wall",
   "block.full_steam_ahead.piston": "Steam Piston",
