@@ -147,15 +147,15 @@ Completed shared-wall cylinder bank slice:
 - [x] Blocked unsupported overlaps, grids, T-junctions, and shared steam inlets.
 - [x] Stored secondary ring origins on shared cylinder block entities and made engine validation check ring membership explicitly.
 - [x] Generated shared-wall runtime texture, split block models, and model-derived hitboxes from `Steam_Cylinder_SHARED_WALL.bbmodel`.
-- [x] Preserved legal partial shared-wall pairs as a paired selection during construction, so adding another nearby corner does not steal one side of the shared strip.
-- [x] Recovered implied partial ring origins from `section`/`shared_wall` blockstates and allowed already-selected partial rings to accept another shared neighbor, fixing inline-bank construction where the middle ring shares on both sides.
-- [x] Seeded partial ring candidates from existing shared-wall blockstates, so upper-layer shared corners keep both ring origins when a later refresh cannot infer the pair from the new block alone.
-- [x] Split mechanical ring ownership from visual shared-wall ownership so a completed cylinder can keep rendering a shared strip while the adjacent cylinder is still only partially built.
+- [x] Reworked partial shared-wall selection to derive candidates from current local corner topology instead of stale `section`/`shared_wall` blockstates.
+- [x] Kept tracked partial/shared blockstates only as refresh-scope evidence so stale shared state is cleared when adjacent blocks are removed.
+- [x] Required a complete three-block shared strip plus outside corner evidence on both candidates before partial shared-wall visuals are applied.
+- [x] Split mechanical ring ownership from visual shared-wall ownership so a completed cylinder can keep rendering a verified shared strip while the adjacent cylinder is still only partially built.
 - [x] Constrained completed/partial shared-wall visual selection to the existing shared-wall axis and canonical shared model side, preventing shared corner segments from rotating to a competing inferred corner.
-- [x] Scored completed/partial visual owners by outside partial blocks and same-layer shared-strip overlap, and allowed this score to correct stale rotated shared-wall blockstates after refresh.
+- [x] Replaced completed/partial visual-owner scoring with the same verified shared-strip predicate used by partial/partial overlaps.
 - [x] Made cylinder shell validity ignore the center bore contents, so placing the wrong block where the piston head/body belongs invalidates the engine but does not fracture the casing into partial construction visuals.
 - [x] Protected already-assembled ring origins and excluded their bore columns from partial visual inference, so misplaced bore blocks cannot create false overlapping cylinder shapes.
-- [x] Protected partial ring bore columns from existing partial section states and local interior topology, so wrong ring-member blocks in an incomplete bore do not steal the partial frame.
+- [x] Protected partial ring bore columns from existing partial section states without treating legitimate shared-strip middle blocks as bore obstructions.
 - [x] Swapped the rotated `strip_x` shared-wall end model assignments so north-south shared corners use the same visual order as east-west shared corners.
 - [x] Reversed the `strip_x` shared-wall voxel-shape slice order so north-south shared corner hitboxes match the corrected models.
 - [x] Reversed the upside-down `strip_x` shared-wall model and voxel slice order separately, fixing north-south inverted banks without changing upright banks.
@@ -259,6 +259,7 @@ Automated results:
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after adding standalone cylinder layer autocomplete.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after protecting assembled cylinder bores from false partial rings and extending autocomplete to established shared-wall upper layers.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after protecting incomplete partial bores and correcting upside-down north-south shared-wall ordering.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after reworking partial shared-wall selection around live local-corner topology and verified shared strips.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
@@ -297,6 +298,8 @@ Manual runtime checklist:
 - [ ] Two complete cylinder rings can be built directly adjacent without either ring deforming or stealing the other's section assignments.
 - [ ] Two adjacent engines along X assemble with the shared-wall visual and both engines validate independently.
 - [ ] Two adjacent engines along Z assemble with the rotated shared-wall visual and both engines validate independently.
+- [ ] Two adjacent bottom-layer-only cylinder shells toggle shared-wall visuals only after the three-block shared strip and outside corner evidence exist on both sides.
+- [ ] Removing adjacent bottom-layer outside/corner evidence clears the shared-wall visual immediately without leaving stale shared blocks behind.
 - [ ] Two adjacent upside-down engines along Z use the correct shared-wall corner visuals and hitboxes.
 - [ ] Three inline engines form a continuous shared-wall bank without invalidating the middle engine.
 - [ ] Placing a `steam_inlet` on a would-be shared wall prevents shared-wall assembly instead of making the inlet belong to two rings.

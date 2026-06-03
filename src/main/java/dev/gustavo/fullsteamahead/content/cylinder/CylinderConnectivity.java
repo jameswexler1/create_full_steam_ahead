@@ -52,10 +52,7 @@ public final class CylinderConnectivity {
         Set<BlockPos> candidatePositions = candidateRingPositions(candidates);
         Set<BlockPos> protectedOrigins = assembledRingOrigins(level, candidatePositions, ignoredRingMemberPos);
         Set<BlockPos> trackedPartialOrigins = trackedPartialRingOrigins(level, candidatePositions, ignoredRingMemberPos);
-        Set<BlockPos> protectedBorePositions = combine(
-                borePositions(combine(protectedOrigins, trackedPartialOrigins)),
-                interiorRingMemberPositions(level, candidatePositions, ignoredRingMemberPos)
-        );
+        Set<BlockPos> protectedBorePositions = borePositions(combine(protectedOrigins, trackedPartialOrigins));
         Map<BlockPos, RingData> validRings = resolveSharedRings(
                 level,
                 findIndividuallyValidRings(level, candidates, ignoredRingMemberPos),
@@ -192,26 +189,6 @@ public final class CylinderConnectivity {
             origins.addAll(trackedPartialRingOrigins(level.getBlockState(pos), pos));
         }
         return origins;
-    }
-
-    private static Set<BlockPos> interiorRingMemberPositions(
-            Level level,
-            Set<BlockPos> positions,
-            BlockPos ignoredRingMemberPos
-    ) {
-        Set<BlockPos> members = collectRingMembers(level, positions, Set.of(), ignoredRingMemberPos);
-        Set<BlockPos> interiors = new LinkedHashSet<>();
-        for (BlockPos pos : members) {
-            boolean east = members.contains(pos.east());
-            boolean west = members.contains(pos.west());
-            boolean north = members.contains(pos.north());
-            boolean south = members.contains(pos.south());
-
-            if ((east && west && (north || south)) || (north && south && (east || west))) {
-                interiors.add(pos);
-            }
-        }
-        return interiors;
     }
 
     private static Set<BlockPos> combine(Set<BlockPos> first, Set<BlockPos> second) {
@@ -558,14 +535,12 @@ public final class CylinderConnectivity {
         }
 
         RingData mechanicalOwner = mechanicalOwners.getFirst();
-        CylinderSharedWall existingSharedWall = currentSharedWall(level.getBlockState(pos));
         List<RingData> visualOwners = null;
-        int bestScore = 0;
         for (RingData partialOwner : visualPartialMemberships.getOrDefault(pos, List.of())) {
             if (partialOwner.origin().equals(mechanicalOwner.origin())) {
                 continue;
             }
-            if (!canShareWallAt(level, pos, mechanicalOwner, partialOwner)) {
+            if (!canSharePartialRings(level, mechanicalOwner, partialOwner)) {
                 continue;
             }
 
@@ -577,20 +552,9 @@ public final class CylinderConnectivity {
             if (!hasSharedModelVariant(candidateOwners.getFirst().origin(), pos, candidateSharedWall)) {
                 continue;
             }
-            int candidateScore = visualOwnerScore(mechanicalOwner, partialOwner, pos, candidateSharedWall);
-            if (candidateScore == 0) {
-                continue;
-            }
-            if (candidateSharedWall == existingSharedWall) {
-                candidateScore++;
-            }
-            if (candidateScore == bestScore) {
+            if (visualOwners != null) {
                 return mechanicalOwners;
             }
-            if (candidateScore < bestScore) {
-                continue;
-            }
-            bestScore = candidateScore;
             visualOwners = candidateOwners;
         }
 
@@ -635,13 +599,6 @@ public final class CylinderConnectivity {
         return owners;
     }
 
-    private static CylinderSharedWall currentSharedWall(BlockState state) {
-        if (!state.is(ModBlocks.STEAM_CYLINDER.get()) || !state.hasProperty(SteamCylinderBlock.SHARED_WALL)) {
-            return CylinderSharedWall.NONE;
-        }
-        return state.getValue(SteamCylinderBlock.SHARED_WALL);
-    }
-
     private static boolean hasSharedModelVariant(
             BlockPos visualOrigin,
             BlockPos pos,
@@ -658,58 +615,6 @@ public final class CylinderConnectivity {
             return section.zOffset() == 2;
         }
         return false;
-    }
-
-    private static int visualOwnerScore(
-            RingData mechanicalOwner,
-            RingData partialOwner,
-            BlockPos pos,
-            CylinderSharedWall sharedWall
-    ) {
-        int outsideBlocks = outsidePartialBlockCount(mechanicalOwner, partialOwner);
-        int sharedStripBlocks = sharedStripBlockCount(mechanicalOwner, partialOwner, pos, sharedWall);
-        if (outsideBlocks == 0 || sharedStripBlocks < 2) {
-            return 0;
-        }
-        return outsideBlocks * 100 + sharedStripBlocks * 10;
-    }
-
-    private static int outsidePartialBlockCount(RingData mechanicalOwner, RingData partialOwner) {
-        Set<BlockPos> mechanicalPositions = new LinkedHashSet<>(mechanicalOwner.positions());
-        int count = 0;
-        for (BlockPos partialPos : partialOwner.positions()) {
-            if (!mechanicalPositions.contains(partialPos)) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    private static int sharedStripBlockCount(
-            RingData mechanicalOwner,
-            RingData partialOwner,
-            BlockPos pos,
-            CylinderSharedWall sharedWall
-    ) {
-        List<RingData> owners = orderedSharedOwners(mechanicalOwner, partialOwner);
-        BlockPos origin = owners.getFirst().origin();
-        int yOffset = pos.getY() - origin.getY();
-        if (yOffset < 0 || yOffset > 1) {
-            return 0;
-        }
-
-        Set<BlockPos> mechanicalPositions = new LinkedHashSet<>(mechanicalOwner.positions());
-        Set<BlockPos> partialPositions = new LinkedHashSet<>(partialOwner.positions());
-        int sharedBlocks = 0;
-        for (int offset = 0; offset <= 2; offset++) {
-            BlockPos sharedPos = sharedWall == CylinderSharedWall.STRIP_Z
-                    ? origin.offset(2, yOffset, offset)
-                    : origin.offset(offset, yOffset, 2);
-            if (mechanicalPositions.contains(sharedPos) && partialPositions.contains(sharedPos)) {
-                sharedBlocks++;
-            }
-        }
-        return sharedBlocks;
     }
 
     private static Direction ringFacing(Level level, BlockPos origin) {
@@ -909,103 +814,47 @@ public final class CylinderConnectivity {
                     continue;
                 }
                 int score = partialRingScore(level, origin, positions, members);
-                candidates.merge(
-                        origin,
-                        new PartialRingCandidate(new RingData(origin, positions, Direction.UP, null, null), score),
-                        (previous, current) -> previous.score() >= current.score() ? previous : current
-                );
+                RingData ring = new RingData(origin, positions, partialFacing(level, origin), null, null);
+                candidates.merge(origin, new PartialRingCandidate(ring, score), CylinderConnectivity::bestPartialCandidate);
             }
         }
 
-        List<PartialRingGroup> sorted = partialRingGroups(level, candidates.values());
+        List<PartialRingCandidate> sorted = new ArrayList<>(candidates.values());
         sorted.sort((first, second) -> {
             int scoreCompare = Integer.compare(second.score(), first.score());
             if (scoreCompare != 0) {
                 return scoreCompare;
             }
 
-            int sizeCompare = Integer.compare(second.rings().size(), first.rings().size());
-            if (sizeCompare != 0) {
-                return sizeCompare;
-            }
-
-            int firstOriginCompare = ROOT_ORDER.compare(first.rings().getFirst().origin(), second.rings().getFirst().origin());
-            if (firstOriginCompare != 0) {
-                return firstOriginCompare;
-            }
-
-            return ROOT_ORDER.compare(first.rings().getLast().origin(), second.rings().getLast().origin());
+            return ROOT_ORDER.compare(first.ring().origin(), second.ring().origin());
         });
 
         Map<BlockPos, RingData> selected = new LinkedHashMap<>();
         Map<BlockPos, List<RingData>> memberships = new LinkedHashMap<>();
-        for (PartialRingGroup group : sorted) {
-            List<RingData> ringsToAdd = unselectedRings(group, selected);
-            if (ringsToAdd.isEmpty() || !canAddPartialGroup(level, ringsToAdd, memberships)) {
+        for (PartialRingCandidate candidate : sorted) {
+            RingData ring = candidate.ring();
+            if (selected.containsKey(ring.origin()) || !canAddPartialRing(level, ring, memberships)) {
                 continue;
             }
 
-            for (RingData ring : ringsToAdd) {
-                selected.put(ring.origin(), ring);
-                addRingMembership(memberships, ring);
-            }
+            selected.put(ring.origin(), ring);
+            addRingMembership(memberships, ring);
         }
         return selected;
     }
 
-    private static Set<BlockPos> partialCandidateOrigins(Level level, Set<BlockPos> members, BlockPos pos) {
-        Set<BlockPos> origins = new LinkedHashSet<>(partialOriginsFromLocalCorners(members, pos));
-        BlockState state = level.getBlockState(pos);
-        if (state.is(ModBlocks.STEAM_CYLINDER.get())
-                && state.hasProperty(SteamCylinderBlock.SHARED_WALL)
-                && state.getValue(SteamCylinderBlock.SHARED_WALL) != CylinderSharedWall.NONE) {
-            origins.addAll(trackedPartialRingOrigins(state, pos));
-        }
-        return origins;
-    }
-
-    private static List<PartialRingGroup> partialRingGroups(
-            Level level,
-            Collection<PartialRingCandidate> candidates
+    private static PartialRingCandidate bestPartialCandidate(
+            PartialRingCandidate previous,
+            PartialRingCandidate current
     ) {
-        List<PartialRingCandidate> sortedCandidates = new ArrayList<>(candidates);
-        sortedCandidates.sort(Comparator.comparing(candidate -> candidate.ring().origin(), ROOT_ORDER));
-
-        List<PartialRingGroup> groups = new ArrayList<>();
-        for (int firstIndex = 0; firstIndex < sortedCandidates.size(); firstIndex++) {
-            PartialRingCandidate first = sortedCandidates.get(firstIndex);
-            for (int secondIndex = firstIndex + 1; secondIndex < sortedCandidates.size(); secondIndex++) {
-                PartialRingCandidate second = sortedCandidates.get(secondIndex);
-                int sharedBlocks = sharedPartialWallBlockCount(level, first.ring(), second.ring());
-                if (sharedBlocks == 0) {
-                    continue;
-                }
-
-                groups.add(new PartialRingGroup(
-                        List.of(first.ring(), second.ring()),
-                        first.score()
-                                + second.score()
-                                + 500
-                                + sharedBlocks * 50
-                                + existingSharedWallBlockCount(level, first.ring(), second.ring()) * 300
-                ));
-            }
+        if (current.score() > previous.score()) {
+            return current;
         }
-
-        for (PartialRingCandidate candidate : sortedCandidates) {
-            groups.add(new PartialRingGroup(List.of(candidate.ring()), candidate.score()));
-        }
-        return groups;
+        return previous;
     }
 
-    private static List<RingData> unselectedRings(PartialRingGroup group, Map<BlockPos, RingData> selected) {
-        List<RingData> rings = new ArrayList<>(group.rings().size());
-        for (RingData ring : group.rings()) {
-            if (!selected.containsKey(ring.origin())) {
-                rings.add(ring);
-            }
-        }
-        return rings;
+    private static Set<BlockPos> partialCandidateOrigins(Level level, Set<BlockPos> members, BlockPos pos) {
+        return partialOriginsFromLocalCorners(members, pos);
     }
 
     private static Set<BlockPos> partialOriginsFromLocalCorners(Set<BlockPos> members, BlockPos pos) {
@@ -1076,30 +925,29 @@ public final class CylinderConnectivity {
         return score;
     }
 
+    private static Direction partialFacing(Level level, BlockPos origin) {
+        return ringFacing(level, origin);
+    }
+
     private static int cornerEvidenceCount(BlockPos origin, Set<BlockPos> members) {
         int evidence = 0;
-        if (hasCorner(members, origin, Direction.EAST, Direction.SOUTH)) {
+        evidence += layerCornerEvidenceCount(origin, 0, members);
+        evidence += layerCornerEvidenceCount(origin, 1, members);
+        return evidence;
+    }
+
+    private static int layerCornerEvidenceCount(BlockPos origin, int yOffset, Set<BlockPos> members) {
+        int evidence = 0;
+        if (hasCorner(members, origin.offset(0, yOffset, 0), Direction.EAST, Direction.SOUTH)) {
             evidence++;
         }
-        if (hasCorner(members, origin.offset(2, 0, 0), Direction.WEST, Direction.SOUTH)) {
+        if (hasCorner(members, origin.offset(2, yOffset, 0), Direction.WEST, Direction.SOUTH)) {
             evidence++;
         }
-        if (hasCorner(members, origin.offset(2, 0, 2), Direction.WEST, Direction.NORTH)) {
+        if (hasCorner(members, origin.offset(2, yOffset, 2), Direction.WEST, Direction.NORTH)) {
             evidence++;
         }
-        if (hasCorner(members, origin.offset(0, 0, 2), Direction.EAST, Direction.NORTH)) {
-            evidence++;
-        }
-        if (hasCorner(members, origin.above(), Direction.EAST, Direction.SOUTH)) {
-            evidence++;
-        }
-        if (hasCorner(members, origin.offset(2, 1, 0), Direction.WEST, Direction.SOUTH)) {
-            evidence++;
-        }
-        if (hasCorner(members, origin.offset(2, 1, 2), Direction.WEST, Direction.NORTH)) {
-            evidence++;
-        }
-        if (hasCorner(members, origin.offset(0, 1, 2), Direction.EAST, Direction.NORTH)) {
+        if (hasCorner(members, origin.offset(0, yOffset, 2), Direction.EAST, Direction.NORTH)) {
             evidence++;
         }
         return evidence;
@@ -1160,34 +1008,11 @@ public final class CylinderConnectivity {
             if (owners.size() >= 2) {
                 return false;
             }
-            if (!canShareWallAt(level, pos, owners.getFirst(), ring)) {
+            if (!canSharePartialRings(level, owners.getFirst(), ring)) {
                 return false;
             }
         }
         return true;
-    }
-
-    private static boolean canAddPartialGroup(
-            Level level,
-            List<RingData> rings,
-            Map<BlockPos, List<RingData>> selectedMemberships
-    ) {
-        Map<BlockPos, List<RingData>> trialMemberships = copyMemberships(selectedMemberships);
-        for (RingData ring : rings) {
-            if (!canAddPartialRing(level, ring, trialMemberships)) {
-                return false;
-            }
-            addRingMembership(trialMemberships, ring);
-        }
-        return true;
-    }
-
-    private static Map<BlockPos, List<RingData>> copyMemberships(Map<BlockPos, List<RingData>> memberships) {
-        Map<BlockPos, List<RingData>> copy = new LinkedHashMap<>();
-        for (Map.Entry<BlockPos, List<RingData>> entry : memberships.entrySet()) {
-            copy.put(entry.getKey(), new ArrayList<>(entry.getValue()));
-        }
-        return copy;
     }
 
     private static void addRingMembership(Map<BlockPos, List<RingData>> memberships, RingData ring) {
@@ -1196,46 +1021,76 @@ public final class CylinderConnectivity {
         }
     }
 
-    private static int sharedPartialWallBlockCount(Level level, RingData first, RingData second) {
-        if (sharedBankAxis(first.origin(), second.origin()).isEmpty()) {
-            return 0;
+    private static boolean canSharePartialRings(Level level, RingData first, RingData second) {
+        if (first.facing() != second.facing()) {
+            return false;
         }
 
-        Set<BlockPos> firstPositions = new LinkedHashSet<>(first.positions());
-        int sharedBlocks = 0;
-        for (BlockPos pos : second.positions()) {
-            if (!firstPositions.contains(pos)) {
-                continue;
-            }
-            if (!canShareWallAt(level, pos, first, second)) {
-                return 0;
-            }
-            sharedBlocks++;
+        List<RingData> owners = orderedSharedOwners(first, second);
+        CylinderSharedWall sharedWall = sharedWallFor(owners);
+        if (sharedWall == CylinderSharedWall.NONE) {
+            return false;
         }
-        return sharedBlocks;
+        for (int yOffset = 0; yOffset <= 1; yOffset++) {
+            if (hasCompleteSharedStrip(level, owners.getFirst(), owners.get(1), yOffset, sharedWall)
+                    && hasOutsideLayerEvidence(owners.getFirst(), yOffset, sharedWall, owners.getFirst().origin())
+                    && hasOutsideLayerEvidence(owners.get(1), yOffset, sharedWall, owners.getFirst().origin())) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    private static int existingSharedWallBlockCount(Level level, RingData first, RingData second) {
-        CylinderSharedWall expectedSharedWall = sharedWallFor(List.of(first, second));
-        if (expectedSharedWall == CylinderSharedWall.NONE) {
-            return 0;
-        }
-
+    private static boolean hasCompleteSharedStrip(
+            Level level,
+            RingData first,
+            RingData second,
+            int yOffset,
+            CylinderSharedWall sharedWall
+    ) {
         Set<BlockPos> firstPositions = new LinkedHashSet<>(first.positions());
-        int matches = 0;
-        for (BlockPos pos : second.positions()) {
-            if (!firstPositions.contains(pos) || !level.isLoaded(pos)) {
-                continue;
+        Set<BlockPos> secondPositions = new LinkedHashSet<>(second.positions());
+        for (BlockPos pos : sharedStripPositions(first.origin(), yOffset, sharedWall)) {
+            if (!firstPositions.contains(pos) || !secondPositions.contains(pos)) {
+                return false;
             }
-
-            BlockState state = level.getBlockState(pos);
-            if (state.is(ModBlocks.STEAM_CYLINDER.get())
-                    && state.hasProperty(SteamCylinderBlock.SHARED_WALL)
-                    && state.getValue(SteamCylinderBlock.SHARED_WALL) == expectedSharedWall) {
-                matches++;
+            if (!level.getBlockState(pos).is(ModBlocks.STEAM_CYLINDER.get())) {
+                return false;
             }
         }
-        return matches;
+        return true;
+    }
+
+    private static boolean hasOutsideLayerEvidence(
+            RingData ring,
+            int yOffset,
+            CylinderSharedWall sharedWall,
+            BlockPos sharedOrigin
+    ) {
+        Set<BlockPos> sharedStrip = new LinkedHashSet<>(sharedStripPositions(sharedOrigin, yOffset, sharedWall));
+        Set<BlockPos> positions = new LinkedHashSet<>(ring.positions());
+        boolean outsideBlock = false;
+        for (BlockPos pos : positions) {
+            if (pos.getY() - ring.origin().getY() == yOffset && !sharedStrip.contains(pos)) {
+                outsideBlock = true;
+                break;
+            }
+        }
+        return outsideBlock && layerCornerEvidenceCount(ring.origin(), yOffset, positions) > 0;
+    }
+
+    private static List<BlockPos> sharedStripPositions(
+            BlockPos origin,
+            int yOffset,
+            CylinderSharedWall sharedWall
+    ) {
+        List<BlockPos> positions = new ArrayList<>(3);
+        for (int offset = 0; offset <= 2; offset++) {
+            positions.add(sharedWall == CylinderSharedWall.STRIP_Z
+                    ? origin.offset(2, yOffset, offset)
+                    : origin.offset(offset, yOffset, 2));
+        }
+        return positions;
     }
 
     private static CylinderWallShape localStraightWallShape(Level level, BlockPos pos, Set<BlockPos> members) {
@@ -1412,12 +1267,6 @@ public final class CylinderConnectivity {
 
     private record PartialRingCandidate(
             RingData ring,
-            int score
-    ) {
-    }
-
-    private record PartialRingGroup(
-            List<RingData> rings,
             int score
     ) {
     }
