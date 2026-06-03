@@ -470,8 +470,8 @@ public final class CylinderConnectivity {
         }
 
         RingData mechanicalOwner = mechanicalOwners.getFirst();
-        List<RingData> visualOwners = new ArrayList<>(2);
-        visualOwners.add(mechanicalOwner);
+        CylinderSharedWall existingSharedWall = currentSharedWall(level.getBlockState(pos));
+        List<RingData> visualOwners = null;
         for (RingData partialOwner : visualPartialMemberships.getOrDefault(pos, List.of())) {
             if (partialOwner.origin().equals(mechanicalOwner.origin())) {
                 continue;
@@ -479,15 +479,53 @@ public final class CylinderConnectivity {
             if (!canShareWallAt(level, pos, mechanicalOwner, partialOwner)) {
                 continue;
             }
-            visualOwners.add(partialOwner);
+
+            List<RingData> candidateOwners = orderedSharedOwners(mechanicalOwner, partialOwner);
+            CylinderSharedWall candidateSharedWall = sharedWallFor(candidateOwners);
+            if (existingSharedWall != CylinderSharedWall.NONE && candidateSharedWall != existingSharedWall) {
+                continue;
+            }
+            if (!hasSharedModelVariant(candidateOwners.getFirst().origin(), pos, candidateSharedWall)) {
+                continue;
+            }
+            if (visualOwners != null) {
+                return mechanicalOwners;
+            }
+            visualOwners = candidateOwners;
         }
 
-        if (visualOwners.size() != 2) {
-            return mechanicalOwners;
-        }
+        return visualOwners == null ? mechanicalOwners : visualOwners;
+    }
 
-        visualOwners.sort(Comparator.comparing(RingData::origin, ROOT_ORDER));
-        return visualOwners;
+    private static List<RingData> orderedSharedOwners(RingData first, RingData second) {
+        List<RingData> owners = new ArrayList<>(List.of(first, second));
+        owners.sort(Comparator.comparing(RingData::origin, ROOT_ORDER));
+        return owners;
+    }
+
+    private static CylinderSharedWall currentSharedWall(BlockState state) {
+        if (!state.is(ModBlocks.STEAM_CYLINDER.get()) || !state.hasProperty(SteamCylinderBlock.SHARED_WALL)) {
+            return CylinderSharedWall.NONE;
+        }
+        return state.getValue(SteamCylinderBlock.SHARED_WALL);
+    }
+
+    private static boolean hasSharedModelVariant(
+            BlockPos visualOrigin,
+            BlockPos pos,
+            CylinderSharedWall sharedWall
+    ) {
+        CylinderSection section = sectionFor(visualOrigin, pos);
+        if (section == CylinderSection.NONE || sharedWall == CylinderSharedWall.NONE) {
+            return false;
+        }
+        if (sharedWall == CylinderSharedWall.STRIP_Z) {
+            return section.xOffset() == 2;
+        }
+        if (sharedWall == CylinderSharedWall.STRIP_X) {
+            return section.zOffset() == 2;
+        }
+        return false;
     }
 
     private static Direction ringFacing(Level level, BlockPos origin) {

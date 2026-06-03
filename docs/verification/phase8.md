@@ -151,6 +151,7 @@ Completed shared-wall cylinder bank slice:
 - [x] Recovered implied partial ring origins from `section`/`shared_wall` blockstates and allowed already-selected partial rings to accept another shared neighbor, fixing inline-bank construction where the middle ring shares on both sides.
 - [x] Seeded partial ring candidates from existing shared-wall blockstates, so upper-layer shared corners keep both ring origins when a later refresh cannot infer the pair from the new block alone.
 - [x] Split mechanical ring ownership from visual shared-wall ownership so a completed cylinder can keep rendering a shared strip while the adjacent cylinder is still only partially built.
+- [x] Constrained completed/partial shared-wall visual selection to the existing shared-wall axis and canonical shared model side, preventing shared corner segments from rotating to a competing inferred corner.
 
 Completed steam inlet partial-visual reliability slice:
 
@@ -236,6 +237,7 @@ Automated results:
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after preserving inline partial shared-wall banks when extra corners make the middle ring share on both sides.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after seeding partial candidates from existing upper-layer shared-wall blockstates.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after keeping shared-wall visuals between one complete ring and one incomplete adjacent ring.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after locking shared corner visuals to the existing axis and canonical model side.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
