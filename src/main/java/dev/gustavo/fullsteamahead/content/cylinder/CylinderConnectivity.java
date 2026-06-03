@@ -51,7 +51,11 @@ public final class CylinderConnectivity {
         );
         Set<BlockPos> candidatePositions = candidateRingPositions(candidates);
         Set<BlockPos> protectedOrigins = assembledRingOrigins(level, candidatePositions, ignoredRingMemberPos);
-        Set<BlockPos> protectedBorePositions = borePositions(protectedOrigins);
+        Set<BlockPos> trackedPartialOrigins = trackedPartialRingOrigins(level, candidatePositions, ignoredRingMemberPos);
+        Set<BlockPos> protectedBorePositions = combine(
+                borePositions(combine(protectedOrigins, trackedPartialOrigins)),
+                interiorRingMemberPositions(level, candidatePositions, ignoredRingMemberPos)
+        );
         Map<BlockPos, RingData> validRings = resolveSharedRings(
                 level,
                 findIndividuallyValidRings(level, candidates, ignoredRingMemberPos),
@@ -172,6 +176,42 @@ public final class CylinderConnectivity {
             positions.add(origin.offset(1, 1, 1));
         }
         return positions;
+    }
+
+    private static Set<BlockPos> trackedPartialRingOrigins(
+            Level level,
+            Set<BlockPos> positions,
+            BlockPos ignoredRingMemberPos
+    ) {
+        Set<BlockPos> origins = new LinkedHashSet<>();
+        for (BlockPos pos : positions) {
+            if (pos.equals(ignoredRingMemberPos) || !level.isLoaded(pos)) {
+                continue;
+            }
+
+            origins.addAll(trackedPartialRingOrigins(level.getBlockState(pos), pos));
+        }
+        return origins;
+    }
+
+    private static Set<BlockPos> interiorRingMemberPositions(
+            Level level,
+            Set<BlockPos> positions,
+            BlockPos ignoredRingMemberPos
+    ) {
+        Set<BlockPos> members = collectRingMembers(level, positions, Set.of(), ignoredRingMemberPos);
+        Set<BlockPos> interiors = new LinkedHashSet<>();
+        for (BlockPos pos : members) {
+            boolean east = members.contains(pos.east());
+            boolean west = members.contains(pos.west());
+            boolean north = members.contains(pos.north());
+            boolean south = members.contains(pos.south());
+
+            if ((east && west && (north || south)) || (north && south && (east || west))) {
+                interiors.add(pos);
+            }
+        }
+        return interiors;
     }
 
     private static Set<BlockPos> combine(Set<BlockPos> first, Set<BlockPos> second) {

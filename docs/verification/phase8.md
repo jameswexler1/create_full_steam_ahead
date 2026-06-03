@@ -155,8 +155,10 @@ Completed shared-wall cylinder bank slice:
 - [x] Scored completed/partial visual owners by outside partial blocks and same-layer shared-strip overlap, and allowed this score to correct stale rotated shared-wall blockstates after refresh.
 - [x] Made cylinder shell validity ignore the center bore contents, so placing the wrong block where the piston head/body belongs invalidates the engine but does not fracture the casing into partial construction visuals.
 - [x] Protected already-assembled ring origins and excluded their bore columns from partial visual inference, so misplaced bore blocks cannot create false overlapping cylinder shapes.
+- [x] Protected partial ring bore columns from existing partial section states and local interior topology, so wrong ring-member blocks in an incomplete bore do not steal the partial frame.
 - [x] Swapped the rotated `strip_x` shared-wall end model assignments so north-south shared corners use the same visual order as east-west shared corners.
 - [x] Reversed the `strip_x` shared-wall voxel-shape slice order so north-south shared corner hitboxes match the corrected models.
+- [x] Reversed the upside-down `strip_x` shared-wall model and voxel slice order separately, fixing north-south inverted banks without changing upright banks.
 
 Completed cylinder placement quality-of-life slice:
 
@@ -256,6 +258,7 @@ Automated results:
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after aligning north-south shared-wall hitboxes with the corrected model order.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after adding standalone cylinder layer autocomplete.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after protecting assembled cylinder bores from false partial rings and extending autocomplete to established shared-wall upper layers.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after protecting incomplete partial bores and correcting upside-down north-south shared-wall ordering.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
@@ -294,6 +297,7 @@ Manual runtime checklist:
 - [ ] Two complete cylinder rings can be built directly adjacent without either ring deforming or stealing the other's section assignments.
 - [ ] Two adjacent engines along X assemble with the shared-wall visual and both engines validate independently.
 - [ ] Two adjacent engines along Z assemble with the rotated shared-wall visual and both engines validate independently.
+- [ ] Two adjacent upside-down engines along Z use the correct shared-wall corner visuals and hitboxes.
 - [ ] Three inline engines form a continuous shared-wall bank without invalidating the middle engine.
 - [ ] Placing a `steam_inlet` on a would-be shared wall prevents shared-wall assembly instead of making the inlet belong to two rings.
 - [ ] Breaking one shared wall disassembles both affected engines; breaking one outer wall disassembles only that engine.
@@ -301,6 +305,7 @@ Manual runtime checklist:
 - [ ] Cylinder layer autocomplete consumes the required extra cylinders in survival, does not consume in creative, and does nothing while sneaking or with too few cylinders.
 - [ ] Cylinder layer autocomplete preserves one existing `steam_inlet`, never fills the center bore, and rejects ambiguous shared-wall bank shapes.
 - [ ] A complete assembled cylinder casing stays assembled when a wrong block, `piston_head`, or `piston` is placed in either bore position.
+- [ ] An incomplete partial cylinder frame keeps its current partial visuals when a wrong `steam_cylinder`, `steam_inlet`, `piston_head`, or `piston` is placed in the intended bore.
 - [ ] After the lower layer of an adjacent shared-wall cylinder is complete, placing one upper non-shared shell block fills the missing upper shell without duplicating the shared strip.
 - [ ] Assembled `piston_head` and the `piston` body remain visible at rest and reciprocate while the linked shaft is running.
 - [ ] An assembled engine with no steam output still animates passively when its linked shaft is rotated by another engine on the same shaft network.
