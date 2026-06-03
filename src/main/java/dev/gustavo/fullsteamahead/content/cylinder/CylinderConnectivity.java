@@ -55,18 +55,27 @@ public final class CylinderConnectivity {
         );
         Map<BlockPos, List<RingData>> memberships = buildMemberships(validRings.values());
         Set<BlockPos> validRingPositions = new LinkedHashSet<>(memberships.keySet());
+        Set<BlockPos> candidatePositions = candidateRingPositions(candidates);
+        Map<BlockPos, List<RingData>> visualPartialMemberships = buildMemberships(
+                findPartialRings(level, collectRingMembers(
+                        level,
+                        candidatePositions,
+                        Set.of(),
+                        ignoredRingMemberPos
+                )).values()
+        );
 
         Map<BlockPos, PartialVisual> partialVisuals =
-                inferPartialVisuals(level, candidateRingPositions(candidates), validRingPositions, ignoredRingMemberPos);
+                inferPartialVisuals(level, candidatePositions, validRingPositions, ignoredRingMemberPos);
 
         clearOrApplyPartialVisuals(
                 level,
-                candidateRingPositions(candidates),
+                candidatePositions,
                 validRingPositions,
                 partialVisuals
         );
 
-        assemble(level, validRings.values(), memberships);
+        assemble(level, validRings.values(), memberships, visualPartialMemberships);
 
         notifyEngines(level, candidates);
     }
@@ -110,15 +119,18 @@ public final class CylinderConnectivity {
     }
 
     private static Set<BlockPos> trackedRingOrigins(Level level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof SteamCylinderBlockEntity cylinder && cylinder.isCylinderAssembled()) {
-            return cylinder.getRingOrigins();
+            Set<BlockPos> origins = new LinkedHashSet<>(cylinder.getRingOrigins());
+            origins.addAll(trackedPartialRingOrigins(state, pos));
+            return origins;
         }
         if (blockEntity instanceof SteamInletBlockEntity inlet && inlet.isInletAssembled()) {
             BlockPos ringOrigin = inlet.getRingOrigin();
             return ringOrigin == null ? Set.of() : Set.of(ringOrigin);
         }
-        return trackedPartialRingOrigins(level.getBlockState(pos), pos);
+        return trackedPartialRingOrigins(state, pos);
     }
 
     private static Set<BlockPos> trackedPartialRingOrigins(BlockState state, BlockPos pos) {
@@ -349,7 +361,8 @@ public final class CylinderConnectivity {
     private static void assemble(
             Level level,
             Collection<RingData> rings,
-            Map<BlockPos, List<RingData>> memberships
+            Map<BlockPos, List<RingData>> memberships,
+            Map<BlockPos, List<RingData>> visualPartialMemberships
     ) {
         Map<BlockPos, BlockPos> roots = new HashMap<>();
         for (RingData ring : rings) {
@@ -363,7 +376,6 @@ public final class CylinderConnectivity {
             RingData secondary = owners.size() > 1 ? owners.get(1) : null;
             BlockState state = level.getBlockState(pos);
             CylinderSection section = sectionFor(primary.origin(), pos);
-            CylinderSharedWall sharedWall = sharedWallFor(owners);
             if (state.is(ModBlocks.STEAM_INLET.get())) {
                 withInletBlockEntity(level, pos,
                         be -> be.applyRingState(primary.origin(), roots.get(primary.origin()), primary.boilerPos()));
@@ -378,15 +390,16 @@ public final class CylinderConnectivity {
                         CylinderSharedWall.NONE
                 );
             } else {
+                RingVisual visual = visualFor(level, pos, owners, visualPartialMemberships);
                 setRingState(
                         level,
                         pos,
                         state,
                         true,
-                        section,
+                        visual.section(),
                         CylinderWallShape.STANDALONE,
                         primary.facing(),
-                        sharedWall
+                        visual.sharedWall()
                 );
                 withCylinderBlockEntity(level, pos,
                         be -> be.applyRingState(
@@ -433,6 +446,48 @@ public final class CylinderConnectivity {
         }
 
         return bankAxis.get() == Direction.Axis.X ? CylinderSharedWall.STRIP_Z : CylinderSharedWall.STRIP_X;
+    }
+
+    private static RingVisual visualFor(
+            Level level,
+            BlockPos pos,
+            List<RingData> mechanicalOwners,
+            Map<BlockPos, List<RingData>> visualPartialMemberships
+    ) {
+        List<RingData> visualOwners = visualOwnersFor(level, pos, mechanicalOwners, visualPartialMemberships);
+        RingData visualPrimary = visualOwners.getFirst();
+        return new RingVisual(sectionFor(visualPrimary.origin(), pos), sharedWallFor(visualOwners));
+    }
+
+    private static List<RingData> visualOwnersFor(
+            Level level,
+            BlockPos pos,
+            List<RingData> mechanicalOwners,
+            Map<BlockPos, List<RingData>> visualPartialMemberships
+    ) {
+        if (mechanicalOwners.size() != 1 || sharedWallFor(mechanicalOwners) != CylinderSharedWall.NONE) {
+            return mechanicalOwners;
+        }
+
+        RingData mechanicalOwner = mechanicalOwners.getFirst();
+        List<RingData> visualOwners = new ArrayList<>(2);
+        visualOwners.add(mechanicalOwner);
+        for (RingData partialOwner : visualPartialMemberships.getOrDefault(pos, List.of())) {
+            if (partialOwner.origin().equals(mechanicalOwner.origin())) {
+                continue;
+            }
+            if (!canShareWallAt(level, pos, mechanicalOwner, partialOwner)) {
+                continue;
+            }
+            visualOwners.add(partialOwner);
+        }
+
+        if (visualOwners.size() != 2) {
+            return mechanicalOwners;
+        }
+
+        visualOwners.sort(Comparator.comparing(RingData::origin, ROOT_ORDER));
+        return visualOwners;
     }
 
     private static Direction ringFacing(Level level, BlockPos origin) {
@@ -532,14 +587,7 @@ public final class CylinderConnectivity {
             Set<BlockPos> protectedPositions,
             BlockPos ignoredRingMemberPos
     ) {
-        Set<BlockPos> members = new LinkedHashSet<>();
-        for (BlockPos pos : positions) {
-            if (!protectedPositions.contains(pos)
-                    && level.isLoaded(pos)
-                    && getRingMemberAt(level, pos, ignoredRingMemberPos) != RingMember.NONE) {
-                members.add(pos);
-            }
-        }
+        Set<BlockPos> members = collectRingMembers(level, positions, protectedPositions, ignoredRingMemberPos);
 
         Map<BlockPos, RingData> partialRings = findPartialRings(level, members);
         Map<BlockPos, List<RingData>> memberships = buildMemberships(partialRings.values());
@@ -572,6 +620,23 @@ public final class CylinderConnectivity {
             }
         }
         return assignments;
+    }
+
+    private static Set<BlockPos> collectRingMembers(
+            Level level,
+            Set<BlockPos> positions,
+            Set<BlockPos> excludedPositions,
+            BlockPos ignoredRingMemberPos
+    ) {
+        Set<BlockPos> members = new LinkedHashSet<>();
+        for (BlockPos pos : positions) {
+            if (!excludedPositions.contains(pos)
+                    && level.isLoaded(pos)
+                    && getRingMemberAt(level, pos, ignoredRingMemberPos) != RingMember.NONE) {
+                members.add(pos);
+            }
+        }
+        return members;
     }
 
     private static Map<BlockPos, RingData> findPartialRings(
@@ -1077,6 +1142,12 @@ public final class CylinderConnectivity {
     private record PartialVisual(
             CylinderSection section,
             CylinderWallShape wallShape,
+            CylinderSharedWall sharedWall
+    ) {
+    }
+
+    private record RingVisual(
+            CylinderSection section,
             CylinderSharedWall sharedWall
     ) {
     }
