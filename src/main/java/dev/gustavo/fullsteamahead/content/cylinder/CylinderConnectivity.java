@@ -277,12 +277,6 @@ public final class CylinderConnectivity {
                     }
 
                     if (isCenter(x, z)) {
-                        BlockState centerState = level.getBlockState(pos);
-                        if (!centerState.isAir()
-                                && !centerState.is(ModBlocks.PISTON.get())
-                                && !centerState.is(ModBlocks.PISTON_HEAD.get())) {
-                            return false;
-                        }
                         continue;
                     }
 
@@ -633,7 +627,43 @@ public final class CylinderConnectivity {
         if (upperHead && !lowerHead) {
             return Direction.DOWN;
         }
-        return Direction.UP;
+        if (lowerHead && !upperHead) {
+            return Direction.UP;
+        }
+        return currentRingFacing(level, origin).orElse(Direction.UP);
+    }
+
+    private static Optional<Direction> currentRingFacing(Level level, BlockPos origin) {
+        int up = 0;
+        int down = 0;
+        for (BlockPos pos : ringPositions(origin)) {
+            if (!level.isLoaded(pos)) {
+                continue;
+            }
+
+            BlockState state = level.getBlockState(pos);
+            if (state.hasProperty(SteamCylinderBlock.FACING)) {
+                if (state.getValue(SteamCylinderBlock.FACING) == Direction.DOWN) {
+                    down++;
+                } else {
+                    up++;
+                }
+            } else if (state.hasProperty(SteamInletBlock.FACING)) {
+                if (state.getValue(SteamInletBlock.FACING) == Direction.DOWN) {
+                    down++;
+                } else {
+                    up++;
+                }
+            }
+        }
+
+        if (down > up) {
+            return Optional.of(Direction.DOWN);
+        }
+        if (up > down) {
+            return Optional.of(Direction.UP);
+        }
+        return Optional.empty();
     }
 
     private static boolean isPistonHead(Level level, BlockPos pos) {
