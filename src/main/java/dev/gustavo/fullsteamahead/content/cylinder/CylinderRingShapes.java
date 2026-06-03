@@ -222,7 +222,9 @@ public final class CylinderRingShapes {
             return createShape(section, facing);
         }
 
-        int stripSegment = sharedWall == CylinderSharedWall.STRIP_Z ? section.zOffset() : section.xOffset();
+        int stripSegment = sharedWall == CylinderSharedWall.STRIP_Z
+                ? section.zOffset()
+                : 2 - section.xOffset();
         double cellMinY = section.yOffset() * 16.0D;
         double cellMaxY = cellMinY + 16.0D;
         double cellMinZ = (stripSegment - 1) * 16.0D;

@@ -680,6 +680,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Reject false partial-owner corner candidates unless they have real outside-block and shared-strip evidence
 - [x] Keep the cylinder casing assembled when the bore/center column is obstructed; piston validation handles the obstruction separately
 - [x] Correct north-south shared-wall corner model ordering without changing east-west shared-wall visuals
+- [x] Align north-south shared-wall hitbox segment ordering with the corrected visuals
 - [ ] Verify two-engine and three-engine inline banks in X and Z directions in game
 - [ ] Verify breaking a shared wall disassembles both affected engines, while breaking a non-shared wall leaves neighbors intact
 - [ ] Verify shared-wall banks on Aeronautics/Simulated contraptions
