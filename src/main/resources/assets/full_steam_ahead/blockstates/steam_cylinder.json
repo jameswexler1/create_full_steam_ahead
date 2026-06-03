@@ -465,7 +465,7 @@
         "shared_wall": "strip_x"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_0",
+        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_2",
         "y": 90
       }
     },
@@ -487,7 +487,7 @@
         "shared_wall": "strip_x"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_2",
+        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_0",
         "y": 90
       }
     },
@@ -528,7 +528,7 @@
         "shared_wall": "strip_x"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_0",
+        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_2",
         "y": 90
       }
     },
@@ -550,7 +550,7 @@
         "shared_wall": "strip_x"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_2",
+        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_0",
         "y": 90
       }
     },
@@ -627,7 +627,7 @@
         "shared_wall": "strip_x"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_0",
+        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_2",
         "x": 180,
         "y": 90
       }
@@ -651,7 +651,7 @@
         "shared_wall": "strip_x"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_2",
+        "model": "full_steam_ahead:block/steam_cylinder/shared/upper_0",
         "x": 180,
         "y": 90
       }
@@ -663,7 +663,7 @@
         "shared_wall": "strip_x"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_0",
+        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_2",
         "x": 180,
         "y": 90
       }
@@ -687,7 +687,7 @@
         "shared_wall": "strip_x"
       },
       "apply": {
-        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_2",
+        "model": "full_steam_ahead:block/steam_cylinder/shared/lower_0",
         "x": 180,
         "y": 90
       }

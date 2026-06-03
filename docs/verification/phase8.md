@@ -154,6 +154,7 @@ Completed shared-wall cylinder bank slice:
 - [x] Constrained completed/partial shared-wall visual selection to the existing shared-wall axis and canonical shared model side, preventing shared corner segments from rotating to a competing inferred corner.
 - [x] Scored completed/partial visual owners by outside partial blocks and same-layer shared-strip overlap, and allowed this score to correct stale rotated shared-wall blockstates after refresh.
 - [x] Made cylinder shell validity ignore the center bore contents, so placing the wrong block where the piston head/body belongs invalidates the engine but does not fracture the casing into partial construction visuals.
+- [x] Swapped the rotated `strip_x` shared-wall end model assignments so north-south shared corners use the same visual order as east-west shared corners.
 
 Completed steam inlet partial-visual reliability slice:
 
@@ -242,6 +243,7 @@ Automated results:
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after locking shared corner visuals to the existing axis and canonical model side.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after rejecting false rotated shared-corner partial owners using strip/outside-block evidence.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after keeping assembled cylinder casings stable when the piston bore is obstructed.
+- [x] `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after correcting north-south shared-wall corner model ordering.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
