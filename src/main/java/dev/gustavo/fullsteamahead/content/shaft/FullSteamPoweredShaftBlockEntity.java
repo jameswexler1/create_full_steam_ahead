@@ -77,6 +77,10 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
         return enginePos != null && worldPosition.subtract(engineWorldPos).equals(enginePos);
     }
 
+    public BlockPos getEngineWorldPos() {
+        return enginePos == null ? null : worldPosition.subtract(enginePos);
+    }
+
     @Override
     public float getGeneratedSpeed() {
         return generatedCapacitySu > 0 ? generatedSpeed : 0;

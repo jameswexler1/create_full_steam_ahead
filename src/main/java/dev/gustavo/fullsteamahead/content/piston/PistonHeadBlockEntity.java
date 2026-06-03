@@ -56,6 +56,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private static final int MAX_PIPED_HEAT_UNITS = 9;
     private static final float MAX_RPM = 64.0F;
     private static final int MIN_STEAM_SOUND_INTERVAL_TICKS = 5;
+    private static final int MAX_PHASE_SHAFT_SCAN = 128;
     private static final float HALF_TURN_RADIANS = (float) Math.PI;
 
     private boolean assembled;
@@ -263,9 +264,8 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     public float getAnimationPhaseOffset() {
-        Direction.Axis shaftAxis = getShaftAxis();
-        int coordinate = shaftAxis == Direction.Axis.X ? worldPosition.getX() : worldPosition.getZ();
-        return (Math.floorDiv(coordinate, 3) & 1) == 0 ? 0.0F : HALF_TURN_RADIANS;
+        int bankIndex = getShaftBankIndex();
+        return (bankIndex & 1) == 0 ? 0.0F : HALF_TURN_RADIANS;
     }
 
     public FullSteamPoweredShaftBlockEntity getShaft() {
@@ -276,6 +276,89 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         // Fallback for relocated worlds such as Ponder scenes, where the stored absolute shaftPos is
         // stale: the shaft always sits three blocks along the stroke direction from the head.
         return shaftEntityAt(worldPosition.relative(getStrokeDirection(), 3));
+    }
+
+    private int getShaftBankIndex() {
+        if (level == null || !assembled) {
+            return 0;
+        }
+
+        FullSteamPoweredShaftBlockEntity shaft = getShaft();
+        if (shaft == null) {
+            return 0;
+        }
+
+        Direction.Axis shaftAxis = getShaftAxis();
+        BlockPos currentShaftPos = shaft.getBlockPos();
+        if (!isShaftOnAxis(currentShaftPos, shaftAxis)) {
+            return 0;
+        }
+
+        BlockPos start = currentShaftPos;
+        for (int steps = 0; steps < MAX_PHASE_SHAFT_SCAN; steps++) {
+            BlockPos previous = offsetAlong(start, shaftAxis, -1);
+            if (!isShaftOnAxis(previous, shaftAxis)) {
+                break;
+            }
+            start = previous;
+        }
+
+        int engineIndex = 0;
+        BlockPos cursor = start;
+        for (int steps = 0; steps <= MAX_PHASE_SHAFT_SCAN * 2; steps++) {
+            if (!isShaftOnAxis(cursor, shaftAxis)) {
+                break;
+            }
+
+            if (hasClaimedEngineShaft(cursor, shaftAxis)) {
+                if (cursor.equals(currentShaftPos)) {
+                    return engineIndex;
+                }
+                engineIndex++;
+            }
+
+            cursor = offsetAlong(cursor, shaftAxis, 1);
+        }
+
+        return 0;
+    }
+
+    private boolean hasClaimedEngineShaft(BlockPos pos, Direction.Axis shaftAxis) {
+        if (level == null || !level.isLoaded(pos)) {
+            return false;
+        }
+
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (!(blockEntity instanceof FullSteamPoweredShaftBlockEntity shaft)) {
+            return false;
+        }
+
+        BlockPos enginePos = shaft.getEngineWorldPos();
+        if (enginePos == null || !level.isLoaded(enginePos)) {
+            return false;
+        }
+
+        BlockEntity engineEntity = level.getBlockEntity(enginePos);
+        if (!(engineEntity instanceof PistonHeadBlockEntity engine) || !engine.isEngineAssembled()) {
+            return false;
+        }
+
+        return shaft.isPoweredBy(enginePos) && engine.getShaftAxis() == shaftAxis;
+    }
+
+    private boolean isShaftOnAxis(BlockPos pos, Direction.Axis shaftAxis) {
+        return level != null
+                && level.isLoaded(pos)
+                && EngineValidator.isValidShaft(level, pos)
+                && EngineValidator.shaftAxis(level, pos) == shaftAxis;
+    }
+
+    private static BlockPos offsetAlong(BlockPos pos, Direction.Axis axis, int distance) {
+        return switch (axis) {
+            case X -> pos.offset(distance, 0, 0);
+            case Z -> pos.offset(0, 0, distance);
+            default -> pos;
+        };
     }
 
     private FullSteamPoweredShaftBlockEntity shaftEntityAt(BlockPos pos) {

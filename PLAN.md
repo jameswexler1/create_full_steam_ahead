@@ -614,7 +614,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Fix dynamic piston/head lighting by relighting each moving partial at its own world position instead of using one block entity light value
 - [x] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
 - [x] Add rhythmic steam sound using Create's normal `STEAM` sound event, slightly louder than the vanilla Create steam engine
-- [x] Offset adjacent engine piston animation phases by shaft-line position so multi-cylinder rows alternate instead of moving in lockstep
+- [x] Offset adjacent engine piston animation phases by ordered powered-shaft bank index so engines sharing one shaft alternate one-up/one-down for both separated and shared-wall spacing
 - [x] Add inert `engine_telegraph` block scaffold, model, textures, loot, lang, creative entry, mining tags, and directional placement
 - [x] Polish `engine_telegraph` contraption rendering with cutout/AO model settings and a detailed model-derived hitbox
 - [x] Add `stepped_lever` scaffold with analog redstone state, goggle tooltip, block entity renderer, model assets, loot, recipe, tags, lang, and creative entry
