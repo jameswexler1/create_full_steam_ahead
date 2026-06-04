@@ -22,7 +22,7 @@ public final class FullSteamConfig {
 
     private static final boolean DEFAULT_STEAM_LEAK_DAMAGE_ENABLED = true;
     private static final int DEFAULT_STEAM_LEAK_DAMAGE_INTERVAL = 10;
-    private static final double DEFAULT_STEAM_LEAK_DAMAGE_RADIUS = 0.5D;
+    private static final double DEFAULT_STEAM_LEAK_DAMAGE_RADIUS = 0.75D;
     private static final double DEFAULT_STEAM_LEAK_BASE_DAMAGE = 6.0D;
     private static final int DEFAULT_STEAM_LEAK_DAMAGE_REFERENCE_MB = 1_000;
     private static final double DEFAULT_STEAM_LEAK_MAX_DAMAGE = 20.0D;
