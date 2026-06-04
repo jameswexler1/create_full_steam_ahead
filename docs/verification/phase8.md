@@ -160,6 +160,7 @@ Completed shared-wall cylinder bank slice:
 - [x] Swapped the rotated `strip_x` shared-wall end model assignments so north-south shared corners use the same visual order as east-west shared corners.
 - [x] Reversed the `strip_x` shared-wall voxel-shape slice order so north-south shared corner hitboxes match the corrected models.
 - [x] Reversed the upside-down `strip_x` shared-wall model and voxel slice order separately, fixing north-south inverted banks without changing upright banks.
+- [x] Realigned upside-down `strip_x` hitboxes to the canonical reversed X slice order used by the visually corrected north-south shared-wall corners.
 
 Completed cylinder placement quality-of-life slice:
 
@@ -262,6 +263,7 @@ Automated results:
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after deriving piston animation phase from ordered powered shafts on the shared shaft line.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after protecting incomplete partial bores and correcting upside-down north-south shared-wall ordering.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-03 after reworking partial shared-wall selection around live local-corner topology and verified shared strips.
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`, `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-06-04 after realigning upside-down north-south shared-wall hitboxes with the corrected visuals.
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava` passed on 2026-05-24 after adding `stepped_lever`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed on 2026-05-24 after adding `stepped_lever`.
