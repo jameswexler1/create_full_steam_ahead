@@ -417,9 +417,10 @@ public final class CylinderConnectivity {
             CylinderSection section = partial == null ? CylinderSection.NONE : partial.section();
             CylinderWallShape wallShape = partial == null ? currentStandaloneShape(state) : partial.wallShape();
             CylinderSharedWall sharedWall = partial == null ? CylinderSharedWall.NONE : partial.sharedWall();
+            Direction facing = partial == null ? currentFacing(state).orElse(Direction.UP) : partial.facing();
             withCylinderBlockEntity(level, pos, SteamCylinderBlockEntity::clearRingState);
             withInletBlockEntity(level, pos, SteamInletBlockEntity::clearRingState);
-            setRingState(level, pos, state, false, section, wallShape, Direction.UP, sharedWall);
+            setRingState(level, pos, state, false, section, wallShape, facing, sharedWall);
         }
     }
 
@@ -618,41 +619,121 @@ public final class CylinderConnectivity {
     }
 
     private static Direction ringFacing(Level level, BlockPos origin) {
+        Optional<Direction> pistonFacing = pistonColumnFacing(level, origin);
+        if (pistonFacing.isPresent()) {
+            return pistonFacing.get();
+        }
+        Optional<Direction> inheritedFacing = adjacentSharedRingFacing(level, origin);
+        if (inheritedFacing.isPresent()) {
+            return inheritedFacing.get();
+        }
+        return currentRingFacing(level, origin).orElse(Direction.UP);
+    }
+
+    private static Optional<Direction> pistonColumnFacing(Level level, BlockPos origin) {
         BlockPos lowerCenter = origin.offset(1, 0, 1);
         BlockPos upperCenter = origin.offset(1, 1, 1);
 
         boolean lowerHead = isPistonHead(level, lowerCenter);
         boolean upperHead = isPistonHead(level, upperCenter);
         if (upperHead && !lowerHead) {
-            return Direction.DOWN;
+            return Optional.of(Direction.DOWN);
         }
         if (lowerHead && !upperHead) {
-            return Direction.UP;
+            return Optional.of(Direction.UP);
         }
-        return currentRingFacing(level, origin).orElse(Direction.UP);
+        return Optional.empty();
+    }
+
+    private static Optional<Direction> adjacentSharedRingFacing(Level level, BlockPos origin) {
+        Direction inherited = null;
+        for (BlockPos neighborOrigin : List.of(
+                origin.west(2),
+                origin.east(2),
+                origin.north(2),
+                origin.south(2)
+        )) {
+            if (!hasSharedStripEvidence(level, origin, neighborOrigin)) {
+                continue;
+            }
+
+            Optional<Direction> neighborFacing = localRingFacingEvidence(
+                    level,
+                    neighborOrigin,
+                    sharedStripPositionsBetween(origin, neighborOrigin)
+            );
+            if (neighborFacing.isEmpty()) {
+                continue;
+            }
+            if (inherited != null && inherited != neighborFacing.get()) {
+                return Optional.empty();
+            }
+            inherited = neighborFacing.get();
+        }
+        return Optional.ofNullable(inherited);
+    }
+
+    private static Optional<Direction> localRingFacingEvidence(
+            Level level,
+            BlockPos origin,
+            Set<BlockPos> ignoredPositions
+    ) {
+        Optional<Direction> pistonFacing = pistonColumnFacing(level, origin);
+        return pistonFacing.isPresent() ? pistonFacing : currentRingFacing(level, origin, ignoredPositions);
+    }
+
+    private static boolean hasSharedStripEvidence(Level level, BlockPos origin, BlockPos neighborOrigin) {
+        Set<BlockPos> sharedStrip = sharedStripPositionsBetween(origin, neighborOrigin);
+        if (sharedStrip.isEmpty()) {
+            return false;
+        }
+
+        for (BlockPos pos : sharedStrip) {
+            if (level.isLoaded(pos) && isRingMember(level.getBlockState(pos))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static Set<BlockPos> sharedStripPositionsBetween(BlockPos origin, BlockPos neighborOrigin) {
+        List<RingData> owners = orderedSharedOwners(
+                new RingData(origin, List.of(), Direction.UP, null, null),
+                new RingData(neighborOrigin, List.of(), Direction.UP, null, null)
+        );
+        CylinderSharedWall sharedWall = sharedWallFor(owners);
+        if (sharedWall == CylinderSharedWall.NONE) {
+            return Set.of();
+        }
+
+        Set<BlockPos> positions = new LinkedHashSet<>();
+        for (int yOffset = 0; yOffset <= 1; yOffset++) {
+            positions.addAll(sharedStripPositions(owners.getFirst().origin(), yOffset, sharedWall));
+        }
+        return positions;
     }
 
     private static Optional<Direction> currentRingFacing(Level level, BlockPos origin) {
+        return currentRingFacing(level, origin, Set.of());
+    }
+
+    private static Optional<Direction> currentRingFacing(Level level, BlockPos origin, Set<BlockPos> ignoredPositions) {
         int up = 0;
         int down = 0;
         for (BlockPos pos : ringPositions(origin)) {
-            if (!level.isLoaded(pos)) {
+            if (ignoredPositions.contains(pos) || !level.isLoaded(pos)) {
                 continue;
             }
 
             BlockState state = level.getBlockState(pos);
-            if (state.hasProperty(SteamCylinderBlock.FACING)) {
-                if (state.getValue(SteamCylinderBlock.FACING) == Direction.DOWN) {
-                    down++;
-                } else {
-                    up++;
-                }
-            } else if (state.hasProperty(SteamInletBlock.FACING)) {
-                if (state.getValue(SteamInletBlock.FACING) == Direction.DOWN) {
-                    down++;
-                } else {
-                    up++;
-                }
+            Optional<Direction> facing = currentFacing(state);
+            if (facing.isEmpty()) {
+                continue;
+            }
+            if (facing.get() == Direction.DOWN) {
+                down++;
+            } else {
+                up++;
             }
         }
 
@@ -661,6 +742,16 @@ public final class CylinderConnectivity {
         }
         if (up > down) {
             return Optional.of(Direction.UP);
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<Direction> currentFacing(BlockState state) {
+        if (state.hasProperty(SteamCylinderBlock.FACING)) {
+            return Optional.of(state.getValue(SteamCylinderBlock.FACING));
+        }
+        if (state.hasProperty(SteamInletBlock.FACING)) {
+            return Optional.of(state.getValue(SteamInletBlock.FACING));
         }
         return Optional.empty();
     }
@@ -771,14 +862,15 @@ public final class CylinderConnectivity {
             CylinderSharedWall sharedWall = level.getBlockState(pos).is(ModBlocks.STEAM_CYLINDER.get())
                     ? sharedWallFor(owners)
                     : CylinderSharedWall.NONE;
-            assignments.put(pos, new PartialVisual(section, CylinderWallShape.STANDALONE, sharedWall));
+            assignments.put(pos, new PartialVisual(section, CylinderWallShape.STANDALONE, sharedWall, primary.facing()));
         }
         for (BlockPos pos : members) {
             if (!assignments.containsKey(pos) && level.getBlockState(pos).is(ModBlocks.STEAM_CYLINDER.get())) {
                 assignments.put(pos, new PartialVisual(
                         CylinderSection.NONE,
                         localStraightWallShape(level, pos, members),
-                        CylinderSharedWall.NONE
+                        CylinderSharedWall.NONE,
+                        currentFacing(level.getBlockState(pos)).orElse(Direction.UP)
                 ));
             }
         }
@@ -1255,7 +1347,8 @@ public final class CylinderConnectivity {
     private record PartialVisual(
             CylinderSection section,
             CylinderWallShape wallShape,
-            CylinderSharedWall sharedWall
+            CylinderSharedWall sharedWall,
+            Direction facing
     ) {
     }
 
