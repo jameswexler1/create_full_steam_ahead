@@ -22,10 +22,10 @@ public final class FullSteamConfig {
 
     private static final int DEFAULT_STEAM_VOLUME_REFERENCE = 9;
     private static final int DEFAULT_STEAM_TEMPERATURE_REFERENCE = 18;
-    private static final double DEFAULT_STEAM_RPM_REFERENCE = 32.0D;
+    private static final double DEFAULT_STEAM_RPM_REFERENCE = 64.0D;
     private static final double DEFAULT_STEAM_PRESSURE_MIN = 0.1D;
     private static final double DEFAULT_STEAM_PRESSURE_MAX = 4.0D;
-    private static final int DEFAULT_STEAM_SU_REFERENCE = 147_456;
+    private static final int DEFAULT_STEAM_SU_REFERENCE = 294_912;
     private static final int DEFAULT_STEAM_SU_MAX = 2_000_000;
 
     private static final boolean DEFAULT_STEAM_LEAK_DAMAGE_ENABLED = true;
@@ -92,11 +92,14 @@ public final class FullSteamConfig {
                 .defineInRange("volumeReference", DEFAULT_STEAM_VOLUME_REFERENCE, 1, 100_000);
 
         STEAM_TEMPERATURE_REFERENCE = builder
-                .comment("Reference heat units (water-gated) that yield pressure ratio 1.0 at the reference volume.")
+                .comment("Reference heat units (water-gated) that yield pressure ratio 1.0 at the reference volume.",
+                        "18 = nine blaze-cake (seething) burners; nine normal burners give 9 (half), so normal burners",
+                        "are the baseline and blaze cakes double output.")
                 .defineInRange("temperatureReference", DEFAULT_STEAM_TEMPERATURE_REFERENCE, 1, 100_000);
 
         STEAM_RPM_REFERENCE = builder
-                .comment("RPM produced at pressure ratio 1.0. RPM scales linearly with pressure and caps at 64.")
+                .comment("RPM produced at pressure ratio 1.0 (caps at 64). Nine normal burners on a 3x3x1 boiler give",
+                        "pressure 0.5 -> 32 RPM; blaze cakes give pressure 1.0 -> 64 RPM.")
                 .defineInRange("rpmReference", DEFAULT_STEAM_RPM_REFERENCE, 1.0D, 64.0D);
 
         STEAM_PRESSURE_MIN = builder
@@ -108,7 +111,8 @@ public final class FullSteamConfig {
                 .defineInRange("pressureMax", DEFAULT_STEAM_PRESSURE_MAX, 0.0D, 64.0D);
 
         STEAM_SU_REFERENCE = builder
-                .comment("Stress capacity at the reference boiler (temperature and volume both at reference).")
+                .comment("Stress capacity at the reference boiler (heat and volume both at reference = blaze cakes).",
+                        "Nine normal burners on a 3x3x1 boiler are the baseline at half this (147456 SU); cakes double it.")
                 .defineInRange("suReference", DEFAULT_STEAM_SU_REFERENCE, 1, 1_000_000_000);
 
         STEAM_SU_MAX = builder
