@@ -70,6 +70,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     private int pipePressureCooldown;
     private int lastPressureAmount;
     private float steamPressureRatio;
+    private float steamCapacitySu;
     private int boilerVolume;
     private int boilerTemperatureUnits;
     private PipePressureResult cachedPipePressure = PipePressureResult.NONE;
@@ -254,6 +255,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
 
     private SteamBudget calculateSteamBudget(FluidTankBlockEntity boiler) {
         steamPressureRatio = 0.0F;
+        steamCapacitySu = 0.0F;
         boilerVolume = 0;
         boilerTemperatureUnits = 0;
         if (boiler == null || boiler.boiler == null) {
@@ -280,6 +282,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         boilerVolume = SteamPhysics.boilerVolume(boiler.getWidth(), boilerHeight);
         boilerTemperatureUnits = Math.min(data.activeHeat, data.getMaxHeatLevelForWaterSupply());
         steamPressureRatio = SteamPhysics.pressureRatio(boilerTemperatureUnits, boilerVolume);
+        steamCapacitySu = SteamPhysics.directCapacitySu(boilerTemperatureUnits, boilerVolume);
         if (totalUnits <= 0 || outlets <= 0) {
             return SteamBudget.withOutlets(outlets);
         }
@@ -544,9 +547,6 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
 
                 boolean steamInlet = level.getBlockEntity(next) instanceof SteamInletBlockEntity inlet
                         && inlet.isInletAssembled();
-                if (steamInlet) {
-                    ((SteamInletBlockEntity) level.getBlockEntity(next)).reportSupplyPressure(steamPressureRatio);
-                }
                 int maxFillPerTick = steamInlet ? FullSteamConfig.maxPipedSteamPerTick() : Integer.MAX_VALUE;
                 targets.add(new FillTarget(next, direction.getOpposite(), steamInlet, maxFillPerTick));
             }
@@ -558,7 +558,34 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                 .thenComparingInt(target -> target.pos().getX())
                 .thenComparingInt(target -> target.pos().getZ())
                 .thenComparingInt(target -> target.side().ordinal()));
+
+        reportSupplyToInlets(targets);
         return targets;
+    }
+
+    /**
+     * Reports this boiler's pressure and stress capacity to every assembled steam inlet it reaches.
+     * Capacity is split evenly across those inlets so multiple engines on one boiler share its power
+     * (no duplication) while each spins at the same delivered pressure.
+     */
+    private void reportSupplyToInlets(List<FillTarget> targets) {
+        int inletCount = 0;
+        for (FillTarget target : targets) {
+            if (target.steamInlet()) {
+                inletCount++;
+            }
+        }
+        if (inletCount <= 0) {
+            return;
+        }
+
+        float capacityShare = steamCapacitySu / inletCount;
+        for (FillTarget target : targets) {
+            if (target.steamInlet()
+                    && level.getBlockEntity(target.pos()) instanceof SteamInletBlockEntity inlet) {
+                inlet.reportSupply(steamPressureRatio, capacityShare);
+            }
+        }
     }
 
     private boolean canSteamPassThrough(FluidTransportBehaviour pipe, BlockState state, Direction side) {

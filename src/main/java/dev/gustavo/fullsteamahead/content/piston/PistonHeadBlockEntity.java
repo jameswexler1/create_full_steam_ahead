@@ -514,14 +514,19 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
         int heat = Mth.clamp(Mth.ceil(consumed / (float) FullSteamConfig.steamPerHeatUnit()), 1, MAX_PIPED_HEAT_UNITS);
         int activeEquivalent = Math.min(MAX_ACTIVE_BURNERS, heat);
-        // RPM follows the delivered boiler pressure; flow (consumed mB/t) sets the torque budget.
-        // A baseline of 1.0 keeps engines running at the reference RPM when no outlet reported pressure.
+        // RPM and SU both follow the supplying boiler's geometry (delivered pressure + per-engine
+        // capacity, reported by the outlet): small boiler -> high pressure/RPM, low SU; big boiler ->
+        // low pressure/RPM, high SU. A baseline of 1.0 pressure and a flow-based SU keep the engine
+        // running sensibly when no outlet has reported (e.g. legacy or non-outlet supply).
         float supplyPressure = inlet.getSupplyPressureRatio();
         if (supplyPressure <= 0.0F) {
             supplyPressure = 1.0F;
         }
+        float supplyCapacity = inlet.getSupplyCapacitySu();
+        float capacity = supplyCapacity > 0.0F
+                ? supplyCapacity
+                : Math.min((float) FullSteamConfig.baseEngineCapacity(), consumed * FullSteamConfig.suPerSteamMb());
         float speed = SteamPhysics.rpm(supplyPressure);
-        float capacity = Math.min((float) FullSteamConfig.baseEngineCapacity(), consumed * FullSteamConfig.suPerSteamMb());
         return new SteamOutput(
                 SourceMode.PIPED_STEAM,
                 activeEquivalent,

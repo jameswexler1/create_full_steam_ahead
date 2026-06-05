@@ -53,6 +53,7 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
     private long acceptedGameTime = Long.MIN_VALUE;
     private int acceptedThisGameTick;
     private float supplyPressureRatio;
+    private float supplyCapacitySu;
     private long supplyPressureGameTime = Long.MIN_VALUE;
 
     private static final int SUPPLY_PRESSURE_DECAY_TICKS = 10;
@@ -150,24 +151,33 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     /**
-     * Records the pressure ratio of a boiler outlet currently supplying steam through pipes. The
-     * strongest source within the same game tick wins; the value decays if no outlet refreshes it.
+     * Records the pressure ratio and per-engine stress capacity of a boiler outlet currently
+     * supplying steam through pipes. The strongest source within the same game tick wins; the values
+     * decay if no outlet refreshes them.
      */
-    public void reportSupplyPressure(float pressureRatio) {
+    public void reportSupply(float pressureRatio, float capacitySu) {
         long now = level == null ? 0L : level.getGameTime();
         if (supplyPressureGameTime != now) {
             supplyPressureGameTime = now;
             supplyPressureRatio = 0.0F;
+            supplyCapacitySu = 0.0F;
         }
         supplyPressureRatio = Math.max(supplyPressureRatio, pressureRatio);
+        supplyCapacitySu = Math.max(supplyCapacitySu, capacitySu);
     }
 
     /** Delivered steam pressure ratio, or 0 when no outlet has reported recently. */
     public float getSupplyPressureRatio() {
-        if (level != null && level.getGameTime() - supplyPressureGameTime > SUPPLY_PRESSURE_DECAY_TICKS) {
-            return 0.0F;
-        }
-        return supplyPressureRatio;
+        return supplyFresh() ? supplyPressureRatio : 0.0F;
+    }
+
+    /** Delivered per-engine stress capacity (SU) from the supplying boiler, or 0 when stale. */
+    public float getSupplyCapacitySu() {
+        return supplyFresh() ? supplyCapacitySu : 0.0F;
+    }
+
+    private boolean supplyFresh() {
+        return level == null || level.getGameTime() - supplyPressureGameTime <= SUPPLY_PRESSURE_DECAY_TICKS;
     }
 
     public FluidStack consumeSteam(int maxAmount, boolean execute) {
