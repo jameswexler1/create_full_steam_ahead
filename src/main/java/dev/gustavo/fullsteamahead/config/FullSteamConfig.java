@@ -20,6 +20,14 @@ public final class FullSteamConfig {
     private static final int DEFAULT_STEAM_PER_HEAT_UNIT = 10;
     private static final int DEFAULT_PRESSURE_RANGE = 30;
 
+    private static final int DEFAULT_STEAM_VOLUME_REFERENCE = 9;
+    private static final int DEFAULT_STEAM_TEMPERATURE_REFERENCE = 18;
+    private static final double DEFAULT_STEAM_RPM_REFERENCE = 32.0D;
+    private static final double DEFAULT_STEAM_PRESSURE_MIN = 0.1D;
+    private static final double DEFAULT_STEAM_PRESSURE_MAX = 4.0D;
+    private static final int DEFAULT_STEAM_SU_REFERENCE = 147_456;
+    private static final int DEFAULT_STEAM_SU_MAX = 2_000_000;
+
     private static final boolean DEFAULT_STEAM_LEAK_DAMAGE_ENABLED = true;
     private static final int DEFAULT_STEAM_LEAK_DAMAGE_INTERVAL = 10;
     private static final double DEFAULT_STEAM_LEAK_DAMAGE_RADIUS = 0.75D;
@@ -34,6 +42,13 @@ public final class FullSteamConfig {
     private static final ModConfigSpec.IntValue STEAM_PER_HEAT_UNIT;
     private static final ModConfigSpec.IntValue BOILER_OUTLET_PRESSURE_RANGE;
     private static final ModConfigSpec.BooleanValue ENABLE_DIRECT_COMPACT_MODE;
+    private static final ModConfigSpec.IntValue STEAM_VOLUME_REFERENCE;
+    private static final ModConfigSpec.IntValue STEAM_TEMPERATURE_REFERENCE;
+    private static final ModConfigSpec.DoubleValue STEAM_RPM_REFERENCE;
+    private static final ModConfigSpec.DoubleValue STEAM_PRESSURE_MIN;
+    private static final ModConfigSpec.DoubleValue STEAM_PRESSURE_MAX;
+    private static final ModConfigSpec.IntValue STEAM_SU_REFERENCE;
+    private static final ModConfigSpec.IntValue STEAM_SU_MAX;
     private static final ModConfigSpec.BooleanValue STEAM_LEAK_DAMAGE_ENABLED;
     private static final ModConfigSpec.IntValue STEAM_LEAK_DAMAGE_INTERVAL;
     private static final ModConfigSpec.DoubleValue STEAM_LEAK_DAMAGE_RADIUS;
@@ -64,6 +79,41 @@ public final class FullSteamConfig {
                 .comment("Allow upright engines to run directly from a compact boiler.",
                         "When false, engines must be fed steam through pipes via a steam inlet.")
                 .define("enableDirectCompactMode", true);
+
+        builder.pop();
+
+        builder.comment("Pressure/volume/temperature steam model.",
+                        "Boiler heat sets engine power; boiler shape trades torque (SU) against speed (RPM).")
+                .push("steamPhysics");
+
+        STEAM_VOLUME_REFERENCE = builder
+                .comment("Reference boiler vessel volume in blocks (width^2 * height) that yields pressure ratio 1.0.",
+                        "Default 9 = a 3x3x1 Create Fluid Tank.")
+                .defineInRange("volumeReference", DEFAULT_STEAM_VOLUME_REFERENCE, 1, 100_000);
+
+        STEAM_TEMPERATURE_REFERENCE = builder
+                .comment("Reference heat units (water-gated) that yield pressure ratio 1.0 at the reference volume.")
+                .defineInRange("temperatureReference", DEFAULT_STEAM_TEMPERATURE_REFERENCE, 1, 100_000);
+
+        STEAM_RPM_REFERENCE = builder
+                .comment("RPM produced at pressure ratio 1.0. RPM scales linearly with pressure and caps at 64.")
+                .defineInRange("rpmReference", DEFAULT_STEAM_RPM_REFERENCE, 1.0D, 64.0D);
+
+        STEAM_PRESSURE_MIN = builder
+                .comment("Lower clamp on the pressure ratio so huge boilers still spin a little.")
+                .defineInRange("pressureMin", DEFAULT_STEAM_PRESSURE_MIN, 0.0D, 64.0D);
+
+        STEAM_PRESSURE_MAX = builder
+                .comment("Upper clamp on the pressure ratio so tiny high-pressure boilers stay bounded.")
+                .defineInRange("pressureMax", DEFAULT_STEAM_PRESSURE_MAX, 0.0D, 64.0D);
+
+        STEAM_SU_REFERENCE = builder
+                .comment("Stress capacity at the reference boiler (temperature and volume both at reference).")
+                .defineInRange("suReference", DEFAULT_STEAM_SU_REFERENCE, 1, 1_000_000_000);
+
+        STEAM_SU_MAX = builder
+                .comment("Upper cap on stress capacity a single directly-fed engine can generate.")
+                .defineInRange("suMax", DEFAULT_STEAM_SU_MAX, 1, 1_000_000_000);
 
         builder.pop();
 
@@ -125,6 +175,34 @@ public final class FullSteamConfig {
 
     public static boolean directCompactModeEnabled() {
         return !loaded() || ENABLE_DIRECT_COMPACT_MODE.get();
+    }
+
+    public static int steamVolumeReference() {
+        return loaded() ? STEAM_VOLUME_REFERENCE.get() : DEFAULT_STEAM_VOLUME_REFERENCE;
+    }
+
+    public static int steamTemperatureReference() {
+        return loaded() ? STEAM_TEMPERATURE_REFERENCE.get() : DEFAULT_STEAM_TEMPERATURE_REFERENCE;
+    }
+
+    public static double steamRpmReference() {
+        return loaded() ? STEAM_RPM_REFERENCE.get() : DEFAULT_STEAM_RPM_REFERENCE;
+    }
+
+    public static double steamPressureMin() {
+        return loaded() ? STEAM_PRESSURE_MIN.get() : DEFAULT_STEAM_PRESSURE_MIN;
+    }
+
+    public static double steamPressureMax() {
+        return loaded() ? STEAM_PRESSURE_MAX.get() : DEFAULT_STEAM_PRESSURE_MAX;
+    }
+
+    public static int steamSuReference() {
+        return loaded() ? STEAM_SU_REFERENCE.get() : DEFAULT_STEAM_SU_REFERENCE;
+    }
+
+    public static int steamSuMax() {
+        return loaded() ? STEAM_SU_MAX.get() : DEFAULT_STEAM_SU_MAX;
     }
 
     public static boolean steamLeakDamageEnabled() {

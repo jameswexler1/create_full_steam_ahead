@@ -52,6 +52,10 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
     private int consumedThisTick;
     private long acceptedGameTime = Long.MIN_VALUE;
     private int acceptedThisGameTick;
+    private float supplyPressureRatio;
+    private long supplyPressureGameTime = Long.MIN_VALUE;
+
+    private static final int SUPPLY_PRESSURE_DECAY_TICKS = 10;
 
     public SteamInletBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STEAM_INLET.get(), pos, state);
@@ -143,6 +147,27 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
 
     public int getSteamAmount() {
         return steamBuffer.getFluidAmount();
+    }
+
+    /**
+     * Records the pressure ratio of a boiler outlet currently supplying steam through pipes. The
+     * strongest source within the same game tick wins; the value decays if no outlet refreshes it.
+     */
+    public void reportSupplyPressure(float pressureRatio) {
+        long now = level == null ? 0L : level.getGameTime();
+        if (supplyPressureGameTime != now) {
+            supplyPressureGameTime = now;
+            supplyPressureRatio = 0.0F;
+        }
+        supplyPressureRatio = Math.max(supplyPressureRatio, pressureRatio);
+    }
+
+    /** Delivered steam pressure ratio, or 0 when no outlet has reported recently. */
+    public float getSupplyPressureRatio() {
+        if (level != null && level.getGameTime() - supplyPressureGameTime > SUPPLY_PRESSURE_DECAY_TICKS) {
+            return 0.0F;
+        }
+        return supplyPressureRatio;
     }
 
     public FluidStack consumeSteam(int maxAmount, boolean execute) {

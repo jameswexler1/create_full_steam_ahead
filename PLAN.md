@@ -1,6 +1,6 @@
 # Create: Full Steam Ahead — Design Plan
 
-Last updated: 2026-05-31
+Last updated: 2026-06-03
 
 ## Goal
 
@@ -636,7 +636,11 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Apply the revised embedded texture from `Steam_Cylinder_all_faces_manually_painted_monday.bbmodel` while preserving the existing matching section geometry
 - [x] Replace `steam_inlet` placeholder block/assembled models with the `Steam_Inlet.bbmodel` textured model and matching directional hitboxes
 - [x] Protect already-assembled neighboring cylinder rings during local connectivity refresh so adjacent full engines do not deform each other
-- [ ] Add Ponder plugin and scenes after visual models settle: direct compact engine, boiler outlet pressure, steam storage/pipes, steam inlet, Aeronautics ship use
+- [x] Separate per-block cylinder-wall UVs so each assembled section/partial is independently paintable (upper corners de-linked from lower corners; shared-wall end pieces de-linked) and normalize sub-pixel cap-face density
+- [x] Apply the hand-repainted assembled cylinder ring and shared-wall atlases
+- [x] Add an offline Blockbench explode/recompile tooling workflow (`tools/cylinder/`) for editing the sliced cylinder atlases without altering geometry
+- [x] Add Ponder plugin (`FullSteamPonderPlugin`) and scenes on the Steam Cylinder: a staged pipe-fed engine assembly scene (`testing_ponder_v2`) and a shared-wall cylinder-bank scene (`scene_3`) revealing single → shared → bank with walls merging only as neighbours are placed
+- [ ] Add remaining Ponder scenes: boiler outlet pressure, steam storage/pipes, steam inlet, Aeronautics ship use
 - [ ] Verify visuals on standalone world, pipe-fed world, and Aeronautics assembled sublevel
 - [ ] Verify dedicated server startup remains clean with no client-class loading
 - [ ] Verify resource reload/F3+T does not break partial models or visuals
@@ -709,6 +713,42 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [ ] Performance: no rescan every tick; scan bounded and cached
 - [ ] Crash audit: null levels, unloaded chunks, missing optional mods, invalid NBT
 
+### Phase 11: Steam Leak Hazard — Complete
+
+**Goal**: make steam leaking from an open pipe end dangerous, like real escaping steam, without
+changing engine balance.
+
+- [x] Scald living entities standing in an open-pipe steam cloud by extending the existing
+  `SteamOpenPipeEffectHandler.apply` (Create's `OpenPipeEffectHandler` registry; no new hooks/mixins)
+- [x] Add a custom `full_steam_ahead:steam` damage type (datapack `damage_type/steam.json` +
+  `ModDamageTypes`) with a "scalded by steam" death message
+- [x] Tag the steam damage type `#minecraft:no_knockback` so the gas damages without punching
+  entities away
+- [x] Apply damage on a game-time-gated cadence over the inflated leak AABB, scaling from a
+  configurable floor (default 6.0 = 3 hearts/hit) up to a cap by how much steam is venting
+- [x] Add `steamLeak` server config knobs: enabled, interval, radius, base/reference-mB/max damage
+
+---
+
+### Phase 12: Pressure/Volume/Temperature Steam Model — Complete
+
+**Goal**: replace the flow-only output (burner-count RPM tiers + flat SU) with a
+heat/pressure/volume model so boiler *shape* gives different engine "specs". See
+`IDEAS_steam_physics.md` for the full design and Clockwork (VS) inspiration.
+
+- [x] `SteamPhysics` util: `p = (T/T_ref)/(V/V_ref)`, continuous `RPM = clamp(rpmRef*p, 0, 64)`,
+  `SU = clamp(suRef*(T/T_ref)*(V/V_ref), 0, suMax)`. `SU*RPM ∝ T²` (heat = power; shape = torque↔speed trade)
+- [x] Direct/compact engine derives `T` from blaze burners and `V` from the Create Fluid Tank
+  (`width²*height`); replaces the 16/32/48/64 burner tier table with continuous pressure RPM
+- [x] Piped engine: `BoilerOutletBlockEntity` computes its boiler's pressure ratio and reports it to
+  reachable assembled steam inlets during the push BFS (max-wins, 10-tick decay); piston reads
+  delivered pressure → RPM, delivered flow (mB/t) → SU; unknown supply falls back to pressure 1.0
+- [x] Boiler width now matters (wide = low pressure/high SU; tall-thin = high pressure/high RPM);
+  3×3×1 boiler at full heat is the parity baseline (pressure 1.0, RPM 32, SU 147456)
+- [x] `steamPhysics` server config: volume/temperature reference, rpmReference, pressureMin/Max,
+  suReference, suMax
+- [x] Goggles surface pressure on the outlet (with volume/heat) and the piston head (with RPM/SU)
+
 ---
 
 ## Risks and Mitigations
@@ -718,7 +758,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 | Create `BoilerData` API changes | Read through `FluidTankBlockEntity`; isolate in one method |
 | Create pipe pressure internals are brittle | Keep boiler outlet pressure code isolated; fallback to bounded `IFluidHandler` push |
 | Steam storage becomes an exploit | `boiler_outlet` only generates from valid active boilers and never auto-pumps stored steam |
-| Pipe-fed mode loses burner-count metadata | Treat steam as a pressure manifold in pipe-fed mode; keep exact burner-count RPM table for direct compact mode |
+| Pipe-fed mode loses burner-count metadata | Outlet computes boiler pressure and reports it to reachable inlets; piston derives RPM from delivered pressure, SU from delivered flow (`SteamPhysics`) |
 | Cylinder ring scan too expensive | Run only on placement/removal, not every tick; cache result |
 | Piston animation desync | Drive animation entirely from linked shaft rotation angle on client |
 | Sable assembly splits engine parts | Register Create and Simulated movement checks early |

@@ -14,6 +14,7 @@ import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.SteamCloudEffects;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlockEntity;
+import dev.gustavo.fullsteamahead.content.steam.SteamPhysics;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.ChatFormatting;
@@ -46,6 +47,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private static final String HEAT_UNITS_KEY = "HeatUnits";
     private static final String GENERATED_SPEED_KEY = "GeneratedSpeed";
     private static final String GENERATED_CAPACITY_KEY = "GeneratedCapacity";
+    private static final String PRESSURE_RATIO_KEY = "PressureRatio";
     private static final String WATER_SUPPLY_KEY = "WaterSupply";
     private static final String SOURCE_MODE_KEY = "SourceMode";
     private static final String STEAM_CONSUMED_KEY = "SteamConsumed";
@@ -74,6 +76,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private int heatUnits;
     private float generatedSpeed;
     private float generatedCapacitySu;
+    private float pressureRatio;
     private boolean hasWaterSupply;
     private SourceMode sourceMode = SourceMode.NONE;
     private int steamConsumedRate;
@@ -213,6 +216,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         heatUnits = 0;
         generatedSpeed = 0;
         generatedCapacitySu = 0;
+        pressureRatio = 0;
         hasWaterSupply = false;
         sourceMode = SourceMode.NONE;
         steamConsumedRate = 0;
@@ -426,6 +430,9 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
                     .style(hasWaterSupply ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
                     .forGoggles(tooltip, 1);
         }
+        CreateLang.text(String.format("Pressure: %.2f", pressureRatio))
+                .style(pressureRatio > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
+                .forGoggles(tooltip, 1);
         CreateLang.text("RPM: " + Math.round(getGeneratedSpeed()))
                 .style(getGeneratedSpeed() > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
                 .forGoggles(tooltip, 1);
@@ -474,13 +481,19 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
         BurnerHeat burnerHeat = scanBurners();
         boolean hasWater = data.getMaxHeatLevelForWaterSupply() > 0;
+        int volume = SteamPhysics.boilerVolume(boiler.getWidth(), boiler.getHeight());
+        float pressure = SteamPhysics.pressureRatio(burnerHeat.heatUnits(), volume);
+        float speed = SteamPhysics.rpm(pressure);
+        float capacity = SteamPhysics.directCapacitySu(burnerHeat.heatUnits(), volume);
         return new SteamOutput(
                 SourceMode.DIRECT_BOILER,
                 burnerHeat.activeBurners(),
                 burnerHeat.heatUnits(),
                 hasWater,
                 0,
-                burnerHeat.heatUnits() * FullSteamConfig.SU_PER_HEAT_UNIT
+                capacity,
+                speed,
+                pressure
         );
     }
 
@@ -497,13 +510,23 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
         int heat = Mth.clamp(Mth.ceil(consumed / (float) FullSteamConfig.steamPerHeatUnit()), 1, MAX_PIPED_HEAT_UNITS);
         int activeEquivalent = Math.min(MAX_ACTIVE_BURNERS, heat);
+        // RPM follows the delivered boiler pressure; flow (consumed mB/t) sets the torque budget.
+        // A baseline of 1.0 keeps engines running at the reference RPM when no outlet reported pressure.
+        float supplyPressure = inlet.getSupplyPressureRatio();
+        if (supplyPressure <= 0.0F) {
+            supplyPressure = 1.0F;
+        }
+        float speed = SteamPhysics.rpm(supplyPressure);
+        float capacity = Math.min((float) FullSteamConfig.baseEngineCapacity(), consumed * FullSteamConfig.suPerSteamMb());
         return new SteamOutput(
                 SourceMode.PIPED_STEAM,
                 activeEquivalent,
                 heat,
                 true,
                 consumed,
-                Math.min((float) FullSteamConfig.baseEngineCapacity(), consumed * FullSteamConfig.suPerSteamMb())
+                capacity,
+                speed,
+                supplyPressure
         );
     }
 
@@ -540,13 +563,15 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private boolean applySteamOutput(SteamOutput output) {
         float speed = output.generatedSpeed();
         float capacity = output.capacitySu();
+        float pressure = output.canRun() ? output.pressureRatio() : 0.0F;
         boolean changed = sourceMode != output.sourceMode()
                 || activeBurners != output.activeBurners()
                 || heatUnits != output.heatUnits()
                 || hasWaterSupply != output.hasWaterSupply()
                 || steamConsumedRate != output.steamConsumedRate()
                 || !Mth.equal(generatedSpeed, speed)
-                || !Mth.equal(generatedCapacitySu, capacity);
+                || !Mth.equal(generatedCapacitySu, capacity)
+                || !Mth.equal(pressureRatio, pressure);
 
         sourceMode = output.sourceMode();
         activeBurners = output.activeBurners();
@@ -555,21 +580,12 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         steamConsumedRate = output.steamConsumedRate();
         generatedSpeed = speed;
         generatedCapacitySu = capacity;
+        pressureRatio = pressure;
         return changed;
     }
 
     private float getTargetCapacitySu() {
         return assembled ? generatedCapacitySu : 0;
-    }
-
-    private static float rpmForActiveBurners(int activeBurners) {
-        return switch (Mth.clamp(activeBurners, 0, MAX_ACTIVE_BURNERS)) {
-            case 0 -> 0;
-            case 1, 2 -> 16;
-            case 3, 4 -> 32;
-            case 5, 6, 7, 8 -> 48;
-            default -> MAX_RPM;
-        };
     }
 
     private FluidTankBlockEntity getBoiler() {
@@ -791,6 +807,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         tag.putInt(HEAT_UNITS_KEY, heatUnits);
         tag.putFloat(GENERATED_SPEED_KEY, generatedSpeed);
         tag.putFloat(GENERATED_CAPACITY_KEY, generatedCapacitySu);
+        tag.putFloat(PRESSURE_RATIO_KEY, pressureRatio);
         tag.putBoolean(WATER_SUPPLY_KEY, hasWaterSupply);
         tag.putString(SOURCE_MODE_KEY, sourceMode.name());
         tag.putInt(STEAM_CONSUMED_KEY, steamConsumedRate);
@@ -817,6 +834,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         heatUnits = tag.getInt(HEAT_UNITS_KEY);
         generatedSpeed = tag.getFloat(GENERATED_SPEED_KEY);
         generatedCapacitySu = tag.getFloat(GENERATED_CAPACITY_KEY);
+        pressureRatio = tag.getFloat(PRESSURE_RATIO_KEY);
         hasWaterSupply = tag.getBoolean(WATER_SUPPLY_KEY);
         sourceMode = SourceMode.byName(tag.getString(SOURCE_MODE_KEY));
         steamConsumedRate = tag.getInt(STEAM_CONSUMED_KEY);
@@ -961,14 +979,16 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
             int heatUnits,
             boolean hasWaterSupply,
             int steamConsumedRate,
-            float targetCapacitySu
+            float targetCapacitySu,
+            float targetSpeed,
+            float pressureRatio
     ) {
         private static SteamOutput none(SourceMode sourceMode) {
-            return new SteamOutput(sourceMode, 0, 0, false, 0, 0);
+            return new SteamOutput(sourceMode, 0, 0, false, 0, 0, 0, 0);
         }
 
         private float generatedSpeed() {
-            return canRun() ? rpmForActiveBurners(activeBurners) : 0;
+            return canRun() ? targetSpeed : 0;
         }
 
         private float capacitySu() {
