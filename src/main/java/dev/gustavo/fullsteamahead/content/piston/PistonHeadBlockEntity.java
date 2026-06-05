@@ -4,6 +4,7 @@ import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.fluids.tank.BoilerData;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
+import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -78,6 +79,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private int steamConsumedRate;
     private String status = "Incomplete structure";
     private float exhaustPhaseDegrees = Float.NaN;
+    private float previousSoundAngle = Float.NaN;
     private int steamSoundCooldown;
 
     public PistonHeadBlockEntity(BlockPos pos, BlockState state) {
@@ -105,6 +107,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
 
         if (level.isClientSide()) {
+            tickClientSound();
             return;
         }
 
@@ -215,6 +218,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         steamConsumedRate = 0;
         status = reason;
         exhaustPhaseDegrees = Float.NaN;
+        previousSoundAngle = Float.NaN;
         steamSoundCooldown = 0;
 
         refreshBoilerState(previousBoiler);
@@ -826,10 +830,6 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     private void tickServerExhaust() {
-        if (steamSoundCooldown > 0) {
-            steamSoundCooldown--;
-        }
-
         if (!(level instanceof ServerLevel serverLevel)
                 || !FullSteamConfig.engineExhaustEnabled()
                 || !isEngineRunning()) {
@@ -849,8 +849,39 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         );
         float current = effectiveExhaustPhase(exhaustPhaseDegrees);
         if (crossedPhase(previous, current, EXHAUST_PHASE_DEGREES)) {
-            emitSteamEffects(serverLevel);
+            emitSteamExhaust(serverLevel);
         }
+    }
+
+    private void tickClientSound() {
+        if (steamSoundCooldown > 0) {
+            steamSoundCooldown--;
+        }
+
+        if (!isEngineRunning()) {
+            previousSoundAngle = Float.NaN;
+            return;
+        }
+
+        float angle = getCurrentSoundAngle();
+        if (!Float.isNaN(previousSoundAngle)
+                && steamSoundCooldown <= 0
+                && crossedPhase(previousSoundAngle, angle, EXHAUST_PHASE_DEGREES)) {
+            playSteamSound();
+            steamSoundCooldown = MIN_STEAM_SOUND_INTERVAL_TICKS;
+        }
+        previousSoundAngle = angle;
+    }
+
+    private float getCurrentSoundAngle() {
+        FullSteamPoweredShaftBlockEntity shaft = getShaft();
+        if (shaft == null) {
+            return 0.0F;
+        }
+
+        float radians = KineticBlockEntityRenderer.getAngleForBe(shaft, shaft.getBlockPos(), getShaftAxis());
+        radians += getAnimationPhaseOffset();
+        return Mth.positiveModulo((float) Math.toDegrees(radians), 360.0F);
     }
 
     private float effectiveExhaustPhase(float basePhase) {
@@ -868,19 +899,28 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         return false;
     }
 
-    private void emitSteamEffects(ServerLevel serverLevel) {
+    private void emitSteamExhaust(ServerLevel serverLevel) {
+        Direction strokeDirection = getStrokeDirection();
+        Vec3 origin = exhaustOrigin(strokeDirection);
+        SteamCloudEffects.emitEngineExhaust(serverLevel, origin, strokeDirection, getExhaustSteamAmount());
+    }
+
+    private void playSteamSound() {
+        if (level == null) {
+            return;
+        }
+
         float intensity = getEffectIntensity();
         Direction strokeDirection = getStrokeDirection();
-        Vec3 origin = Vec3.atCenterOf(worldPosition)
-                .add(Vec3.atLowerCornerOf(strokeDirection.getNormal()).scale(OUTER_BORE_OFFSET));
-        SteamCloudEffects.emitEngineExhaust(serverLevel, origin, strokeDirection, getExhaustSteamAmount());
-
+        Vec3 origin = exhaustOrigin(strokeDirection);
         float volume = 0.34F + 0.18F * intensity;
-        float pitch = 0.8F + (serverLevel.random.nextFloat() - 0.5F) * 0.04F;
-        if (steamSoundCooldown <= 0) {
-            AllSoundEvents.STEAM.playAt(serverLevel, origin, volume, pitch, false);
-            steamSoundCooldown = MIN_STEAM_SOUND_INTERVAL_TICKS;
-        }
+        float pitch = 0.8F + (level.random.nextFloat() - 0.5F) * 0.04F;
+        AllSoundEvents.STEAM.playAt(level, origin, volume, pitch, false);
+    }
+
+    private Vec3 exhaustOrigin(Direction strokeDirection) {
+        return Vec3.atCenterOf(worldPosition)
+                .add(Vec3.atLowerCornerOf(strokeDirection.getNormal()).scale(OUTER_BORE_OFFSET));
     }
 
     private float getEffectIntensity() {
