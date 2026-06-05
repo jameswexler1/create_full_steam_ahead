@@ -5,6 +5,7 @@ import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
+import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -170,6 +171,8 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
             CreateLang.text("Shared cylinder wall").style(ChatFormatting.DARK_GRAY).forGoggles(tooltip, 1);
         }
 
+        appendEngineReadout(tooltip);
+
         FluidTankBlockEntity boiler = getBoiler();
         if (boiler == null || boiler.boiler == null) {
             if (inletPos == null) {
@@ -183,6 +186,44 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         CreateLang.text("Boiler linked").style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
         boiler.boiler.addToGoggleTooltip(tooltip, isPlayerSneaking, boiler.getTotalTankSize());
         return true;
+    }
+
+    /** Mirrors the linked piston head's pressure/RPM/SU onto the (far more accessible) ring block. */
+    private void appendEngineReadout(List<Component> tooltip) {
+        boolean shownAny = false;
+        for (BlockPos origin : getRingOrigins()) {
+            PistonHeadBlockEntity engine = findEngine(origin);
+            if (engine == null) {
+                continue;
+            }
+            if (!shownAny) {
+                CreateLang.text("Engine").style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
+                shownAny = true;
+            }
+            CreateLang.text(String.format("Pressure: %.2f", engine.getPressureRatio()))
+                    .style(engine.getPressureRatio() > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
+                    .forGoggles(tooltip, 2);
+            CreateLang.text("RPM: " + Math.round(engine.getGeneratedSpeed()))
+                    .style(engine.getGeneratedSpeed() != 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
+                    .forGoggles(tooltip, 2);
+            CreateLang.text("Capacity: " + Math.round(engine.getGeneratedCapacitySu()) + " SU")
+                    .style(engine.getGeneratedCapacitySu() > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
+                    .forGoggles(tooltip, 2);
+        }
+    }
+
+    private PistonHeadBlockEntity findEngine(BlockPos origin) {
+        if (level == null || origin == null) {
+            return null;
+        }
+        for (BlockPos candidate : new BlockPos[]{origin.offset(1, 0, 1), origin.offset(1, 1, 1)}) {
+            if (level.isLoaded(candidate)
+                    && level.getBlockEntity(candidate) instanceof PistonHeadBlockEntity engine
+                    && engine.isEngineAssembled()) {
+                return engine;
+            }
+        }
+        return null;
     }
 
     private FluidTankBlockEntity getBoiler() {

@@ -253,6 +253,10 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         return getTargetCapacitySu();
     }
 
+    public float getPressureRatio() {
+        return assembled ? pressureRatio : 0;
+    }
+
     public String getSourceModeName() {
         return sourceMode.name();
     }
