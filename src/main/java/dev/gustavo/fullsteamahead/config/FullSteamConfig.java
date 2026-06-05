@@ -26,6 +26,8 @@ public final class FullSteamConfig {
     private static final double DEFAULT_STEAM_LEAK_BASE_DAMAGE = 6.0D;
     private static final int DEFAULT_STEAM_LEAK_DAMAGE_REFERENCE_MB = 1_000;
     private static final double DEFAULT_STEAM_LEAK_MAX_DAMAGE = 20.0D;
+    private static final boolean DEFAULT_ENGINE_EXHAUST_ENABLED = true;
+    private static final double DEFAULT_ENGINE_EXHAUST_DAMAGE_SCALE = 0.5D;
 
     public static final ModConfigSpec SPEC;
     private static final ModConfigSpec.IntValue BASE_ENGINE_CAPACITY;
@@ -38,6 +40,8 @@ public final class FullSteamConfig {
     private static final ModConfigSpec.DoubleValue STEAM_LEAK_BASE_DAMAGE;
     private static final ModConfigSpec.IntValue STEAM_LEAK_DAMAGE_REFERENCE_MB;
     private static final ModConfigSpec.DoubleValue STEAM_LEAK_MAX_DAMAGE;
+    private static final ModConfigSpec.BooleanValue ENGINE_EXHAUST_ENABLED;
+    private static final ModConfigSpec.DoubleValue ENGINE_EXHAUST_DAMAGE_SCALE;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -90,6 +94,15 @@ public final class FullSteamConfig {
                 .comment("Upper cap on scald damage per hit regardless of leak size.")
                 .defineInRange("steamLeakMaxDamage", DEFAULT_STEAM_LEAK_MAX_DAMAGE, 0.0D, 1_000.0D);
 
+        ENGINE_EXHAUST_ENABLED = builder
+                .comment("Whether running engines emit a brief steam cloud from the cylinder bore at the outer stroke.")
+                .define("engineExhaustEnabled", DEFAULT_ENGINE_EXHAUST_ENABLED);
+
+        ENGINE_EXHAUST_DAMAGE_SCALE = builder
+                .comment("Multiplier applied to cylinder exhaust scald damage.",
+                        "Open pipe damage is unaffected by this value.")
+                .defineInRange("engineExhaustDamageScale", DEFAULT_ENGINE_EXHAUST_DAMAGE_SCALE, 0.0D, 100.0D);
+
         builder.pop();
         SPEC = builder.build();
     }
@@ -136,6 +149,14 @@ public final class FullSteamConfig {
 
     public static double steamLeakMaxDamage() {
         return loaded() ? STEAM_LEAK_MAX_DAMAGE.get() : DEFAULT_STEAM_LEAK_MAX_DAMAGE;
+    }
+
+    public static boolean engineExhaustEnabled() {
+        return !loaded() || ENGINE_EXHAUST_ENABLED.get();
+    }
+
+    public static double engineExhaustDamageScale() {
+        return loaded() ? ENGINE_EXHAUST_DAMAGE_SCALE.get() : DEFAULT_ENGINE_EXHAUST_DAMAGE_SCALE;
     }
 
     /** Stress Units per mB of steam consumed, derived from the fixed SU-per-unit and the steam rate. */
