@@ -69,7 +69,7 @@ public final class PistonHeadAnimation {
                 connectingRodLength * connectingRodLength - crankDepth * crankDepth
         ));
         float wristY = shaftCenterY + crankVertical - rodVertical;
-        float pistonY = wristY - PISTON_WRIST_PIN_Y;
+        float pistonY = wristY - PISTON_WRIST_PIN_Y - (count - 1);
         float headY = pistonY - HEAD_TO_PISTON_BODY_Y;
         float connectingRodY = wristY - CONNECTING_ROD_SMALL_END_Y;
         float connectingRodAngle = (float) Math.asin(Mth.clamp(crankDepth / connectingRodLength, -1.0F, 1.0F));

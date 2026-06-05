@@ -28,6 +28,7 @@ Manual runtime checklist:
 - [ ] Build a three-body engine: piston head, three piston bodies, three empty stroke blocks, horizontal shaft.
 - [ ] Confirm the shaft placement helper previews the shaft at the correct distance for each body count.
 - [ ] Confirm the connecting rod renders with the real rod texture for two- and three-body engines, not a purple missing model.
+- [ ] Confirm the connecting rod visually connects to the uppermost piston body for two- and three-body engines.
 - [ ] Confirm a four-body piston column remains invalid and does not claim the shaft.
 - [ ] Confirm upright and upside-down pipe-fed engines work for all valid body counts.
 - [ ] Confirm breaking/removing a piston body clears assembled piston visuals and shaft power.
