@@ -28,6 +28,15 @@ public final class FullSteamConfig {
     private static final double DEFAULT_STEAM_MAX_RPM = 64.0D;
     private static final double DEFAULT_STEAM_HEAT_RATIO_MAX = 2.0D;
 
+    private static final boolean DEFAULT_OVERPRESSURE_ENABLED = true;
+    private static final int DEFAULT_OVERPRESSURE_BURST_MB = 60_000;
+    private static final int DEFAULT_OVERPRESSURE_WARN_MB = 40_000;
+    private static final int DEFAULT_OVERPRESSURE_RELIEF_MB_PER_TICK = 120;
+    private static final double DEFAULT_OVERPRESSURE_BASE_POWER = 4.0D;
+    private static final double DEFAULT_OVERPRESSURE_POWER_PER_VOLUME = 0.15D;
+    private static final double DEFAULT_OVERPRESSURE_MAX_POWER = 12.0D;
+    private static final boolean DEFAULT_OVERPRESSURE_BREAKS_BLOCKS = true;
+
     private static final boolean DEFAULT_STEAM_LEAK_DAMAGE_ENABLED = true;
     private static final int DEFAULT_STEAM_LEAK_DAMAGE_INTERVAL = 10;
     private static final double DEFAULT_STEAM_LEAK_DAMAGE_RADIUS = 0.75D;
@@ -49,6 +58,14 @@ public final class FullSteamConfig {
     private static final ModConfigSpec.DoubleValue STEAM_RPM_AT_MAX_VOLUME;
     private static final ModConfigSpec.DoubleValue STEAM_MAX_RPM;
     private static final ModConfigSpec.DoubleValue STEAM_HEAT_RATIO_MAX;
+    private static final ModConfigSpec.BooleanValue OVERPRESSURE_ENABLED;
+    private static final ModConfigSpec.IntValue OVERPRESSURE_BURST_MB;
+    private static final ModConfigSpec.IntValue OVERPRESSURE_WARN_MB;
+    private static final ModConfigSpec.IntValue OVERPRESSURE_RELIEF_MB_PER_TICK;
+    private static final ModConfigSpec.DoubleValue OVERPRESSURE_BASE_POWER;
+    private static final ModConfigSpec.DoubleValue OVERPRESSURE_POWER_PER_VOLUME;
+    private static final ModConfigSpec.DoubleValue OVERPRESSURE_MAX_POWER;
+    private static final ModConfigSpec.BooleanValue OVERPRESSURE_BREAKS_BLOCKS;
     private static final ModConfigSpec.BooleanValue STEAM_LEAK_DAMAGE_ENABLED;
     private static final ModConfigSpec.IntValue STEAM_LEAK_DAMAGE_INTERVAL;
     private static final ModConfigSpec.DoubleValue STEAM_LEAK_DAMAGE_RADIUS;
@@ -120,6 +137,46 @@ public final class FullSteamConfig {
                 .comment("Upper clamp on heat ratio. >1.0 lets super-heated (blaze cake) boilers overproduce and",
                         "raise pressure past a normally-fired boiler. Default 2.0 (cakes can double heat).")
                 .defineInRange("heatRatioMax", DEFAULT_STEAM_HEAT_RATIO_MAX, 0.0D, 64.0D);
+
+        builder.pop();
+
+        builder.comment("Boiler overpressure: steam produced but not consumed (or vented) builds up and",
+                        "eventually bursts the boiler. Open pipe ends and engines relieve pressure.")
+                .push("steamOverpressure");
+
+        OVERPRESSURE_ENABLED = builder
+                .comment("Whether boilers that over-produce steam build pressure and explode.")
+                .define("enabled", DEFAULT_OVERPRESSURE_ENABLED);
+
+        OVERPRESSURE_BURST_MB = builder
+                .comment("Accumulated surplus steam (mB) at which the boiler explodes.",
+                        "At max over-production from one outlet (~90 mB/t surplus) this is ~"
+                                + (DEFAULT_OVERPRESSURE_BURST_MB / 90) + " ticks.")
+                .defineInRange("burstPressureMb", DEFAULT_OVERPRESSURE_BURST_MB, 1, 1_000_000_000);
+
+        OVERPRESSURE_WARN_MB = builder
+                .comment("Accumulated surplus steam (mB) at which warning hiss/particles begin.")
+                .defineInRange("warnPressureMb", DEFAULT_OVERPRESSURE_WARN_MB, 0, 1_000_000_000);
+
+        OVERPRESSURE_RELIEF_MB_PER_TICK = builder
+                .comment("How fast (mB/tick) built-up pressure bleeds down when the boiler is no longer over-producing.")
+                .defineInRange("reliefMbPerTick", DEFAULT_OVERPRESSURE_RELIEF_MB_PER_TICK, 0, 1_000_000);
+
+        OVERPRESSURE_BASE_POWER = builder
+                .comment("Base explosion power (4.0 ~= TNT) before the per-volume bonus.")
+                .defineInRange("explosionBasePower", DEFAULT_OVERPRESSURE_BASE_POWER, 0.0D, 1_000.0D);
+
+        OVERPRESSURE_POWER_PER_VOLUME = builder
+                .comment("Extra explosion power added per boiler tank block (bigger boiler = bigger blast).")
+                .defineInRange("explosionPowerPerVolume", DEFAULT_OVERPRESSURE_POWER_PER_VOLUME, 0.0D, 1_000.0D);
+
+        OVERPRESSURE_MAX_POWER = builder
+                .comment("Upper cap on explosion power regardless of boiler size.")
+                .defineInRange("explosionMaxPower", DEFAULT_OVERPRESSURE_MAX_POWER, 0.0D, 1_000.0D);
+
+        OVERPRESSURE_BREAKS_BLOCKS = builder
+                .comment("Whether the burst explosion destroys blocks (false = entity damage only).")
+                .define("explosionBreaksBlocks", DEFAULT_OVERPRESSURE_BREAKS_BLOCKS);
 
         builder.pop();
 
@@ -209,6 +266,38 @@ public final class FullSteamConfig {
 
     public static double steamHeatRatioMax() {
         return loaded() ? STEAM_HEAT_RATIO_MAX.get() : DEFAULT_STEAM_HEAT_RATIO_MAX;
+    }
+
+    public static boolean overpressureEnabled() {
+        return !loaded() || OVERPRESSURE_ENABLED.get();
+    }
+
+    public static int overpressureBurstMb() {
+        return loaded() ? OVERPRESSURE_BURST_MB.get() : DEFAULT_OVERPRESSURE_BURST_MB;
+    }
+
+    public static int overpressureWarnMb() {
+        return loaded() ? OVERPRESSURE_WARN_MB.get() : DEFAULT_OVERPRESSURE_WARN_MB;
+    }
+
+    public static int overpressureReliefMbPerTick() {
+        return loaded() ? OVERPRESSURE_RELIEF_MB_PER_TICK.get() : DEFAULT_OVERPRESSURE_RELIEF_MB_PER_TICK;
+    }
+
+    public static double overpressureBasePower() {
+        return loaded() ? OVERPRESSURE_BASE_POWER.get() : DEFAULT_OVERPRESSURE_BASE_POWER;
+    }
+
+    public static double overpressurePowerPerVolume() {
+        return loaded() ? OVERPRESSURE_POWER_PER_VOLUME.get() : DEFAULT_OVERPRESSURE_POWER_PER_VOLUME;
+    }
+
+    public static double overpressureMaxPower() {
+        return loaded() ? OVERPRESSURE_MAX_POWER.get() : DEFAULT_OVERPRESSURE_MAX_POWER;
+    }
+
+    public static boolean overpressureBreaksBlocks() {
+        return !loaded() || OVERPRESSURE_BREAKS_BLOCKS.get();
     }
 
     public static boolean steamLeakDamageEnabled() {

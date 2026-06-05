@@ -46,6 +46,23 @@ Propagation:
 
 Goggles: outlet shows pressure + volume + production; piston/cylinder ring show pressure + RPM + SU.
 
+## DONE: boiler overpressure (built 2026-06-05). Vent valve still future.
+
+Implemented in `BoilerOutletBlockEntity`:
+- `overpressureMb += max(0, productionRate − pushedRate)` per tick (vented/open-pipe/engine steam =
+  pushed → relieves); bleeds by `reliefMbPerTick` when not over-producing.
+- `> warnPressureMb` → "Overpressure!" status + hiss + steam particles at boiler center.
+- `> burstPressureMb` → explosion at boiler center, power `min(maxPower, basePower + perVolume·tankSize)`,
+  block-breaking (configurable). Resets after.
+- Config group `steamOverpressure` (all tunable); NBT-persisted; goggle shows buildup %.
+- Lit-gate heat means a boiler over-produces vs a smaller-than-3×3×3 engine load → builds → bursts
+  unless an open pipe / enough engines relieve it.
+
+Steam vent valve (FUTURE block): attaches to boiler/pipe, bleeds up to ventRateMb/t of surplus
+(hot scald cloud), manual/redstone — the clean alternative to an open pipe.
+
+## (original design notes below)
+
 ## NEXT: overpressure + steam vent valve (designed, not yet built)
 
 The point of the consumption cap: if a boiler **produces more steam than is consumed**, the surplus has

@@ -753,11 +753,20 @@ heat/pressure/volume model so boiler *shape* gives different engine "specs". See
   maxVolumeReference, rpmAtMaxVolume, maxRpm, heatRatioMax
 - [x] Goggles surface pressure/volume/production on the outlet and pressure/RPM/SU on the cylinder ring
 
-### Phase 13: Boiler Overpressure + Steam Vent Valve — Planned
+### Phase 13: Boiler Overpressure — Complete (vent valve still planned)
 
-**Goal**: surplus steam (production > consumption) builds boiler pressure until it explodes, unless
-bled by a steam vent valve. Design in `IDEAS_steam_physics.md`. Confirm specifics (explosion
-behavior, pressure source of truth, warning UX) before building — it is destructive.
+**Goal**: surplus steam (production > consumption) builds boiler pressure until it explodes.
+
+- [x] Boiler outlet accumulates `overpressureMb += max(0, productionRate − pushedRate)` each tick;
+  bleeds down by `reliefMbPerTick` when not over-producing. Engines and vented/open-pipe steam count
+  as pushed, so they relieve pressure.
+- [x] Past `warnPressureMb`: status flips to "Overpressure!", hiss (FIRE_EXTINGUISH) + steam particles
+  at the boiler center on a cadence.
+- [x] Past `burstPressureMb`: explosion at the boiler center, power = `min(maxPower, basePower +
+  powerPerVolume · tankSize)`, block-breaking (configurable), then pressure resets.
+- [x] `steamOverpressure` config group (all tunable): enabled, burst/warn mB, reliefMbPerTick,
+  explosion base/per-volume/max power, breaksBlocks. Persisted in NBT, shown on the outlet goggle.
+- [ ] **Steam vent valve block** (future): bleeds surplus on demand / redstone to prevent bursts.
 
 ---
 

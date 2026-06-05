@@ -20,6 +20,9 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -50,6 +53,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     private static final String PRESSURE_RATIO_KEY = "PressureRatio";
     private static final String BOILER_VOLUME_KEY = "BoilerVolume";
     private static final String BOILER_TEMP_KEY = "BoilerTemperatureUnits";
+    private static final String OVERPRESSURE_KEY = "OverpressureMb";
     private static final String STATUS_KEY = "Status";
 
     private final FluidTank steamBuffer = new FluidTank(BUFFER_CAPACITY, stack -> stack.is(ModFluids.STEAM.get())) {
@@ -72,6 +76,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     private float steamPressureRatio;
     private int boilerVolume;
     private int boilerTemperatureUnits;
+    private int overpressureMb;
     private PipePressureResult cachedPipePressure = PipePressureResult.NONE;
     private boolean venting;
     private String status = "Missing boiler";
@@ -107,6 +112,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         int previousPushed = pushedRate;
         int previousBuffer = steamBuffer.getFluidAmount();
         float previousPressure = steamPressureRatio;
+        int previousOverpressure = overpressureMb;
         boolean previousVenting = venting;
         String previousStatus = status;
         int networkMovedLastTick = externallyDrainedSteam;
@@ -140,6 +146,11 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
             status = "Needs active heat and water";
         }
 
+        if (tickOverpressure(boiler)) {
+            // Boiler exploded; its blocks are gone, so stop touching it this tick.
+            return;
+        }
+
         if (previousHeatUnits != heatUnits
                 || previousTotalHeatUnits != totalHeatUnits
                 || previousOutletCount != outletCount
@@ -147,6 +158,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                 || previousPushed != pushedRate
                 || previousBuffer != steamBuffer.getFluidAmount()
                 || previousPressure != steamPressureRatio
+                || previousOverpressure != overpressureMb
                 || previousVenting != venting
                 || !previousStatus.equals(status)) {
             notifyUpdate();
@@ -246,6 +258,14 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         CreateLang.text("Boiler volume: " + boilerVolume + " (heat " + boilerTemperatureUnits + ")")
                 .style(ChatFormatting.DARK_GRAY)
                 .forGoggles(tooltip, 1);
+        if (FullSteamConfig.overpressureEnabled() && overpressureMb > 0) {
+            int burst = FullSteamConfig.overpressureBurstMb();
+            boolean warning = overpressureMb >= FullSteamConfig.overpressureWarnMb();
+            int percent = (int) Math.min(100L, Math.round(100.0D * overpressureMb / Math.max(1, burst)));
+            CreateLang.text((warning ? "OVERPRESSURE: " : "Pressure buildup: ") + percent + "%")
+                    .style(warning ? ChatFormatting.RED : ChatFormatting.GOLD)
+                    .forGoggles(tooltip, 1);
+        }
         CreateLang.text("Pressure range: " + FullSteamConfig.boilerOutletPressureRange() + " blocks")
                 .style(ChatFormatting.DARK_GRAY)
                 .forGoggles(tooltip, 1);
@@ -701,6 +721,71 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         }
     }
 
+    /**
+     * Accumulates steam this boiler produces but cannot push to a consumer (or vent), and bursts the
+     * boiler once it exceeds the configured threshold. Returns true if the boiler exploded this tick.
+     */
+    private boolean tickOverpressure(FluidTankBlockEntity boiler) {
+        if (!FullSteamConfig.overpressureEnabled() || boiler == null || boiler.boiler == null) {
+            overpressureMb = 0;
+            return false;
+        }
+
+        int surplus = Math.max(0, productionRate - pushedRate);
+        if (surplus > 0) {
+            overpressureMb += surplus;
+        } else {
+            overpressureMb = Math.max(0, overpressureMb - FullSteamConfig.overpressureReliefMbPerTick());
+        }
+
+        if (overpressureMb >= FullSteamConfig.overpressureBurstMb()) {
+            explodeBoiler(boiler);
+            overpressureMb = 0;
+            return true;
+        }
+
+        if (overpressureMb >= FullSteamConfig.overpressureWarnMb()) {
+            status = "Overpressure!";
+            emitOverpressureWarning(boiler);
+        }
+        return false;
+    }
+
+    private void emitOverpressureWarning(FluidTankBlockEntity boiler) {
+        if (!(level instanceof ServerLevel serverLevel) || level.getGameTime() % 8L != 0L) {
+            return;
+        }
+
+        Vec3 center = boilerCenter(boiler);
+        serverLevel.sendParticles(ModParticleTypes.STEAM_LEAK.get(),
+                center.x, center.y, center.z, 12, 0.4D, 0.4D, 0.4D, 0.02D);
+        serverLevel.playSound(null, center.x, center.y, center.z,
+                SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.7F, 0.6F);
+    }
+
+    private void explodeBoiler(FluidTankBlockEntity boiler) {
+        if (!(level instanceof ServerLevel serverLevel)) {
+            return;
+        }
+
+        Vec3 center = boilerCenter(boiler);
+        double power = Math.min(
+                FullSteamConfig.overpressureMaxPower(),
+                FullSteamConfig.overpressureBasePower()
+                        + FullSteamConfig.overpressurePowerPerVolume() * boiler.getTotalTankSize());
+        Level.ExplosionInteraction interaction = FullSteamConfig.overpressureBreaksBlocks()
+                ? Level.ExplosionInteraction.BLOCK
+                : Level.ExplosionInteraction.NONE;
+        serverLevel.explode(null, center.x, center.y, center.z, (float) power, interaction);
+    }
+
+    private Vec3 boilerCenter(FluidTankBlockEntity boiler) {
+        BlockPos pos = boiler.getBlockPos();
+        int width = Math.max(1, boiler.getWidth());
+        int height = Math.max(1, boiler.getHeight());
+        return new Vec3(pos.getX() + width / 2.0D, pos.getY() + height / 2.0D, pos.getZ() + width / 2.0D);
+    }
+
     @Override
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
@@ -718,6 +803,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         tag.putFloat(PRESSURE_RATIO_KEY, steamPressureRatio);
         tag.putInt(BOILER_VOLUME_KEY, boilerVolume);
         tag.putInt(BOILER_TEMP_KEY, boilerTemperatureUnits);
+        tag.putInt(OVERPRESSURE_KEY, overpressureMb);
         tag.putString(STATUS_KEY, status);
     }
 
@@ -734,6 +820,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         steamPressureRatio = tag.getFloat(PRESSURE_RATIO_KEY);
         boilerVolume = tag.getInt(BOILER_VOLUME_KEY);
         boilerTemperatureUnits = tag.getInt(BOILER_TEMP_KEY);
+        overpressureMb = tag.getInt(OVERPRESSURE_KEY);
         status = tag.contains(STATUS_KEY) ? tag.getString(STATUS_KEY) : "Missing boiler";
     }
 
