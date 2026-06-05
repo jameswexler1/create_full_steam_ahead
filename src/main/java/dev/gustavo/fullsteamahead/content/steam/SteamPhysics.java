@@ -24,12 +24,16 @@ import net.minecraft.util.Mth;
  */
 public final class SteamPhysics {
 
-    /** Heat ratio: how hot the boiler runs for its size, clamped to [0, heatRatioMax]. */
-    public static double heatRatio(int waterGatedHeat, int sizeHeatCap) {
-        if (waterGatedHeat <= 0 || sizeHeatCap <= 0) {
+    /**
+     * Heat factor for production and pressure. 0 when the boiler is cold or dry, otherwise 1.0 so the
+     * tiers stay purely volume-driven regardless of boiler size. Clamped to heatRatioMax, leaving room
+     * for a future super-heat (blaze cake) bonus above 1.0.
+     */
+    public static double heatRatio(int activeHeat, int waterMaxHeat) {
+        if (activeHeat <= 0 || waterMaxHeat <= 0) {
             return 0.0D;
         }
-        return Mth.clamp(waterGatedHeat / (double) sizeHeatCap, 0.0D, FullSteamConfig.steamHeatRatioMax());
+        return Math.min(1.0D, FullSteamConfig.steamHeatRatioMax());
     }
 
     /** Pressure ratio (1.0 at a full-heat maxed boiler); higher for smaller/hotter boilers. 0 when cold. */

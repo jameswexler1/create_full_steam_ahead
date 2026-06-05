@@ -274,11 +274,9 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
 
         // Volume-driven model: production scales with the whole vessel; pressure is heat over volume.
         int volume = boiler.getTotalTankSize();
-        int sizeHeatCap = data.getMaxHeatLevelForBoilerSize(volume);
-        int waterGatedHeat = Math.min(data.activeHeat, data.getMaxHeatLevelForWaterSupply());
-        double heatRatio = SteamPhysics.heatRatio(waterGatedHeat, sizeHeatCap);
+        double heatRatio = SteamPhysics.heatRatio(data.activeHeat, data.getMaxHeatLevelForWaterSupply());
         boilerVolume = volume;
-        boilerTemperatureUnits = waterGatedHeat;
+        boilerTemperatureUnits = Math.min(data.activeHeat, data.getMaxHeatLevelForWaterSupply());
         steamPressureRatio = SteamPhysics.pressureRatio(heatRatio, volume);
 
         int totalProductionMb = SteamPhysics.productionMb(heatRatio, volume);
@@ -444,6 +442,11 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                 if (target != null) {
                     pipe.addPressure(direction, false, pressure);
                     hasEndpoint = true;
+                    // Steam itself moves through Create's pipe pull, so report engine pressure here (the
+                    // pressure BFS always reaches the inlet) rather than in the fallback push path.
+                    if (level.getBlockEntity(next) instanceof SteamInletBlockEntity inlet && inlet.isInletAssembled()) {
+                        inlet.reportSupplyPressure(steamPressureRatio);
+                    }
                     continue;
                 }
 
@@ -557,19 +560,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                 .thenComparingInt(target -> target.pos().getX())
                 .thenComparingInt(target -> target.pos().getZ())
                 .thenComparingInt(target -> target.side().ordinal()));
-
-        reportSupplyToInlets(targets);
         return targets;
-    }
-
-    /** Reports this boiler's pressure ratio to every assembled steam inlet it reaches (drives engine RPM). */
-    private void reportSupplyToInlets(List<FillTarget> targets) {
-        for (FillTarget target : targets) {
-            if (target.steamInlet()
-                    && level.getBlockEntity(target.pos()) instanceof SteamInletBlockEntity inlet) {
-                inlet.reportSupplyPressure(steamPressureRatio);
-            }
-        }
     }
 
     private boolean canSteamPassThrough(FluidTransportBehaviour pipe, BlockState state, Direction side) {

@@ -488,9 +488,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
         // Same volume + heat-ratio model as the piped path, read straight off the compact boiler.
         int volume = boiler.getTotalTankSize();
-        int sizeHeatCap = data.getMaxHeatLevelForBoilerSize(volume);
-        int waterGatedHeat = Math.min(data.activeHeat, data.getMaxHeatLevelForWaterSupply());
-        double heatRatio = SteamPhysics.heatRatio(waterGatedHeat, sizeHeatCap);
+        double heatRatio = SteamPhysics.heatRatio(data.activeHeat, data.getMaxHeatLevelForWaterSupply());
         float pressure = SteamPhysics.pressureRatio(heatRatio, volume);
         int produced = SteamPhysics.productionMb(heatRatio, volume);
         int consumed = Math.min(FullSteamConfig.cylinderMaxIntakeMb(), produced);
