@@ -744,10 +744,10 @@ heat/pressure/volume model so boiler *shape* gives different engine "specs". See
   reachable assembled steam inlets during the push BFS (max-wins, 10-tick decay); piston reads
   delivered pressure → RPM, delivered flow (mB/t) → SU; unknown supply falls back to pressure 1.0
 - [x] Boiler width now matters (wide = low pressure/high SU; tall-thin = high pressure/high RPM);
-  baseline = nine normal burners on a 3×3×1 boiler (pressure 0.5, RPM 32, SU 147456), and blaze
-  cakes double it to pressure 1.0, RPM 64, SU 294912
-- [x] `steamPhysics` server config: volume/temperature reference, rpmReference (64), pressureMin/Max,
-  suReference (294912), suMax
+  baseline = nine normal burners on a 3×3×1 boiler (pressure 1.0, RPM 64, SU 147456); blaze cakes
+  raise pressure to 2.0 but RPM caps at 64, so they only double SU to 294912
+- [x] `steamPhysics` server config: volume/temperature reference (9), rpmReference (64),
+  pressureMin/Max, suReference (147456), suMax
 - [x] Goggles surface pressure on the outlet (with volume/heat) and the piston head (with RPM/SU)
 
 ---

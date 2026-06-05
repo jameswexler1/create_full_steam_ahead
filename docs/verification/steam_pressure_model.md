@@ -14,10 +14,10 @@ Implemented:
 - Piped engine: `BoilerOutletBlockEntity` computes its boiler's pressure ratio and reports it to
   reachable assembled steam inlets during the push BFS (`reportSupplyPressure`, max-wins, 10-tick
   decay). Piston RPM follows delivered pressure; SU follows delivered flow. Unknown supply -> 1.0.
-- New `steamPhysics` server config: volumeReference (9), temperatureReference (18), rpmReference
-  (64), pressureMin (0.1), pressureMax (4.0), suReference (294912), suMax (2_000_000).
-- Baseline = nine NORMAL burners on a 3x3x1 boiler (T=9): pressure 0.5, RPM 32, SU 147456.
-  Blaze cakes (T=18) double it: pressure 1.0, RPM 64, SU 294912.
+- New `steamPhysics` server config: volumeReference (9), temperatureReference (9), rpmReference
+  (64), pressureMin (0.1), pressureMax (4.0), suReference (147456), suMax (2_000_000).
+- Baseline = nine NORMAL burners on a 3x3x1 boiler (T=9): pressure 1.0, RPM 64, SU 147456.
+  Blaze cakes (T=18) raise pressure to 2.0 but RPM caps at 64, so they only double SU to 294912.
 - Goggles: outlet shows steam pressure + boiler volume/heat; piston head shows pressure + RPM + SU.
 
 Automated checks:
@@ -28,9 +28,8 @@ Automated checks:
 
 Manual runtime checklist:
 
-- [ ] Compact engine on a 3x3x1 boiler with 9 NORMAL burners reads pressure 0.5, RPM 32, SU 147456.
-- [ ] Same engine with 9 BLAZE CAKE burners doubles to pressure 1.0, RPM 64, SU 294912.
-- [ ] Stoking from normal to cake raises pressure -> raises RPM and power, keeps the SU/RPM character.
+- [ ] Compact engine on a 3x3x1 boiler with 9 NORMAL burners reads pressure 1.0, RPM 64, SU 147456.
+- [ ] Same engine with 9 BLAZE CAKE burners reads pressure 2.0, RPM still 64, SU 294912 (cakes add SU only).
 - [ ] Piped engine fed by a tall/thin high-pressure boiler spins faster than one fed by a wide boiler.
 - [ ] Piped engine fed by a wide low-pressure boiler runs slower but supports more torque/more engines.
 - [ ] Goggle pressure/RPM/SU lines update live on both outlet and piston head.
