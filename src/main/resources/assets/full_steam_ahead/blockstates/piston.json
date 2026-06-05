@@ -4,7 +4,8 @@
       "when": {
         "assembled": "false",
         "axis": "x",
-        "facing": "up"
+        "facing": "up",
+        "piston_section": "inside_low"
       },
       "apply": {
         "model": "full_steam_ahead:block/piston",
@@ -15,7 +16,8 @@
       "when": {
         "assembled": "false",
         "axis": "z",
-        "facing": "up"
+        "facing": "up",
+        "piston_section": "inside_low"
       },
       "apply": {
         "model": "full_steam_ahead:block/piston"
@@ -25,7 +27,8 @@
       "when": {
         "assembled": "false",
         "axis": "x",
-        "facing": "down"
+        "facing": "down",
+        "piston_section": "inside_low"
       },
       "apply": {
         "model": "full_steam_ahead:block/piston",
@@ -37,10 +40,59 @@
       "when": {
         "assembled": "false",
         "axis": "z",
-        "facing": "down"
+        "facing": "down",
+        "piston_section": "inside_low"
       },
       "apply": {
         "model": "full_steam_ahead:block/piston",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "assembled": "false",
+        "axis": "x",
+        "facing": "up",
+        "piston_section": "inside_high"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/piston_intermediate",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "assembled": "false",
+        "axis": "z",
+        "facing": "up",
+        "piston_section": "inside_high"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/piston_intermediate"
+      }
+    },
+    {
+      "when": {
+        "assembled": "false",
+        "axis": "x",
+        "facing": "down",
+        "piston_section": "inside_high"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/piston_intermediate",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "assembled": "false",
+        "axis": "z",
+        "facing": "down",
+        "piston_section": "inside_high"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/piston_intermediate",
         "x": 180
       }
     }

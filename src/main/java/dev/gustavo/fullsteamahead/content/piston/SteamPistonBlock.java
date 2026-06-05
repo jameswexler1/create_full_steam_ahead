@@ -41,12 +41,14 @@ public class SteamPistonBlock extends Block implements FullSteamWrenchable {
     public static final DirectionProperty FACING = DirectionProperty.create("facing", Direction.UP, Direction.DOWN);
     private static final int PLACEMENT_HELPER_ID = PlacementHelpers.register(new ShaftPlacementHelper());
     private static final VoxelShape SHAPE = Block.box(5, 0, 5, 11, 16, 11);
+    private static final PistonSection ROD_CONNECTION_SECTION = PistonSection.INSIDE_LOW;
+    private static final PistonSection INTERMEDIATE_SECTION = PistonSection.INSIDE_HIGH;
 
     public SteamPistonBlock(Properties properties) {
         super(properties);
         this.registerDefaultState(this.stateDefinition.any()
                 .setValue(ASSEMBLED, false)
-                .setValue(PISTON_SECTION, PistonSection.INSIDE_LOW)
+                .setValue(PISTON_SECTION, ROD_CONNECTION_SECTION)
                 .setValue(AXIS, Direction.Axis.X)
                 .setValue(FACING, Direction.UP));
     }
@@ -68,9 +70,10 @@ public class SteamPistonBlock extends Block implements FullSteamWrenchable {
                 facing = PistonHeadBlock.placementFacing(context);
             }
         }
-        return defaultBlockState()
+        BlockState placed = defaultBlockState()
                 .setValue(AXIS, context.getHorizontalDirection().getAxis())
                 .setValue(FACING, facing);
+        return placed.setValue(PISTON_SECTION, detectedSection(context.getLevel(), context.getClickedPos(), placed));
     }
 
     @Override
@@ -80,6 +83,8 @@ public class SteamPistonBlock extends Block implements FullSteamWrenchable {
 
     @Override
     public void onAfterWrench(Level level, BlockPos pos) {
+        refreshPistonIdentity(level, pos);
+        refreshAdjacentPistonIdentities(level, pos);
         PistonHeadBlockEntity.revalidateNearbyEngines(level, pos);
     }
 
@@ -140,6 +145,8 @@ public class SteamPistonBlock extends Block implements FullSteamWrenchable {
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         if (!level.isClientSide() && !state.is(oldState.getBlock())) {
+            refreshPistonIdentity(level, pos);
+            refreshAdjacentPistonIdentities(level, pos);
             PistonHeadBlockEntity.revalidateNearbyEngines(level, pos);
         }
     }
@@ -147,8 +154,53 @@ public class SteamPistonBlock extends Block implements FullSteamWrenchable {
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!level.isClientSide() && !state.is(newState.getBlock())) {
+            refreshAdjacentPistonIdentities(level, pos);
             PistonHeadBlockEntity.invalidateNearbyEngines(level, pos, "Piston column changed", pos);
         }
+    }
+
+    @Override
+    protected void neighborChanged(
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Block neighborBlock,
+            BlockPos neighborPos,
+            boolean movedByPiston
+    ) {
+        if (level.isClientSide() || neighborPos.getX() != pos.getX() || neighborPos.getZ() != pos.getZ()) {
+            return;
+        }
+
+        refreshPistonIdentity(level, pos);
+    }
+
+    private static void refreshAdjacentPistonIdentities(Level level, BlockPos pos) {
+        refreshPistonIdentity(level, pos.above());
+        refreshPistonIdentity(level, pos.below());
+    }
+
+    private static void refreshPistonIdentity(Level level, BlockPos pos) {
+        if (level.isClientSide() || !level.isLoaded(pos)) {
+            return;
+        }
+
+        BlockState state = level.getBlockState(pos);
+        if (!state.is(ModBlocks.PISTON.get())) {
+            return;
+        }
+
+        PistonSection detected = detectedSection(level, pos, state);
+        if (state.getValue(PISTON_SECTION) != detected) {
+            level.setBlock(pos, state.setValue(PISTON_SECTION, detected), Block.UPDATE_CLIENTS);
+        }
+    }
+
+    private static PistonSection detectedSection(Level level, BlockPos pos, BlockState state) {
+        BlockPos proximalPos = pos.relative(state.getValue(FACING));
+        return level.isLoaded(proximalPos) && level.getBlockState(proximalPos).is(ModBlocks.PISTON.get())
+                ? INTERMEDIATE_SECTION
+                : ROD_CONNECTION_SECTION;
     }
 
     @Override

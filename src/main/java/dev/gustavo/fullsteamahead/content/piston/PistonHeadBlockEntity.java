@@ -642,8 +642,8 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         Direction.Axis shaftAxis = EngineValidator.shaftAxis(level, result.shaft());
         for (int index = 0; index < result.pistons().size(); index++) {
             PistonSection section = index == result.pistons().size() - 1
-                    ? PistonSection.INSIDE_HIGH
-                    : PistonSection.INSIDE_LOW;
+                    ? PistonSection.INSIDE_LOW
+                    : PistonSection.INSIDE_HIGH;
             setPiston(result.pistons().get(index), true, section, shaftAxis, result.strokeDirection());
         }
     }
