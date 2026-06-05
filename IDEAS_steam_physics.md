@@ -63,11 +63,16 @@ Proposed design (to confirm with user before building — it's destructive):
   the threshold. Manual or redstone-gated.
 - All knobs config-backed: enable flag, threshold, grace ticks, explosion power, vent rate.
 
-Open decisions:
-- [ ] Explosion: destroy the boiler/break blocks (TNT-like) or just damage entities + drop the multiblock?
-- [ ] Pressure source of truth: boiler outlet vs the Create Fluid Tank BE (mixin) — outlets are ours, simpler.
-- [ ] Does an open pipe end (venting) count as "consumed" so leaking pipes relieve pressure? (Lean yes.)
-- [ ] Warning UX: gauge + sound + particles thresholds.
+Locked decisions (2026-06-05):
+- **Explosion = break blocks + hurt entities** (TNT-like blast at the boiler, power scales with size, config-tunable).
+- **Open/venting pipe ends relieve pressure** — steam pushed out an open end counts as consumed (deliberate
+  open pipe = crude relief, with the existing scald cloud). Vent valve = the clean version.
+- **Build AFTER the tier rebalance is tested in-game** (do not build until user confirms tiers feel right).
+
+Still open:
+- [ ] Pressure source of truth: boiler outlet vs the Create Fluid Tank BE (mixin) — outlets are ours, simpler. Lean outlet.
+- [ ] Warning UX: gauge + sound + particles thresholds before the blast.
+- [ ] Vent valve block specifics (placement, rate, redstone gating) — separate block project.
 
 ---
 
