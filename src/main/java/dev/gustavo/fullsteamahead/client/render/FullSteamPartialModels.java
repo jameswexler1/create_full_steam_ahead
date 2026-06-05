@@ -8,6 +8,7 @@ import net.neoforged.neoforge.client.event.ModelEvent;
 
 public final class FullSteamPartialModels {
     private static final ResourceLocation PISTON_BODY_LOCATION = location("piston_body");
+    private static final ResourceLocation PISTON_BODY_INTERMEDIATE_LOCATION = location("piston_body_intermediate");
     private static final ResourceLocation PISTON_HEAD_LOCATION = location("piston_head");
     private static final ResourceLocation CONNECTING_ROD_LOCATION = location("connecting_rod");
     private static final ResourceLocation CONNECTING_ROD_LOWER_LOCATION = location("connecting_rod_lower");
@@ -20,6 +21,7 @@ public final class FullSteamPartialModels {
 
     public static void registerAdditional(ModelEvent.RegisterAdditional event) {
         event.register(ModelResourceLocation.standalone(PISTON_BODY_LOCATION));
+        event.register(ModelResourceLocation.standalone(PISTON_BODY_INTERMEDIATE_LOCATION));
         event.register(ModelResourceLocation.standalone(PISTON_HEAD_LOCATION));
         event.register(ModelResourceLocation.standalone(CONNECTING_ROD_LOCATION));
         event.register(ModelResourceLocation.standalone(CONNECTING_ROD_LOWER_LOCATION));
@@ -33,6 +35,10 @@ public final class FullSteamPartialModels {
 
     public static PartialModel pistonBody() {
         return PartialModel.of(PISTON_BODY_LOCATION);
+    }
+
+    public static PartialModel pistonBodyIntermediate() {
+        return PartialModel.of(PISTON_BODY_INTERMEDIATE_LOCATION);
     }
 
     public static PartialModel pistonHead() {

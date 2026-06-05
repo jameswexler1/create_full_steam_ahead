@@ -20,7 +20,9 @@ import net.minecraft.core.Direction;
 import java.util.function.Consumer;
 
 public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockEntity> implements SimpleDynamicVisual {
-    private final TransformedInstance[] pistons = new TransformedInstance[PistonHeadAnimation.MAX_PISTON_BLOCKS];
+    private final TransformedInstance[] finalPistons = new TransformedInstance[PistonHeadAnimation.MAX_PISTON_BLOCKS];
+    private final TransformedInstance[] intermediatePistons =
+            new TransformedInstance[PistonHeadAnimation.MAX_PISTON_BLOCKS];
     private final TransformedInstance head;
     private final TransformedInstance rodLower;
     private final TransformedInstance[] rodMiddles =
@@ -30,8 +32,9 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
 
     public PistonHeadVisual(VisualizationContext context, PistonHeadBlockEntity blockEntity, float partialTick) {
         super(context, blockEntity, partialTick);
-        for (int blockIndex = 0; blockIndex < pistons.length; blockIndex++) {
-            pistons[blockIndex] = transformed(FullSteamPartialModels.pistonBody());
+        for (int blockIndex = 0; blockIndex < finalPistons.length; blockIndex++) {
+            finalPistons[blockIndex] = transformed(FullSteamPartialModels.pistonBody());
+            intermediatePistons[blockIndex] = transformed(FullSteamPartialModels.pistonBodyIntermediate());
         }
         head = transformed(FullSteamPartialModels.pistonHead());
         rodLower = transformed(FullSteamPartialModels.connectingRodLower());
@@ -69,8 +72,10 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         PistonHeadAnimation.State animation = PistonHeadAnimation.state(blockEntity);
         Direction strokeDirection = animation.strokeDirection();
         relight(partLightPos(base, animation.headY(), strokeDirection), head);
-        for (int blockIndex = 0; blockIndex < pistons.length; blockIndex++) {
-            relight(partLightPos(base, animation.pistonY(blockIndex), strokeDirection), pistons[blockIndex]);
+        for (int blockIndex = 0; blockIndex < finalPistons.length; blockIndex++) {
+            BlockPos pistonLightPos = partLightPos(base, animation.pistonY(blockIndex), strokeDirection);
+            relight(pistonLightPos, finalPistons[blockIndex]);
+            relight(pistonLightPos, intermediatePistons[blockIndex]);
         }
         relight(partLightPos(base, animation.connectingRodY(), strokeDirection), rodLower);
         relight(partLightPos(base, animation.connectingRodY(), strokeDirection), rodMiddles);
@@ -80,7 +85,10 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
 
     @Override
     protected void _delete() {
-        for (TransformedInstance piston : pistons) {
+        for (TransformedInstance piston : finalPistons) {
+            piston.delete();
+        }
+        for (TransformedInstance piston : intermediatePistons) {
             piston.delete();
         }
         head.delete();
@@ -96,7 +104,10 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
 
     @Override
     public void collectCrumblingInstances(Consumer<Instance> consumer) {
-        for (TransformedInstance piston : pistons) {
+        for (TransformedInstance piston : finalPistons) {
+            consumer.accept(piston);
+        }
+        for (TransformedInstance piston : intermediatePistons) {
             consumer.accept(piston);
         }
         consumer.accept(head);
@@ -112,11 +123,15 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
 
     private void animate() {
         PistonHeadAnimation.State animation = PistonHeadAnimation.state(blockEntity);
-        for (int blockIndex = 0; blockIndex < pistons.length; blockIndex++) {
-            boolean pistonVisible = animation.visible() && blockIndex < animation.pistonBodyCount();
-            setVisible(pistons[blockIndex], pistonVisible);
-            if (pistonVisible) {
-                TransformedInstance piston = base(pistons[blockIndex]);
+        for (int blockIndex = 0; blockIndex < finalPistons.length; blockIndex++) {
+            boolean occupied = animation.visible() && blockIndex < animation.pistonBodyCount();
+            boolean finalBody = occupied && blockIndex == animation.pistonBodyCount() - 1;
+            setVisible(finalPistons[blockIndex], finalBody);
+            setVisible(intermediatePistons[blockIndex], occupied && !finalBody);
+            if (occupied) {
+                TransformedInstance piston = base(finalBody
+                        ? finalPistons[blockIndex]
+                        : intermediatePistons[blockIndex]);
                 orientForStroke(piston, animation);
                 rotatePistonBody(
                         piston.translate(0, animation.pistonY(blockIndex), 0),

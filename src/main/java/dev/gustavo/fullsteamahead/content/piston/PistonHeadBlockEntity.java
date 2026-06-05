@@ -640,8 +640,11 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private void setPistonsAssembled(EngineValidator.Result result) {
         setPistonHead(result.pistonHead(), true, result.strokeDirection());
         Direction.Axis shaftAxis = EngineValidator.shaftAxis(level, result.shaft());
-        for (BlockPos piston : result.pistons()) {
-            setPiston(piston, true, PistonSection.INSIDE_HIGH, shaftAxis, result.strokeDirection());
+        for (int index = 0; index < result.pistons().size(); index++) {
+            PistonSection section = index == result.pistons().size() - 1
+                    ? PistonSection.INSIDE_HIGH
+                    : PistonSection.INSIDE_LOW;
+            setPiston(result.pistons().get(index), true, section, shaftAxis, result.strokeDirection());
         }
     }
 

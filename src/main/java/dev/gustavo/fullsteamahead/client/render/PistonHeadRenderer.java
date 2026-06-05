@@ -91,7 +91,10 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             PistonHeadAnimation.State animation,
             int blockIndex
     ) {
-        SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.pistonBody(), state);
+        PartialModel partial = blockIndex == animation.pistonBodyCount() - 1
+                ? FullSteamPartialModels.pistonBody()
+                : FullSteamPartialModels.pistonBodyIntermediate();
+        SuperByteBuffer buffer = CachedBuffers.partial(partial, state);
         orientForStroke(buffer, animation);
         rotatePistonBody(
                 buffer.translate(0, animation.pistonY(blockIndex), 0),
