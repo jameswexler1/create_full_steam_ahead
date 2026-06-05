@@ -16,16 +16,17 @@ public final class PistonHeadAnimation {
             11.0F / 16.0F,
             14.0F / 16.0F
     };
-    private static final float[] CONNECTING_ROD_LENGTHS = {
-            14.0F / 16.0F,
-            46.0F / 16.0F,
-            78.0F / 16.0F
+    private static final int[] CONNECTING_ROD_LENGTH_UNITS = {
+            14,
+            31,
+            44
     };
     private static final int CONNECTING_ROD_BASE_LENGTH_UNITS = 14;
     private static final int CONNECTING_ROD_SEGMENT_UNITS = 8;
     private static final float PISTON_WRIST_PIN_Y = 14.0F / 16.0F;
     private static final float HEAD_TO_PISTON_BODY_Y = 1.0F;
     private static final float HALF_PI = (float) (Math.PI / 2.0D);
+    private static final float CRANK_DOWN_REST_OFFSET = HALF_PI;
 
     public static State state(PistonHeadBlockEntity engine) {
         boolean visible = engine.isEngineAssembled();
@@ -62,8 +63,9 @@ public final class PistonHeadAnimation {
         float connectingRodLength = connectingRodLength(count);
         float shaftBaseY = EngineValidator.shaftDistanceForPistonBodies(count);
         float shaftCenterY = shaftBaseY + 0.5F;
-        float crankDepth = crankRadius * Mth.cos(angle);
-        float crankVertical = -crankRadius * Mth.sin(angle);
+        float linkageAngle = angle + CRANK_DOWN_REST_OFFSET;
+        float crankDepth = crankRadius * Mth.cos(linkageAngle);
+        float crankVertical = -crankRadius * Mth.sin(linkageAngle);
         float rodVertical = Mth.sqrt(Math.max(
                 0.0F,
                 connectingRodLength * connectingRodLength - crankDepth * crankDepth
@@ -78,7 +80,7 @@ public final class PistonHeadAnimation {
         // block center (see orientForStroke), which keeps every joint connected.
         return new State(
                 visible,
-                angle,
+                linkageAngle,
                 shaftAxis,
                 strokeDirection,
                 count,
@@ -99,12 +101,12 @@ public final class PistonHeadAnimation {
     }
 
     public static float connectingRodLength(int pistonBodyCount) {
-        return CONNECTING_ROD_LENGTHS[clampPistonBodyCount(pistonBodyCount) - 1];
+        return connectingRodLengthUnits(pistonBodyCount) / 16.0F;
     }
 
     public static int connectingRodMiddleSegments(int pistonBodyCount) {
         int extraUnits = connectingRodUpperOffsetUnits(pistonBodyCount);
-        return extraUnits / CONNECTING_ROD_SEGMENT_UNITS + 1;
+        return (int) Math.ceil(extraUnits / (float) CONNECTING_ROD_SEGMENT_UNITS) + 1;
     }
 
     public static int maxConnectingRodMiddleSegments() {
@@ -120,7 +122,11 @@ public final class PistonHeadAnimation {
     }
 
     private static int connectingRodUpperOffsetUnits(int pistonBodyCount) {
-        return Math.round(connectingRodLength(pistonBodyCount) * 16.0F) - CONNECTING_ROD_BASE_LENGTH_UNITS;
+        return connectingRodLengthUnits(pistonBodyCount) - CONNECTING_ROD_BASE_LENGTH_UNITS;
+    }
+
+    private static int connectingRodLengthUnits(int pistonBodyCount) {
+        return CONNECTING_ROD_LENGTH_UNITS[clampPistonBodyCount(pistonBodyCount) - 1];
     }
 
     public record State(

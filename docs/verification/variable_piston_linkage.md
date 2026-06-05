@@ -13,6 +13,7 @@ Implemented:
 - Existing one-body engines keep the previous geometry and balance.
 - Server state stores the piston body count so animation and shaft lookup survive world reloads.
 - Renderer and Flywheel visuals select crank partials by piston body count and assemble the rod from valid repeated segments.
+- The linkage animation now uses crank-down as the rest pose. Two- and three-body engines use shorter proportional rod lengths so the piston rises from the low point without a post-animation clamp.
 
 Automated checks:
 
@@ -29,6 +30,9 @@ Manual runtime checklist:
 - [ ] Confirm the shaft placement helper previews the shaft at the correct distance for each body count.
 - [ ] Confirm the connecting rod renders with the real rod texture for two- and three-body engines, not a purple missing model.
 - [ ] Confirm the connecting rod visually connects to the uppermost piston body for two- and three-body engines.
+- [ ] Confirm the connecting rod stays visually connected to the crank throughout a full cycle for one-, two-, and three-body engines.
+- [ ] Confirm stopped assembled engines rest with the crank pin down rather than sideways.
+- [ ] Confirm two- and three-body piston heads move smoothly without short jumps through a full cycle.
 - [ ] Confirm lower piston bodies use the intermediate sleeve texture and only the uppermost body uses the rod-connection texture.
 - [ ] Confirm final/intermediate piston identity is correct while the engine is assembled but not producing rotation.
 - [ ] Confirm a shaftless or otherwise incomplete piston stack still marks every body with another piston at its proximal end as intermediate.
