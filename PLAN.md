@@ -743,12 +743,21 @@ heat/pressure/volume model so boiler *shape* gives different engine "specs". See
 - [x] Piped engine: `BoilerOutletBlockEntity` computes its boiler's pressure ratio and reports it to
   reachable assembled steam inlets during the push BFS (max-wins, 10-tick decay); piston reads
   delivered pressure → RPM, delivered flow (mB/t) → SU; unknown supply falls back to pressure 1.0
-- [x] Boiler width now matters (wide = low pressure/high SU; tall-thin = high pressure/high RPM);
-  baseline = nine normal burners on a 3×3×1 boiler (pressure 1.0, RPM 64, SU 147456); blaze cakes
-  raise pressure to 2.0 but RPM caps at 64, so they only double SU to 294912
-- [x] `steamPhysics` server config: volume/temperature reference (9), rpmReference (64),
-  pressureMin/Max, suReference (147456), suMax
-- [x] Goggles surface pressure on the outlet (with volume/heat) and the piston head (with RPM/SU)
+- [x] **v2 (consumption-limited / volume-tiered):** SU capped by per-cylinder intake
+  (`cylinderMaxIntakeMb=90` → `cylinderMaxSu=147456`); boiler production scales with volume
+  (`steamPerBlock·V·heatRatio`, calibrated so full-heat 3×3×3 = 90 mB/t = one maxed cylinder).
+  RPM = `clamp(rpmAtMaxVolume·pressure, 0, maxRpm)`, pressure = `heatRatio·27/V` → 3×3×3 = 16 RPM.
+  Bigger boiler = more SU/lower RPM, smaller = less SU/higher RPM. Driven by `BoilerData`
+  (`getTotalTankSize`, `getMaxHeatLevelForBoilerSize`). Surplus production hooks the planned overpressure.
+- [x] `steamPhysics` server config (all tunable): cylinderMaxIntakeMb, cylinderMaxSu, steamPerBlock,
+  maxVolumeReference, rpmAtMaxVolume, maxRpm, heatRatioMax
+- [x] Goggles surface pressure/volume/production on the outlet and pressure/RPM/SU on the cylinder ring
+
+### Phase 13: Boiler Overpressure + Steam Vent Valve — Planned
+
+**Goal**: surplus steam (production > consumption) builds boiler pressure until it explodes, unless
+bled by a steam vent valve. Design in `IDEAS_steam_physics.md`. Confirm specifics (explosion
+behavior, pressure source of truth, warning UX) before building — it is destructive.
 
 ---
 

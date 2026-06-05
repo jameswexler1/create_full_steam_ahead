@@ -485,16 +485,23 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
         BurnerHeat burnerHeat = scanBurners();
         boolean hasWater = data.getMaxHeatLevelForWaterSupply() > 0;
-        int volume = SteamPhysics.boilerVolume(boiler.getWidth(), boiler.getHeight());
-        float pressure = SteamPhysics.pressureRatio(burnerHeat.heatUnits(), volume);
-        float speed = SteamPhysics.rpm(pressure);
-        float capacity = SteamPhysics.directCapacitySu(burnerHeat.heatUnits(), volume);
+
+        // Same volume + heat-ratio model as the piped path, read straight off the compact boiler.
+        int volume = boiler.getTotalTankSize();
+        int sizeHeatCap = data.getMaxHeatLevelForBoilerSize(volume);
+        int waterGatedHeat = Math.min(data.activeHeat, data.getMaxHeatLevelForWaterSupply());
+        double heatRatio = SteamPhysics.heatRatio(waterGatedHeat, sizeHeatCap);
+        float pressure = SteamPhysics.pressureRatio(heatRatio, volume);
+        int produced = SteamPhysics.productionMb(heatRatio, volume);
+        int consumed = Math.min(FullSteamConfig.cylinderMaxIntakeMb(), produced);
+        float capacity = SteamPhysics.suForConsumed(consumed);
+        float speed = SteamPhysics.rpmFromPressure(pressure);
         return new SteamOutput(
                 SourceMode.DIRECT_BOILER,
                 burnerHeat.activeBurners(),
                 burnerHeat.heatUnits(),
                 hasWater,
-                0,
+                consumed,
                 capacity,
                 speed,
                 pressure
@@ -514,19 +521,16 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
         int heat = Mth.clamp(Mth.ceil(consumed / (float) FullSteamConfig.steamPerHeatUnit()), 1, MAX_PIPED_HEAT_UNITS);
         int activeEquivalent = Math.min(MAX_ACTIVE_BURNERS, heat);
-        // RPM and SU both follow the supplying boiler's geometry (delivered pressure + per-engine
-        // capacity, reported by the outlet): small boiler -> high pressure/RPM, low SU; big boiler ->
-        // low pressure/RPM, high SU. A baseline of 1.0 pressure and a flow-based SU keep the engine
-        // running sensibly when no outlet has reported (e.g. legacy or non-outlet supply).
+        // SU follows the steam actually consumed (capped per cylinder); RPM follows the delivered
+        // boiler pressure reported by the outlet. Small boiler -> high pressure/RPM, low flow/SU; big
+        // boiler -> low pressure/RPM, high flow/SU. Baseline 1.0 keeps engines running at reference
+        // RPM when no outlet has reported pressure (e.g. legacy or non-outlet supply).
         float supplyPressure = inlet.getSupplyPressureRatio();
         if (supplyPressure <= 0.0F) {
             supplyPressure = 1.0F;
         }
-        float supplyCapacity = inlet.getSupplyCapacitySu();
-        float capacity = supplyCapacity > 0.0F
-                ? supplyCapacity
-                : Math.min((float) FullSteamConfig.baseEngineCapacity(), consumed * FullSteamConfig.suPerSteamMb());
-        float speed = SteamPhysics.rpm(supplyPressure);
+        float capacity = SteamPhysics.suForConsumed(consumed);
+        float speed = SteamPhysics.rpmFromPressure(supplyPressure);
         return new SteamOutput(
                 SourceMode.PIPED_STEAM,
                 activeEquivalent,

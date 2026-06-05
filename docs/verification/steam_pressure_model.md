@@ -2,24 +2,21 @@
 
 Date: 2026-06-05
 
-Implemented:
+Implemented (v2 — consumption-limited / volume-tiered):
 
-- New `content/steam/SteamPhysics` derives, from boiler heat units `T` and vessel volume `V`
-  (`width^2 * height`):
-  - pressure ratio `p = (T/T_ref) / (V/V_ref)` (clamped `[pressureMin, pressureMax]`),
-  - continuous `RPM = clamp(rpmReference * p, 0, 64)`,
-  - `SU = clamp(suReference * (T/T_ref) * (V/V_ref), 0, suMax)`.
-- Direct/compact engine: `T` from blaze burners, `V` from the Create Fluid Tank under the ring.
-  Replaces the 16/32/48/64 burner tier table.
-- Piped engine: `BoilerOutletBlockEntity` computes its boiler's pressure ratio AND capacity SU and
-  reports both to reachable assembled steam inlets during the push BFS (`reportSupply`, max-wins,
-  10-tick decay). Capacity is split evenly across the inlets the boiler feeds (no duplication).
-  Piston RPM follows delivered pressure; SU follows delivered capacity (volume scaling), so bigger
-  boiler = higher SU/lower RPM, smaller = lower SU/higher RPM. Unknown supply -> pressure 1.0 + flow SU.
-- New `steamPhysics` server config: volumeReference (9), temperatureReference (9), rpmReference
-  (64), pressureMin (0.1), pressureMax (4.0), suReference (147456), suMax (2_000_000).
-- Baseline = nine NORMAL burners on a 3x3x1 boiler (T=9): pressure 1.0, RPM 64, SU 147456.
-  Blaze cakes (T=18) raise pressure to 2.0 but RPM caps at 64, so they only double SU to 294912.
+- `content/steam/SteamPhysics` derives from boiler volume `V` (`getTotalTankSize`) and a heat ratio
+  `h = clamp(waterGatedHeat / getMaxHeatLevelForBoilerSize(V), 0, heatRatioMax)`:
+  - production `= round(steamPerBlock * V * h)` mB/t (steamPerBlock = 90/27 -> full-heat 3x3x3 = 90),
+  - pressure `p = h * maxVolumeReference / V` (1.0 at a full-heat 3x3x3),
+  - RPM `= clamp(rpmAtMaxVolume * p, 0, maxRpm)`,
+  - SU `= min(cylinderMaxSu, consumed * suPerSteamMb)`, consumed <= cylinderMaxIntakeMb.
+- Both direct (compact, reads its boiler locally) and piped (outlet reports pressure to inlets;
+  SU from steam consumed) use the same model. Boiler's finite production splits across the engines
+  drawing it (no duplication).
+- Config (`steamPhysics`, all tunable): cylinderMaxIntakeMb (90), cylinderMaxSu (147456), steamPerBlock
+  (90/27), maxVolumeReference (27), rpmAtMaxVolume (16), maxRpm (64), heatRatioMax (2.0).
+- Full-heat tiers: 1x1x1 -> 64 RPM / ~5.5k SU; 3x3x1 -> 48 / 49152; 3x3x2 -> 24 / 98304;
+  3x3x3 -> 16 / 147456 (maxed). Bigger than 3x3x3 overproduces (surplus -> future overpressure).
 - Goggles: outlet shows steam pressure + boiler volume/heat; piston head shows pressure + RPM + SU.
 
 Automated checks:
@@ -30,12 +27,11 @@ Automated checks:
 
 Manual runtime checklist:
 
-- [ ] Compact engine on a 3x3x1 boiler with 9 NORMAL burners reads pressure 1.0, RPM 64, SU 147456.
-- [ ] Same engine with 9 BLAZE CAKE burners reads pressure 2.0, RPM still 64, SU 294912 (cakes add SU only).
-- [ ] Piped engine on a 3x3x1 boiler: RPM 64, SU 147456. On 3x3x2: RPM 32, SU 294912. On 3x3x3:
-      RPM 21, SU 442368 (bigger boiler = more SU, less RPM; SU no longer flat-capped).
-- [ ] Small piped boiler (1x1x1): high pressure -> RPM 64, low SU (~3.6k).
-- [ ] Two engines sharing one boiler split its capacity (each ~half SU), not double it.
+- [ ] Compact engine on a full-heat 3x3x1 boiler: ~48 RPM, ~49152 SU (mid tier).
+- [ ] Piped engine off a 3x3x3 boiler maxes: ~16 RPM, 147456 SU. Off 3x3x2: ~24 RPM, ~98304 SU.
+      Off 3x3x1: ~48 RPM, ~49152 SU. Off 1x1x1: ~64 RPM, low SU (~5.5k).
+- [ ] SU now DIFFERS across 3x3x1/2/3 (was flat) and RPM drops as the boiler grows.
+- [ ] Two engines sharing one boiler split its production (lower SU each), not double it.
 - [ ] Goggle pressure/RPM/SU lines update live on both outlet and piston head.
 - [ ] Cutting the boiler heat or water stops the engine (pressure -> 0, RPM -> 0).
 - [ ] A piped engine with no outlet-reported pressure still runs at the reference RPM baseline.

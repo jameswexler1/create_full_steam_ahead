@@ -20,13 +20,13 @@ public final class FullSteamConfig {
     private static final int DEFAULT_STEAM_PER_HEAT_UNIT = 10;
     private static final int DEFAULT_PRESSURE_RANGE = 30;
 
-    private static final int DEFAULT_STEAM_VOLUME_REFERENCE = 9;
-    private static final int DEFAULT_STEAM_TEMPERATURE_REFERENCE = 9;
-    private static final double DEFAULT_STEAM_RPM_REFERENCE = 64.0D;
-    private static final double DEFAULT_STEAM_PRESSURE_MIN = 0.1D;
-    private static final double DEFAULT_STEAM_PRESSURE_MAX = 4.0D;
-    private static final int DEFAULT_STEAM_SU_REFERENCE = 147_456;
-    private static final int DEFAULT_STEAM_SU_MAX = 2_000_000;
+    private static final int DEFAULT_CYLINDER_MAX_INTAKE_MB = 90;
+    private static final int DEFAULT_CYLINDER_MAX_SU = 147_456;
+    private static final double DEFAULT_STEAM_PER_BLOCK = 90.0D / 27.0D;
+    private static final int DEFAULT_STEAM_MAX_VOLUME_REFERENCE = 27;
+    private static final double DEFAULT_STEAM_RPM_AT_MAX_VOLUME = 16.0D;
+    private static final double DEFAULT_STEAM_MAX_RPM = 64.0D;
+    private static final double DEFAULT_STEAM_HEAT_RATIO_MAX = 2.0D;
 
     private static final boolean DEFAULT_STEAM_LEAK_DAMAGE_ENABLED = true;
     private static final int DEFAULT_STEAM_LEAK_DAMAGE_INTERVAL = 10;
@@ -42,13 +42,13 @@ public final class FullSteamConfig {
     private static final ModConfigSpec.IntValue STEAM_PER_HEAT_UNIT;
     private static final ModConfigSpec.IntValue BOILER_OUTLET_PRESSURE_RANGE;
     private static final ModConfigSpec.BooleanValue ENABLE_DIRECT_COMPACT_MODE;
-    private static final ModConfigSpec.IntValue STEAM_VOLUME_REFERENCE;
-    private static final ModConfigSpec.IntValue STEAM_TEMPERATURE_REFERENCE;
-    private static final ModConfigSpec.DoubleValue STEAM_RPM_REFERENCE;
-    private static final ModConfigSpec.DoubleValue STEAM_PRESSURE_MIN;
-    private static final ModConfigSpec.DoubleValue STEAM_PRESSURE_MAX;
-    private static final ModConfigSpec.IntValue STEAM_SU_REFERENCE;
-    private static final ModConfigSpec.IntValue STEAM_SU_MAX;
+    private static final ModConfigSpec.IntValue CYLINDER_MAX_INTAKE_MB;
+    private static final ModConfigSpec.IntValue CYLINDER_MAX_SU;
+    private static final ModConfigSpec.DoubleValue STEAM_PER_BLOCK;
+    private static final ModConfigSpec.IntValue STEAM_MAX_VOLUME_REFERENCE;
+    private static final ModConfigSpec.DoubleValue STEAM_RPM_AT_MAX_VOLUME;
+    private static final ModConfigSpec.DoubleValue STEAM_MAX_RPM;
+    private static final ModConfigSpec.DoubleValue STEAM_HEAT_RATIO_MAX;
     private static final ModConfigSpec.BooleanValue STEAM_LEAK_DAMAGE_ENABLED;
     private static final ModConfigSpec.IntValue STEAM_LEAK_DAMAGE_INTERVAL;
     private static final ModConfigSpec.DoubleValue STEAM_LEAK_DAMAGE_RADIUS;
@@ -82,42 +82,44 @@ public final class FullSteamConfig {
 
         builder.pop();
 
-        builder.comment("Pressure/volume/temperature steam model.",
-                        "Boiler heat sets engine power; boiler shape trades torque (SU) against speed (RPM).")
+        builder.comment("Pressure/volume/temperature steam model. Tune these freely.",
+                        "Boiler size (volume) and heat set steam production and pressure; a cylinder is consumption-",
+                        "limited, so a bigger boiler gives more SU at lower RPM and a smaller boiler gives less SU at",
+                        "higher RPM. A full-heat 3x3x3 boiler (volume 27) exactly maxes one cylinder: 90 mB/t -> 147456",
+                        "SU, 16 RPM. Boilers producing more than is consumed build surplus pressure (overpressure).")
                 .push("steamPhysics");
 
-        STEAM_VOLUME_REFERENCE = builder
-                .comment("Reference boiler vessel volume in blocks (width^2 * height) that yields pressure ratio 1.0.",
-                        "Default 9 = a 3x3x1 Create Fluid Tank.")
-                .defineInRange("volumeReference", DEFAULT_STEAM_VOLUME_REFERENCE, 1, 100_000);
+        CYLINDER_MAX_INTAKE_MB = builder
+                .comment("Maximum steam (mB/t) a single cylinder consumes. Steam beyond this is surplus (overpressure).")
+                .defineInRange("cylinderMaxIntakeMb", DEFAULT_CYLINDER_MAX_INTAKE_MB, 1, 1_000_000);
 
-        STEAM_TEMPERATURE_REFERENCE = builder
-                .comment("Reference heat units (water-gated) that yield pressure ratio 1.0 at the reference volume.",
-                        "9 = nine normal burners (the baseline = pressure 1.0). Blaze cakes give 18 = pressure 2.0,",
-                        "which only adds SU because RPM caps at 64.")
-                .defineInRange("temperatureReference", DEFAULT_STEAM_TEMPERATURE_REFERENCE, 1, 100_000);
+        CYLINDER_MAX_SU = builder
+                .comment("Absolute stress capacity cap a single cylinder can ever produce (at full intake).")
+                .defineInRange("cylinderMaxSu", DEFAULT_CYLINDER_MAX_SU, 1, 1_000_000_000);
 
-        STEAM_RPM_REFERENCE = builder
-                .comment("RPM produced at pressure ratio 1.0 (caps at 64). Nine normal burners on a 3x3x1 boiler give",
-                        "pressure 1.0 -> 64 RPM; blaze cakes raise pressure to 2.0 but RPM stays capped at 64 (more SU only).")
-                .defineInRange("rpmReference", DEFAULT_STEAM_RPM_REFERENCE, 1.0D, 64.0D);
+        STEAM_PER_BLOCK = builder
+                .comment("Steam (mB/t) produced per boiler tank block at heat ratio 1.0.",
+                        "Default 90/27 so a full-heat 3x3x3 boiler (27 blocks) produces exactly 90 mB/t.")
+                .defineInRange("steamPerBlock", DEFAULT_STEAM_PER_BLOCK, 0.0D, 1_000_000.0D);
 
-        STEAM_PRESSURE_MIN = builder
-                .comment("Lower clamp on the pressure ratio so huge boilers still spin a little.")
-                .defineInRange("pressureMin", DEFAULT_STEAM_PRESSURE_MIN, 0.0D, 64.0D);
+        STEAM_MAX_VOLUME_REFERENCE = builder
+                .comment("Boiler volume (blocks) treated as a maxed cylinder: pressure ratio 1.0 at full heat.",
+                        "Default 27 = a 3x3x3 Create Fluid Tank.")
+                .defineInRange("maxVolumeReference", DEFAULT_STEAM_MAX_VOLUME_REFERENCE, 1, 1_000_000);
 
-        STEAM_PRESSURE_MAX = builder
-                .comment("Upper clamp on the pressure ratio so tiny high-pressure boilers stay bounded.")
-                .defineInRange("pressureMax", DEFAULT_STEAM_PRESSURE_MAX, 0.0D, 64.0D);
+        STEAM_RPM_AT_MAX_VOLUME = builder
+                .comment("RPM at pressure ratio 1.0 (a full-heat maxVolumeReference boiler). Smaller boilers spin",
+                        "faster up to maxRpm. Default 16 = a maxed 3x3x3 boiler.")
+                .defineInRange("rpmAtMaxVolume", DEFAULT_STEAM_RPM_AT_MAX_VOLUME, 0.0D, 256.0D);
 
-        STEAM_SU_REFERENCE = builder
-                .comment("Stress capacity at the reference boiler (nine normal burners on a 3x3x1 boiler).",
-                        "Blaze cakes raise pressure to 2.0 and double this to 294912 SU (RPM stays capped at 64).")
-                .defineInRange("suReference", DEFAULT_STEAM_SU_REFERENCE, 1, 1_000_000_000);
+        STEAM_MAX_RPM = builder
+                .comment("Upper clamp on engine RPM regardless of pressure.")
+                .defineInRange("maxRpm", DEFAULT_STEAM_MAX_RPM, 1.0D, 256.0D);
 
-        STEAM_SU_MAX = builder
-                .comment("Upper cap on stress capacity a single directly-fed engine can generate.")
-                .defineInRange("suMax", DEFAULT_STEAM_SU_MAX, 1, 1_000_000_000);
+        STEAM_HEAT_RATIO_MAX = builder
+                .comment("Upper clamp on heat ratio. >1.0 lets super-heated (blaze cake) boilers overproduce and",
+                        "raise pressure past a normally-fired boiler. Default 2.0 (cakes can double heat).")
+                .defineInRange("heatRatioMax", DEFAULT_STEAM_HEAT_RATIO_MAX, 0.0D, 64.0D);
 
         builder.pop();
 
@@ -181,32 +183,32 @@ public final class FullSteamConfig {
         return !loaded() || ENABLE_DIRECT_COMPACT_MODE.get();
     }
 
-    public static int steamVolumeReference() {
-        return loaded() ? STEAM_VOLUME_REFERENCE.get() : DEFAULT_STEAM_VOLUME_REFERENCE;
+    public static int cylinderMaxIntakeMb() {
+        return loaded() ? CYLINDER_MAX_INTAKE_MB.get() : DEFAULT_CYLINDER_MAX_INTAKE_MB;
     }
 
-    public static int steamTemperatureReference() {
-        return loaded() ? STEAM_TEMPERATURE_REFERENCE.get() : DEFAULT_STEAM_TEMPERATURE_REFERENCE;
+    public static int cylinderMaxSu() {
+        return loaded() ? CYLINDER_MAX_SU.get() : DEFAULT_CYLINDER_MAX_SU;
     }
 
-    public static double steamRpmReference() {
-        return loaded() ? STEAM_RPM_REFERENCE.get() : DEFAULT_STEAM_RPM_REFERENCE;
+    public static double steamPerBlock() {
+        return loaded() ? STEAM_PER_BLOCK.get() : DEFAULT_STEAM_PER_BLOCK;
     }
 
-    public static double steamPressureMin() {
-        return loaded() ? STEAM_PRESSURE_MIN.get() : DEFAULT_STEAM_PRESSURE_MIN;
+    public static int steamMaxVolumeReference() {
+        return loaded() ? STEAM_MAX_VOLUME_REFERENCE.get() : DEFAULT_STEAM_MAX_VOLUME_REFERENCE;
     }
 
-    public static double steamPressureMax() {
-        return loaded() ? STEAM_PRESSURE_MAX.get() : DEFAULT_STEAM_PRESSURE_MAX;
+    public static double steamRpmAtMaxVolume() {
+        return loaded() ? STEAM_RPM_AT_MAX_VOLUME.get() : DEFAULT_STEAM_RPM_AT_MAX_VOLUME;
     }
 
-    public static int steamSuReference() {
-        return loaded() ? STEAM_SU_REFERENCE.get() : DEFAULT_STEAM_SU_REFERENCE;
+    public static double steamMaxRpm() {
+        return loaded() ? STEAM_MAX_RPM.get() : DEFAULT_STEAM_MAX_RPM;
     }
 
-    public static int steamSuMax() {
-        return loaded() ? STEAM_SU_MAX.get() : DEFAULT_STEAM_SU_MAX;
+    public static double steamHeatRatioMax() {
+        return loaded() ? STEAM_HEAT_RATIO_MAX.get() : DEFAULT_STEAM_HEAT_RATIO_MAX;
     }
 
     public static boolean steamLeakDamageEnabled() {
@@ -246,9 +248,9 @@ public final class FullSteamConfig {
         return SU_PER_HEAT_UNIT / steamPerHeatUnit();
     }
 
-    /** Maximum steam in mB/t one engine draws, and the per-inlet intake cap: {@code 9 * steamPerHeatUnit}. */
+    /** Maximum steam in mB/t one cylinder draws (and the per-inlet intake cap). Alias of cylinderMaxIntakeMb. */
     public static int maxPipedSteamPerTick() {
-        return MAX_PIPED_HEAT_UNITS * steamPerHeatUnit();
+        return cylinderMaxIntakeMb();
     }
 
     private FullSteamConfig() {

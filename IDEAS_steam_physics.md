@@ -7,41 +7,67 @@ Status: **IMPLEMENTED (v1).** Locked design below; flow-only model replaced.
 
 ---
 
-## LOCKED DESIGN (shipped)
+## LOCKED DESIGN (shipped) — v2 consumption-limited / volume-tiered
 
-Decisions (2026-06-05):
-- **Replace** the flow-only model outright (no opt-in flag).
-- Specs from **boiler geometry + heat level**. **No** regulator/throttle block (maybe later).
-- **Continuous** RPM (0..64), not snapped tiers.
+Decisions:
+- **Replace** the flow-only model outright. No opt-in flag.
+- Specs from **boiler volume + heat ratio**. **No** regulator block yet.
+- **Continuous** RPM. All numbers **config-backed** (`steamPhysics` group) for repeated tuning.
+- Anchor: **a full-heat 3×3×3 boiler (volume 27) exactly maxes one cylinder** = 90 mB/t → 147456 SU,
+  16 RPM. Bigger boilers overproduce (→ overpressure); smaller = less SU, higher RPM.
 
-Model (`content/steam/SteamPhysics.java`), two intrinsic boiler inputs:
-- `T` = water-gated heat units (compact: blaze-burner units 0..18; piped: `min(activeHeat, waterMax)`).
-- `V` = boiler vessel volume = `width^2 * height` blocks.
-- `pressure p = (T/T_ref) / (V/V_ref)`  (config `steamPhysics.temperatureReference=9`, `volumeReference=9`).
-- `RPM = clamp(rpmReference * p, 0, 64)`  (`rpmReference=64`), `p` clamped `[pressureMin 0.1, pressureMax 4.0]`.
-- `SU(direct) = clamp(suReference * (T/T_ref) * (V/V_ref), 0, suMax)`  (`suReference=147456`, `suMax=2_000_000`).
-- Identity: `SU*RPM ∝ T^2` → **heat sets power; boiler shape is a (power-neutral) torque↔speed trade.**
-  - Wide/large boiler → big V → low p → low RPM, high SU (torque).
-  - Tall/thin boiler → small V → high p → high RPM, low SU (speed).
-  - **Baseline = nine NORMAL burners on a 3×3×1 boiler** (T=9): pressure **1.0, RPM 64, SU 147456**.
-    Blaze cakes (T=18) raise pressure to **2.0** but RPM is capped at 64, so they only **double SU
-    (294912)**. (`T_ref=9` = nine normal burners = the 100% reference; cakes are 200% pressure/SU.)
+Model (`content/steam/SteamPhysics.java`), inputs read off Create's `BoilerData`:
+- `V` = `boiler.getTotalTankSize()` (tank block count).
+- `sizeCap` = `getMaxHeatLevelForBoilerSize(V)`, `waterGatedHeat = min(activeHeat, getMaxHeatLevelForWaterSupply())`.
+- `heatRatio = clamp(waterGatedHeat / sizeCap, 0, heatRatioMax)` (1.0 = fully fired for its size; >1 = super-heated/cakes).
+- `production = round(steamPerBlock · V · heatRatio)` mB/t  (`steamPerBlock = 90/27` → 3×3×3 full = 90).
+- `pressure p = heatRatio · maxVolumeReference / V`  (`maxVolumeReference=27`; p=1.0 at full-heat 3×3×3).
+- `RPM = clamp(rpmAtMaxVolume · p, 0, maxRpm)`  (`rpmAtMaxVolume=16`, `maxRpm=64`).
+- `SU = min(cylinderMaxSu, consumed · suPerSteamMb)`, `consumed ≤ cylinderMaxIntakeMb`
+  (`cylinderMaxIntakeMb=90`, `cylinderMaxSu=147456`). **Consumption-limited** — this is the hard cap.
+
+Full-heat tiers (config defaults):
+| boiler | V | mB/t | RPM | SU |
+|---|---|---|---|---|
+| 1×1×1 | 1 | 3 | 64 | ~5.5k |
+| 2×2×2 | 8 | 27 | 54 | ~44k |
+| 3×3×1 | 9 | 30 | 48 | 49152 |
+| 3×3×2 | 18 | 60 | 24 | 98304 |
+| 3×3×3 | 27 | 90 | 16 | 147456 |
+| >3×3×3 | >27 | >90 | <16 | 147456 (surplus → overpressure) |
 
 Propagation:
-- **Direct/compact** engine reads its boiler geometry locally (`PistonHeadBlockEntity.calculateDirectSteamOutput`).
-- **Piped**: `BoilerOutletBlockEntity` computes its boiler's `p` AND capacity `SU = suRef·(T/T_ref)·(V/V_ref)`
-  (same formula as direct) and reports both to every reachable assembled `SteamInletBlockEntity` during
-  the steam-push BFS (`reportSupply`, max-wins, decays after 10 ticks). **Capacity is split evenly
-  across the inlets the boiler feeds** so multiple engines share one boiler's power (no duplication,
-  power-conserving). The piston reads `inlet.getSupplyPressureRatio()` → RPM and
-  `inlet.getSupplyCapacitySu()` → SU, so piped engines get the full volume↔pressure trade: small
-  boiler = high pressure/RPM, low SU; big boiler = low pressure/RPM, high SU. Unknown supply falls
-  back to pressure 1.0 and flow-based SU.
+- **Direct/compact** engine reads its boiler locally (`calculateDirectSteamOutput`): same V + heatRatio.
+  Compact is fixed 3×3×1 → mid tier (49152 SU / 48 RPM); a maxed cylinder needs a piped 3×3×3.
+- **Piped**: `BoilerOutletBlockEntity` computes its boiler's `p` and reports it to reachable assembled
+  inlets during the push BFS (`reportSupplyPressure`, max-wins, 10-tick decay). Piston RPM from
+  delivered pressure; SU from steam actually consumed (capped). The boiler's finite production splits
+  among the engines drawing from it, so no duplication.
 
-Surfaced on goggles: outlet shows pressure + volume + heat; piston shows pressure + RPM + SU.
+Goggles: outlet shows pressure + volume + production; piston/cylinder ring show pressure + RPM + SU.
 
-Open follow-ups (not done): optional regulator block; piped-mode strict power conservation;
-tuning `pressureMin/Max`, `rpmReference`, `suReference` after in-game testing; ponder/JEI docs.
+## NEXT: overpressure + steam vent valve (designed, not yet built)
+
+The point of the consumption cap: if a boiler **produces more steam than is consumed**, the surplus has
+nowhere to go and should build pressure until the **boiler explodes**, unless bled by a future **steam
+vent valve** block.
+
+Proposed design (to confirm with user before building — it's destructive):
+- Track surplus on the boiler outlet (or boiler): each tick `surplus += producedMb − movedMb` (steam
+  produced but not pushed to a consumer / open end). Clamp at 0 floor.
+- When `surplus` (or an accumulated "pressure" integral) exceeds `overpressureThreshold` for longer
+  than `overpressureGraceTicks`, trigger an explosion at the boiler (configurable power, like TNT-ish),
+  scaling with boiler size. Warning phase first: shaking gauge / hiss / particles as it nears the limit.
+- **Steam vent valve** (future block): attaches to the boiler or pipe network; bleeds up to `ventRateMb`
+  per tick of surplus (venting a hot steam cloud = reuses the scald handler), keeping pressure below
+  the threshold. Manual or redstone-gated.
+- All knobs config-backed: enable flag, threshold, grace ticks, explosion power, vent rate.
+
+Open decisions:
+- [ ] Explosion: destroy the boiler/break blocks (TNT-like) or just damage entities + drop the multiblock?
+- [ ] Pressure source of truth: boiler outlet vs the Create Fluid Tank BE (mixin) — outlets are ours, simpler.
+- [ ] Does an open pipe end (venting) count as "consumed" so leaking pipes relieve pressure? (Lean yes.)
+- [ ] Warning UX: gauge + sound + particles thresholds.
 
 ---
 

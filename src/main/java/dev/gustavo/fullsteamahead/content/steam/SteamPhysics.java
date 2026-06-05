@@ -7,48 +7,66 @@ import net.minecraft.util.Mth;
  * Pressure/volume/temperature steam model shared by the direct (compact) engine and the
  * piped engine path.
  *
- * <p>Two intrinsic boiler quantities drive everything: a thermal intensity {@code T}
- * (water-gated heat units) and a vessel {@code volume} (boiler tank block count). From those:
+ * <p>Two boiler quantities drive everything: a vessel {@code volume} (Create Fluid Tank block
+ * count) and a {@code heatRatio} (how hot the boiler is for its size, 0..heatRatioMax). From those:
  * <ul>
- *   <li>pressure ratio {@code p = (T/T_ref) / (V/V_ref)} — hotter or smaller raises it,</li>
- *   <li>{@code RPM = clamp(RPM_ref * p, 0, 64)} — pressure picks the speed,</li>
- *   <li>{@code SU = SU_ref * (T/T_ref) * (V/V_ref)} — energy/displacement picks the torque.</li>
+ *   <li>steam {@code production = steamPerBlock * volume * heatRatio} mB/t,</li>
+ *   <li>pressure {@code p = heatRatio * maxVolumeReference / volume} (1.0 at a maxed 3x3x3 boiler),</li>
+ *   <li>{@code RPM = clamp(rpmAtMaxVolume * p, 0, maxRpm)} — pressure picks the speed.</li>
  * </ul>
- * Because {@code SU * RPM ∝ T^2}, boiler heat sets the power level while boiler shape is a
- * (roughly) power-neutral torque-vs-speed trade: wide/large = high SU & low RPM, tall/thin =
- * high RPM & low SU.</p>
+ * Stress is consumption-limited: a cylinder draws at most {@code cylinderMaxIntakeMb} mB/t, giving at
+ * most {@code cylinderMaxSu}. So a bigger boiler delivers more steam (more SU, up to the cap) at lower
+ * pressure (lower RPM); a small boiler delivers little (low SU) at high pressure (high RPM). A maxed
+ * 3x3x3 boiler exactly feeds one cylinder (90 mB/t -> 147456 SU, 16 RPM). Anything producing more than
+ * is consumed is surplus that builds boiler pressure (see overpressure handling).</p>
+ *
+ * <p>Every number here is config-backed ({@link FullSteamConfig}) so the balance can be tuned freely.</p>
  */
 public final class SteamPhysics {
-    public static final float MAX_RPM = 64.0F;
 
-    /** Pressure ratio relative to the reference boiler (1.0 == reference). 0 when cold/empty. */
-    public static float pressureRatio(double temperatureUnits, double volumeBlocks) {
-        if (temperatureUnits <= 0.0D || volumeBlocks <= 0.0D) {
-            return 0.0F;
+    /** Heat ratio: how hot the boiler runs for its size, clamped to [0, heatRatioMax]. */
+    public static double heatRatio(int waterGatedHeat, int sizeHeatCap) {
+        if (waterGatedHeat <= 0 || sizeHeatCap <= 0) {
+            return 0.0D;
         }
-        double tRef = Math.max(1.0D, FullSteamConfig.steamTemperatureReference());
-        double vRef = Math.max(1.0D, FullSteamConfig.steamVolumeReference());
-        double raw = (temperatureUnits / tRef) / (volumeBlocks / vRef);
-        return (float) Mth.clamp(raw, FullSteamConfig.steamPressureMin(), FullSteamConfig.steamPressureMax());
+        return Mth.clamp(waterGatedHeat / (double) sizeHeatCap, 0.0D, FullSteamConfig.steamHeatRatioMax());
     }
 
-    /** Continuous RPM from a pressure ratio, clamped to [0, 64]. */
-    public static float rpm(float pressureRatio) {
+    /** Pressure ratio (1.0 at a full-heat maxed boiler); higher for smaller/hotter boilers. 0 when cold. */
+    public static float pressureRatio(double heatRatio, double volumeBlocks) {
+        if (heatRatio <= 0.0D || volumeBlocks <= 0.0D) {
+            return 0.0F;
+        }
+        double vMax = Math.max(1.0D, FullSteamConfig.steamMaxVolumeReference());
+        return (float) (heatRatio * vMax / volumeBlocks);
+    }
+
+    /** Continuous RPM from a pressure ratio, clamped to [0, maxRpm]. */
+    public static float rpmFromPressure(float pressureRatio) {
         if (pressureRatio <= 0.0F) {
             return 0.0F;
         }
-        return (float) Mth.clamp(FullSteamConfig.steamRpmReference() * pressureRatio, 0.0D, MAX_RPM);
+        return (float) Mth.clamp(
+                FullSteamConfig.steamRpmAtMaxVolume() * pressureRatio,
+                0.0D,
+                FullSteamConfig.steamMaxRpm()
+        );
     }
 
-    /** Stress capacity for a directly-fed engine, from heat and vessel volume (not pressure-clamped). */
-    public static float directCapacitySu(double temperatureUnits, double volumeBlocks) {
-        if (temperatureUnits <= 0.0D || volumeBlocks <= 0.0D) {
+    /** Steam a boiler produces per tick from its volume and heat ratio. */
+    public static int productionMb(double heatRatio, double volumeBlocks) {
+        if (heatRatio <= 0.0D || volumeBlocks <= 0.0D) {
+            return 0;
+        }
+        return (int) Math.round(FullSteamConfig.steamPerBlock() * volumeBlocks * heatRatio);
+    }
+
+    /** Stress capacity from the steam a cylinder actually consumes, capped at cylinderMaxSu. */
+    public static float suForConsumed(int consumedMb) {
+        if (consumedMb <= 0) {
             return 0.0F;
         }
-        double tRef = Math.max(1.0D, FullSteamConfig.steamTemperatureReference());
-        double vRef = Math.max(1.0D, FullSteamConfig.steamVolumeReference());
-        double su = FullSteamConfig.steamSuReference() * (temperatureUnits / tRef) * (volumeBlocks / vRef);
-        return (float) Math.min(su, FullSteamConfig.steamSuMax());
+        return Math.min((float) FullSteamConfig.cylinderMaxSu(), consumedMb * FullSteamConfig.suPerSteamMb());
     }
 
     /** Boiler vessel volume in blocks for a square Create Fluid Tank ({@code width^2 * height}). */
