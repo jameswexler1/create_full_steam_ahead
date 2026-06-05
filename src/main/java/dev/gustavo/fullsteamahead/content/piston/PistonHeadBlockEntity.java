@@ -40,6 +40,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private static final String BOILER_POS_KEY = "BoilerPos";
     private static final String INLET_POS_KEY = "InletPos";
     private static final String SHAFT_POS_KEY = "ShaftPos";
+    private static final String PISTON_BODY_COUNT_KEY = "PistonBodyCount";
     private static final String ACTIVE_BURNERS_KEY = "ActiveBurners";
     private static final String HEAT_UNITS_KEY = "HeatUnits";
     private static final String GENERATED_SPEED_KEY = "GeneratedSpeed";
@@ -64,6 +65,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private BlockPos boilerPos;
     private BlockPos inletPos;
     private BlockPos shaftPos;
+    private int pistonBodyCount = EngineValidator.MIN_PISTON_BODIES;
     private int activeBurners;
     private int heatUnits;
     private float generatedSpeed;
@@ -144,6 +146,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
                 || !Objects.equals(boilerPos, result.boilerPos())
                 || !Objects.equals(inletPos, result.inletPos())
                 || !Objects.equals(shaftPos, result.shaft())
+                || pistonBodyCount != result.pistonBodyCount()
                 || !Objects.equals(status, result.message());
 
         assembled = true;
@@ -152,6 +155,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         boilerPos = result.boilerPos();
         inletPos = result.inletPos();
         shaftPos = result.shaft();
+        pistonBodyCount = result.pistonBodyCount();
         status = result.message();
 
         setPistonsAssembled(result);
@@ -184,6 +188,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
                 || boilerPos != null
                 || inletPos != null
                 || shaftPos != null
+                || pistonBodyCount != EngineValidator.MIN_PISTON_BODIES
                 || steamConsumedRate != 0
                 || sourceMode != SourceMode.NONE
                 || !Objects.equals(status, reason);
@@ -197,6 +202,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         boilerPos = null;
         inletPos = null;
         shaftPos = null;
+        pistonBodyCount = EngineValidator.MIN_PISTON_BODIES;
         activeBurners = 0;
         heatUnits = 0;
         generatedSpeed = 0;
@@ -250,6 +256,14 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         return shaftPos;
     }
 
+    public int getPistonBodyCount() {
+        return Mth.clamp(pistonBodyCount, EngineValidator.MIN_PISTON_BODIES, EngineValidator.MAX_PISTON_BODIES);
+    }
+
+    public int getShaftDistance() {
+        return EngineValidator.shaftDistanceForPistonBodies(getPistonBodyCount());
+    }
+
     public Direction getStrokeDirection() {
         return EngineValidator.pistonHeadFacing(getBlockState());
     }
@@ -273,8 +287,8 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
             return shaft;
         }
         // Fallback for relocated worlds such as Ponder scenes, where the stored absolute shaftPos is
-        // stale: the shaft always sits three blocks along the stroke direction from the head.
-        return shaftEntityAt(worldPosition.relative(getStrokeDirection(), 3));
+        // stale: the shaft sits at the validated piston column length along the stroke direction.
+        return shaftEntityAt(worldPosition.relative(getStrokeDirection(), getShaftDistance()));
     }
 
     private int getShaftBankIndex() {
@@ -377,6 +391,9 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
         CreateLang.text("Engine assembled").style(ChatFormatting.GREEN).forGoggles(tooltip, 1);
         CreateLang.text(getStrokeDirection() == Direction.DOWN ? "Orientation: upside down" : "Orientation: upright")
+                .style(ChatFormatting.DARK_GRAY)
+                .forGoggles(tooltip, 1);
+        CreateLang.text("Piston bodies: " + getPistonBodyCount() + "/" + EngineValidator.MAX_PISTON_BODIES)
                 .style(ChatFormatting.DARK_GRAY)
                 .forGoggles(tooltip, 1);
         CreateLang.text("Source: " + sourceMode.displayName())
@@ -623,14 +640,19 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private void setPistonsAssembled(EngineValidator.Result result) {
         setPistonHead(result.pistonHead(), true, result.strokeDirection());
         Direction.Axis shaftAxis = EngineValidator.shaftAxis(level, result.shaft());
-        setPiston(result.piston(), true, PistonSection.INSIDE_HIGH, shaftAxis, result.strokeDirection());
+        for (BlockPos piston : result.pistons()) {
+            setPiston(piston, true, PistonSection.INSIDE_HIGH, shaftAxis, result.strokeDirection());
+        }
     }
 
     private void clearPistonStates(BlockPos skippedPistonPos) {
         for (Direction direction : new Direction[]{Direction.UP, Direction.DOWN}) {
-            EngineValidator.PistonPositions pistons = EngineValidator.pistonPositions(worldPosition, direction);
+            EngineValidator.PistonPositions pistons =
+                    EngineValidator.pistonPositions(worldPosition, direction, EngineValidator.MAX_PISTON_BODIES);
             clearPistonHead(pistons.pistonHead(), skippedPistonPos);
-            clearPiston(pistons.piston(), skippedPistonPos);
+            for (BlockPos piston : pistons.pistons()) {
+                clearPiston(piston, skippedPistonPos);
+            }
             clearPiston(pistons.emptyStroke(), skippedPistonPos);
         }
     }
@@ -745,6 +767,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         writePos(tag, BOILER_POS_KEY, boilerPos);
         writePos(tag, INLET_POS_KEY, inletPos);
         writePos(tag, SHAFT_POS_KEY, shaftPos);
+        tag.putInt(PISTON_BODY_COUNT_KEY, pistonBodyCount);
         tag.putInt(ACTIVE_BURNERS_KEY, activeBurners);
         tag.putInt(HEAT_UNITS_KEY, heatUnits);
         tag.putFloat(GENERATED_SPEED_KEY, generatedSpeed);
@@ -764,6 +787,13 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         boilerPos = readPos(tag, BOILER_POS_KEY);
         inletPos = readPos(tag, INLET_POS_KEY);
         shaftPos = readPos(tag, SHAFT_POS_KEY);
+        pistonBodyCount = tag.contains(PISTON_BODY_COUNT_KEY)
+                ? Mth.clamp(
+                        tag.getInt(PISTON_BODY_COUNT_KEY),
+                        EngineValidator.MIN_PISTON_BODIES,
+                        EngineValidator.MAX_PISTON_BODIES
+                )
+                : EngineValidator.MIN_PISTON_BODIES;
         activeBurners = tag.getInt(ACTIVE_BURNERS_KEY);
         heatUnits = tag.getInt(HEAT_UNITS_KEY);
         generatedSpeed = tag.getFloat(GENERATED_SPEED_KEY);

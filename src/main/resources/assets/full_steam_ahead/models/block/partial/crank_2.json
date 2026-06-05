@@ -1,0 +1,86 @@
+{
+  "credit": "Derived from crank.json for 2 piston body linkage",
+  "ambientocclusion": true,
+  "textures": {
+    "mechanical": "full_steam_ahead:block/piston/crank",
+    "particle": "full_steam_ahead:block/piston/crank"
+  },
+  "elements": [
+    {
+      "name": "shaft_collar_right",
+      "from": [11, 5, 5],
+      "to": [14, 11, 11],
+      "faces": {
+        "north": {"uv": [9.5, 1.5, 11, 4.5], "texture": "#mechanical"},
+        "east": {"uv": [11, 1.5, 14, 4.5], "texture": "#mechanical"},
+        "south": {"uv": [9.5, 1.5, 11, 4.5], "texture": "#mechanical"},
+        "west": {"uv": [11, 1.5, 14, 4.5], "texture": "#mechanical"},
+        "up": {"uv": [11, 0, 14, 1.5], "texture": "#mechanical", "rotation": 270},
+        "down": {"uv": [11, 4.5, 14, 6], "texture": "#mechanical", "rotation": 270}
+      }
+    },
+    {
+      "name": "shaft_collar_left",
+      "from": [2, 5, 5],
+      "to": [5, 11, 11],
+      "faces": {
+        "north": {"uv": [9.5, 1.5, 11, 4.5], "texture": "#mechanical"},
+        "east": {"uv": [11, 1.5, 14, 4.5], "texture": "#mechanical"},
+        "south": {"uv": [9.5, 1.5, 11, 4.5], "texture": "#mechanical"},
+        "west": {"uv": [11, 1.5, 14, 4.5], "texture": "#mechanical"},
+        "up": {"uv": [11, 0, 14, 1.5], "texture": "#mechanical", "rotation": 270},
+        "down": {"uv": [11, 4.5, 14, 6], "texture": "#mechanical", "rotation": 270}
+      }
+    },
+    {
+      "name": "arm_right_base",
+      "from": [10, -4, 5],
+      "to": [13, 5, 11],
+      "faces": {
+        "north": {"uv": [9.5, 1.5, 11, 6], "texture": "#mechanical", "rotation": 180},
+        "east": {"uv": [11, 1.5, 14, 6], "texture": "#mechanical", "rotation": 180},
+        "south": {"uv": [9.5, 1.5, 11, 6], "texture": "#mechanical", "rotation": 180},
+        "west": {"uv": [11, 1.5, 14, 6], "texture": "#mechanical", "rotation": 180},
+        "up": {"uv": [11, 4.5, 14, 6], "texture": "#mechanical", "rotation": 270},
+        "down": {"uv": [11, 0, 14, 1.5], "texture": "#mechanical", "rotation": 270}
+      }
+    },
+    {
+      "name": "arm_left_base",
+      "from": [3, -4, 5],
+      "to": [6, 5, 11],
+      "faces": {
+        "north": {"uv": [9.5, 1.5, 11, 6], "texture": "#mechanical", "rotation": 180},
+        "east": {"uv": [11, 1.5, 14, 6], "texture": "#mechanical", "rotation": 180},
+        "south": {"uv": [9.5, 1.5, 11, 6], "texture": "#mechanical", "rotation": 180},
+        "west": {"uv": [11, 1.5, 14, 6], "texture": "#mechanical", "rotation": 180},
+        "up": {"uv": [11, 4.5, 14, 6], "texture": "#mechanical", "rotation": 270},
+        "down": {"uv": [11, 0, 14, 1.5], "texture": "#mechanical", "rotation": 270}
+      }
+    },
+    {
+      "name": "arm_right_extension",
+      "from": [10, -7.5, 5],
+      "to": [13, -4, 11],
+      "faces": {
+        "north": {"uv": [9.5, 1.5, 11, 3.25], "texture": "#mechanical", "rotation": 180},
+        "east": {"uv": [11, 1.5, 14, 3.25], "texture": "#mechanical", "rotation": 180},
+        "south": {"uv": [9.5, 1.5, 11, 3.25], "texture": "#mechanical", "rotation": 180},
+        "west": {"uv": [11, 1.5, 14, 3.25], "texture": "#mechanical", "rotation": 180},
+        "down": {"uv": [11, 0, 14, 1.5], "texture": "#mechanical", "rotation": 270}
+      }
+    },
+    {
+      "name": "arm_left_extension",
+      "from": [3, -7.5, 5],
+      "to": [6, -4, 11],
+      "faces": {
+        "north": {"uv": [9.5, 1.5, 11, 3.25], "texture": "#mechanical", "rotation": 180},
+        "east": {"uv": [11, 1.5, 14, 3.25], "texture": "#mechanical", "rotation": 180},
+        "south": {"uv": [9.5, 1.5, 11, 3.25], "texture": "#mechanical", "rotation": 180},
+        "west": {"uv": [11, 1.5, 14, 3.25], "texture": "#mechanical", "rotation": 180},
+        "down": {"uv": [11, 0, 14, 1.5], "texture": "#mechanical", "rotation": 270}
+      }
+    }
+  ]
+}

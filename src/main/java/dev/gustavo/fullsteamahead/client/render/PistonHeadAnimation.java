@@ -1,21 +1,28 @@
 package dev.gustavo.fullsteamahead.client.render;
 
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
+import dev.gustavo.fullsteamahead.content.piston.EngineValidator;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlockEntity;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 
 public final class PistonHeadAnimation {
-    public static final int PISTON_BLOCKS = 1;
+    public static final int MAX_PISTON_BLOCKS = EngineValidator.MAX_PISTON_BODIES;
     public static final float CONNECTING_ROD_SMALL_END_Y = 2.0F / 16.0F;
 
-    private static final float CRANK_RADIUS = 7.5F / 16.0F;
-    private static final float CONNECTING_ROD_LENGTH = 14.0F / 16.0F;
+    private static final float[] CRANK_RADII = {
+            7.5F / 16.0F,
+            11.0F / 16.0F,
+            14.0F / 16.0F
+    };
+    private static final float[] CONNECTING_ROD_LENGTHS = {
+            14.0F / 16.0F,
+            30.0F / 16.0F,
+            46.0F / 16.0F
+    };
     private static final float PISTON_WRIST_PIN_Y = 14.0F / 16.0F;
     private static final float HEAD_TO_PISTON_BODY_Y = 1.0F;
-    private static final float SHAFT_BASE_Y = 3.0F;
-    private static final float SHAFT_CENTER_Y = SHAFT_BASE_Y + 0.5F;
     private static final float HALF_PI = (float) (Math.PI / 2.0D);
 
     public static State state(PistonHeadBlockEntity engine) {
@@ -26,7 +33,7 @@ public final class PistonHeadAnimation {
                 ? KineticBlockEntityRenderer.getAngleForBe(shaft, shaft.getBlockPos(), shaftAxis)
                 : 0;
         angle += engine.getAnimationPhaseOffset();
-        return state(visible, angle, shaftAxis, engine.getStrokeDirection());
+        return state(visible, angle, shaftAxis, engine.getStrokeDirection(), engine.getPistonBodyCount());
     }
 
     public static State state(boolean visible, float angle) {
@@ -38,17 +45,32 @@ public final class PistonHeadAnimation {
     }
 
     public static State state(boolean visible, float angle, Direction.Axis shaftAxis, Direction strokeDirection) {
-        float crankDepth = CRANK_RADIUS * Mth.cos(angle);
-        float crankVertical = -CRANK_RADIUS * Mth.sin(angle);
+        return state(visible, angle, shaftAxis, strokeDirection, EngineValidator.MIN_PISTON_BODIES);
+    }
+
+    public static State state(
+            boolean visible,
+            float angle,
+            Direction.Axis shaftAxis,
+            Direction strokeDirection,
+            int pistonBodyCount
+    ) {
+        int count = clampPistonBodyCount(pistonBodyCount);
+        float crankRadius = crankRadius(count);
+        float connectingRodLength = connectingRodLength(count);
+        float shaftBaseY = EngineValidator.shaftDistanceForPistonBodies(count);
+        float shaftCenterY = shaftBaseY + 0.5F;
+        float crankDepth = crankRadius * Mth.cos(angle);
+        float crankVertical = -crankRadius * Mth.sin(angle);
         float rodVertical = Mth.sqrt(Math.max(
                 0.0F,
-                CONNECTING_ROD_LENGTH * CONNECTING_ROD_LENGTH - crankDepth * crankDepth
+                connectingRodLength * connectingRodLength - crankDepth * crankDepth
         ));
-        float wristY = SHAFT_CENTER_Y + crankVertical - rodVertical;
+        float wristY = shaftCenterY + crankVertical - rodVertical;
         float pistonY = wristY - PISTON_WRIST_PIN_Y;
         float headY = pistonY - HEAD_TO_PISTON_BODY_Y;
         float connectingRodY = wristY - CONNECTING_ROD_SMALL_END_Y;
-        float connectingRodAngle = (float) Math.asin(Mth.clamp(crankDepth / CONNECTING_ROD_LENGTH, -1.0F, 1.0F));
+        float connectingRodAngle = (float) Math.asin(Mth.clamp(crankDepth / connectingRodLength, -1.0F, 1.0F));
         // The slider-crank is always solved in the upright frame. Inverted engines are
         // rendered by rigidly flipping the fully posed linkage 180 degrees about the head
         // block center (see orientForStroke), which keeps every joint connected.
@@ -57,6 +79,8 @@ public final class PistonHeadAnimation {
                 angle,
                 shaftAxis,
                 strokeDirection,
+                count,
+                EngineValidator.shaftDistanceForPistonBodies(count),
                 headY,
                 pistonY,
                 connectingRodY,
@@ -64,11 +88,25 @@ public final class PistonHeadAnimation {
         );
     }
 
+    public static int clampPistonBodyCount(int pistonBodyCount) {
+        return Mth.clamp(pistonBodyCount, EngineValidator.MIN_PISTON_BODIES, EngineValidator.MAX_PISTON_BODIES);
+    }
+
+    public static float crankRadius(int pistonBodyCount) {
+        return CRANK_RADII[clampPistonBodyCount(pistonBodyCount) - 1];
+    }
+
+    public static float connectingRodLength(int pistonBodyCount) {
+        return CONNECTING_ROD_LENGTHS[clampPistonBodyCount(pistonBodyCount) - 1];
+    }
+
     public record State(
             boolean visible,
             float angle,
             Direction.Axis shaftAxis,
             Direction strokeDirection,
+            int pistonBodyCount,
+            int shaftDistance,
             float headY,
             float pistonY,
             float connectingRodY,
@@ -83,7 +121,7 @@ public final class PistonHeadAnimation {
         }
 
         public float crankY() {
-            return SHAFT_BASE_Y;
+            return shaftDistance;
         }
 
         public float crankRotation() {

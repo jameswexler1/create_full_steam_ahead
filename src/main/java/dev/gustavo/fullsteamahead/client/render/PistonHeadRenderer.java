@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
+import dev.gustavo.fullsteamahead.content.piston.EngineValidator;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
@@ -41,15 +42,15 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
         BlockPos headPos = engine.getBlockPos();
         Direction strokeDirection = animation.strokeDirection();
         int headLight = partLight(level, headPos, animation.headY(), strokeDirection, light);
-        int pistonLight = partLight(level, headPos, animation.pistonY(0), strokeDirection, light);
         int rodLight = partLight(level, headPos, animation.connectingRodY(), strokeDirection, light);
         int shaftLight = level == null
                 ? light
-                : LevelRenderer.getLightColor(level, headPos.relative(animation.strokeDirection(), 3));
+                : LevelRenderer.getLightColor(level, headPos.relative(animation.strokeDirection(), animation.shaftDistance()));
 
         renderTranslated(FullSteamPartialModels.pistonHead(), state, poseStack, solid, headLight, overlay, animation,
                 animation.headY());
-        for (int blockIndex = 0; blockIndex < PistonHeadAnimation.PISTON_BLOCKS; blockIndex++) {
+        for (int blockIndex = 0; blockIndex < animation.pistonBodyCount(); blockIndex++) {
+            int pistonLight = partLight(level, headPos, animation.pistonY(blockIndex), strokeDirection, light);
             renderPistonBody(state, poseStack, solid, pistonLight, overlay, animation, blockIndex);
         }
         renderConnectingRod(state, poseStack, solid, rodLight, overlay, animation);
@@ -59,7 +60,7 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
     @Override
     public AABB getRenderBoundingBox(PistonHeadBlockEntity engine) {
         return new AABB(engine.getBlockPos())
-                .minmax(new AABB(engine.getBlockPos().relative(engine.getStrokeDirection(), 3)))
+                .minmax(new AABB(engine.getBlockPos().relative(engine.getStrokeDirection(), engine.getShaftDistance())))
                 .inflate(2.0D);
     }
 
@@ -109,7 +110,10 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             int overlay,
             PistonHeadAnimation.State animation
     ) {
-        SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.connectingRod(), state);
+        SuperByteBuffer buffer = CachedBuffers.partial(
+                FullSteamPartialModels.connectingRod(animation.pistonBodyCount()),
+                state
+        );
         orientForStroke(buffer, animation);
         rotateConnectingRod(
                 buffer.translate(0, animation.connectingRodY(), 0),
@@ -128,7 +132,7 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             int overlay,
             PistonHeadAnimation.State animation
     ) {
-        SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.crank(), state);
+        SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.crank(animation.pistonBodyCount()), state);
         orientForStroke(buffer, animation);
         rotateCrank(
                 buffer.translate(0, animation.crankY(), 0),
@@ -201,7 +205,8 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             return fallbackLight;
         }
 
-        int blockOffset = Math.max(0, Math.min(3, Math.round(Math.abs(y))));
+        int maxDistance = EngineValidator.shaftDistanceForPistonBodies(EngineValidator.MAX_PISTON_BODIES);
+        int blockOffset = Math.max(0, Math.min(maxDistance, Math.round(Math.abs(y))));
         return LevelRenderer.getLightColor(level, basePos.relative(strokeDirection, blockOffset));
     }
 }
