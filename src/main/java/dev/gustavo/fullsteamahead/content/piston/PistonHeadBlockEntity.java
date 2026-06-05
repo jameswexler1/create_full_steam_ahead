@@ -663,8 +663,13 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     private void clearPiston(BlockPos pos, BlockPos skippedPistonPos) {
-        if (!pos.equals(skippedPistonPos)) {
-            setPiston(pos, false, PistonSection.INSIDE_LOW, null, null);
+        if (level == null || pos == null || pos.equals(skippedPistonPos) || !level.isLoaded(pos)) {
+            return;
+        }
+
+        BlockState state = level.getBlockState(pos);
+        if (state.is(ModBlocks.PISTON.get())) {
+            setPiston(pos, false, SteamPistonBlock.detectedSection(level, pos, state), null, null);
         }
     }
 

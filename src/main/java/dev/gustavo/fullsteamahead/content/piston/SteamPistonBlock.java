@@ -196,7 +196,7 @@ public class SteamPistonBlock extends Block implements FullSteamWrenchable {
         }
     }
 
-    private static PistonSection detectedSection(Level level, BlockPos pos, BlockState state) {
+    static PistonSection detectedSection(Level level, BlockPos pos, BlockState state) {
         BlockPos proximalPos = pos.relative(state.getValue(FACING));
         return level.isLoaded(proximalPos) && level.getBlockState(proximalPos).is(ModBlocks.PISTON.get())
                 ? INTERMEDIATE_SECTION
