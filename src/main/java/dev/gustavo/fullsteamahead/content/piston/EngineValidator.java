@@ -48,8 +48,10 @@ public final class EngineValidator {
         if (pistons.pistonBodyCount() > MAX_PISTON_BODIES) {
             return Result.invalid("Too many piston bodies");
         }
-        if (!isEmpty(level, pistons.emptyStroke())) {
-            return Result.invalid("Stroke space must be empty");
+        for (BlockPos strokeSpace : pistons.emptyStrokeSpaces()) {
+            if (!isEmpty(level, strokeSpace)) {
+                return Result.invalid("Stroke space must be empty");
+            }
         }
         if (!isValidShaft(level, pistons.shaft())) {
             return Result.invalid("Missing horizontal Create shaft");
@@ -110,7 +112,7 @@ public final class EngineValidator {
                 pistons.pistonHead(),
                 pistons.pistons(),
                 pistons.pistonBodyCount(),
-                pistons.emptyStroke(),
+                pistons.emptyStrokeSpaces(),
                 pistons.shaft()
         );
     }
@@ -129,11 +131,12 @@ public final class EngineValidator {
         for (int offset = 1; offset <= count; offset++) {
             pistons.add(pistonHeadPos.relative(strokeDirection, offset));
         }
+        List<BlockPos> strokeSpaces = strokeSpacePositions(pistonHeadPos, strokeDirection, count);
         return new PistonPositions(
                 pistonHeadPos,
                 List.copyOf(pistons),
                 count,
-                pistonHeadPos.relative(strokeDirection, count + 1),
+                strokeSpaces,
                 pistonHeadPos.relative(strokeDirection, shaftDistanceForPistonBodies(count))
         );
     }
@@ -149,17 +152,27 @@ public final class EngineValidator {
         }
 
         int count = pistons.size();
+        List<BlockPos> strokeSpaces = strokeSpacePositions(pistonHeadPos, strokeDirection, count);
         return new PistonPositions(
                 pistonHeadPos,
                 List.copyOf(pistons),
                 count,
-                pistonHeadPos.relative(strokeDirection, count + 1),
+                strokeSpaces,
                 pistonHeadPos.relative(strokeDirection, shaftDistanceForPistonBodies(count))
         );
     }
 
     public static int shaftDistanceForPistonBodies(int pistonBodyCount) {
-        return Math.max(0, pistonBodyCount) + 2;
+        return Math.max(0, pistonBodyCount) * 2 + 1;
+    }
+
+    private static List<BlockPos> strokeSpacePositions(BlockPos pistonHeadPos, Direction strokeDirection, int pistonBodyCount) {
+        int count = Math.max(0, pistonBodyCount);
+        List<BlockPos> strokeSpaces = new ArrayList<>(count);
+        for (int offset = count + 1; offset <= count * 2; offset++) {
+            strokeSpaces.add(pistonHeadPos.relative(strokeDirection, offset));
+        }
+        return List.copyOf(strokeSpaces);
     }
 
     public static PistonPositions pistonPositionsFromBody(BlockPos pistonPos) {
@@ -207,8 +220,10 @@ public final class EngineValidator {
                 return false;
             }
         }
-        if (!isEmpty(level, pistons.emptyStroke())) {
-            return false;
+        for (BlockPos strokeSpace : pistons.emptyStrokeSpaces()) {
+            if (!isEmpty(level, strokeSpace)) {
+                return false;
+            }
         }
         if (!level.isLoaded(pistons.shaft()) || !level.getBlockState(pistons.shaft()).canBeReplaced()) {
             return false;
@@ -278,7 +293,7 @@ public final class EngineValidator {
     }
 
     private static Direction strokeDirectionFor(PistonPositions pistons) {
-        return pistons.emptyStroke().getY() < pistons.pistonHead().getY() ? Direction.DOWN : Direction.UP;
+        return pistons.shaft().getY() < pistons.pistonHead().getY() ? Direction.DOWN : Direction.UP;
     }
 
     private static boolean isAssembled(
@@ -380,7 +395,7 @@ public final class EngineValidator {
             BlockPos pistonHead,
             List<BlockPos> pistons,
             int pistonBodyCount,
-            BlockPos emptyStroke,
+            List<BlockPos> emptyStrokeSpaces,
             BlockPos shaft
     ) {
     }
@@ -396,11 +411,11 @@ public final class EngineValidator {
             BlockPos pistonHead,
             List<BlockPos> pistons,
             int pistonBodyCount,
-            BlockPos emptyStroke,
+            List<BlockPos> emptyStrokeSpaces,
             BlockPos shaft
     ) {
         public static Result invalid(String message) {
-            return new Result(false, message, null, null, null, null, Direction.UP, null, List.of(), 0, null, null);
+            return new Result(false, message, null, null, null, null, Direction.UP, null, List.of(), 0, List.of(), null);
         }
     }
 

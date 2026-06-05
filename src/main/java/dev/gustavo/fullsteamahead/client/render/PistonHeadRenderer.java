@@ -110,14 +110,58 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             int overlay,
             PistonHeadAnimation.State animation
     ) {
-        SuperByteBuffer buffer = CachedBuffers.partial(
-                FullSteamPartialModels.connectingRod(animation.pistonBodyCount()),
-                state
+        renderConnectingRodPart(
+                FullSteamPartialModels.connectingRodLower(),
+                state,
+                poseStack,
+                vertexConsumer,
+                light,
+                overlay,
+                animation,
+                0
         );
+        for (int segmentIndex = 0;
+             segmentIndex < PistonHeadAnimation.connectingRodMiddleSegments(animation.pistonBodyCount());
+             segmentIndex++) {
+            renderConnectingRodPart(
+                    FullSteamPartialModels.connectingRodMiddle(),
+                    state,
+                    poseStack,
+                    vertexConsumer,
+                    light,
+                    overlay,
+                    animation,
+                    PistonHeadAnimation.connectingRodMiddleOffset(segmentIndex)
+            );
+        }
+        renderConnectingRodPart(
+                FullSteamPartialModels.connectingRodUpper(),
+                state,
+                poseStack,
+                vertexConsumer,
+                light,
+                overlay,
+                animation,
+                PistonHeadAnimation.connectingRodUpperOffset(animation.pistonBodyCount())
+        );
+    }
+
+    private static void renderConnectingRodPart(
+            PartialModel partial,
+            BlockState state,
+            PoseStack poseStack,
+            VertexConsumer vertexConsumer,
+            int light,
+            int overlay,
+            PistonHeadAnimation.State animation,
+            float localYOffset
+    ) {
+        SuperByteBuffer buffer = CachedBuffers.partial(partial, state);
         orientForStroke(buffer, animation);
         rotateConnectingRod(
                 buffer.translate(0, animation.connectingRodY(), 0),
-                animation
+                animation,
+                localYOffset
         )
                 .light(light)
                 .overlay(overlay)
@@ -145,14 +189,17 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
 
     private static SuperByteBuffer rotateConnectingRod(
             SuperByteBuffer buffer,
-            PistonHeadAnimation.State animation
+            PistonHeadAnimation.State animation,
+            float localYOffset
     ) {
         buffer.center();
         yawLinkageFrame(buffer, animation.shaftAxis());
         buffer.uncenter();
         buffer.translate(0.5F, PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, 0.5F);
         buffer.rotateX(animation.connectingRodRotation());
-        return buffer.translate(-0.5F, -PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, -0.5F);
+        return buffer
+                .translate(-0.5F, -PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, -0.5F)
+                .translate(0, localYOffset, 0);
     }
 
     private static SuperByteBuffer rotateCrank(

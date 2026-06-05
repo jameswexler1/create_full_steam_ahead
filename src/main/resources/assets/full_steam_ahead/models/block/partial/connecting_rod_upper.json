@@ -1,0 +1,23 @@
+{
+  "credit": "Upper connecting rod segment derived from new_models/connecting_rod.bbmodel",
+  "ambientocclusion": true,
+  "textures": {
+    "mechanical": "full_steam_ahead:block/piston/connecting_rod",
+    "particle": "full_steam_ahead:block/piston/connecting_rod"
+  },
+  "elements": [
+    {
+      "name": "upper_end",
+      "from": [6, 13, 4],
+      "to": [10, 19, 12],
+      "faces": {
+        "north": {"uv": [8.5, 11, 10.5, 14], "texture": "#mechanical"},
+        "east": {"uv": [10.5, 11, 14.5, 14], "texture": "#mechanical"},
+        "south": {"uv": [8.5, 11, 10.5, 14], "texture": "#mechanical"},
+        "west": {"uv": [10.5, 11, 14.5, 14], "texture": "#mechanical"},
+        "up": {"uv": [10.5, 9, 14.5, 11], "texture": "#mechanical", "rotation": 90},
+        "down": {"uv": [10.5, 14, 14.5, 16], "texture": "#mechanical", "rotation": 90}
+      }
+    }
+  ]
+}

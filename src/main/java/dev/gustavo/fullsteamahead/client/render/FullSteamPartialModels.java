@@ -10,8 +10,9 @@ public final class FullSteamPartialModels {
     private static final ResourceLocation PISTON_BODY_LOCATION = location("piston_body");
     private static final ResourceLocation PISTON_HEAD_LOCATION = location("piston_head");
     private static final ResourceLocation CONNECTING_ROD_LOCATION = location("connecting_rod");
-    private static final ResourceLocation CONNECTING_ROD_2_LOCATION = location("connecting_rod_2");
-    private static final ResourceLocation CONNECTING_ROD_3_LOCATION = location("connecting_rod_3");
+    private static final ResourceLocation CONNECTING_ROD_LOWER_LOCATION = location("connecting_rod_lower");
+    private static final ResourceLocation CONNECTING_ROD_MIDDLE_LOCATION = location("connecting_rod_middle");
+    private static final ResourceLocation CONNECTING_ROD_UPPER_LOCATION = location("connecting_rod_upper");
     private static final ResourceLocation CRANK_LOCATION = location("crank");
     private static final ResourceLocation CRANK_2_LOCATION = location("crank_2");
     private static final ResourceLocation CRANK_3_LOCATION = location("crank_3");
@@ -21,8 +22,9 @@ public final class FullSteamPartialModels {
         event.register(ModelResourceLocation.standalone(PISTON_BODY_LOCATION));
         event.register(ModelResourceLocation.standalone(PISTON_HEAD_LOCATION));
         event.register(ModelResourceLocation.standalone(CONNECTING_ROD_LOCATION));
-        event.register(ModelResourceLocation.standalone(CONNECTING_ROD_2_LOCATION));
-        event.register(ModelResourceLocation.standalone(CONNECTING_ROD_3_LOCATION));
+        event.register(ModelResourceLocation.standalone(CONNECTING_ROD_LOWER_LOCATION));
+        event.register(ModelResourceLocation.standalone(CONNECTING_ROD_MIDDLE_LOCATION));
+        event.register(ModelResourceLocation.standalone(CONNECTING_ROD_UPPER_LOCATION));
         event.register(ModelResourceLocation.standalone(CRANK_LOCATION));
         event.register(ModelResourceLocation.standalone(CRANK_2_LOCATION));
         event.register(ModelResourceLocation.standalone(CRANK_3_LOCATION));
@@ -41,12 +43,16 @@ public final class FullSteamPartialModels {
         return PartialModel.of(CONNECTING_ROD_LOCATION);
     }
 
-    public static PartialModel connectingRod(int pistonBodyCount) {
-        return PartialModel.of(switch (PistonHeadAnimation.clampPistonBodyCount(pistonBodyCount)) {
-            case 2 -> CONNECTING_ROD_2_LOCATION;
-            case 3 -> CONNECTING_ROD_3_LOCATION;
-            default -> CONNECTING_ROD_LOCATION;
-        });
+    public static PartialModel connectingRodLower() {
+        return PartialModel.of(CONNECTING_ROD_LOWER_LOCATION);
+    }
+
+    public static PartialModel connectingRodMiddle() {
+        return PartialModel.of(CONNECTING_ROD_MIDDLE_LOCATION);
+    }
+
+    public static PartialModel connectingRodUpper() {
+        return PartialModel.of(CONNECTING_ROD_UPPER_LOCATION);
     }
 
     public static PartialModel crank() {

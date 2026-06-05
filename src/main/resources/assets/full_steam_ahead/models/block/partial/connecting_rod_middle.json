@@ -1,0 +1,21 @@
+{
+  "credit": "Middle connecting rod segment derived from new_models/connecting_rod.bbmodel",
+  "ambientocclusion": true,
+  "textures": {
+    "mechanical": "full_steam_ahead:block/piston/connecting_rod",
+    "particle": "full_steam_ahead:block/piston/connecting_rod"
+  },
+  "elements": [
+    {
+      "name": "middle",
+      "from": [6, 5, 6],
+      "to": [10, 13, 10],
+      "faces": {
+        "north": {"uv": [1.5, 2, 3.5, 6], "texture": "#mechanical"},
+        "east": {"uv": [1.5, 2, 3.5, 6], "texture": "#mechanical"},
+        "south": {"uv": [1.5, 2, 3.5, 6], "texture": "#mechanical"},
+        "west": {"uv": [1.5, 2, 3.5, 6], "texture": "#mechanical"}
+      }
+    }
+  ]
+}

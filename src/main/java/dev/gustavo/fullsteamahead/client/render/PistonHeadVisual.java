@@ -22,7 +22,10 @@ import java.util.function.Consumer;
 public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockEntity> implements SimpleDynamicVisual {
     private final TransformedInstance[] pistons = new TransformedInstance[PistonHeadAnimation.MAX_PISTON_BLOCKS];
     private final TransformedInstance head;
-    private final TransformedInstance[] connectingRods = new TransformedInstance[PistonHeadAnimation.MAX_PISTON_BLOCKS];
+    private final TransformedInstance rodLower;
+    private final TransformedInstance[] rodMiddles =
+            new TransformedInstance[PistonHeadAnimation.maxConnectingRodMiddleSegments()];
+    private final TransformedInstance rodUpper;
     private final TransformedInstance[] cranks = new TransformedInstance[PistonHeadAnimation.MAX_PISTON_BLOCKS];
 
     public PistonHeadVisual(VisualizationContext context, PistonHeadBlockEntity blockEntity, float partialTick) {
@@ -31,11 +34,15 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
             pistons[blockIndex] = transformed(FullSteamPartialModels.pistonBody());
         }
         head = transformed(FullSteamPartialModels.pistonHead());
+        rodLower = transformed(FullSteamPartialModels.connectingRodLower());
+        for (int segmentIndex = 0; segmentIndex < rodMiddles.length; segmentIndex++) {
+            rodMiddles[segmentIndex] = transformed(FullSteamPartialModels.connectingRodMiddle());
+        }
+        rodUpper = transformed(FullSteamPartialModels.connectingRodUpper());
         for (int bodyCount = EngineValidator.MIN_PISTON_BODIES;
              bodyCount <= EngineValidator.MAX_PISTON_BODIES;
              bodyCount++) {
             int index = bodyCount - 1;
-            connectingRods[index] = transformed(FullSteamPartialModels.connectingRod(bodyCount));
             cranks[index] = transformed(FullSteamPartialModels.crank(bodyCount));
         }
         animate();
@@ -65,7 +72,9 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         for (int blockIndex = 0; blockIndex < pistons.length; blockIndex++) {
             relight(partLightPos(base, animation.pistonY(blockIndex), strokeDirection), pistons[blockIndex]);
         }
-        relight(partLightPos(base, animation.connectingRodY(), strokeDirection), connectingRods);
+        relight(partLightPos(base, animation.connectingRodY(), strokeDirection), rodLower);
+        relight(partLightPos(base, animation.connectingRodY(), strokeDirection), rodMiddles);
+        relight(partLightPos(base, animation.connectingRodY(), strokeDirection), rodUpper);
         relight(base.relative(strokeDirection, animation.shaftDistance()), cranks);
     }
 
@@ -75,9 +84,11 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
             piston.delete();
         }
         head.delete();
-        for (TransformedInstance connectingRod : connectingRods) {
-            connectingRod.delete();
+        rodLower.delete();
+        for (TransformedInstance rodMiddle : rodMiddles) {
+            rodMiddle.delete();
         }
+        rodUpper.delete();
         for (TransformedInstance crank : cranks) {
             crank.delete();
         }
@@ -89,9 +100,11 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
             consumer.accept(piston);
         }
         consumer.accept(head);
-        for (TransformedInstance connectingRod : connectingRods) {
-            consumer.accept(connectingRod);
+        consumer.accept(rodLower);
+        for (TransformedInstance rodMiddle : rodMiddles) {
+            consumer.accept(rodMiddle);
         }
+        consumer.accept(rodUpper);
         for (TransformedInstance crank : cranks) {
             consumer.accept(crank);
         }
@@ -113,9 +126,17 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         }
 
         setVisible(head, animation.visible());
-        for (int index = 0; index < connectingRods.length; index++) {
+        setVisible(rodLower, animation.visible());
+        setVisible(rodUpper, animation.visible());
+        for (int segmentIndex = 0; segmentIndex < rodMiddles.length; segmentIndex++) {
+            setVisible(
+                    rodMiddles[segmentIndex],
+                    animation.visible()
+                            && segmentIndex < PistonHeadAnimation.connectingRodMiddleSegments(animation.pistonBodyCount())
+            );
+        }
+        for (int index = 0; index < cranks.length; index++) {
             boolean activeSize = index == animation.pistonBodyCount() - 1;
-            setVisible(connectingRods[index], animation.visible() && activeSize);
             setVisible(cranks[index], animation.visible() && activeSize);
         }
         if (!animation.visible()) {
@@ -126,19 +147,42 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         orientForStroke(headInstance, animation);
         headInstance.translate(0, animation.headY(), 0).setChanged();
 
-        int linkageIndex = animation.pistonBodyCount() - 1;
-        TransformedInstance rodInstance = base(connectingRods[linkageIndex]);
-        orientForStroke(rodInstance, animation);
-        rotateConnectingRod(
-                rodInstance.translate(0, animation.connectingRodY(), 0),
-                animation
-        ).setChanged();
+        animateConnectingRodPart(rodLower, animation, 0);
+        for (int segmentIndex = 0;
+             segmentIndex < PistonHeadAnimation.connectingRodMiddleSegments(animation.pistonBodyCount());
+             segmentIndex++) {
+            animateConnectingRodPart(
+                    rodMiddles[segmentIndex],
+                    animation,
+                    PistonHeadAnimation.connectingRodMiddleOffset(segmentIndex)
+            );
+        }
+        animateConnectingRodPart(
+                rodUpper,
+                animation,
+                PistonHeadAnimation.connectingRodUpperOffset(animation.pistonBodyCount())
+        );
 
+        int linkageIndex = animation.pistonBodyCount() - 1;
         TransformedInstance crankInstance = base(cranks[linkageIndex]);
         orientForStroke(crankInstance, animation);
         rotateCrank(
                 crankInstance.translate(0, animation.crankY(), 0),
                 animation
+        ).setChanged();
+    }
+
+    private void animateConnectingRodPart(
+            TransformedInstance instance,
+            PistonHeadAnimation.State animation,
+            float localYOffset
+    ) {
+        TransformedInstance rodInstance = base(instance);
+        orientForStroke(rodInstance, animation);
+        rotateConnectingRod(
+                rodInstance.translate(0, animation.connectingRodY(), 0),
+                animation,
+                localYOffset
         ).setChanged();
     }
 
@@ -157,14 +201,17 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
 
     private static TransformedInstance rotateConnectingRod(
             TransformedInstance instance,
-            PistonHeadAnimation.State animation
+            PistonHeadAnimation.State animation,
+            float localYOffset
     ) {
         instance.center();
         yawLinkageFrame(instance, animation.shaftAxis());
         instance.uncenter();
         instance.translate(0.5F, PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, 0.5F);
         instance.rotateX(animation.connectingRodRotation());
-        return instance.translate(-0.5F, -PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, -0.5F);
+        return instance
+                .translate(-0.5F, -PistonHeadAnimation.CONNECTING_ROD_SMALL_END_Y, -0.5F)
+                .translate(0, localYOffset, 0);
     }
 
     private static TransformedInstance rotateCrank(

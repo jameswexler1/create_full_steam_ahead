@@ -653,7 +653,9 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
             for (BlockPos piston : pistons.pistons()) {
                 clearPiston(piston, skippedPistonPos);
             }
-            clearPiston(pistons.emptyStroke(), skippedPistonPos);
+            for (BlockPos strokeSpace : pistons.emptyStrokeSpaces()) {
+                clearPiston(strokeSpace, skippedPistonPos);
+            }
         }
     }
 
