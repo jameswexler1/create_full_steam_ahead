@@ -25,7 +25,6 @@ public final class PistonHeadAnimation {
     private static final int CONNECTING_ROD_SEGMENT_UNITS = 8;
     private static final float PISTON_WRIST_PIN_Y = 14.0F / 16.0F;
     private static final float HEAD_TO_PISTON_BODY_Y = 1.0F;
-    private static final float MIN_HEAD_Y = 0.0F;
     private static final float HALF_PI = (float) (Math.PI / 2.0D);
 
     public static State state(PistonHeadBlockEntity engine) {
@@ -72,18 +71,11 @@ public final class PistonHeadAnimation {
         float wristY = shaftCenterY + crankVertical - rodVertical;
         float pistonY = wristY - PISTON_WRIST_PIN_Y - (count - 1);
         float headY = pistonY - HEAD_TO_PISTON_BODY_Y;
-        float headLift = boundedHeadLift(headY);
-        if (headLift > 0) {
-            wristY += headLift;
-            pistonY += headLift;
-            headY += headLift;
-        }
         float connectingRodY = wristY - CONNECTING_ROD_SMALL_END_Y;
         float connectingRodAngle = (float) Math.asin(Mth.clamp(crankDepth / connectingRodLength, -1.0F, 1.0F));
         // The slider-crank is always solved in the upright frame. Inverted engines are
         // rendered by rigidly flipping the fully posed linkage 180 degrees about the head
-        // block center (see orientForStroke). The bounded lift only engages when long
-        // piston stacks would otherwise clip the floor or ceiling.
+        // block center (see orientForStroke), which keeps every joint connected.
         return new State(
                 visible,
                 angle,
@@ -129,10 +121,6 @@ public final class PistonHeadAnimation {
 
     private static int connectingRodUpperOffsetUnits(int pistonBodyCount) {
         return Math.round(connectingRodLength(pistonBodyCount) * 16.0F) - CONNECTING_ROD_BASE_LENGTH_UNITS;
-    }
-
-    private static float boundedHeadLift(float headY) {
-        return Math.max(0.0F, MIN_HEAD_Y - headY);
     }
 
     public record State(
