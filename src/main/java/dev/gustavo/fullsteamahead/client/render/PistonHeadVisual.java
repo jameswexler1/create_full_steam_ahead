@@ -125,7 +125,7 @@ public class PistonHeadVisual extends AbstractBlockEntityVisual<PistonHeadBlockE
         PistonHeadAnimation.State animation = PistonHeadAnimation.state(blockEntity);
         for (int blockIndex = 0; blockIndex < finalPistons.length; blockIndex++) {
             boolean occupied = animation.visible() && blockIndex < animation.pistonBodyCount();
-            boolean finalBody = occupied && blockIndex == animation.pistonBodyCount() - 1;
+            boolean finalBody = occupied && animation.isRodConnectionPiston(blockIndex);
             setVisible(finalPistons[blockIndex], finalBody);
             setVisible(intermediatePistons[blockIndex], occupied && !finalBody);
             if (occupied) {

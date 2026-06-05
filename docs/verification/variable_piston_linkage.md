@@ -30,6 +30,7 @@ Manual runtime checklist:
 - [ ] Confirm the connecting rod renders with the real rod texture for two- and three-body engines, not a purple missing model.
 - [ ] Confirm the connecting rod visually connects to the uppermost piston body for two- and three-body engines.
 - [ ] Confirm lower piston bodies use the intermediate sleeve texture and only the uppermost body uses the rod-connection texture.
+- [ ] Confirm final/intermediate piston identity is correct while the engine is assembled but not producing rotation.
 - [ ] Confirm a four-body piston column remains invalid and does not claim the shaft.
 - [ ] Confirm upright and upside-down pipe-fed engines work for all valid body counts.
 - [ ] Confirm breaking/removing a piston body clears assembled piston visuals and shaft power.

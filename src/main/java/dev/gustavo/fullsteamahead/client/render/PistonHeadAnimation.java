@@ -139,6 +139,10 @@ public final class PistonHeadAnimation {
             return pistonY + blockIndex;
         }
 
+        public boolean isRodConnectionPiston(int blockIndex) {
+            return blockIndex == pistonBodyCount - 1;
+        }
+
         public float connectingRodRotation() {
             return connectingRodAngle;
         }

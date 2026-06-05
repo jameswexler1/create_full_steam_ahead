@@ -91,7 +91,7 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             PistonHeadAnimation.State animation,
             int blockIndex
     ) {
-        PartialModel partial = blockIndex == animation.pistonBodyCount() - 1
+        PartialModel partial = animation.isRodConnectionPiston(blockIndex)
                 ? FullSteamPartialModels.pistonBody()
                 : FullSteamPartialModels.pistonBodyIntermediate();
         SuperByteBuffer buffer = CachedBuffers.partial(partial, state);
