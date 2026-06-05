@@ -1,6 +1,5 @@
 package dev.gustavo.fullsteamahead.content.piston;
 
-import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.fluids.tank.BoilerData;
@@ -581,10 +580,10 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
 
         BlockState state = level.getBlockState(targetShaftPos);
-        if (state.is(ModBlocks.POWERED_SHAFT.get())) {
+        if (FullSteamPoweredShaftBlock.isPoweredShaft(state)) {
             return level.getBlockEntity(targetShaftPos) instanceof FullSteamPoweredShaftBlockEntity;
         }
-        if (!AllBlocks.SHAFT.has(state)) {
+        if (!FullSteamPoweredShaftBlock.isClaimableShaft(state)) {
             return false;
         }
 
@@ -610,7 +609,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
 
         BlockState state = level.getBlockState(shaftPos);
-        if (!state.is(ModBlocks.POWERED_SHAFT.get())) {
+        if (!FullSteamPoweredShaftBlock.isPoweredShaft(state)) {
             return;
         }
 

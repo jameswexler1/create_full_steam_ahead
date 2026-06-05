@@ -35,7 +35,8 @@ public final class ModBlockEntities {
             BLOCK_ENTITY_TYPES.register("powered_shaft",
                     () -> BlockEntityType.Builder.of(
                             FullSteamPoweredShaftBlockEntity::new,
-                            ModBlocks.POWERED_SHAFT.get()
+                            ModBlocks.POWERED_SHAFT.get(),
+                            ModBlocks.POWERED_GIRDER_ENCASED_SHAFT.get()
                     ).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BoilerOutletBlockEntity>> BOILER_OUTLET =

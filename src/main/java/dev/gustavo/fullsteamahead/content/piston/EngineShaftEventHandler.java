@@ -1,7 +1,6 @@
 package dev.gustavo.fullsteamahead.content.piston;
 
-import com.simibubi.create.content.kinetics.simpleRelays.AbstractShaftBlock;
-import dev.gustavo.fullsteamahead.registry.ModBlocks;
+import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -50,13 +49,10 @@ public final class EngineShaftEventHandler {
     }
 
     private static boolean isHorizontalShaft(BlockState state) {
-        if (!state.is(ModBlocks.POWERED_SHAFT.get()) && !(state.getBlock() instanceof AbstractShaftBlock)) {
+        if (!FullSteamPoweredShaftBlock.isRecognizedShaft(state)) {
             return false;
         }
-        if (state.getBlock() instanceof AbstractShaftBlock shaft) {
-            return shaft.getRotationAxis(state).isHorizontal();
-        }
-        return true;
+        return FullSteamPoweredShaftBlock.axisOf(state).isHorizontal();
     }
 
     private EngineShaftEventHandler() {

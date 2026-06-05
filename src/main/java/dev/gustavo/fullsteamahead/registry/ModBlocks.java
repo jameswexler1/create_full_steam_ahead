@@ -6,6 +6,7 @@ import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlockItem;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlock;
 import dev.gustavo.fullsteamahead.content.piston.SteamPistonBlock;
 import dev.gustavo.fullsteamahead.content.redstone.SteppedLeverBlock;
+import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredGirderEncasedShaftBlock;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
@@ -37,6 +38,12 @@ public final class ModBlocks {
             registerBlock("piston_head", PistonHeadBlock::new, metalProperties().noOcclusion());
     public static final DeferredBlock<FullSteamPoweredShaftBlock> POWERED_SHAFT =
             registerBlockOnly("powered_shaft", FullSteamPoweredShaftBlock::new, metalProperties().noOcclusion());
+    public static final DeferredBlock<FullSteamPoweredGirderEncasedShaftBlock> POWERED_GIRDER_ENCASED_SHAFT =
+            registerBlockOnly(
+                    "powered_girder_encased_shaft",
+                    FullSteamPoweredGirderEncasedShaftBlock::new,
+                    metalProperties().noOcclusion()
+            );
     public static final DeferredBlock<BoilerOutletBlock> BOILER_OUTLET =
             registerBlock("boiler_outlet", BoilerOutletBlock::new, copperProperties());
     public static final DeferredBlock<SteamInletBlock> STEAM_INLET =

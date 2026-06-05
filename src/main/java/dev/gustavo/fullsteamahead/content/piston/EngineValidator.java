@@ -1,10 +1,9 @@
 package dev.gustavo.fullsteamahead.content.piston;
 
-import com.simibubi.create.AllBlocks;
-import com.simibubi.create.content.kinetics.simpleRelays.AbstractShaftBlock;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlock;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlockEntity;
+import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
@@ -188,23 +187,19 @@ public final class EngineValidator {
         }
 
         BlockState state = level.getBlockState(pos);
-        if (!AllBlocks.SHAFT.has(state) && !state.is(ModBlocks.POWERED_SHAFT.get())) {
+        if (!FullSteamPoweredShaftBlock.isRecognizedShaft(state)) {
             return false;
         }
 
-        if (!(state.getBlock() instanceof AbstractShaftBlock shaft)) {
-            return false;
-        }
-
-        return shaft.getRotationAxis(state).isHorizontal();
+        return FullSteamPoweredShaftBlock.axisOf(state).isHorizontal();
     }
 
     public static Direction.Axis shaftAxis(Level level, BlockPos shaftPos) {
-        BlockState state = level.getBlockState(shaftPos);
-        if (state.getBlock() instanceof AbstractShaftBlock shaft) {
-            return shaft.getRotationAxis(state);
-        }
-        return Direction.Axis.X;
+        return shaftAxis(level.getBlockState(shaftPos));
+    }
+
+    public static Direction.Axis shaftAxis(BlockState state) {
+        return FullSteamPoweredShaftBlock.axisOf(state);
     }
 
     public static Direction pistonHeadFacing(BlockState state) {

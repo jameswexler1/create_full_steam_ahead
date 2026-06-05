@@ -5,6 +5,7 @@ import com.simibubi.create.content.fluids.FluidPropagator;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlock;
 import dev.gustavo.fullsteamahead.content.piston.EngineValidator;
+import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
@@ -130,7 +131,7 @@ public final class FullSteamMovementRules {
             if (result.valid() && !visited.contains(result.shaft())) {
                 additional.add(result.shaft());
             }
-        } else if (state.is(ModBlocks.POWERED_SHAFT.get())) {
+        } else if (FullSteamPoweredShaftBlock.isPoweredShaft(state)) {
             for (BlockPos headPos : EngineValidator.candidatePistonHeadsNear(pos)) {
                 if (visited.contains(headPos) || !level.isLoaded(headPos)) {
                     continue;
@@ -162,7 +163,7 @@ public final class FullSteamMovementRules {
                 || state.is(ModBlocks.STEAM_INLET.get())
                 || state.is(ModBlocks.PISTON.get())
                 || state.is(ModBlocks.PISTON_HEAD.get())
-                || state.is(ModBlocks.POWERED_SHAFT.get())
+                || FullSteamPoweredShaftBlock.isPoweredShaft(state)
                 || state.is(ModBlocks.BOILER_OUTLET.get());
     }
 
