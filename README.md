@@ -35,18 +35,12 @@ Use a Java 21 runtime. The first build downloads and prepares the NeoForge Minec
 
 ## Steam Power Model
 
-Steam is a real fluid and uses a simple unit model:
+Steam is a real fluid. Production still uses the readable Create-style unit scale:
 
 - `1 steam unit = 10 mB/t steam`
 - `1 steam unit consumed = 16,384 SU`
 - One pipe-fed engine consumes up to `9 steam units` or `90 mB/t`
-- A full normal engine output is `9 units = 90 mB/t = 147,456 SU`
-- In pipe-fed mode, surplus steam powers additional engines instead of making one generic steam cylinder exceed normal full output
-- Pipe networks distribute outlet steam evenly across reachable assembled `steam_inlet` blocks, capped at `90 mB/t` per inlet from all sources combined, before filling passive storage tanks
-- If supply is short, every reachable engine receives the same share as closely as whole mB/t allows; SU scales from exact consumed mB/t
-- Boiler outlet pressure respects Create fluid valves. A closed valve blocks the pressure path instead of leaking or bypassing steam.
-- Steam remains visible in Create tanks and pipes through a high-visibility tinted vanilla water render path; outlet fallback transfer preserves a live source buffer so Create's native pipe flow renderer can animate it.
-- Unconnected boiler outlets and open pipe ends vent custom translucent steam leak particles inspired by TFMG-style gas visuals.
+- A full normal engine output is `9 units = 90 mB/t = 147,456 SU` at `64 RPM`
 
 Boiler outlets produce steam from the attached Create Fluid Tank boiler:
 
@@ -54,7 +48,31 @@ Boiler outlets produce steam from the attached Create Fluid Tank boiler:
 total steam units = min(active burner units, water supply heat level) * boiler height
 ```
 
-Normal Blaze Burners contribute `1` burner unit each. Blaze Cake burners contribute `2` each. Boiler height multiplies the burner footprint, so a `3x3x6` boiler with 9 normal active burners produces `54` steam units, enough for six full normal engines. With 9 Blaze Cake burners it produces `108` units, enough for twelve full pipe-fed engines. Direct compact engines still use the direct burner table, including Blaze Cake SU doubling.
+Normal Blaze Burners contribute `1` burner unit each. Blaze Cake burners contribute `2` each. Boiler height multiplies the burner footprint, so a `3x3x6` boiler with 9 normal active burners produces `54` steam units, enough for six full normal engines. With 9 Blaze Cake burners it produces `108` units, enough for twelve full pipe-fed engines.
 
-Multiple `boiler_outlet` blocks on the same boiler split the same total steam budget deterministically. They do not duplicate steam output.
-Multiple boilers can feed the same pipe network; each valid outlet contributes only its own boiler's budget, and the shared stream is then split across the reachable engine inlets.
+Pipe networks distribute usable steam evenly across reachable assembled `steam_inlet` blocks, capped at `90 mB/t` per inlet from all sources combined, before filling passive storage tanks. If supply is short, every reachable engine receives the same share as closely as whole mB/t allows; SU scales from exact consumed mB/t.
+
+## Pressure Network
+
+Pipe-fed steam networks use a per-network ideal-gas pressure model:
+
+```text
+pressure pN/m^2 = gasConstant * storedSteamMb * temperatureK / networkVolumeM3
+```
+
+- Rated pressure is `1.0 MpN/m²`; a full-flow engine at rated pressure reaches full SU and `64 RPM`.
+- Engine output is gated by both pressure and delivered flow: `min(pressure factor, flow factor)`.
+- Multiple boilers can feed one pipe network. Network temperature is weighted by contributed steam, not simply copied from the hottest boiler.
+- Multiple `boiler_outlet` blocks on one boiler split one shared boiler budget and cannot duplicate steam.
+- Create fluid valves block steam pressure traversal. Closed valves isolate pressure instead of leaking or bypassing steam.
+- Open pipe ends and unconnected outlets act as atmospheric relief. They vent before burst checks and can drain enough steam to bring pressure down toward rated pressure.
+- Overpressure warns at `1.5 MpN/m²` and bursts at `2.5 MpN/m²`. A burst is deduped per physical boiler, depressurizes the whole connected steam network, and uses `12.0 + 0.45 * networkVolume` explosion power capped at `36.0`.
+- Direct compact engines still work, but remain a simplified compatibility mode. Full pressure storage, venting, and burst behavior belongs to pipe-fed networks.
+
+Steam remains visible in Create tanks and pipes through a high-visibility tinted vanilla water render path. Unconnected boiler outlets, open pipe ends, and running cylinder exhaust emit custom translucent steam particles, and leak clouds can scald entities.
+
+## Planned Polish
+
+- Display Link source for `boiler_outlet` pressure, status, warning/burst thresholds, network volume, production, and connected engine count.
+- Future direct pipe-to-boiler support so active Create Fluid Tank boilers can expose steam without a dedicated `boiler_outlet`.
+- Optional volumetric steam cloud simulation for steam trapped in closed spaces.

@@ -268,7 +268,7 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - `calculateAddedStressCapacity()`: returns capacity proportional to available direct boiler heat or consumed `steam`.
 - If the engine becomes invalid, the piston head clears shaft power and restores this block to a normal Create shaft.
 
-### `BoilerOutlet` (planned as `boiler_outlet`)
+### `BoilerOutlet` (`boiler_outlet`)
 
 - Block entity: `BoilerOutletBlockEntity extends SmartBlockEntity`
 - Placed on a Create Fluid Tank block face. The block's back side must touch a `FluidTankBlockEntity`; the front side outputs steam.
@@ -285,12 +285,13 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - Pipe-fed steam is generic stored steam in v1: one engine consumes at most 9 units or 90 mB/t and produces at most 147,456 SU. Blaze Cakes increase total steam-stream capacity; they do not make one pipe-fed engine exceed normal full output without a future superheated-steam design.
 - Multiple `boiler_outlet` blocks attached to one boiler split the same total steam unit budget in a stable position order; they must not duplicate steam.
 - Connected pipe networks split active boiler outlet steam evenly across reachable assembled `steam_inlet` blocks, capped at 90 mB/t per inlet from all sources combined, before sending surplus to passive storage. Multiple boilers on the same pipe network contribute additive outlet budgets; no single boiler or outlet may duplicate steam.
+- Network pressure is computed from stored steam mass, weighted steam temperature, and network volume. The outlet reports pressure/status to goggles and should later expose the same data to Create Display Links.
 - Boiler outlet pressure traversal respects Create pipe blockers such as closed fluid valves by consulting each pipe behaviour's flow permission before crossing a side. A closed valve blocks steam; it is not treated as an open vent.
 - Exposes an output-only `IFluidHandler` for `steam`.
 - Applies pressure to the connected Create pipe network so the player does not need a mechanical pump directly at the boiler outlet.
 - Open-pipe visual: when outlet or pipe end vents to air, spawn custom translucent steam leak particles inspired by TFMG-style gas visuals.
 - Steam fluid visual: keep the tinted vanilla water render path for tanks and pipes, with explicit stack/world render overrides and enough outlet buffer reserve for Create's native pipe flow renderer to keep showing steam.
-- Default pressure range target: 30 blocks. This must become a server config value.
+- Default pressure range target: 30 blocks, controlled by server config.
 - Goggle overlay: boiler linked/missing, outlet steam units, total boiler steam units, attached outlet count, steam production rate, internal buffer, output pressure state.
 
 ### `SteamInlet` (`steam_inlet`)
@@ -304,10 +305,11 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - Stores a small local steam buffer. The buffer is not a pressure source and cannot be drained by external blocks.
 - When the ring assembles, the inlet caches the ring origin and cylinder root. When the ring disassembles, it clears that link and stops accepting steam.
 - The piston head prefers consuming steam from the linked inlet. If no usable inlet steam exists and a direct boiler is present, direct compact mode remains the fallback.
-- Pipe-fed balance maps consumed steam rate to output:
-  - 10 mB/t consumed steam = 1 steam unit = 16,384 SU, with partial mB/t contributing proportional SU
+- Pipe-fed balance maps network pressure and consumed steam rate to output:
+  - 10 mB/t consumed steam = 1 steam unit = 16,384 SU at rated pressure, with partial mB/t contributing proportional SU
   - Maximum consumed steam for one pipe-fed engine = 90 mB/t = 9 heat units = 147,456 SU
-  - RPM uses burner-equivalent tiers from consumed steam units, rounded up from exact consumed mB/t: 1-2 = 16 rpm, 3-4 = 32 rpm, 5-8 = 48 rpm, 9 = 64 rpm
+  - Output factor is `min(pressureFactor, flowFactor)`
+  - RPM uses output-factor tiers: 16, 32, 48, or 64 RPM
 - Goggle overlay: ring link status, steam buffer, accepted steam rate, engine link.
 
 ### Removed placeholders
@@ -383,59 +385,67 @@ Boiler reference: vanilla Create steam engine baseline.
 | Default/max RPM | 64 |
 | Active burner count | 0-9 fired Blaze Burners under the 3x3 boiler footprint |
 | Heat units | 1 per normal fired burner, 2 per Blaze Cake burner |
-| Full engine at regular max heat | 147,456 SU at 64 RPM |
-| Full engine at full Blaze Cake heat | 294,912 SU at 64 RPM |
+| Full engine rating | 147,456 SU at 64 RPM |
+| Full engine flow | 90 mB/t steam |
+| Rated pressure | 1.0 MpN/m² |
+| Warning pressure | 1.5 MpN/m² |
+| Burst pressure | 2.5 MpN/m² |
 
 Direct compact formula:
 
 ```
-active_burners   = count of Blaze Burners with heat >= FADING under the 3x3 boiler
-cake_burners     = count of those burners with heat >= SEETHING
-heat_units       = active_burners + cake_burners
-capacity_su      = heat_units * 16384
-output_speed_rpm = tier_by_active_burner_count(active_burners)
+usable_heat       = min(active_heat, water_limited_heat, size_limited_heat)
+production_mbpt   = usable_heat * boiler_height * steam_per_heat_unit
+consumed_mbpt     = min(production_mbpt, full_engine_flow_mb)
+pressure_factor   = clamp(production_mbpt / full_engine_flow_mb, 0, 1)
+flow_factor       = clamp(consumed_mbpt / full_engine_flow_mb, 0, 1)
+output_factor     = min(pressure_factor, flow_factor)
+capacity_su       = full_engine_su * output_factor
+output_speed_rpm  = tier_by_output_factor(output_factor)
 ```
 
-Steam fluid formula (planned):
+Direct compact mode is a simplified compatibility mode for upright engines sitting on a boiler. It does not store pressure, burst, or let Blaze Cakes overdrive one engine past the normal full-engine rating. Blaze Cake surplus belongs to pipe-fed networks, where it can feed additional engines or build pressure if trapped.
+
+Pipe-fed steam production:
 
 ```
 boiler_heat_units     = min(active_heat, water_limited_heat, size_limited_heat)
-steam_production_mbpt = boiler_heat_units * 10
-steam_consumed_mbpt   = min(available_steam_rate, engine_max_consumption)
-engine_heat_units     = floor(steam_consumed_mbpt / 10)
-capacity_su           = engine_heat_units * 16384
-output_speed_rpm      = tier_by_steam_consumption(steam_consumed_mbpt)
+steam_production_mbpt = boiler_heat_units * boiler_height * steam_per_heat_unit
 ```
 
-The `10 mB/t per heat unit` value intentionally mirrors Create's boiler water-supply threshold (`BoilerData.getMaxHeatLevelForWaterSupply()` is based on 10 mB/t per heat level). It keeps direct and pipe-fed output comparable: 9 normal heat units produce 90 mB/t steam and 147,456 SU; 18 Blaze Cake heat units produce 180 mB/t steam and 294,912 SU.
+The `10 mB/t per heat unit` value intentionally mirrors Create's boiler water-supply threshold (`BoilerData.getMaxHeatLevelForWaterSupply()` is based on 10 mB/t per heat level). It keeps direct and pipe-fed output comparable: 9 normal heat units at height 1 produce 90 mB/t steam, enough for one full 147,456 SU engine. A taller boiler or Blaze Cake burners produce surplus steam for more engines or for pressure buildup in closed networks.
 
-Important balance distinction: stored steam does not remember how many burners produced it. Direct compact mode keeps the exact active-burner RPM table. Pipe-fed mode should start by tiering RPM from delivered steam rate, treating pipes and tanks like a pressure manifold. If this feels wrong in testing, add a pressure/quality layer later rather than encoding source metadata into the fluid.
+Pipe-fed pressure formula:
+
+```
+pressure_pn_m2    = gas_constant * stored_steam_mb * weighted_temperature_k / network_volume_m3
+pressure_factor   = clamp(pressure / rated_pressure, 0, 1)
+requested_flow    = full_engine_flow_mb * pressure_factor
+fair_flow_cap     = steam_available_this_tick / reachable_engine_count
+consumed_mbpt     = min(requested_flow, fair_flow_cap, inlet_buffer)
+flow_factor       = clamp(consumed_mbpt / full_engine_flow_mb, 0, 1)
+output_factor     = min(pressure_factor, flow_factor)
+capacity_su       = full_engine_su * output_factor
+output_speed_rpm  = tier_by_output_factor(output_factor)
+```
+
+Important balance distinction: stored steam does not remember which burner produced it. The pipe network stores steam mass, network volume, and weighted temperature. Multiple boilers can feed one network, but one boiler's production is split across all outlets attached to that boiler and cannot be duplicated.
 
 RPM tiers:
 
-| Active fired burners | RPM |
+| Output factor | RPM |
 |---:|---:|
 | 0 | 0 |
-| 1-2 | 16 |
-| 3-4 | 32 |
-| 5-8 | 48 |
-| 9 | 64 |
+| >0-0.25 | 16 |
+| >0.25-0.50 | 32 |
+| >0.50-0.75 | 48 |
+| >0.75-1.00 | 64 |
 
-Planned pipe-fed RPM tiers should map equivalent steam rate to the same feel:
+Unfired Blaze Burners only provide passive heat in Create and must produce `0` output for this engine. Blaze Cakes count as 2 heat units, increasing steam production and temperature; they do not let a single engine exceed the configured full-engine rating. Water supply remains required for output.
 
-| Delivered steam | RPM |
-|---:|---:|
-| 0-9 mB/t | 0 |
-| 10-29 mB/t | 16 |
-| 30-49 mB/t | 32 |
-| 50-89 mB/t | 48 |
-| 90+ mB/t | 64 |
+Pipe-fed mode must not make one engine exceed the configured full-engine rating. Steam storage is a buffer/logistics feature, not a free multiplier. Surplus steam should power additional engines, fill passive storage, vent, or build pressure depending on the pipe network.
 
-Unfired Blaze Burners only provide passive heat in Create and must produce `0` output for this engine. Blaze Cakes double the SU contribution of each individual burner without increasing RPM above the active-burner-count tier. Water supply remains required for output.
-
-Pipe-fed mode must not produce more power than the same boiler would produce in direct compact mode. Steam storage is a buffer/logistics feature, not a free multiplier.
-
-All constants must become server config values before release.
+Most key balance constants are now server config values. Any new pressure, output, hazard, or vent constants added later should also be configurable before release.
 
 ---
 
@@ -492,8 +502,8 @@ Tasks:
 - [x] Refactored output ownership to `PistonHeadBlockEntity` plus hidden `FullSteamPoweredShaftBlockEntity`, matching Create's vanilla shaft-grab pattern
 - [x] Upward scan from piston head: piston body → empty stroke → horizontal Create shaft; ring and boiler/inlet are validated around/below the piston head
 - [x] If valid: store cylinder root, inlet, boiler, and shaft refs; power the hidden shaft block entity
-- [x] `getGeneratedSpeed()`: follows exact active-burner RPM tiers: 1-2 = 16 RPM, 3-4 = 32 RPM, 5-8 = 48 RPM, 9 = 64 RPM
-- [x] `calculateAddedStressCapacity()`: follows exact SU output: 16,384 SU per normal fired burner, doubled per Blaze Cake burner, up to 294,912 SU
+- [x] Initial Phase 4 `getGeneratedSpeed()` followed exact active-burner RPM tiers: 1-2 = 16 RPM, 3-4 = 32 RPM, 5-8 = 48 RPM, 9 = 64 RPM. Phase 12 later superseded runtime output with pressure/flow output factors.
+- [x] Initial Phase 4 `calculateAddedStressCapacity()` followed exact burner SU output, including Blaze Cake doubling. Phase 12 later capped one engine at the configured full-engine rating and moved surplus heat into pipe-fed production/pressure.
 - [x] Read `BoilerData` from the `FluidTankBlockEntity` at boiler position each server tick
 - [x] Make Create's own `BoilerData.evaluate()` count assembled Full Steam Ahead engines
 - [x] Treat 3x3x1 tank boilers as the compact optimal size when a Full Steam Ahead engine is attached
@@ -522,7 +532,7 @@ Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerD
 - [x] Implement output-only `IFluidHandler` for generated `steam`
 - [x] Implement pressure-assisted output with default 30-block range; prefer Create `FluidTransportBehaviour`/`FluidNetwork` integration, fallback to bounded `IFluidHandler` push if needed
 - [x] Add goggle overlay for boiler link, heat, water, steam production rate, buffer, and output pressure state
-- [x] Verify: direct compact engine still works exactly as Phase 4
+- [x] Verify: direct compact engine still works after introducing pipe-fed steam
 - [x] Verify: boiler outlet produces steam only on valid active boilers, fills Create tanks through pipes, and does not auto-pump from stored steam tanks
 - [x] Apply Create `FluidTransportBehaviour` pressure so generated steam is visible in connected Create pipes
 - [x] Register steam open-pipe effect and outlet vent particles for open/unconnected steam leaks
@@ -734,38 +744,46 @@ changing engine balance.
 
 ### Phase 12: Pressure/Volume/Temperature Steam Model — Complete
 
-**Goal**: replace the flow-only output (burner-count RPM tiers + flat SU) with a
-heat/pressure/volume model so boiler *shape* gives different engine "specs". See
-`IDEAS_steam_physics.md` for the full design and Clockwork (VS) inspiration.
+**Goal**: replace the flow-only output with a real pipe-network pressure model that stays readable in Create terms.
 
-- [x] `SteamPhysics` util: `p = (T/T_ref)/(V/V_ref)`, continuous `RPM = clamp(rpmRef*p, 0, 64)`,
-  `SU = clamp(suRef*(T/T_ref)*(V/V_ref), 0, suMax)`. `SU*RPM ∝ T²` (heat = power; shape = torque↔speed trade)
-- [x] Direct/compact engine derives `T` from blaze burners and `V` from the Create Fluid Tank
-  (`width²*height`); replaces the 16/32/48/64 burner tier table with continuous pressure RPM
-- [x] Piped engine: `BoilerOutletBlockEntity` computes its boiler's pressure ratio and reports it to
-  reachable assembled steam inlets during the push BFS (max-wins, 10-tick decay); piston reads
-  delivered pressure → RPM, delivered flow (mB/t) → SU; unknown supply falls back to pressure 1.0
-- [x] **v2 (consumption-limited / volume-tiered):** SU capped by per-cylinder intake
-  (`cylinderMaxIntakeMb=90` → `cylinderMaxSu=147456`); boiler production scales with volume
-  (`steamPerBlock·V·heatRatio`, calibrated so full-heat 3×3×3 = 90 mB/t = one maxed cylinder).
-  RPM = `clamp(rpmAtMaxVolume·pressure, 0, maxRpm)`, pressure = `heatRatio·27/V` → 3×3×3 = 16 RPM.
-  Bigger boiler = more SU/lower RPM, smaller = less SU/higher RPM. Driven by `BoilerData`
-  (`getTotalTankSize`, `getMaxHeatLevelForBoilerSize`). Surplus production hooks the planned overpressure.
-- [x] `steamPhysics` server config (all tunable): cylinderMaxIntakeMb, cylinderMaxSu, steamPerBlock,
-  maxVolumeReference, rpmAtMaxVolume, maxRpm, heatRatioMax
-- [x] Goggles surface pressure/volume/production on the outlet and pressure/RPM/SU on the cylinder ring
+- [x] `SteamPhysics` computes pressure as `P = gasConstant * storedSteamMb * temperatureK / networkVolumeM3`, with pressure in Sable-style `pN/m²`.
+- [x] Boiler outlet production remains gameplay-readable: `usableHeatUnits * boilerHeight * steamPerHeatUnit`, where `steamPerHeatUnit = 10 mB/t`.
+- [x] Network volume includes boiler volume, pipe volume, inlet volume, outlet buffers, and passive steam storage tanks.
+- [x] Network temperature is weighted by contributed steam, not copied from the hottest boiler; passive tanks and inlet buffers contribute at base steam temperature.
+- [x] Pipe-fed engine output is capped per engine: full output is `90 mB/t`, `147,456 SU`, and `64 RPM`.
+- [x] Engine output factor is `min(pressureFactor, flowFactor)`, so weak pressure or insufficient fair-flow share both reduce output.
+- [x] Pipe networks distribute usable steam fairly across reachable assembled `steam_inlet` blocks. A short network gives every engine a proportional share instead of powering all-or-nothing.
+- [x] Multiple boilers can feed one pipe network; multiple outlets on one physical boiler split one shared boiler budget and cannot duplicate steam.
+- [x] Create fluid valves are pressure blockers. Closed valves split networks instead of being bypassed by outlet pressure traversal.
+- [x] Direct compact mode is retained as an upright-only compatibility shortcut. It derives a rated-pressure factor from local boiler production, but does not store steam, burst, or overdrive one engine.
+- [x] `steamPhysics` server config covers gas constant, rated/warn/burst pressure, steam temperature, full engine flow/SU/RPM, vent coefficient, and buffer cap.
+- [x] Goggles surface pressure/volume/production on the outlet and pressure/RPM/SU on the cylinder ring.
 
 ### Phase 13: Boiler Overpressure — Complete (vent valve still planned)
 
 **Goal**: stored steam in a closed pressure network builds pressure until it vents or explodes.
 
 - [x] `SteamNetworkManager` computes one network pressure from stored steam, temperature, and network volume.
-- [x] Open pipe ends vent first; pressure is recomputed after venting so sufficient relief can prevent a burst.
+- [x] Open pipe ends and unconnected outlets vent first. They drain enough steam to move the network toward rated pressure before burst checks, not merely a small cosmetic leak amount.
+- [x] Pressure is recomputed after venting so sufficient relief can prevent a burst.
 - [x] Past `steamPhysics.warnPressure`: status flips to "Overpressure!", with hiss and steam particles at the boiler center on a cadence.
-- [x] Past `steamPhysics.burstPressure`: each attached boiler outlet bursts its linked boiler at the boiler center.
-- [x] Explosion power = `min(maxPower, basePower + powerPerVolume · networkVolume)`, with block-breaking configurable.
+- [x] Past `steamPhysics.burstPressure`: each physical boiler bursts at most once even if several outlets are attached to it.
+- [x] A burst drains/depressurizes the whole connected steam network so pressure does not survive the explosion.
+- [x] Explosion power = `min(maxPower, basePower + powerPerVolume · networkVolume)`, with block-breaking configurable. Defaults are `basePower=12.0`, `powerPerVolume=0.45`, `maxPower=36.0`.
 - [x] `steamOverpressure` config group: enabled, explosion base/per-volume/max power, breaksBlocks.
 - [ ] **Steam vent valve block** (future): bleeds surplus on demand / redstone to prevent bursts.
+
+### Phase 14: Display Link Pressure Readouts — Planned
+
+**Goal**: make steam pressure readable through Create's Display Link system, using the same language as goggles.
+
+- [ ] Research Create 6.0.10 display source registration and target filtering from the local Create dev jar/source before implementation.
+- [ ] Add a Display Link source for `boiler_outlet` first, because it already owns current network pressure, production, volume, venting, warning, and burst state.
+- [ ] Display useful single-line modes: current pressure, pressure status, rated/warn/burst thresholds, network volume, production rate, reachable engine count, and venting/burst risk.
+- [ ] Format pressure through `SteamPressure.format(...)` so displays show `pN/m²`, `kpN/m²`, or `MpN/m²`, never `bar`.
+- [ ] Keep the source passive and server-authoritative; Display Links must only read pressure state and must not tick or mutate the steam network.
+- [ ] Later, when direct pipe-to-boiler support exists, add an equivalent Create Fluid Tank boiler display source so players can read pressure directly from the boiler without requiring an outlet.
+- [ ] Verify with a Display Link and Display Board: stable pressure line while running, warning text under overpressure, no crash when the outlet unloads or loses its boiler.
 
 ---
 
@@ -791,7 +809,7 @@ heat/pressure/volume model so boiler *shape* gives different engine "specs". See
 | Create `BoilerData` API changes | Read through `FluidTankBlockEntity`; isolate in one method |
 | Create pipe pressure internals are brittle | Keep boiler outlet pressure code isolated; fallback to bounded `IFluidHandler` push |
 | Steam storage becomes an exploit | `boiler_outlet` only generates from valid active boilers and never auto-pumps stored steam |
-| Pipe-fed mode loses burner-count metadata | Outlet computes boiler pressure and reports it to reachable inlets; piston derives RPM from delivered pressure, SU from delivered flow (`SteamPhysics`) |
+| Pipe-fed mode loses burner-count metadata | Store network steam mass, weighted temperature, and volume; piston derives RPM/SU from pressure and fair delivered flow (`SteamPhysics`) |
 | Cylinder ring scan too expensive | Run only on placement/removal, not every tick; cache result |
 | Piston animation desync | Drive animation entirely from linked shaft rotation angle on client |
 | Sable assembly splits engine parts | Register Create and Simulated movement checks early |
