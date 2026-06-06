@@ -748,7 +748,7 @@ changing engine balance.
 
 - [x] `SteamPhysics` computes pressure as `P = gasConstant * storedSteamMb * temperatureK / networkVolumeM3`, with pressure in Sable-style `pN/m²`.
 - [x] Boiler outlet production remains gameplay-readable: `usableHeatUnits * boilerHeight * steamPerHeatUnit`, where `steamPerHeatUnit = 10 mB/t`.
-- [x] Network volume includes boiler volume, pipe volume, inlet volume, outlet buffers, and passive steam storage tanks.
+- [x] Network volume includes boiler volume, pipe volume, inlet volume, outlet buffers, and passive steam storage tanks. Passive Create Fluid Tanks use their configured fluid capacity as pressure volume, not only their block count.
 - [x] Network temperature is weighted by contributed steam, not copied from the hottest boiler; passive tanks and inlet buffers contribute at base steam temperature.
 - [x] Pipe-fed engine output is capped per engine: full output is `90 mB/t`, `147,456 SU`, and `64 RPM`.
 - [x] Engine output factor is `min(pressureFactor, flowFactor)`, so weak pressure or insufficient fair-flow share both reduce output.

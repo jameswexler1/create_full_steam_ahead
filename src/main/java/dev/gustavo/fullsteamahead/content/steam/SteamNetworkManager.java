@@ -158,7 +158,7 @@ public final class SteamNetworkManager {
             if (network.steamTanks.add(vessel.getBlockPos())) {
                 FluidStack held = vessel.getTankInventory().getFluid();
                 if (held.isEmpty() || held.is(ModFluids.STEAM.get())) {
-                    network.volumeM3 += vessel.getTotalTankSize();
+                    network.volumeM3 += passiveSteamTankVolumeM3(vessel);
                     if (held.is(ModFluids.STEAM.get())) {
                         network.addStoredAtBaseTemp(held.getAmount());
                     }
@@ -171,6 +171,14 @@ public final class SteamNetworkManager {
         if (handler == null && FluidPropagator.isOpenEnd(level, fromPipe, dir)) {
             network.openEnds.add(new OpenEnd(fromPipe, dir));
         }
+    }
+
+    private static double passiveSteamTankVolumeM3(FluidTankBlockEntity vessel) {
+        int capacityMb = vessel.getTankInventory().getCapacity();
+        if (capacityMb > 0) {
+            return capacityMb / 1000.0D;
+        }
+        return Math.max(1, vessel.getTotalTankSize());
     }
 
     private static boolean hasWorkingEngine(Level level, SteamInletBlockEntity inlet) {

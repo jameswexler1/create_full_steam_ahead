@@ -64,6 +64,7 @@ pressure pN/m^2 = gasConstant * storedSteamMb * temperatureK / networkVolumeM3
 - Engine output is gated by both pressure and delivered flow: `min(pressure factor, flow factor)`.
 - Multiple boilers can feed one pipe network. Network temperature is weighted by contributed steam, not simply copied from the hottest boiler.
 - Multiple `boiler_outlet` blocks on one boiler split one shared boiler budget and cannot duplicate steam.
+- Passive Create Fluid Tanks add pressure volume from their configured fluid capacity, so larger storage actually buffers pressure.
 - Create fluid valves block steam pressure traversal. Closed valves isolate pressure instead of leaking or bypassing steam.
 - Open pipe ends and unconnected outlets act as atmospheric relief. They vent before burst checks and can drain enough steam to bring pressure down toward rated pressure.
 - Overpressure warns at `1.5 MpN/m²` and bursts at `2.5 MpN/m²`. A burst is deduped per physical boiler, depressurizes the whole connected steam network, and uses `12.0 + 0.45 * networkVolume` explosion power capped at `36.0`.

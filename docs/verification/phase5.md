@@ -23,6 +23,7 @@ Implemented:
 - Outlet production is water-gated by Create's boiler water heat level, multiplied by boiler height.
 - Multiple outlets on the same boiler split one shared steam budget instead of duplicating output.
 - One pipe-fed engine consumes at most `90 mB/t`, producing at most `147,456 SU`; surplus steam is for additional engines.
+- Passive Create Fluid Tanks now contribute network pressure volume from their configured fluid capacity, not only their block count.
 
 Automated checks run:
 
@@ -45,6 +46,7 @@ Results:
 - Latest automated run on 2026-05-31 after enhancing open steam particles and making boiler outlet pressure respect Create fluid valves: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-05-31 after switching steam leak vents to custom particles and restoring pipe fluid visibility: `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-06-01 after preserving pipe-flow source steam and adding explicit fluid render overrides: `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
+- Latest automated run on 2026-06-06 after scaling passive steam tank pressure volume by configured Create tank capacity: `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 
 Manual runtime checklist:
 
@@ -86,3 +88,4 @@ Scaled production checklist:
 - [ ] Confirm two outlets on one boiler split the same total steam budget instead of each producing the full amount.
 - [ ] Confirm two independent boilers feeding the same pipe network both contribute steam and the combined stream is still shared across reachable engine inlets.
 - [ ] Confirm adjacent engines on one shaft alternate piston phase instead of rising and falling together.
+- [ ] Confirm adding a large passive Create Fluid Tank to a closed steam network increases displayed network volume by its configured capacity and buffers pressure instead of rapidly climbing while barely filled.
