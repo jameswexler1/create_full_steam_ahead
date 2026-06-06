@@ -154,6 +154,10 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         return steamBuffer.getFluidAmount();
     }
 
+    public int getDisplayConsumedSteamMb() {
+        return Math.max(consumedThisTick, consumedLastTick);
+    }
+
     /** Drains up to {@code amount} mB from this inlet's buffer (network venting; not counted as consumed). */
     public int drainSteam(int amount) {
         if (amount <= 0) {

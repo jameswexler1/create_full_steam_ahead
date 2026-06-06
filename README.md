@@ -71,8 +71,11 @@ pressure pN/m^2 = gasConstant * storedSteamMb * temperatureK / networkVolumeM3
 
 Steam remains visible in Create tanks and pipes through a high-visibility tinted vanilla water render path. Unconnected boiler outlets, open pipe ends, and running cylinder exhaust emit custom translucent steam particles, and leak clouds can scald entities.
 
+## Display Link Readout
+
+Create Display Links can read `boiler_outlet` steam network data through the `Steam Network` source. The source supports Full Monitor, Pressure, Safety, Flow, and Network modes from the normal Display Link configuration screen.
+
 ## Planned Polish
 
-- Display Link source for `boiler_outlet` pressure, status, warning/burst thresholds, network volume, production, and connected engine count.
 - Future direct pipe-to-boiler support so active Create Fluid Tank boilers can expose steam without a dedicated `boiler_outlet`.
 - Optional volumetric steam cloud simulation for steam trapped in closed spaces.

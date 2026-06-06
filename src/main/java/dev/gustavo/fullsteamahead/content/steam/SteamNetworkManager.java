@@ -266,6 +266,10 @@ public final class SteamNetworkManager {
         if (totalRequested > 0 && network.storedMb < totalRequested) {
             perEngineCap = network.storedMb / Math.max(1, engineCount);
         }
+        int consumedMb = 0;
+        for (SteamInletBlockEntity inlet : engines) {
+            consumedMb += inlet.getDisplayConsumedSteamMb();
+        }
 
         boolean burst = FullSteamConfig.overpressureEnabled() && pressure >= FullSteamConfig.steamBurstPressure();
         boolean warn = pressure >= FullSteamConfig.steamWarnPressure();
@@ -275,7 +279,7 @@ public final class SteamNetworkManager {
         }
         for (BoilerOutletBlockEntity outlet : network.outlets) {
             outlet.applyNetworkState(pressure, venting, warn, network.productionMb, (int) Math.round(volume),
-                    engineCount);
+                    engineCount, consumedMb);
         }
 
         if (burst) {

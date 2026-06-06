@@ -11,6 +11,7 @@ import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import dev.gustavo.fullsteamahead.registry.ModCapabilities;
 import dev.gustavo.fullsteamahead.registry.ModCreativeTabs;
+import dev.gustavo.fullsteamahead.registry.ModDisplaySources;
 import dev.gustavo.fullsteamahead.registry.ModFluids;
 import dev.gustavo.fullsteamahead.registry.ModItems;
 import dev.gustavo.fullsteamahead.registry.ModParticleTypes;
@@ -32,6 +33,7 @@ public final class FullSteamAhead {
         ModParticleTypes.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModBlockEntities.register(modEventBus);
+        ModDisplaySources.register(modEventBus);
         ModItems.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
         modEventBus.addListener(ModCapabilities::register);
@@ -47,6 +49,7 @@ public final class FullSteamAhead {
             EngineShaftEventHandler.register(NeoForge.EVENT_BUS);
             SteamNetworkManager.register(NeoForge.EVENT_BUS);
             SteamOpenPipeEffectHandler.register();
+            ModDisplaySources.registerAssociations();
             CreateMovementCompat.register();
             SimulatedMovementCompat.registerIfPresent();
         });

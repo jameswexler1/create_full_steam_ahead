@@ -54,6 +54,10 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     private static final String PRESSURE_PN_KEY = "PressurePn";
     private static final String BOILER_VOLUME_KEY = "BoilerVolume";
     private static final String BOILER_TEMP_KEY = "BoilerTemperatureK";
+    private static final String NETWORK_PRODUCTION_KEY = "NetworkProduction";
+    private static final String NETWORK_CONSUMED_KEY = "NetworkConsumed";
+    private static final String NETWORK_VOLUME_KEY = "NetworkVolume";
+    private static final String NETWORK_ENGINES_KEY = "NetworkEngines";
     private static final String STATUS_KEY = "Status";
 
     private final FluidTank steamBuffer = new FluidTank(BUFFER_CAPACITY, stack -> stack.is(ModFluids.STEAM.get())) {
@@ -79,6 +83,8 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     private double networkPressurePn;
     private boolean networkVenting;
     private boolean networkWarn;
+    private int networkProductionRate;
+    private int networkConsumedRate;
     private int networkVolume;
     private int networkEngines;
     private PipePressureResult cachedPipePressure = PipePressureResult.NONE;
@@ -343,15 +349,71 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
 
     /** Called by SteamNetworkManager each tick with the resolved network state. */
     public void applyNetworkState(double pressurePn, boolean venting, boolean warn, int production,
-                                  int networkVolume, int engines) {
+                                  int networkVolume, int engines, int consumed) {
         this.networkPressurePn = pressurePn;
         this.networkVenting = venting;
         this.networkWarn = warn;
+        this.networkProductionRate = production;
+        this.networkConsumedRate = consumed;
         this.networkVolume = networkVolume;
         this.networkEngines = engines;
         if (warn) {
             emitOverpressureWarning(getBoiler());
         }
+    }
+
+    public double getNetworkPressurePn() {
+        return networkPressurePn;
+    }
+
+    public int getNetworkProductionRate() {
+        return networkProductionRate > 0 ? networkProductionRate : productionRate;
+    }
+
+    public int getNetworkConsumedRate() {
+        return networkConsumedRate;
+    }
+
+    public int getNetworkVolume() {
+        return networkVolume;
+    }
+
+    public int getNetworkEngineCount() {
+        return networkEngines;
+    }
+
+    public String getSteamNetworkStatus() {
+        return switch (getSteamNetworkStatusKey()) {
+            case "no_boiler" -> "No boiler";
+            case "no_heat_water" -> "No heat/water";
+            case "burst_risk" -> "Burst risk";
+            case "overpressure" -> "Overpressure";
+            case "venting" -> "Venting";
+            case "low_pressure" -> "Low pressure";
+            default -> "Stable";
+        };
+    }
+
+    public String getSteamNetworkStatusKey() {
+        if (boilerPos == null || status.equals("Missing boiler") || status.equals("Outlet removed")) {
+            return "no_boiler";
+        }
+        if (!lit || productionRate <= 0) {
+            return "no_heat_water";
+        }
+        if (networkPressurePn >= FullSteamConfig.steamBurstPressure()) {
+            return "burst_risk";
+        }
+        if (networkWarn) {
+            return "overpressure";
+        }
+        if (networkVenting) {
+            return "venting";
+        }
+        if (networkPressurePn < SteamPressure.rated()) {
+            return "low_pressure";
+        }
+        return "stable";
     }
 
     /**
@@ -822,6 +884,10 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         tag.putDouble(PRESSURE_PN_KEY, networkPressurePn);
         tag.putInt(BOILER_VOLUME_KEY, boilerVolume);
         tag.putInt(BOILER_TEMP_KEY, boilerTemperatureK);
+        tag.putInt(NETWORK_PRODUCTION_KEY, networkProductionRate);
+        tag.putInt(NETWORK_CONSUMED_KEY, networkConsumedRate);
+        tag.putInt(NETWORK_VOLUME_KEY, networkVolume);
+        tag.putInt(NETWORK_ENGINES_KEY, networkEngines);
         tag.putString(STATUS_KEY, status);
     }
 
@@ -838,6 +904,10 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         networkPressurePn = tag.getDouble(PRESSURE_PN_KEY);
         boilerVolume = tag.getInt(BOILER_VOLUME_KEY);
         boilerTemperatureK = tag.getInt(BOILER_TEMP_KEY);
+        networkProductionRate = tag.getInt(NETWORK_PRODUCTION_KEY);
+        networkConsumedRate = tag.getInt(NETWORK_CONSUMED_KEY);
+        networkVolume = tag.getInt(NETWORK_VOLUME_KEY);
+        networkEngines = tag.getInt(NETWORK_ENGINES_KEY);
         status = tag.contains(STATUS_KEY) ? tag.getString(STATUS_KEY) : "Missing boiler";
     }
 
