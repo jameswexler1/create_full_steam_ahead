@@ -4,73 +4,88 @@ import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import net.minecraft.util.Mth;
 
 /**
- * Pressure/volume/temperature steam model shared by the direct (compact) engine and the
- * piped engine path.
+ * Unified ideal-gas steam model. ONE physical pressure drives everything.
  *
- * <p>Two boiler quantities drive everything: a vessel {@code volume} (Create Fluid Tank block
- * count) and a {@code heatRatio} (how hot the boiler is for its size, 0..heatRatioMax). From those:
- * <ul>
- *   <li>steam {@code production = steamPerBlock * volume * heatRatio} mB/t,</li>
- *   <li>pressure {@code p = heatRatio * maxVolumeReference / volume} (1.0 at a maxed 3x3x3 boiler),</li>
- *   <li>{@code RPM = clamp(rpmAtMaxVolume * p, 0, maxRpm)} — pressure picks the speed.</li>
- * </ul>
- * Stress is consumption-limited: a cylinder draws at most {@code cylinderMaxIntakeMb} mB/t, giving at
- * most {@code cylinderMaxSu}. So a bigger boiler delivers more steam (more SU, up to the cap) at lower
- * pressure (lower RPM); a small boiler delivers little (low SU) at high pressure (high RPM). A maxed
- * 3x3x3 boiler exactly feeds one cylinder (90 mB/t -> 147456 SU, 16 RPM). Anything producing more than
- * is consumed is surplus that builds boiler pressure (see overpressure handling).</p>
+ * <p>A boiler/engine is a vessel of volume {@code V} (tank blocks) holding {@code n} mB of steam at
+ * temperature {@code T} (Kelvin, from the fire). The ideal gas law gives a single pressure:</p>
  *
- * <p>Every number here is config-backed ({@link FullSteamConfig}) so the balance can be tuned freely.</p>
+ * <pre>P = gasConstant * n * T / V        (bar)</pre>
+ *
+ * <p>That one pressure: drives engine RPM and SU (both rise with pressure — pure single-cylinder
+ * physics, power scales with P), sets how fast the engine draws steam (flow ∝ P, which makes pressure
+ * self-regulate to an equilibrium where production = draw), how fast an open pipe vents (relief ∝ P),
+ * and triggers the warning + burst when it climbs too high. Steam stored but not drawn or vented
+ * raises {@code n}, raising {@code P} toward the burst threshold.</p>
+ *
+ * <p>Every constant is config-backed ({@link FullSteamConfig}) so the balance can be tuned freely.</p>
  */
 public final class SteamPhysics {
 
-    /**
-     * Heat factor for production and pressure. 0 when the boiler is cold or dry, otherwise 1.0 so the
-     * tiers stay purely volume-driven regardless of boiler size. Clamped to heatRatioMax, leaving room
-     * for a future super-heat (blaze cake) bonus above 1.0.
-     */
-    public static double heatRatio(int activeHeat, int waterMaxHeat) {
-        if (activeHeat <= 0 || waterMaxHeat <= 0) {
+    /** Vessel temperature in Kelvin from water-gated boiler heat (0 heat -> base/boiling temperature). */
+    public static double temperatureK(int waterGatedHeat) {
+        double base = FullSteamConfig.steamTempBaseK();
+        if (waterGatedHeat <= 0) {
+            return base;
+        }
+        return base + waterGatedHeat * FullSteamConfig.steamTempPerHeatK();
+    }
+
+    /** Ideal-gas pressure in bar from stored steam (mB), temperature (K) and vessel volume (blocks). */
+    public static double pressureBar(double storedMb, double temperatureK, double volumeBlocks) {
+        if (storedMb <= 0.0D || volumeBlocks <= 0.0D) {
             return 0.0D;
         }
-        return Math.min(1.0D, FullSteamConfig.steamHeatRatioMax());
+        return FullSteamConfig.steamGasConstant() * storedMb * temperatureK / volumeBlocks;
     }
 
-    /** Pressure ratio (1.0 at a full-heat maxed boiler); higher for smaller/hotter boilers. 0 when cold. */
-    public static float pressureRatio(double heatRatio, double volumeBlocks) {
-        if (heatRatio <= 0.0D || volumeBlocks <= 0.0D) {
-            return 0.0F;
+    /** How hard the boiler is fired: 1.0 = normal, &gt;1 = super-heated (cakes), clamped to heatFactorMax. */
+    public static double heatFactor(int waterGatedHeat) {
+        if (waterGatedHeat <= 0) {
+            return 0.0D;
         }
-        double vMax = Math.max(1.0D, FullSteamConfig.steamMaxVolumeReference());
-        return (float) (heatRatio * vMax / volumeBlocks);
+        double nominal = Math.max(1, FullSteamConfig.steamHeatNominal());
+        return Mth.clamp(waterGatedHeat / nominal, 0.0D, FullSteamConfig.steamHeatFactorMax());
     }
 
-    /** Continuous RPM from a pressure ratio, clamped to [0, maxRpm]. */
-    public static float rpmFromPressure(float pressureRatio) {
-        if (pressureRatio <= 0.0F) {
-            return 0.0F;
-        }
-        return (float) Mth.clamp(
-                FullSteamConfig.steamRpmAtMaxVolume() * pressureRatio,
-                0.0D,
-                FullSteamConfig.steamMaxRpm()
-        );
-    }
-
-    /** Steam a boiler produces per tick from its volume and heat ratio. */
-    public static int productionMb(double heatRatio, double volumeBlocks) {
-        if (heatRatio <= 0.0D || volumeBlocks <= 0.0D) {
+    /** Steam (mB) a boiler boils per tick, scaling with vessel volume and how hard it is fired. */
+    public static int productionMb(int volumeBlocks, double heatFactor) {
+        if (heatFactor <= 0.0D || volumeBlocks <= 0) {
             return 0;
         }
-        return (int) Math.round(FullSteamConfig.steamPerBlock() * volumeBlocks * heatRatio);
+        return (int) Math.round(FullSteamConfig.steamPerBlock() * volumeBlocks * heatFactor);
     }
 
-    /** Stress capacity from the steam a cylinder actually consumes, capped at cylinderMaxSu. */
-    public static float suForConsumed(int consumedMb) {
-        if (consumedMb <= 0) {
+    /** Engine RPM from pressure, clamped to [0, maxRpm]. */
+    public static float rpm(double pressureBar) {
+        if (pressureBar <= 0.0D) {
             return 0.0F;
         }
-        return Math.min((float) FullSteamConfig.cylinderMaxSu(), consumedMb * FullSteamConfig.suPerSteamMb());
+        return (float) Mth.clamp(FullSteamConfig.steamRpmPerBar() * pressureBar, 0.0D, FullSteamConfig.steamMaxRpm());
+    }
+
+    /** Engine stress capacity (SU) from pressure, clamped to [0, suMax]. */
+    public static float su(double pressureBar) {
+        if (pressureBar <= 0.0D) {
+            return 0.0F;
+        }
+        return (float) Math.min(FullSteamConfig.steamSuPerBar() * pressureBar, FullSteamConfig.steamSuMax());
+    }
+
+    /** Steam (mB/t) an engine draws at the given pressure, capped at the per-cylinder intake. */
+    public static int engineDrawMb(double pressureBar) {
+        if (pressureBar <= 0.0D) {
+            return 0;
+        }
+        int flow = (int) Math.round(FullSteamConfig.steamFlowPerBar() * pressureBar);
+        return Math.min(FullSteamConfig.steamMaxIntakeMb(), Math.max(0, flow));
+    }
+
+    /** Steam (mB/t) an open pipe end vents at the given pressure (relief). */
+    public static int ventMb(double pressureBar) {
+        if (pressureBar <= 0.0D) {
+            return 0;
+        }
+        return Math.max(0, (int) Math.round(FullSteamConfig.steamVentPerBar() * pressureBar));
     }
 
     /** Boiler vessel volume in blocks for a square Create Fluid Tank ({@code width^2 * height}). */

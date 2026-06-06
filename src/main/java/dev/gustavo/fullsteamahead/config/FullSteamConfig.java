@@ -20,18 +20,25 @@ public final class FullSteamConfig {
     private static final int DEFAULT_STEAM_PER_HEAT_UNIT = 10;
     private static final int DEFAULT_PRESSURE_RANGE = 30;
 
-    private static final int DEFAULT_CYLINDER_MAX_INTAKE_MB = 90;
-    private static final int DEFAULT_CYLINDER_MAX_SU = 147_456;
+    // Unified ideal-gas steam model (P = gasConstant * storedMb * tempK / volume, in bar).
     private static final double DEFAULT_STEAM_PER_BLOCK = 90.0D / 27.0D;
-    private static final int DEFAULT_STEAM_MAX_VOLUME_REFERENCE = 27;
-    private static final double DEFAULT_STEAM_RPM_AT_MAX_VOLUME = 16.0D;
+    private static final int DEFAULT_STEAM_HEAT_NOMINAL = 9;
+    private static final double DEFAULT_STEAM_HEAT_FACTOR_MAX = 2.0D;
+    private static final double DEFAULT_STEAM_GAS_CONSTANT = 2.0e-4D;
+    private static final double DEFAULT_STEAM_TEMP_BASE_K = 373.0D;
+    private static final double DEFAULT_STEAM_TEMP_PER_HEAT_K = 100.0D;
+    private static final double DEFAULT_STEAM_RPM_PER_BAR = 6.4D;
     private static final double DEFAULT_STEAM_MAX_RPM = 64.0D;
-    private static final double DEFAULT_STEAM_HEAT_RATIO_MAX = 2.0D;
+    private static final double DEFAULT_STEAM_SU_PER_BAR = 14_745.6D;
+    private static final int DEFAULT_STEAM_SU_MAX = 147_456;
+    private static final double DEFAULT_STEAM_FLOW_PER_BAR = 9.0D;
+    private static final int DEFAULT_STEAM_MAX_INTAKE_MB = 90;
+    private static final double DEFAULT_STEAM_VENT_PER_BAR = 12.0D;
+    private static final double DEFAULT_STEAM_WARN_BAR = 15.0D;
+    private static final double DEFAULT_STEAM_BURST_BAR = 25.0D;
+    private static final int DEFAULT_STEAM_BUFFER_CAP_MB = 16_000;
 
     private static final boolean DEFAULT_OVERPRESSURE_ENABLED = true;
-    private static final int DEFAULT_OVERPRESSURE_BURST_MB = 60_000;
-    private static final int DEFAULT_OVERPRESSURE_WARN_MB = 40_000;
-    private static final int DEFAULT_OVERPRESSURE_RELIEF_MB_PER_TICK = 120;
     private static final double DEFAULT_OVERPRESSURE_BASE_POWER = 4.0D;
     private static final double DEFAULT_OVERPRESSURE_POWER_PER_VOLUME = 0.15D;
     private static final double DEFAULT_OVERPRESSURE_MAX_POWER = 12.0D;
@@ -51,17 +58,23 @@ public final class FullSteamConfig {
     private static final ModConfigSpec.IntValue STEAM_PER_HEAT_UNIT;
     private static final ModConfigSpec.IntValue BOILER_OUTLET_PRESSURE_RANGE;
     private static final ModConfigSpec.BooleanValue ENABLE_DIRECT_COMPACT_MODE;
-    private static final ModConfigSpec.IntValue CYLINDER_MAX_INTAKE_MB;
-    private static final ModConfigSpec.IntValue CYLINDER_MAX_SU;
     private static final ModConfigSpec.DoubleValue STEAM_PER_BLOCK;
-    private static final ModConfigSpec.IntValue STEAM_MAX_VOLUME_REFERENCE;
-    private static final ModConfigSpec.DoubleValue STEAM_RPM_AT_MAX_VOLUME;
+    private static final ModConfigSpec.IntValue STEAM_HEAT_NOMINAL;
+    private static final ModConfigSpec.DoubleValue STEAM_HEAT_FACTOR_MAX;
+    private static final ModConfigSpec.DoubleValue STEAM_GAS_CONSTANT;
+    private static final ModConfigSpec.DoubleValue STEAM_TEMP_BASE_K;
+    private static final ModConfigSpec.DoubleValue STEAM_TEMP_PER_HEAT_K;
+    private static final ModConfigSpec.DoubleValue STEAM_RPM_PER_BAR;
     private static final ModConfigSpec.DoubleValue STEAM_MAX_RPM;
-    private static final ModConfigSpec.DoubleValue STEAM_HEAT_RATIO_MAX;
+    private static final ModConfigSpec.DoubleValue STEAM_SU_PER_BAR;
+    private static final ModConfigSpec.IntValue STEAM_SU_MAX;
+    private static final ModConfigSpec.DoubleValue STEAM_FLOW_PER_BAR;
+    private static final ModConfigSpec.IntValue STEAM_MAX_INTAKE_MB;
+    private static final ModConfigSpec.DoubleValue STEAM_VENT_PER_BAR;
+    private static final ModConfigSpec.DoubleValue STEAM_WARN_BAR;
+    private static final ModConfigSpec.DoubleValue STEAM_BURST_BAR;
+    private static final ModConfigSpec.IntValue STEAM_BUFFER_CAP_MB;
     private static final ModConfigSpec.BooleanValue OVERPRESSURE_ENABLED;
-    private static final ModConfigSpec.IntValue OVERPRESSURE_BURST_MB;
-    private static final ModConfigSpec.IntValue OVERPRESSURE_WARN_MB;
-    private static final ModConfigSpec.IntValue OVERPRESSURE_RELIEF_MB_PER_TICK;
     private static final ModConfigSpec.DoubleValue OVERPRESSURE_BASE_POWER;
     private static final ModConfigSpec.DoubleValue OVERPRESSURE_POWER_PER_VOLUME;
     private static final ModConfigSpec.DoubleValue OVERPRESSURE_MAX_POWER;
@@ -99,68 +112,92 @@ public final class FullSteamConfig {
 
         builder.pop();
 
-        builder.comment("Pressure/volume/temperature steam model. Tune these freely.",
-                        "Boiler size (volume) and heat set steam production and pressure; a cylinder is consumption-",
-                        "limited, so a bigger boiler gives more SU at lower RPM and a smaller boiler gives less SU at",
-                        "higher RPM. A full-heat 3x3x3 boiler (volume 27) exactly maxes one cylinder: 90 mB/t -> 147456",
-                        "SU, 16 RPM. Boilers producing more than is consumed build surplus pressure (overpressure).")
+        builder.comment("Unified ideal-gas steam model. One pressure drives everything. Tune freely.",
+                        "P (bar) = gasConstant * storedSteamMb * temperatureK / volumeBlocks.",
+                        "Steam is produced into the vessel, drawn by engines (flow ~ pressure) and vented by open",
+                        "pipes (~ pressure); pressure self-regulates to an equilibrium. RPM and SU both rise with",
+                        "pressure (pure single-cylinder physics). If pressure climbs past burstBar the boiler explodes.")
                 .push("steamPhysics");
 
-        CYLINDER_MAX_INTAKE_MB = builder
-                .comment("Maximum steam (mB/t) a single cylinder consumes. Steam beyond this is surplus (overpressure).")
-                .defineInRange("cylinderMaxIntakeMb", DEFAULT_CYLINDER_MAX_INTAKE_MB, 1, 1_000_000);
-
-        CYLINDER_MAX_SU = builder
-                .comment("Absolute stress capacity cap a single cylinder can ever produce (at full intake).")
-                .defineInRange("cylinderMaxSu", DEFAULT_CYLINDER_MAX_SU, 1, 1_000_000_000);
-
         STEAM_PER_BLOCK = builder
-                .comment("Steam (mB/t) produced per boiler tank block at heat ratio 1.0.",
-                        "Default 90/27 so a full-heat 3x3x3 boiler (27 blocks) produces exactly 90 mB/t.")
+                .comment("Steam (mB/t) boiled per tank block at heat factor 1.0 (normally fired).",
+                        "Default 90/27 so a normally-fired 3x3x3 boiler produces 90 mB/t.")
                 .defineInRange("steamPerBlock", DEFAULT_STEAM_PER_BLOCK, 0.0D, 1_000_000.0D);
 
-        STEAM_MAX_VOLUME_REFERENCE = builder
-                .comment("Boiler volume (blocks) treated as a maxed cylinder: pressure ratio 1.0 at full heat.",
-                        "Default 27 = a 3x3x3 Create Fluid Tank.")
-                .defineInRange("maxVolumeReference", DEFAULT_STEAM_MAX_VOLUME_REFERENCE, 1, 1_000_000);
+        STEAM_HEAT_NOMINAL = builder
+                .comment("Water-gated boiler heat that counts as heat factor 1.0 (a normally-fired boiler).",
+                        "Blaze cakes push heat higher -> factor > 1 -> more steam and pressure (toward bursting).")
+                .defineInRange("heatNominal", DEFAULT_STEAM_HEAT_NOMINAL, 1, 100_000);
 
-        STEAM_RPM_AT_MAX_VOLUME = builder
-                .comment("RPM at pressure ratio 1.0 (a full-heat maxVolumeReference boiler). Smaller boilers spin",
-                        "faster up to maxRpm. Default 16 = a maxed 3x3x3 boiler.")
-                .defineInRange("rpmAtMaxVolume", DEFAULT_STEAM_RPM_AT_MAX_VOLUME, 0.0D, 256.0D);
+        STEAM_HEAT_FACTOR_MAX = builder
+                .comment("Upper clamp on the heat factor (super-heat headroom).")
+                .defineInRange("heatFactorMax", DEFAULT_STEAM_HEAT_FACTOR_MAX, 0.0D, 64.0D);
+
+        STEAM_GAS_CONSTANT = builder
+                .comment("Ideal-gas constant folding R and unit conversions: P = this * storedMb * tempK / volume.",
+                        "Sets how much stored steam a given pressure needs; raise for higher pressures.")
+                .defineInRange("gasConstant", DEFAULT_STEAM_GAS_CONSTANT, 0.0D, 1_000.0D);
+
+        STEAM_TEMP_BASE_K = builder
+                .comment("Steam temperature (Kelvin) with no extra heat (boiling point).")
+                .defineInRange("temperatureBaseK", DEFAULT_STEAM_TEMP_BASE_K, 0.0D, 100_000.0D);
+
+        STEAM_TEMP_PER_HEAT_K = builder
+                .comment("Extra steam temperature (Kelvin) per unit of water-gated boiler heat.")
+                .defineInRange("temperaturePerHeatK", DEFAULT_STEAM_TEMP_PER_HEAT_K, 0.0D, 100_000.0D);
+
+        STEAM_RPM_PER_BAR = builder
+                .comment("Engine RPM produced per bar of delivered pressure (clamped at maxRpm).",
+                        "Default 6.4 so ~10 bar (a normally-fired 3x3x3) gives 64 RPM.")
+                .defineInRange("rpmPerBar", DEFAULT_STEAM_RPM_PER_BAR, 0.0D, 1_000.0D);
 
         STEAM_MAX_RPM = builder
                 .comment("Upper clamp on engine RPM regardless of pressure.")
                 .defineInRange("maxRpm", DEFAULT_STEAM_MAX_RPM, 1.0D, 256.0D);
 
-        STEAM_HEAT_RATIO_MAX = builder
-                .comment("Upper clamp on heat ratio. >1.0 lets super-heated (blaze cake) boilers overproduce and",
-                        "raise pressure past a normally-fired boiler. Default 2.0 (cakes can double heat).")
-                .defineInRange("heatRatioMax", DEFAULT_STEAM_HEAT_RATIO_MAX, 0.0D, 64.0D);
+        STEAM_SU_PER_BAR = builder
+                .comment("Engine stress capacity (SU) per bar of delivered pressure (clamped at suMax).",
+                        "Default 14745.6 so ~10 bar gives 147456 SU.")
+                .defineInRange("suPerBar", DEFAULT_STEAM_SU_PER_BAR, 0.0D, 1_000_000_000.0D);
+
+        STEAM_SU_MAX = builder
+                .comment("Upper cap on stress capacity a single cylinder can produce.")
+                .defineInRange("suMax", DEFAULT_STEAM_SU_MAX, 1, 1_000_000_000);
+
+        STEAM_FLOW_PER_BAR = builder
+                .comment("Steam (mB/t) an engine draws per bar of pressure (capped at maxIntakeMb).",
+                        "Lower = pressure builds more easily; this is what makes pressure self-regulate.")
+                .defineInRange("flowPerBar", DEFAULT_STEAM_FLOW_PER_BAR, 0.0D, 1_000_000.0D);
+
+        STEAM_MAX_INTAKE_MB = builder
+                .comment("Maximum steam (mB/t) a single cylinder can draw, regardless of pressure.")
+                .defineInRange("maxIntakeMb", DEFAULT_STEAM_MAX_INTAKE_MB, 1, 1_000_000);
+
+        STEAM_VENT_PER_BAR = builder
+                .comment("Steam (mB/t) an open pipe end vents per bar of pressure (relief). Higher = open pipes",
+                        "relieve faster. Make this >= flowPerBar so an open pipe reliably prevents bursting.")
+                .defineInRange("ventPerBar", DEFAULT_STEAM_VENT_PER_BAR, 0.0D, 1_000_000.0D);
+
+        STEAM_WARN_BAR = builder
+                .comment("Pressure (bar) at which the boiler hisses and shows an overpressure warning.")
+                .defineInRange("warnBar", DEFAULT_STEAM_WARN_BAR, 0.0D, 1_000_000.0D);
+
+        STEAM_BURST_BAR = builder
+                .comment("Pressure (bar) at which the boiler explodes.")
+                .defineInRange("burstBar", DEFAULT_STEAM_BURST_BAR, 0.0D, 1_000_000.0D);
+
+        STEAM_BUFFER_CAP_MB = builder
+                .comment("Maximum steam (mB) a boiler vessel can store. Should be high enough to reach burstBar.")
+                .defineInRange("bufferCapMb", DEFAULT_STEAM_BUFFER_CAP_MB, 1, 1_000_000_000);
 
         builder.pop();
 
-        builder.comment("Boiler overpressure: steam produced but not consumed (or vented) builds up and",
-                        "eventually bursts the boiler. Open pipe ends and engines relieve pressure.")
+        builder.comment("Boiler burst explosion (triggered when pressure exceeds steamPhysics.burstBar).")
                 .push("steamOverpressure");
 
         OVERPRESSURE_ENABLED = builder
-                .comment("Whether boilers that over-produce steam build pressure and explode.")
+                .comment("Whether over-pressured boilers explode.")
                 .define("enabled", DEFAULT_OVERPRESSURE_ENABLED);
-
-        OVERPRESSURE_BURST_MB = builder
-                .comment("Accumulated surplus steam (mB) at which the boiler explodes.",
-                        "At max over-production from one outlet (~90 mB/t surplus) this is ~"
-                                + (DEFAULT_OVERPRESSURE_BURST_MB / 90) + " ticks.")
-                .defineInRange("burstPressureMb", DEFAULT_OVERPRESSURE_BURST_MB, 1, 1_000_000_000);
-
-        OVERPRESSURE_WARN_MB = builder
-                .comment("Accumulated surplus steam (mB) at which warning hiss/particles begin.")
-                .defineInRange("warnPressureMb", DEFAULT_OVERPRESSURE_WARN_MB, 0, 1_000_000_000);
-
-        OVERPRESSURE_RELIEF_MB_PER_TICK = builder
-                .comment("How fast (mB/tick) built-up pressure bleeds down when the boiler is no longer over-producing.")
-                .defineInRange("reliefMbPerTick", DEFAULT_OVERPRESSURE_RELIEF_MB_PER_TICK, 0, 1_000_000);
 
         OVERPRESSURE_BASE_POWER = builder
                 .comment("Base explosion power (4.0 ~= TNT) before the per-volume bonus.")
@@ -240,48 +277,72 @@ public final class FullSteamConfig {
         return !loaded() || ENABLE_DIRECT_COMPACT_MODE.get();
     }
 
-    public static int cylinderMaxIntakeMb() {
-        return loaded() ? CYLINDER_MAX_INTAKE_MB.get() : DEFAULT_CYLINDER_MAX_INTAKE_MB;
-    }
-
-    public static int cylinderMaxSu() {
-        return loaded() ? CYLINDER_MAX_SU.get() : DEFAULT_CYLINDER_MAX_SU;
-    }
-
     public static double steamPerBlock() {
         return loaded() ? STEAM_PER_BLOCK.get() : DEFAULT_STEAM_PER_BLOCK;
     }
 
-    public static int steamMaxVolumeReference() {
-        return loaded() ? STEAM_MAX_VOLUME_REFERENCE.get() : DEFAULT_STEAM_MAX_VOLUME_REFERENCE;
+    public static int steamHeatNominal() {
+        return loaded() ? STEAM_HEAT_NOMINAL.get() : DEFAULT_STEAM_HEAT_NOMINAL;
     }
 
-    public static double steamRpmAtMaxVolume() {
-        return loaded() ? STEAM_RPM_AT_MAX_VOLUME.get() : DEFAULT_STEAM_RPM_AT_MAX_VOLUME;
+    public static double steamHeatFactorMax() {
+        return loaded() ? STEAM_HEAT_FACTOR_MAX.get() : DEFAULT_STEAM_HEAT_FACTOR_MAX;
+    }
+
+    public static double steamGasConstant() {
+        return loaded() ? STEAM_GAS_CONSTANT.get() : DEFAULT_STEAM_GAS_CONSTANT;
+    }
+
+    public static double steamTempBaseK() {
+        return loaded() ? STEAM_TEMP_BASE_K.get() : DEFAULT_STEAM_TEMP_BASE_K;
+    }
+
+    public static double steamTempPerHeatK() {
+        return loaded() ? STEAM_TEMP_PER_HEAT_K.get() : DEFAULT_STEAM_TEMP_PER_HEAT_K;
+    }
+
+    public static double steamRpmPerBar() {
+        return loaded() ? STEAM_RPM_PER_BAR.get() : DEFAULT_STEAM_RPM_PER_BAR;
     }
 
     public static double steamMaxRpm() {
         return loaded() ? STEAM_MAX_RPM.get() : DEFAULT_STEAM_MAX_RPM;
     }
 
-    public static double steamHeatRatioMax() {
-        return loaded() ? STEAM_HEAT_RATIO_MAX.get() : DEFAULT_STEAM_HEAT_RATIO_MAX;
+    public static double steamSuPerBar() {
+        return loaded() ? STEAM_SU_PER_BAR.get() : DEFAULT_STEAM_SU_PER_BAR;
+    }
+
+    public static int steamSuMax() {
+        return loaded() ? STEAM_SU_MAX.get() : DEFAULT_STEAM_SU_MAX;
+    }
+
+    public static double steamFlowPerBar() {
+        return loaded() ? STEAM_FLOW_PER_BAR.get() : DEFAULT_STEAM_FLOW_PER_BAR;
+    }
+
+    public static int steamMaxIntakeMb() {
+        return loaded() ? STEAM_MAX_INTAKE_MB.get() : DEFAULT_STEAM_MAX_INTAKE_MB;
+    }
+
+    public static double steamVentPerBar() {
+        return loaded() ? STEAM_VENT_PER_BAR.get() : DEFAULT_STEAM_VENT_PER_BAR;
+    }
+
+    public static double steamWarnBar() {
+        return loaded() ? STEAM_WARN_BAR.get() : DEFAULT_STEAM_WARN_BAR;
+    }
+
+    public static double steamBurstBar() {
+        return loaded() ? STEAM_BURST_BAR.get() : DEFAULT_STEAM_BURST_BAR;
+    }
+
+    public static int steamBufferCapMb() {
+        return loaded() ? STEAM_BUFFER_CAP_MB.get() : DEFAULT_STEAM_BUFFER_CAP_MB;
     }
 
     public static boolean overpressureEnabled() {
         return !loaded() || OVERPRESSURE_ENABLED.get();
-    }
-
-    public static int overpressureBurstMb() {
-        return loaded() ? OVERPRESSURE_BURST_MB.get() : DEFAULT_OVERPRESSURE_BURST_MB;
-    }
-
-    public static int overpressureWarnMb() {
-        return loaded() ? OVERPRESSURE_WARN_MB.get() : DEFAULT_OVERPRESSURE_WARN_MB;
-    }
-
-    public static int overpressureReliefMbPerTick() {
-        return loaded() ? OVERPRESSURE_RELIEF_MB_PER_TICK.get() : DEFAULT_OVERPRESSURE_RELIEF_MB_PER_TICK;
     }
 
     public static double overpressureBasePower() {
@@ -337,9 +398,9 @@ public final class FullSteamConfig {
         return SU_PER_HEAT_UNIT / steamPerHeatUnit();
     }
 
-    /** Maximum steam in mB/t one cylinder draws (and the per-inlet intake cap). Alias of cylinderMaxIntakeMb. */
+    /** Maximum steam in mB/t one cylinder draws (and the per-inlet intake cap). Alias of steamMaxIntakeMb. */
     public static int maxPipedSteamPerTick() {
-        return cylinderMaxIntakeMb();
+        return steamMaxIntakeMb();
     }
 
     private FullSteamConfig() {

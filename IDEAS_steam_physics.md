@@ -3,7 +3,32 @@
 Living scratchpad for redesigning steam from a flow-only model into a
 pressure/heat/volume model. Read + edit freely as we go. Nothing here is committed to yet.
 
-Status: **IMPLEMENTED (v1).** Locked design below; flow-only model replaced.
+Status: **IMPLEMENTED (v3 — unified ideal-gas).** One real pressure (bar) drives everything.
+
+## v3 unified model (current)
+
+One physical pressure, real units:
+- `P (bar) = gasConstant · storedSteamMb · temperatureK / volumeBlocks`  (ideal gas, `SteamPhysics`).
+- `temperatureK = tempBaseK + waterGatedHeat · tempPerHeatK` (fire heats the steam).
+- Production: `steamPerBlock · volume · heatFactor` mB/t boiled into the vessel.
+- Engine **draws ∝ P** (`flowPerBar · P`, capped `maxIntakeMb`) → pressure self-regulates to
+  equilibrium `P_eq = production/flowPerBar`.
+- **RPM = rpmPerBar · P** (cap maxRpm), **SU = suPerBar · P** (cap suMax). Both rise with pressure
+  (pure single-cylinder physics — bigger/hotter boiler = faster AND stronger).
+- Open pipes vent ∝ P (relief). Past `warnBar` → hiss/particles; past `burstBar` → explosion
+  (power scales with tank size). Same P does buildup + burst — no separate quantity.
+
+Defaults: gasConstant 2e-4, tempBaseK 373, tempPerHeatK 100, steamPerBlock 90/27, heatNominal 9,
+rpmPerBar 6.4, suPerBar 14745.6, flowPerBar 9, maxIntakeMb 90, ventPerBar 12, warnBar 15, burstBar 25.
+Tiers (equilibrium): 3x3x1 ~3.3 bar/21 RPM/49152 SU; 3x3x3 ~10 bar/64 RPM/147456 SU; bigger/cakes
+overproduce -> burst unless vented or fed to more engines. Compact uses steady-state P directly.
+
+NOTE: this REVERSED the earlier tiers (big boiler is now fast+strong, not slow+torquey) — the
+pure-physics choice. Calibration is first-pass; tune the steamPhysics config in-game.
+
+---
+
+## (history) v1 flow-tier design below — superseded by v3
 
 ---
 

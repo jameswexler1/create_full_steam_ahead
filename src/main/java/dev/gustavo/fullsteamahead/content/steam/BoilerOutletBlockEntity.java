@@ -41,7 +41,7 @@ import java.util.Set;
 
 public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation {
     private static final float PRESSURE_PER_MB = 2.0f;
-    private static final int BUFFER_CAPACITY = 16_000;
+    private static final int BUFFER_CAPACITY = 256_000;
     private static final int PRESSURE_REFRESH_TICKS = 5;
     private static final String BOILER_POS_KEY = "BoilerPos";
     private static final String BUFFER_KEY = "SteamBuffer";
@@ -50,10 +50,9 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     private static final String OUTLET_COUNT_KEY = "OutletCount";
     private static final String PRODUCTION_RATE_KEY = "ProductionRate";
     private static final String PUSHED_RATE_KEY = "PushedRate";
-    private static final String PRESSURE_RATIO_KEY = "PressureRatio";
+    private static final String PRESSURE_BAR_KEY = "PressureBar";
     private static final String BOILER_VOLUME_KEY = "BoilerVolume";
-    private static final String BOILER_TEMP_KEY = "BoilerTemperatureUnits";
-    private static final String OVERPRESSURE_KEY = "OverpressureMb";
+    private static final String BOILER_TEMP_KEY = "BoilerTemperatureK";
     private static final String STATUS_KEY = "Status";
 
     private final FluidTank steamBuffer = new FluidTank(BUFFER_CAPACITY, stack -> stack.is(ModFluids.STEAM.get())) {
@@ -73,10 +72,10 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     private int externallyDrainedSteam;
     private int pipePressureCooldown;
     private int lastPressureAmount;
-    private float steamPressureRatio;
+    private double steamPressureBar;
     private int boilerVolume;
-    private int boilerTemperatureUnits;
-    private int overpressureMb;
+    private int boilerTemperatureK;
+    private boolean lit;
     private PipePressureResult cachedPipePressure = PipePressureResult.NONE;
     private boolean venting;
     private String status = "Missing boiler";
@@ -111,8 +110,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         int previousProduction = productionRate;
         int previousPushed = pushedRate;
         int previousBuffer = steamBuffer.getFluidAmount();
-        float previousPressure = steamPressureRatio;
-        int previousOverpressure = overpressureMb;
+        double previousPressure = steamPressureBar;
         boolean previousVenting = venting;
         String previousStatus = status;
         int networkMovedLastTick = externallyDrainedSteam;
@@ -123,32 +121,44 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         venting = false;
 
         FluidTankBlockEntity boiler = getBoiler();
+        // calculateSteamBudget also stores boilerVolume, boilerTemperatureK and lit.
         SteamBudget budget = calculateSteamBudget(boiler);
         heatUnits = budget.outletUnits();
         totalHeatUnits = budget.totalUnits();
         outletCount = budget.outletCount();
         productionRate = budget.outletUnits();
+
+        // Boil steam into the vessel, then deliver what consumers/open-ends will take. Steam that stays
+        // behind raises the stored amount, raising pressure.
         if (productionRate > 0) {
             steamBuffer.fill(new FluidStack(ModFluids.STEAM.get(), productionRate), IFluidHandler.FluidAction.EXECUTE);
-            SteamOutput output = pushSteam(productionRate, networkMovedLastTick);
+        }
+        steamPressureBar = SteamPhysics.pressureBar(steamBuffer.getFluidAmount(), boilerTemperatureK, boilerVolume);
+
+        if (steamBuffer.getFluidAmount() > 0) {
+            SteamOutput output = pushSteam(steamBuffer.getFluidAmount(), networkMovedLastTick);
             venting = output.venting();
             pushedRate = networkMovedLastTick + output.moved();
-            status = output.blocked()
-                    ? "Steam blocked"
+            status = output.blocked() ? "Steam blocked"
                     : venting ? "Steam venting" : "Boiler producing steam";
-        } else if (boiler == null || boiler.boiler == null) {
-            resetPipePressureCache();
-            pushedRate = 0;
-            status = "Missing boiler";
         } else {
             resetPipePressureCache();
             pushedRate = 0;
-            status = "Needs active heat and water";
+            status = boiler == null || boiler.boiler == null ? "Missing boiler"
+                    : lit ? "Boiler producing steam" : "Needs active heat and water";
         }
 
-        if (tickOverpressure(boiler)) {
-            // Boiler exploded; its blocks are gone, so stop touching it this tick.
+        // Recompute pressure from the steam still stored after delivery.
+        steamPressureBar = SteamPhysics.pressureBar(steamBuffer.getFluidAmount(), boilerTemperatureK, boilerVolume);
+
+        if (FullSteamConfig.overpressureEnabled() && boiler != null && boiler.boiler != null
+                && steamPressureBar >= FullSteamConfig.steamBurstBar()) {
+            explodeBoiler(boiler);
             return;
+        }
+        if (boiler != null && boiler.boiler != null && steamPressureBar >= FullSteamConfig.steamWarnBar()) {
+            status = "Overpressure!";
+            emitOverpressureWarning(boiler);
         }
 
         if (previousHeatUnits != heatUnits
@@ -157,8 +167,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                 || previousProduction != productionRate
                 || previousPushed != pushedRate
                 || previousBuffer != steamBuffer.getFluidAmount()
-                || previousPressure != steamPressureRatio
-                || previousOverpressure != overpressureMb
+                || previousPressure != steamPressureBar
                 || previousVenting != venting
                 || !previousStatus.equals(status)) {
             notifyUpdate();
@@ -252,18 +261,16 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         if (venting) {
             CreateLang.text("Venting open steam").style(ChatFormatting.GOLD).forGoggles(tooltip, 1);
         }
-        CreateLang.text(String.format("Steam pressure: %.2f", steamPressureRatio))
-                .style(steamPressureRatio > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
+        boolean warning = steamPressureBar >= FullSteamConfig.steamWarnBar();
+        CreateLang.text(String.format("Pressure: %.1f bar", steamPressureBar))
+                .style(warning ? ChatFormatting.RED : steamPressureBar > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
                 .forGoggles(tooltip, 1);
-        CreateLang.text("Boiler volume: " + boilerVolume + " (heat " + boilerTemperatureUnits + ")")
+        CreateLang.text("Boiler volume: " + boilerVolume + " (" + boilerTemperatureK + " K)")
                 .style(ChatFormatting.DARK_GRAY)
                 .forGoggles(tooltip, 1);
-        if (FullSteamConfig.overpressureEnabled() && overpressureMb > 0) {
-            int burst = FullSteamConfig.overpressureBurstMb();
-            boolean warning = overpressureMb >= FullSteamConfig.overpressureWarnMb();
-            int percent = (int) Math.min(100L, Math.round(100.0D * overpressureMb / Math.max(1, burst)));
-            CreateLang.text((warning ? "OVERPRESSURE: " : "Pressure buildup: ") + percent + "%")
-                    .style(warning ? ChatFormatting.RED : ChatFormatting.GOLD)
+        if (warning) {
+            CreateLang.text("OVERPRESSURE — burst at " + String.format("%.0f", FullSteamConfig.steamBurstBar()) + " bar")
+                    .style(ChatFormatting.RED)
                     .forGoggles(tooltip, 1);
         }
         CreateLang.text("Pressure range: " + FullSteamConfig.boilerOutletPressureRange() + " blocks")
@@ -273,9 +280,9 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     }
 
     private SteamBudget calculateSteamBudget(FluidTankBlockEntity boiler) {
-        steamPressureRatio = 0.0F;
         boilerVolume = 0;
-        boilerTemperatureUnits = 0;
+        boilerTemperatureK = (int) Math.round(FullSteamConfig.steamTempBaseK());
+        lit = false;
         if (boiler == null || boiler.boiler == null) {
             return SteamBudget.NONE;
         }
@@ -286,20 +293,21 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
             data.updateTemperature(boiler);
         }
 
-        if (data.activeHeat <= 0) {
-            return SteamBudget.withOutlets(FullSteamBoilerIntegration.countAttachedOutlets(boiler));
-        }
+        int volume = boiler.getTotalTankSize();
+        boilerVolume = volume;
+
+        int waterGatedHeat = Math.min(data.activeHeat, data.getMaxHeatLevelForWaterSupply());
+        boilerTemperatureK = (int) Math.round(SteamPhysics.temperatureK(waterGatedHeat));
+        lit = data.activeHeat > 0 && data.getMaxHeatLevelForWaterSupply() > 0;
 
         int outlets = FullSteamBoilerIntegration.countAttachedOutlets(boiler);
+        if (!lit) {
+            return SteamBudget.withOutlets(outlets);
+        }
 
-        // Volume-driven model: production scales with the whole vessel; pressure is heat over volume.
-        int volume = boiler.getTotalTankSize();
-        double heatRatio = SteamPhysics.heatRatio(data.activeHeat, data.getMaxHeatLevelForWaterSupply());
-        boilerVolume = volume;
-        boilerTemperatureUnits = Math.min(data.activeHeat, data.getMaxHeatLevelForWaterSupply());
-        steamPressureRatio = SteamPhysics.pressureRatio(heatRatio, volume);
-
-        int totalProductionMb = SteamPhysics.productionMb(heatRatio, volume);
+        // Steam boiled per tick scales with vessel volume and how hard the boiler is fired.
+        double heatFactor = SteamPhysics.heatFactor(waterGatedHeat);
+        int totalProductionMb = SteamPhysics.productionMb(volume, heatFactor);
         if (totalProductionMb <= 0 || outlets <= 0) {
             return SteamBudget.withOutlets(outlets);
         }
@@ -465,7 +473,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                     // Steam itself moves through Create's pipe pull, so report engine pressure here (the
                     // pressure BFS always reaches the inlet) rather than in the fallback push path.
                     if (level.getBlockEntity(next) instanceof SteamInletBlockEntity inlet && inlet.isInletAssembled()) {
-                        inlet.reportSupplyPressure(steamPressureRatio);
+                        inlet.reportSupplyPressure((float) steamPressureBar);
                     }
                     continue;
                 }
@@ -721,36 +729,6 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         }
     }
 
-    /**
-     * Accumulates steam this boiler produces but cannot push to a consumer (or vent), and bursts the
-     * boiler once it exceeds the configured threshold. Returns true if the boiler exploded this tick.
-     */
-    private boolean tickOverpressure(FluidTankBlockEntity boiler) {
-        if (!FullSteamConfig.overpressureEnabled() || boiler == null || boiler.boiler == null) {
-            overpressureMb = 0;
-            return false;
-        }
-
-        int surplus = Math.max(0, productionRate - pushedRate);
-        if (surplus > 0) {
-            overpressureMb += surplus;
-        } else {
-            overpressureMb = Math.max(0, overpressureMb - FullSteamConfig.overpressureReliefMbPerTick());
-        }
-
-        if (overpressureMb >= FullSteamConfig.overpressureBurstMb()) {
-            explodeBoiler(boiler);
-            overpressureMb = 0;
-            return true;
-        }
-
-        if (overpressureMb >= FullSteamConfig.overpressureWarnMb()) {
-            status = "Overpressure!";
-            emitOverpressureWarning(boiler);
-        }
-        return false;
-    }
-
     private void emitOverpressureWarning(FluidTankBlockEntity boiler) {
         if (!(level instanceof ServerLevel serverLevel) || level.getGameTime() % 8L != 0L) {
             return;
@@ -800,10 +778,9 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         tag.putInt(OUTLET_COUNT_KEY, outletCount);
         tag.putInt(PRODUCTION_RATE_KEY, productionRate);
         tag.putInt(PUSHED_RATE_KEY, pushedRate);
-        tag.putFloat(PRESSURE_RATIO_KEY, steamPressureRatio);
+        tag.putDouble(PRESSURE_BAR_KEY, steamPressureBar);
         tag.putInt(BOILER_VOLUME_KEY, boilerVolume);
-        tag.putInt(BOILER_TEMP_KEY, boilerTemperatureUnits);
-        tag.putInt(OVERPRESSURE_KEY, overpressureMb);
+        tag.putInt(BOILER_TEMP_KEY, boilerTemperatureK);
         tag.putString(STATUS_KEY, status);
     }
 
@@ -817,10 +794,9 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         outletCount = tag.getInt(OUTLET_COUNT_KEY);
         productionRate = tag.getInt(PRODUCTION_RATE_KEY);
         pushedRate = tag.getInt(PUSHED_RATE_KEY);
-        steamPressureRatio = tag.getFloat(PRESSURE_RATIO_KEY);
+        steamPressureBar = tag.getDouble(PRESSURE_BAR_KEY);
         boilerVolume = tag.getInt(BOILER_VOLUME_KEY);
-        boilerTemperatureUnits = tag.getInt(BOILER_TEMP_KEY);
-        overpressureMb = tag.getInt(OVERPRESSURE_KEY);
+        boilerTemperatureK = tag.getInt(BOILER_TEMP_KEY);
         status = tag.contains(STATUS_KEY) ? tag.getString(STATUS_KEY) : "Missing boiler";
     }
 

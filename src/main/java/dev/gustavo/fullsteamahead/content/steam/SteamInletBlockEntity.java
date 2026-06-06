@@ -163,8 +163,8 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         supplyPressureRatio = Math.max(supplyPressureRatio, pressureRatio);
     }
 
-    /** Delivered steam pressure ratio, or 0 when no outlet has reported recently. */
-    public float getSupplyPressureRatio() {
+    /** Delivered steam pressure in bar, or 0 when no outlet has reported recently. */
+    public float getSupplyPressureBar() {
         if (level != null && level.getGameTime() - supplyPressureGameTime > SUPPLY_PRESSURE_DECAY_TICKS) {
             return 0.0F;
         }
