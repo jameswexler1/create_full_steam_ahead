@@ -149,7 +149,7 @@ public final class SteamNetworkManager {
         }
         if (be instanceof SteamInletBlockEntity inlet && inlet.isInletAssembled()) {
             network.inlets.add(inlet);
-            network.storedMb += inlet.getStoredSteamMb();
+            network.addStoredAtBaseTemp(inlet.getStoredSteamMb());
             return;
         }
         if (be instanceof FluidTankBlockEntity tank && !(be instanceof BoilerOutletBlockEntity)) {
@@ -160,7 +160,7 @@ public final class SteamNetworkManager {
                 if (held.isEmpty() || held.is(ModFluids.STEAM.get())) {
                     network.volumeM3 += vessel.getTotalTankSize();
                     if (held.is(ModFluids.STEAM.get())) {
-                        network.storedMb += held.getAmount();
+                        network.addStoredAtBaseTemp(held.getAmount());
                     }
                 }
             }
@@ -190,7 +190,11 @@ public final class SteamNetworkManager {
         network.outlets.add(outlet);
         network.storedMb += outlet.getStoredSteamMb();
         network.productionMb += outlet.getBoilerProductionMb();
-        network.temperatureK = Math.max(network.temperatureK, outlet.getTemperatureK());
+        // Temperature is a steam-mass-weighted average: weight this boiler's steam (stored + production)
+        // by its temperature so a tiny hot boiler can't make a large cold network behave fully hot.
+        double weight = Math.max(1, outlet.getStoredSteamMb() + outlet.getBoilerProductionMb());
+        network.temperatureNumerator += outlet.getTemperatureK() * weight;
+        network.temperatureWeight += weight;
         BlockPos boiler = outlet.getBoilerControllerPos();
         if (boiler != null && network.boilers.add(boiler)) {
             network.volumeM3 += Math.max(1, outlet.getBoilerVolume());
@@ -210,7 +214,9 @@ public final class SteamNetworkManager {
         // Pipes and inlets add a little buffering volume so a long run of pipe holds pressure steadier.
         double volume = network.volumeM3 + network.pipeCount * 0.5D + network.inlets.size() * 0.5D;
         volume = Math.max(1.0D, volume);
-        double tempK = network.temperatureK > 0 ? network.temperatureK : FullSteamConfig.steamTemperatureBaseK();
+        double tempK = network.temperatureWeight > 0
+                ? network.temperatureNumerator / network.temperatureWeight
+                : FullSteamConfig.steamTemperatureBaseK();
 
         // Vent open ends first (relief), using the current pressure to set the vent rate, then recompute
         // pressure from what is left so an open vent can actually save a network from bursting.
@@ -260,9 +266,18 @@ public final class SteamNetworkManager {
         }
 
         if (burst) {
+            // One physical boiler bursts once regardless of how many outlets it has...
+            Set<BlockPos> burstBoilers = new HashSet<>();
             for (BoilerOutletBlockEntity outlet : network.outlets) {
+                BlockPos boilerPos = outlet.getBoilerControllerPos();
+                if (boilerPos != null && !burstBoilers.add(boilerPos)) {
+                    continue;
+                }
                 outlet.burst(volume);
             }
+            // ...and the whole network depressurizes so it cannot re-burst every tick.
+            drainFromNetwork(level, network, network.storedMb);
+            network.storedMb = 0;
         }
     }
 
@@ -322,8 +337,19 @@ public final class SteamNetworkManager {
         private int storedMb;
         private int productionMb;
         private double volumeM3;
-        private double temperatureK;
+        private double temperatureNumerator;
+        private double temperatureWeight;
         private int pipeCount;
+
+        /** Passive steam (tanks, inlet buffers) counts toward pressure at base temperature. */
+        private void addStoredAtBaseTemp(int amount) {
+            if (amount <= 0) {
+                return;
+            }
+            storedMb += amount;
+            temperatureNumerator += FullSteamConfig.steamTemperatureBaseK() * amount;
+            temperatureWeight += amount;
+        }
     }
 
     private SteamNetworkManager() {

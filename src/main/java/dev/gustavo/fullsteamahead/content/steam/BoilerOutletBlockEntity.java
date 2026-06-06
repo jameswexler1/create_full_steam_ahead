@@ -354,13 +354,15 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         }
     }
 
-    /** Called by SteamNetworkManager when network pressure exceeds the burst threshold. */
+    /**
+     * Called by SteamNetworkManager when network pressure exceeds the burst threshold. Explodes the
+     * linked boiler only; the manager dumps the whole network's stored steam separately.
+     */
     public void burst(double networkVolumeM3) {
         FluidTankBlockEntity boiler = getBoiler();
         if (boiler != null) {
             explodeBoiler(boiler, networkVolumeM3);
         }
-        steamBuffer.drain(steamBuffer.getFluidAmount(), IFluidHandler.FluidAction.EXECUTE);
     }
 
     private SteamOutput pushSteam(int maxAmount, int networkMovedLastTick) {
