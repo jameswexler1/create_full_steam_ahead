@@ -29,6 +29,7 @@ public final class FullSteamConfig {
     private static final int DEFAULT_STEAM_FULL_ENGINE_FLOW_MB = 90;
     private static final double DEFAULT_STEAM_MAX_RPM = 64.0D;
     private static final double DEFAULT_STEAM_VENT_COEFFICIENT = 120.0D;
+    private static final double DEFAULT_OPEN_PIPE_TARGET_PRESSURE = 0.0D;
     private static final int DEFAULT_STEAM_BUFFER_CAP_MB = 256_000;
 
     private static final boolean DEFAULT_SMOOTHING_ENABLED = true;
@@ -72,6 +73,7 @@ public final class FullSteamConfig {
     private static final ModConfigSpec.IntValue STEAM_FULL_ENGINE_FLOW_MB;
     private static final ModConfigSpec.DoubleValue STEAM_MAX_RPM;
     private static final ModConfigSpec.DoubleValue STEAM_VENT_COEFFICIENT;
+    private static final ModConfigSpec.DoubleValue OPEN_PIPE_TARGET_PRESSURE;
     private static final ModConfigSpec.IntValue STEAM_BUFFER_CAP_MB;
     private static final ModConfigSpec.BooleanValue SMOOTHING_ENABLED;
     private static final ModConfigSpec.DoubleValue PRESSURE_RISE_TAU_TICKS;
@@ -164,9 +166,14 @@ public final class FullSteamConfig {
                 .defineInRange("maxRpm", DEFAULT_STEAM_MAX_RPM, 1.0D, 256.0D);
 
         STEAM_VENT_COEFFICIENT = builder
-                .comment("Steam (mB/t) an open pipe end vents at rated pressure (scales with pressure factor).",
-                        "Keep above fullEngineFlowMb so an open pipe reliably relieves a boiler.")
+                .comment("Fallback steam (mB/t) an open pipe end vents at rated pressure (scales with pressure factor).",
+                        "Open pipes also drain stored steam toward openPipeTargetPressure; this remains a minimum/visual scaler.")
                 .defineInRange("ventCoefficient", DEFAULT_STEAM_VENT_COEFFICIENT, 0.0D, 1_000_000.0D);
+
+        OPEN_PIPE_TARGET_PRESSURE = builder
+                .comment("Pressure target (pN/m^2) for a broken/open pipe end.",
+                        "Default 0 makes open pipes atmospheric ruptures instead of rated-pressure relief valves.")
+                .defineInRange("openPipeTargetPressure", DEFAULT_OPEN_PIPE_TARGET_PRESSURE, 0.0D, 1.0e12D);
 
         STEAM_BUFFER_CAP_MB = builder
                 .comment("Maximum steam (mB) a boiler outlet vessel stores. High enough that pressure can reach burst.")
@@ -343,6 +350,10 @@ public final class FullSteamConfig {
 
     public static double steamVentCoefficient() {
         return loaded() ? STEAM_VENT_COEFFICIENT.get() : DEFAULT_STEAM_VENT_COEFFICIENT;
+    }
+
+    public static double openPipeTargetPressure() {
+        return loaded() ? OPEN_PIPE_TARGET_PRESSURE.get() : DEFAULT_OPEN_PIPE_TARGET_PRESSURE;
     }
 
     public static int steamBufferCapMb() {

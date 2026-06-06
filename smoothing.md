@@ -216,10 +216,10 @@ Recommended vent calculation:
 
 ```text
 ventPressure = max(targetPressure, effectivePressure)
-ventDrain = drainToPressureMb(storedMb, tempK, volume, ratedPressure)
+ventDrain = drainToPressureMb(storedMb, tempK, volume, openPipeTargetPressure)
 ```
 
-This preserves the current good behavior: open pipes can drain enough steam to pull the network toward rated pressure before burst checks.
+This preserves the intended behavior: broken/open pipes can drain enough steam to pull the network toward atmosphere before burst checks. A future controlled vent valve can deliberately use a higher target, but an accidentally open pipe should behave as a rupture.
 
 ## Burst Behavior
 
@@ -268,6 +268,8 @@ emergencyPressureTauDivisor = 3.0
 networkStateTtlTicks = 100
 ```
 
+Also add `steamPhysics.openPipeTargetPressure = 0` so open pipe ends drain toward atmosphere instead of the rated operating pressure.
+
 All should be server-side config.
 
 ## Implementation Plan
@@ -305,7 +307,7 @@ public static double approachExp(double current, double target, double tauTicks)
 Map<BlockPos, BoilerThermalState>
 ```
 
-This state can live in `BoilerOutletBlockEntity` if we only care about outlet boilers, but it is cleaner in a small shared manager because multiple outlets can attach to one boiler.
+This state should live in a small shared manager keyed by the physical boiler controller so multiple outlets on one boiler read the same heat curve and split one production budget.
 
 8. Use smoothed effective heat for outlet production and temperature.
 

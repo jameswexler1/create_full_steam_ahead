@@ -4,6 +4,8 @@ Date: 2026-06-06
 
 This document diagnoses the wrong runtime behavior observed after the steam smoothing / inertia implementation. It is written for the developer who will make the next code pass. No source code was changed while preparing this diagnosis.
 
+Status after the follow-up implementation: the two main fixes described here have been applied. Broken pipe ends now drain toward `steamPhysics.openPipeTargetPressure` (`0 pN/m^2` by default), and pipe-fed boiler heat is shared by physical boiler controller position instead of being stored independently on each outlet.
+
 ## Build Status
 
 The current implementation compiles:

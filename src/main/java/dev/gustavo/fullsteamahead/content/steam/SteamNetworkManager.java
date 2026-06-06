@@ -22,6 +22,7 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,9 @@ import java.util.WeakHashMap;
  * overlays the shared pressure and fair flow allocation.</p>
  */
 public final class SteamNetworkManager {
+    private static final int BOILER_THERMAL_STATE_TTL = 100;
     private static final Map<Level, Set<BlockPos>> OUTLETS = new WeakHashMap<>();
+    private static final Map<Level, Map<BlockPos, BoilerThermalState>> BOILER_THERMAL_STATES = new WeakHashMap<>();
 
     public static void register(IEventBus bus) {
         bus.addListener(SteamNetworkManager::onLevelTick);
@@ -237,7 +240,7 @@ public final class SteamNetworkManager {
                     network.storedMb,
                     tempK,
                     volume,
-                    SteamPressure.rated()
+                    FullSteamConfig.openPipeTargetPressure()
             );
             int requestedDrain = Math.min(network.storedMb,
                     Math.max(ventEach * network.openEnds.size(), atmosphericRelief));
@@ -340,6 +343,33 @@ public final class SteamNetworkManager {
         return Math.max(0.0D, effective);
     }
 
+    public static double effectiveBoilerHeat(Level level, BlockPos boilerPos, double targetHeat, boolean dry) {
+        if (!FullSteamConfig.thermalInertiaEnabled() || level == null || level.isClientSide() || boilerPos == null) {
+            return targetHeat;
+        }
+
+        Map<BlockPos, BoilerThermalState> states =
+                BOILER_THERMAL_STATES.computeIfAbsent(level, ignored -> new HashMap<>());
+        long now = level.getGameTime();
+        if (now % BOILER_THERMAL_STATE_TTL == 0L) {
+            states.entrySet().removeIf(entry -> now - entry.getValue().lastSeenGameTime > BOILER_THERMAL_STATE_TTL);
+        }
+
+        BoilerThermalState state = states.computeIfAbsent(boilerPos.immutable(),
+                ignored -> new BoilerThermalState(targetHeat, now));
+        state.lastSeenGameTime = now;
+        if (state.lastUpdatedGameTime == now) {
+            return state.effectiveHeat;
+        }
+
+        double tau = targetHeat >= state.effectiveHeat
+                ? FullSteamConfig.heatUpTauTicks()
+                : dry ? FullSteamConfig.dryBoilerCoolDownTauTicks() : FullSteamConfig.coolDownTauTicks();
+        state.effectiveHeat = SteamPhysics.approachExp(state.effectiveHeat, targetHeat, tau);
+        state.lastUpdatedGameTime = now;
+        return state.effectiveHeat;
+    }
+
     /** Drains up to {@code amount} mB of steam from the network for venting: outlets, then tanks, then inlets. */
     private static int drainFromNetwork(Level level, Network network, int amount) {
         int remaining = amount;
@@ -385,6 +415,18 @@ public final class SteamNetworkManager {
     }
 
     private record OpenEnd(BlockPos pipe, Direction dir) {
+    }
+
+    private static final class BoilerThermalState {
+        private double effectiveHeat;
+        private long lastSeenGameTime;
+        private long lastUpdatedGameTime;
+
+        private BoilerThermalState(double effectiveHeat, long gameTime) {
+            this.effectiveHeat = effectiveHeat;
+            this.lastSeenGameTime = gameTime;
+            this.lastUpdatedGameTime = gameTime - 1;
+        }
     }
 
     private static final class Network {

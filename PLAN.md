@@ -756,7 +756,7 @@ changing engine balance.
 - [x] Multiple boilers can feed one pipe network; multiple outlets on one physical boiler split one shared boiler budget and cannot duplicate steam.
 - [x] Create fluid valves are pressure blockers. Closed valves split networks instead of being bypassed by outlet pressure traversal.
 - [x] Direct compact mode is retained as an upright-only compatibility shortcut. It derives a rated-pressure factor from local boiler production, but does not store steam, burst, or overdrive one engine.
-- [x] `steamPhysics` server config covers gas constant, rated/warn/burst pressure, steam temperature, full engine flow/SU/RPM, vent coefficient, and buffer cap.
+- [x] `steamPhysics` server config covers gas constant, rated/warn/burst pressure, steam temperature, full engine flow/SU/RPM, vent coefficient, open-pipe target pressure, and buffer cap.
 - [x] Goggles surface pressure/volume/production on the outlet and pressure/RPM/SU on the cylinder ring.
 
 ### Phase 13: Boiler Overpressure — Complete (vent valve still planned)
@@ -764,7 +764,7 @@ changing engine balance.
 **Goal**: stored steam in a closed pressure network builds pressure until it vents or explodes.
 
 - [x] `SteamNetworkManager` computes one network pressure from stored steam, temperature, and network volume.
-- [x] Open pipe ends and unconnected outlets vent first. They drain enough steam to move the network toward rated pressure before burst checks, not merely a small cosmetic leak amount.
+- [x] Open pipe ends and unconnected outlets vent first. Broken pipe ends drain enough steam to move the network toward the configured atmospheric target before burst checks, not merely a small cosmetic leak amount.
 - [x] Pressure is recomputed after venting so sufficient relief can prevent a burst.
 - [x] Past `steamPhysics.warnPressure`: status flips to "Overpressure!", with hiss and steam particles at the boiler center on a cadence.
 - [x] Past `steamPhysics.burstPressure`: each physical boiler bursts at most once even if several outlets are attached to it.

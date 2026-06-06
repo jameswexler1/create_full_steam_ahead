@@ -16,12 +16,14 @@ order). See `smoothing.md`.
   target with asymmetric tau (rise 60 / fall 80), divides tau by the emergency divisor when
   `target >= burst * emergencyMultiplier`, and clamps the per-tick move to `maxPressureDeltaPerTick`.
   Effective pressure drives engine draw/output, warnings, and bursts. Venting still uses the real
-  pre-vent target (open pipes relieve fast regardless of lag). After a burst, members'
+  pre-vent target (open pipes relieve fast regardless of lag). Broken pipe ends drain toward
+  `steamPhysics.openPipeTargetPressure` (`0 pN/m^2` by default). After a burst, members'
   effective pressure is cleared to 0 (`clearEffectivePressure`).
 - **Boiler thermal inertia** (`BoilerOutletBlockEntity.calculateSteamBudget` and
-  `PistonHeadBlockEntity.calculateDirectSteamOutput`): a per-BE `effectiveHeat` (double, NBT) eases
-  toward the water-gated target heat (heat-up 80 / cool-down 160 / dry 20 ticks). Production and
-  temperature derive from `effectiveHeat`. `SteamPhysics.temperatureK/productionMb` now take a double.
+  `PistonHeadBlockEntity.calculateDirectSteamOutput`): pipe-fed boilers use shared manager state keyed
+  by boiler controller position, while direct compact mode keeps piston-local compatibility state.
+  Heat eases toward the water-gated target heat (heat-up 80 / cool-down 160 / dry 20 ticks).
+  Production and temperature derive from effective heat. `SteamPhysics.temperatureK/productionMb` now take a double.
 - New `steamSmoothing` config group: enabled, pressureRise/FallTauTicks, maxPressureDeltaPerTick,
   thermalInertiaEnabled, heatUp/coolDown/dryBoilerCoolDownTauTicks, emergencyPressureMultiplier,
   emergencyPressureTauDivisor.
@@ -31,6 +33,7 @@ order). See `smoothing.md`.
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` after open-pipe atmospheric leak and shared boiler heat fixes
 
 ## Manual (runClient — delete runs/client/config/full_steam_ahead-server.toml first). NOT YET RUN.
 
@@ -38,15 +41,14 @@ order). See `smoothing.md`.
 - [ ] Break one active burner -> RPM/SU/pressure decay over seconds, not instantly; replace -> recover over seconds.
 - [ ] Close a valve on a large boiler network -> pressure climbs over seconds (warning window), not 1-2 ticks.
 - [ ] Sealed over-producing network still warns then bursts; with target >= 2x burst it accelerates.
-- [ ] Open a pipe -> still relieves fast enough to prevent burst (vent on real steam).
+- [ ] Open a pipe -> pressure collapses toward `openPipeTargetPressure` and relieves fast enough to prevent burst.
 - [ ] Add a passive tank -> volume jumps immediately but effective pressure transitions smoothly.
-- [ ] Multiple boilers on one network share one effective pressure; one boiler with multiple outlets does not multiply.
-- [ ] Display Link + goggle pressures move smoothly and match. Reload mid-transition keeps effective pressure + effectiveHeat.
+- [ ] Multiple boilers on one network share one effective pressure; one boiler with multiple outlets does not multiply or temporarily lose production when a new outlet is added.
+- [ ] Display Link + goggle pressures move smoothly and match. Reload mid-transition keeps effective pressure and seeds boiler heat from the current boiler target.
 - [ ] `steamSmoothing.enabled=false` -> instant behavior returns.
 
 ## Notes
 
-- Multiple outlets on one boiler each smooth their own `effectiveHeat`; during a heat change the
-  production split can be momentarily uneven (cosmetic). Single-outlet boilers (common case) are exact.
+- Pipe-fed boiler heat is shared by physical boiler controller position, so multiple outlets split one smoothed production budget.
 - A freshly placed network ramps from 0 over the rise tau (~3 s) — combined with heat warm-up this is
   the intended "spin-up" feel.
