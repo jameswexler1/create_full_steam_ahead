@@ -15,7 +15,7 @@
   "block.full_steam_ahead.stepped_lever": "Stepped Lever",
   "full_steam_ahead.display_source.steam_network": "Steam Network",
   "full_steam_ahead.display_source.steam_network.display": "Displayed Info",
-  "full_steam_ahead.display_source.steam_network.full_monitor": "Full Monitor",
+  "full_steam_ahead.display_source.steam_network.full_monitor": "Summary",
   "full_steam_ahead.display_source.steam_network.pressure": "Pressure",
   "full_steam_ahead.display_source.steam_network.safety": "Safety",
   "full_steam_ahead.display_source.steam_network.flow": "Flow",

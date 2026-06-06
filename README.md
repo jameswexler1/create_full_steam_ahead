@@ -74,7 +74,7 @@ Steam remains visible in Create tanks and pipes through a high-visibility tinted
 
 ## Display Link Readout
 
-Create Display Links can read `boiler_outlet` steam network data through the `Steam Network` source. The source supports Full Monitor, Pressure, Safety, Flow, and Network modes from the normal Display Link configuration screen.
+Create Display Links can read `boiler_outlet` steam network data through the `Steam Network` source. The source supports Summary, Pressure, Safety, Flow, and Network modes from the normal Display Link configuration screen. Each mode writes one row, so multiple Display Links can target different rows on the same Display Board without overwriting each other.
 
 ## Planned Polish
 

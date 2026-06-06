@@ -780,6 +780,7 @@ changing engine balance.
 - [x] Research Create 6.0.10 display source registration and target filtering from the local Create dev jar/source before implementation.
 - [x] Add a Display Link source for `boiler_outlet` first, because it already owns current network pressure, production, volume, venting, warning, and burst state.
 - [x] Display useful single-line modes: current pressure, pressure status, rated/warn/burst thresholds, network volume, production rate, reachable engine count, and venting/burst risk.
+- [x] Make the source a Create `SingleLineDisplaySource` so multiple Display Links can target different rows on one Display Board without clearing or overwriting each other.
 - [x] Format pressure through `SteamPressure.format(...)` so displays show `pN/m²`, `kpN/m²`, or `MpN/m²`, never `bar`.
 - [x] Keep the source passive and server-authoritative; Display Links must only read pressure state and must not tick or mutate the steam network.
 - [ ] Later, when direct pipe-to-boiler support exists, add an equivalent Create Fluid Tank boiler display source so players can read pressure directly from the boiler without requiring an outlet.
