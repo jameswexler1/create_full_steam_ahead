@@ -6,6 +6,7 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
+import dev.gustavo.fullsteamahead.content.steam.SteamPressure;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -200,7 +201,7 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
                 CreateLang.text("Engine").style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
                 shownAny = true;
             }
-            CreateLang.text(String.format("Pressure: %.1f bar", engine.getPressureBar()))
+            CreateLang.text("Pressure: " + SteamPressure.format(engine.getPressureBar()))
                     .style(engine.getPressureBar() > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
                     .forGoggles(tooltip, 2);
             CreateLang.text("RPM: " + Math.round(engine.getGeneratedSpeed()))

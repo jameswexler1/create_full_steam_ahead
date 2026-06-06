@@ -5,14 +5,12 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 /**
  * Server-side balance configuration for Create: Full Steam Ahead.
  *
- * <p>All values are read at runtime from block-entity ticks, which run after the world's server
- * config has loaded. The accessors still guard against an early read (before load) by returning
- * the documented defaults, and they recompute the derived rates so any configured
- * {@link #steamPerHeatUnit()} stays consistent across the boiler outlet, pipe pressure, inlet
- * intake cap, and engine power output.</p>
+ * <p>Steam uses a per-network ideal-gas pressure model (see {@code new_steam_physics.md}). Pressure
+ * is in {@code pN/m^2}; the rated operating point is {@code P_RATED = 1.0 MpN/m^2 = 1_000_000}.
+ * Accessors guard against an early read (before the server config loads) by returning defaults.</p>
  */
 public final class FullSteamConfig {
-    // Fixed engine constants (not part of the Phase 9 config surface).
+    // Fixed engine constants.
     public static final float SU_PER_HEAT_UNIT = 16_384.0F;
     public static final int MAX_PIPED_HEAT_UNITS = 9;
 
@@ -20,23 +18,18 @@ public final class FullSteamConfig {
     private static final int DEFAULT_STEAM_PER_HEAT_UNIT = 10;
     private static final int DEFAULT_PRESSURE_RANGE = 30;
 
-    // Unified ideal-gas steam model (P = gasConstant * storedMb * tempK / volume, in bar).
-    private static final double DEFAULT_STEAM_PER_BLOCK = 90.0D / 27.0D;
-    private static final int DEFAULT_STEAM_HEAT_NOMINAL = 9;
-    private static final double DEFAULT_STEAM_HEAT_FACTOR_MAX = 2.0D;
-    private static final double DEFAULT_STEAM_GAS_CONSTANT = 2.0e-4D;
+    // Per-network ideal-gas steam model (P pN/m^2 = gasConstant * storedMb * tempK / volumeM3).
+    private static final double DEFAULT_STEAM_GAS_CONSTANT = 1.4D;
+    private static final double DEFAULT_STEAM_RATED_PRESSURE = 1_000_000.0D;
+    private static final double DEFAULT_STEAM_WARN_PRESSURE = 1_500_000.0D;
+    private static final double DEFAULT_STEAM_BURST_PRESSURE = 2_500_000.0D;
     private static final double DEFAULT_STEAM_TEMP_BASE_K = 373.0D;
     private static final double DEFAULT_STEAM_TEMP_PER_HEAT_K = 100.0D;
-    private static final double DEFAULT_STEAM_RPM_PER_BAR = 6.4D;
+    private static final int DEFAULT_STEAM_FULL_ENGINE_SU = 147_456;
+    private static final int DEFAULT_STEAM_FULL_ENGINE_FLOW_MB = 90;
     private static final double DEFAULT_STEAM_MAX_RPM = 64.0D;
-    private static final double DEFAULT_STEAM_SU_PER_BAR = 14_745.6D;
-    private static final int DEFAULT_STEAM_SU_MAX = 147_456;
-    private static final double DEFAULT_STEAM_FLOW_PER_BAR = 9.0D;
-    private static final int DEFAULT_STEAM_MAX_INTAKE_MB = 90;
-    private static final double DEFAULT_STEAM_VENT_PER_BAR = 12.0D;
-    private static final double DEFAULT_STEAM_WARN_BAR = 15.0D;
-    private static final double DEFAULT_STEAM_BURST_BAR = 25.0D;
-    private static final int DEFAULT_STEAM_BUFFER_CAP_MB = 16_000;
+    private static final double DEFAULT_STEAM_VENT_COEFFICIENT = 120.0D;
+    private static final int DEFAULT_STEAM_BUFFER_CAP_MB = 256_000;
 
     private static final boolean DEFAULT_OVERPRESSURE_ENABLED = true;
     private static final double DEFAULT_OVERPRESSURE_BASE_POWER = 4.0D;
@@ -58,21 +51,16 @@ public final class FullSteamConfig {
     private static final ModConfigSpec.IntValue STEAM_PER_HEAT_UNIT;
     private static final ModConfigSpec.IntValue BOILER_OUTLET_PRESSURE_RANGE;
     private static final ModConfigSpec.BooleanValue ENABLE_DIRECT_COMPACT_MODE;
-    private static final ModConfigSpec.DoubleValue STEAM_PER_BLOCK;
-    private static final ModConfigSpec.IntValue STEAM_HEAT_NOMINAL;
-    private static final ModConfigSpec.DoubleValue STEAM_HEAT_FACTOR_MAX;
     private static final ModConfigSpec.DoubleValue STEAM_GAS_CONSTANT;
+    private static final ModConfigSpec.DoubleValue STEAM_RATED_PRESSURE;
+    private static final ModConfigSpec.DoubleValue STEAM_WARN_PRESSURE;
+    private static final ModConfigSpec.DoubleValue STEAM_BURST_PRESSURE;
     private static final ModConfigSpec.DoubleValue STEAM_TEMP_BASE_K;
     private static final ModConfigSpec.DoubleValue STEAM_TEMP_PER_HEAT_K;
-    private static final ModConfigSpec.DoubleValue STEAM_RPM_PER_BAR;
+    private static final ModConfigSpec.IntValue STEAM_FULL_ENGINE_SU;
+    private static final ModConfigSpec.IntValue STEAM_FULL_ENGINE_FLOW_MB;
     private static final ModConfigSpec.DoubleValue STEAM_MAX_RPM;
-    private static final ModConfigSpec.DoubleValue STEAM_SU_PER_BAR;
-    private static final ModConfigSpec.IntValue STEAM_SU_MAX;
-    private static final ModConfigSpec.DoubleValue STEAM_FLOW_PER_BAR;
-    private static final ModConfigSpec.IntValue STEAM_MAX_INTAKE_MB;
-    private static final ModConfigSpec.DoubleValue STEAM_VENT_PER_BAR;
-    private static final ModConfigSpec.DoubleValue STEAM_WARN_BAR;
-    private static final ModConfigSpec.DoubleValue STEAM_BURST_BAR;
+    private static final ModConfigSpec.DoubleValue STEAM_VENT_COEFFICIENT;
     private static final ModConfigSpec.IntValue STEAM_BUFFER_CAP_MB;
     private static final ModConfigSpec.BooleanValue OVERPRESSURE_ENABLED;
     private static final ModConfigSpec.DoubleValue OVERPRESSURE_BASE_POWER;
@@ -97,12 +85,11 @@ public final class FullSteamConfig {
                 .defineInRange("baseEngineCapacity", DEFAULT_BASE_ENGINE_CAPACITY, 1, 1_000_000_000);
 
         STEAM_PER_HEAT_UNIT = builder
-                .comment("Steam in mB/t produced and consumed per heat unit (1 unit = this many mB/t).",
-                        "Scales boiler outlet production, inlet intake, pipe pressure, and engine output together.")
+                .comment("Steam in mB/t produced per usable heat unit per boiler height level (10 = one steam unit).")
                 .defineInRange("steamPerHeatUnit", DEFAULT_STEAM_PER_HEAT_UNIT, 1, 100_000);
 
         BOILER_OUTLET_PRESSURE_RANGE = builder
-                .comment("How many blocks along a pipe network a boiler outlet pressurizes steam toward engines.")
+                .comment("How many blocks along a pipe network steam pressure traverses from a boiler outlet.")
                 .defineInRange("boilerOutletPressureRange", DEFAULT_PRESSURE_RANGE, 1, 512);
 
         ENABLE_DIRECT_COMPACT_MODE = builder
@@ -112,87 +99,61 @@ public final class FullSteamConfig {
 
         builder.pop();
 
-        builder.comment("Unified ideal-gas steam model. One pressure drives everything. Tune freely.",
-                        "P (bar) = gasConstant * storedSteamMb * temperatureK / volumeBlocks.",
-                        "Steam is produced into the vessel, drawn by engines (flow ~ pressure) and vented by open",
-                        "pipes (~ pressure); pressure self-regulates to an equilibrium. RPM and SU both rise with",
-                        "pressure (pure single-cylinder physics). If pressure climbs past burstBar the boiler explodes.")
+        builder.comment("Per-network ideal-gas steam model. Pressure is in pN/m^2; P_RATED = 1.0 MpN/m^2.",
+                        "P = gasConstant * storedSteamMb * temperatureK / networkVolumeM3.",
+                        "A normally supplied engine stabilizes near P_RATED. Engine output = min(pressure, flow).",
+                        "Tune freely; calibrate gasConstant so a 3x3x1/9-burner/1-engine network sits near P_RATED.")
                 .push("steamPhysics");
 
-        STEAM_PER_BLOCK = builder
-                .comment("Steam (mB/t) boiled per tank block at heat factor 1.0 (normally fired).",
-                        "Default 90/27 so a normally-fired 3x3x3 boiler produces 90 mB/t.")
-                .defineInRange("steamPerBlock", DEFAULT_STEAM_PER_BLOCK, 0.0D, 1_000_000.0D);
-
-        STEAM_HEAT_NOMINAL = builder
-                .comment("Water-gated boiler heat that counts as heat factor 1.0 (a normally-fired boiler).",
-                        "Blaze cakes push heat higher -> factor > 1 -> more steam and pressure (toward bursting).")
-                .defineInRange("heatNominal", DEFAULT_STEAM_HEAT_NOMINAL, 1, 100_000);
-
-        STEAM_HEAT_FACTOR_MAX = builder
-                .comment("Upper clamp on the heat factor (super-heat headroom).")
-                .defineInRange("heatFactorMax", DEFAULT_STEAM_HEAT_FACTOR_MAX, 0.0D, 64.0D);
-
         STEAM_GAS_CONSTANT = builder
-                .comment("Ideal-gas constant folding R and unit conversions: P = this * storedMb * tempK / volume.",
-                        "Sets how much stored steam a given pressure needs; raise for higher pressures.")
-                .defineInRange("gasConstant", DEFAULT_STEAM_GAS_CONSTANT, 0.0D, 1_000.0D);
+                .comment("Ideal-gas constant folding R and unit conversions. Raise for higher pressure per stored steam.")
+                .defineInRange("gasConstant", DEFAULT_STEAM_GAS_CONSTANT, 0.0D, 1_000_000.0D);
+
+        STEAM_RATED_PRESSURE = builder
+                .comment("Rated operating pressure (pN/m^2). A normally supplied engine makes full output here.",
+                        "Default 1_000_000 = 1.0 MpN/m^2.")
+                .defineInRange("ratedPressure", DEFAULT_STEAM_RATED_PRESSURE, 1.0D, 1.0e12D);
+
+        STEAM_WARN_PRESSURE = builder
+                .comment("Pressure (pN/m^2) at which a network shows an overpressure warning. Default 1.5 MpN/m^2.")
+                .defineInRange("warnPressure", DEFAULT_STEAM_WARN_PRESSURE, 0.0D, 1.0e12D);
+
+        STEAM_BURST_PRESSURE = builder
+                .comment("Pressure (pN/m^2) at which a boiler bursts. Default 2.5 MpN/m^2.")
+                .defineInRange("burstPressure", DEFAULT_STEAM_BURST_PRESSURE, 0.0D, 1.0e12D);
 
         STEAM_TEMP_BASE_K = builder
                 .comment("Steam temperature (Kelvin) with no extra heat (boiling point).")
                 .defineInRange("temperatureBaseK", DEFAULT_STEAM_TEMP_BASE_K, 0.0D, 100_000.0D);
 
         STEAM_TEMP_PER_HEAT_K = builder
-                .comment("Extra steam temperature (Kelvin) per unit of water-gated boiler heat.")
+                .comment("Extra steam temperature (Kelvin) per usable heat unit (superheat from blaze cakes).")
                 .defineInRange("temperaturePerHeatK", DEFAULT_STEAM_TEMP_PER_HEAT_K, 0.0D, 100_000.0D);
 
-        STEAM_RPM_PER_BAR = builder
-                .comment("Engine RPM produced per bar of delivered pressure (clamped at maxRpm).",
-                        "Default 6.4 so ~10 bar (a normally-fired 3x3x3) gives 64 RPM.")
-                .defineInRange("rpmPerBar", DEFAULT_STEAM_RPM_PER_BAR, 0.0D, 1_000.0D);
+        STEAM_FULL_ENGINE_SU = builder
+                .comment("Stress capacity a single engine makes at full output (pressure and flow both rated).")
+                .defineInRange("fullEngineSu", DEFAULT_STEAM_FULL_ENGINE_SU, 1, 1_000_000_000);
+
+        STEAM_FULL_ENGINE_FLOW_MB = builder
+                .comment("Steam (mB/t) a single engine consumes at full output (and the per-inlet intake cap).")
+                .defineInRange("fullEngineFlowMb", DEFAULT_STEAM_FULL_ENGINE_FLOW_MB, 1, 1_000_000);
 
         STEAM_MAX_RPM = builder
-                .comment("Upper clamp on engine RPM regardless of pressure.")
+                .comment("Maximum engine RPM (top tier). RPM snaps to 0/0.25/0.5/0.75/1.0 of this by output factor.")
                 .defineInRange("maxRpm", DEFAULT_STEAM_MAX_RPM, 1.0D, 256.0D);
 
-        STEAM_SU_PER_BAR = builder
-                .comment("Engine stress capacity (SU) per bar of delivered pressure (clamped at suMax).",
-                        "Default 14745.6 so ~10 bar gives 147456 SU.")
-                .defineInRange("suPerBar", DEFAULT_STEAM_SU_PER_BAR, 0.0D, 1_000_000_000.0D);
-
-        STEAM_SU_MAX = builder
-                .comment("Upper cap on stress capacity a single cylinder can produce.")
-                .defineInRange("suMax", DEFAULT_STEAM_SU_MAX, 1, 1_000_000_000);
-
-        STEAM_FLOW_PER_BAR = builder
-                .comment("Steam (mB/t) an engine draws per bar of pressure (capped at maxIntakeMb).",
-                        "Lower = pressure builds more easily; this is what makes pressure self-regulate.")
-                .defineInRange("flowPerBar", DEFAULT_STEAM_FLOW_PER_BAR, 0.0D, 1_000_000.0D);
-
-        STEAM_MAX_INTAKE_MB = builder
-                .comment("Maximum steam (mB/t) a single cylinder can draw, regardless of pressure.")
-                .defineInRange("maxIntakeMb", DEFAULT_STEAM_MAX_INTAKE_MB, 1, 1_000_000);
-
-        STEAM_VENT_PER_BAR = builder
-                .comment("Steam (mB/t) an open pipe end vents per bar of pressure (relief). Higher = open pipes",
-                        "relieve faster. Make this >= flowPerBar so an open pipe reliably prevents bursting.")
-                .defineInRange("ventPerBar", DEFAULT_STEAM_VENT_PER_BAR, 0.0D, 1_000_000.0D);
-
-        STEAM_WARN_BAR = builder
-                .comment("Pressure (bar) at which the boiler hisses and shows an overpressure warning.")
-                .defineInRange("warnBar", DEFAULT_STEAM_WARN_BAR, 0.0D, 1_000_000.0D);
-
-        STEAM_BURST_BAR = builder
-                .comment("Pressure (bar) at which the boiler explodes.")
-                .defineInRange("burstBar", DEFAULT_STEAM_BURST_BAR, 0.0D, 1_000_000.0D);
+        STEAM_VENT_COEFFICIENT = builder
+                .comment("Steam (mB/t) an open pipe end vents at rated pressure (scales with pressure factor).",
+                        "Keep above fullEngineFlowMb so an open pipe reliably relieves a boiler.")
+                .defineInRange("ventCoefficient", DEFAULT_STEAM_VENT_COEFFICIENT, 0.0D, 1_000_000.0D);
 
         STEAM_BUFFER_CAP_MB = builder
-                .comment("Maximum steam (mB) a boiler vessel can store. Should be high enough to reach burstBar.")
+                .comment("Maximum steam (mB) a boiler outlet vessel stores. High enough that pressure can reach burst.")
                 .defineInRange("bufferCapMb", DEFAULT_STEAM_BUFFER_CAP_MB, 1, 1_000_000_000);
 
         builder.pop();
 
-        builder.comment("Boiler burst explosion (triggered when pressure exceeds steamPhysics.burstBar).")
+        builder.comment("Boiler burst explosion (triggered when network pressure exceeds steamPhysics.burstPressure).")
                 .push("steamOverpressure");
 
         OVERPRESSURE_ENABLED = builder
@@ -204,11 +165,11 @@ public final class FullSteamConfig {
                 .defineInRange("explosionBasePower", DEFAULT_OVERPRESSURE_BASE_POWER, 0.0D, 1_000.0D);
 
         OVERPRESSURE_POWER_PER_VOLUME = builder
-                .comment("Extra explosion power added per boiler tank block (bigger boiler = bigger blast).")
+                .comment("Extra explosion power added per network volume m^3 (bigger system = bigger blast).")
                 .defineInRange("explosionPowerPerVolume", DEFAULT_OVERPRESSURE_POWER_PER_VOLUME, 0.0D, 1_000.0D);
 
         OVERPRESSURE_MAX_POWER = builder
-                .comment("Upper cap on explosion power regardless of boiler size.")
+                .comment("Upper cap on explosion power regardless of system size.")
                 .defineInRange("explosionMaxPower", DEFAULT_OVERPRESSURE_MAX_POWER, 0.0D, 1_000.0D);
 
         OVERPRESSURE_BREAKS_BLOCKS = builder
@@ -277,64 +238,44 @@ public final class FullSteamConfig {
         return !loaded() || ENABLE_DIRECT_COMPACT_MODE.get();
     }
 
-    public static double steamPerBlock() {
-        return loaded() ? STEAM_PER_BLOCK.get() : DEFAULT_STEAM_PER_BLOCK;
-    }
-
-    public static int steamHeatNominal() {
-        return loaded() ? STEAM_HEAT_NOMINAL.get() : DEFAULT_STEAM_HEAT_NOMINAL;
-    }
-
-    public static double steamHeatFactorMax() {
-        return loaded() ? STEAM_HEAT_FACTOR_MAX.get() : DEFAULT_STEAM_HEAT_FACTOR_MAX;
-    }
-
     public static double steamGasConstant() {
         return loaded() ? STEAM_GAS_CONSTANT.get() : DEFAULT_STEAM_GAS_CONSTANT;
     }
 
-    public static double steamTempBaseK() {
+    public static double steamRatedPressure() {
+        return loaded() ? STEAM_RATED_PRESSURE.get() : DEFAULT_STEAM_RATED_PRESSURE;
+    }
+
+    public static double steamWarnPressure() {
+        return loaded() ? STEAM_WARN_PRESSURE.get() : DEFAULT_STEAM_WARN_PRESSURE;
+    }
+
+    public static double steamBurstPressure() {
+        return loaded() ? STEAM_BURST_PRESSURE.get() : DEFAULT_STEAM_BURST_PRESSURE;
+    }
+
+    public static double steamTemperatureBaseK() {
         return loaded() ? STEAM_TEMP_BASE_K.get() : DEFAULT_STEAM_TEMP_BASE_K;
     }
 
-    public static double steamTempPerHeatK() {
+    public static double steamTemperaturePerHeatK() {
         return loaded() ? STEAM_TEMP_PER_HEAT_K.get() : DEFAULT_STEAM_TEMP_PER_HEAT_K;
     }
 
-    public static double steamRpmPerBar() {
-        return loaded() ? STEAM_RPM_PER_BAR.get() : DEFAULT_STEAM_RPM_PER_BAR;
+    public static int steamFullEngineSu() {
+        return loaded() ? STEAM_FULL_ENGINE_SU.get() : DEFAULT_STEAM_FULL_ENGINE_SU;
+    }
+
+    public static int steamFullEngineFlowMb() {
+        return loaded() ? STEAM_FULL_ENGINE_FLOW_MB.get() : DEFAULT_STEAM_FULL_ENGINE_FLOW_MB;
     }
 
     public static double steamMaxRpm() {
         return loaded() ? STEAM_MAX_RPM.get() : DEFAULT_STEAM_MAX_RPM;
     }
 
-    public static double steamSuPerBar() {
-        return loaded() ? STEAM_SU_PER_BAR.get() : DEFAULT_STEAM_SU_PER_BAR;
-    }
-
-    public static int steamSuMax() {
-        return loaded() ? STEAM_SU_MAX.get() : DEFAULT_STEAM_SU_MAX;
-    }
-
-    public static double steamFlowPerBar() {
-        return loaded() ? STEAM_FLOW_PER_BAR.get() : DEFAULT_STEAM_FLOW_PER_BAR;
-    }
-
-    public static int steamMaxIntakeMb() {
-        return loaded() ? STEAM_MAX_INTAKE_MB.get() : DEFAULT_STEAM_MAX_INTAKE_MB;
-    }
-
-    public static double steamVentPerBar() {
-        return loaded() ? STEAM_VENT_PER_BAR.get() : DEFAULT_STEAM_VENT_PER_BAR;
-    }
-
-    public static double steamWarnBar() {
-        return loaded() ? STEAM_WARN_BAR.get() : DEFAULT_STEAM_WARN_BAR;
-    }
-
-    public static double steamBurstBar() {
-        return loaded() ? STEAM_BURST_BAR.get() : DEFAULT_STEAM_BURST_BAR;
+    public static double steamVentCoefficient() {
+        return loaded() ? STEAM_VENT_COEFFICIENT.get() : DEFAULT_STEAM_VENT_COEFFICIENT;
     }
 
     public static int steamBufferCapMb() {
@@ -398,9 +339,9 @@ public final class FullSteamConfig {
         return SU_PER_HEAT_UNIT / steamPerHeatUnit();
     }
 
-    /** Maximum steam in mB/t one cylinder draws (and the per-inlet intake cap). Alias of steamMaxIntakeMb. */
+    /** Maximum steam in mB/t one cylinder draws (and the per-inlet intake cap). Alias of fullEngineFlowMb. */
     public static int maxPipedSteamPerTick() {
-        return steamMaxIntakeMb();
+        return steamFullEngineFlowMb();
     }
 
     private FullSteamConfig() {

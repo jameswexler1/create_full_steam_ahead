@@ -52,10 +52,11 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
     private int consumedThisTick;
     private long acceptedGameTime = Long.MIN_VALUE;
     private int acceptedThisGameTick;
-    private float supplyPressureRatio;
-    private long supplyPressureGameTime = Long.MIN_VALUE;
+    private double networkPressurePn;
+    private int networkDrawCap;
+    private long networkGameTime = Long.MIN_VALUE;
 
-    private static final int SUPPLY_PRESSURE_DECAY_TICKS = 10;
+    private static final int NETWORK_DECAY_TICKS = 3;
 
     public SteamInletBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STEAM_INLET.get(), pos, state);
@@ -149,26 +150,29 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         return steamBuffer.getFluidAmount();
     }
 
-    /**
-     * Records the pressure ratio of a boiler outlet currently supplying steam through pipes (drives
-     * engine RPM). The strongest source within the same game tick wins; the value decays if no outlet
-     * refreshes it.
-     */
-    public void reportSupplyPressure(float pressureRatio) {
-        long now = level == null ? 0L : level.getGameTime();
-        if (supplyPressureGameTime != now) {
-            supplyPressureGameTime = now;
-            supplyPressureRatio = 0.0F;
-        }
-        supplyPressureRatio = Math.max(supplyPressureRatio, pressureRatio);
+    public int getStoredSteamMb() {
+        return steamBuffer.getFluidAmount();
     }
 
-    /** Delivered steam pressure in bar, or 0 when no outlet has reported recently. */
-    public float getSupplyPressureBar() {
-        if (level != null && level.getGameTime() - supplyPressureGameTime > SUPPLY_PRESSURE_DECAY_TICKS) {
-            return 0.0F;
-        }
-        return supplyPressureRatio;
+    /** Called by SteamNetworkManager each tick: the engine's network pressure and fair draw cap. */
+    public void applyNetworkState(double pressurePn, int drawCap) {
+        this.networkPressurePn = pressurePn;
+        this.networkDrawCap = drawCap;
+        this.networkGameTime = level == null ? 0L : level.getGameTime();
+    }
+
+    private boolean networkFresh() {
+        return level == null || level.getGameTime() - networkGameTime <= NETWORK_DECAY_TICKS;
+    }
+
+    /** Network steam pressure (pN/m^2) at this inlet, or 0 if the manager has not refreshed recently. */
+    public double getNetworkPressurePn() {
+        return networkFresh() ? networkPressurePn : 0.0D;
+    }
+
+    /** Fair per-engine draw cap (mB/t) assigned by the network manager, or 0 if stale. */
+    public int getNetworkDrawCap() {
+        return networkFresh() ? networkDrawCap : 0;
     }
 
     public FluidStack consumeSteam(int maxAmount, boolean execute) {
@@ -223,13 +227,13 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
             CreateLang.text("Cylinder ring linked").style(ChatFormatting.GREEN).forGoggles(tooltip, 1);
         }
 
+        CreateLang.text("Network pressure: " + SteamPressure.format(getNetworkPressurePn()))
+                .style(getNetworkPressurePn() > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
+                .forGoggles(tooltip, 1);
         CreateLang.text("Steam: " + steamBuffer.getFluidAmount() + "/" + steamBuffer.getCapacity() + " mB")
                 .style(steamBuffer.getFluidAmount() > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
                 .forGoggles(tooltip, 1);
-        CreateLang.text("Accepted: " + acceptedLastTick + " mB/t")
-                .style(acceptedLastTick > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
-                .forGoggles(tooltip, 1);
-        CreateLang.text("Consumed: " + consumedLastTick + " mB/t")
+        CreateLang.text("Accepted: " + acceptedLastTick + " mB/t  Consumed: " + consumedLastTick + " mB/t")
                 .style(consumedLastTick > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
                 .forGoggles(tooltip, 1);
 

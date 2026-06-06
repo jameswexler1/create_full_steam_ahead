@@ -5,6 +5,7 @@ import dev.gustavo.fullsteamahead.compat.create.CreateMovementCompat;
 import dev.gustavo.fullsteamahead.compat.simulated.SimulatedMovementCompat;
 import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import dev.gustavo.fullsteamahead.content.piston.EngineShaftEventHandler;
+import dev.gustavo.fullsteamahead.content.steam.SteamNetworkManager;
 import dev.gustavo.fullsteamahead.content.steam.SteamOpenPipeEffectHandler;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
@@ -44,6 +45,7 @@ public final class FullSteamAhead {
     private void commonSetup(FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             EngineShaftEventHandler.register(NeoForge.EVENT_BUS);
+            SteamNetworkManager.register(NeoForge.EVENT_BUS);
             SteamOpenPipeEffectHandler.register();
             CreateMovementCompat.register();
             SimulatedMovementCompat.registerIfPresent();

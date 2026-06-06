@@ -12,9 +12,11 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlockEntity;
+import dev.gustavo.fullsteamahead.compat.create.FullSteamBoilerIntegration;
 import dev.gustavo.fullsteamahead.content.steam.SteamCloudEffects;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.SteamPhysics;
+import dev.gustavo.fullsteamahead.content.steam.SteamPressure;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.ChatFormatting;
@@ -434,7 +436,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
                     .style(hasWaterSupply ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
                     .forGoggles(tooltip, 1);
         }
-        CreateLang.text(String.format("Pressure: %.1f bar", pressureRatio))
+        CreateLang.text("Pressure: " + SteamPressure.format(pressureRatio))
                 .style(pressureRatio > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
                 .forGoggles(tooltip, 1);
         CreateLang.text("RPM: " + Math.round(getGeneratedSpeed()))
@@ -486,40 +488,35 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         BurnerHeat burnerHeat = scanBurners();
         boolean hasWater = data.getMaxHeatLevelForWaterSupply() > 0;
 
-        int volume = boiler.getTotalTankSize();
-        int waterGatedHeat = Math.min(data.activeHeat, data.getMaxHeatLevelForWaterSupply());
-        int production = SteamPhysics.productionMb(volume, SteamPhysics.heatFactor(waterGatedHeat));
-        int maxIntake = FullSteamConfig.steamMaxIntakeMb();
-
-        // Compact engine runs at the steady-state pressure where the cylinder's draw matches production
-        // (P = production / flowPerBar). If production exceeds what one cylinder can ever draw, the
-        // boiler over-pressures and bursts.
-        if (production > maxIntake && execute && FullSteamConfig.overpressureEnabled()) {
-            explodeBoiler(boiler);
-            return SteamOutput.none(SourceMode.DIRECT_BOILER);
-        }
-
-        double flowPerBar = FullSteamConfig.steamFlowPerBar();
-        double pressureBar = flowPerBar > 0 ? Math.min(production, maxIntake) / flowPerBar : 0.0D;
-        int consumed = Math.min(maxIntake, production);
-        float capacity = SteamPhysics.su(pressureBar);
-        float speed = SteamPhysics.rpm(pressureBar);
+        // Direct/compact mode is an implicit one-boiler network: supply = production, demand = one engine.
+        int usableHeat = FullSteamBoilerIntegration.usableHeatUnits(boiler);
+        int height = Math.max(1, boiler.getHeight());
+        int production = SteamPhysics.productionMb(usableHeat, height);
+        int fullFlow = FullSteamConfig.steamFullEngineFlowMb();
+        int consumed = Math.min(fullFlow, production);
+        // Steady-state pressure: rated when the boiler can fully supply one engine, scaling down below that.
+        double supplyFactor = Mth.clamp(production / (double) Math.max(1, fullFlow), 0.0D, 1.0D);
+        double pressure = SteamPressure.rated() * supplyFactor;
+        float of = SteamPhysics.outputFactor(pressure, consumed);
         return new SteamOutput(
                 SourceMode.DIRECT_BOILER,
                 burnerHeat.activeBurners(),
-                burnerHeat.heatUnits(),
+                Math.max(usableHeat, burnerHeat.heatUnits()),
                 hasWater,
                 consumed,
-                capacity,
-                speed,
-                (float) pressureBar
+                SteamPhysics.su(of),
+                SteamPhysics.rpm(of),
+                (float) pressure
         );
     }
 
     private SteamOutput calculatePipedSteamOutput(SteamInletBlockEntity inlet, boolean execute) {
-        // Engine draws steam in proportion to the delivered boiler pressure (capped per cylinder).
-        double pressureBar = inlet.getSupplyPressureBar();
-        int targetSteam = Math.min(SteamPhysics.engineDrawMb(pressureBar), inlet.getSteamAmount());
+        // RPM/SU come from the shared network pressure; draw is the manager's fair per-engine cap.
+        double pressure = inlet.getNetworkPressurePn();
+        int requested = SteamPhysics.requestedFlowMb(pressure);
+        int cap = inlet.getNetworkDrawCap();
+        int allowed = cap > 0 ? Math.min(requested, cap) : requested;
+        int targetSteam = Math.min(allowed, inlet.getSteamAmount());
         if (targetSteam <= 0) {
             return SteamOutput.none(SourceMode.PIPED_STEAM);
         }
@@ -531,39 +528,17 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
         int heat = Mth.clamp(Mth.ceil(consumed / (float) FullSteamConfig.steamPerHeatUnit()), 1, MAX_PIPED_HEAT_UNITS);
         int activeEquivalent = Math.min(MAX_ACTIVE_BURNERS, heat);
-        // RPM and SU both rise with delivered pressure (pure single-cylinder physics).
-        float capacity = SteamPhysics.su(pressureBar);
-        float speed = SteamPhysics.rpm(pressureBar);
+        float of = SteamPhysics.outputFactor(pressure, consumed);
         return new SteamOutput(
                 SourceMode.PIPED_STEAM,
                 activeEquivalent,
                 heat,
                 true,
                 consumed,
-                capacity,
-                speed,
-                (float) pressureBar
+                SteamPhysics.su(of),
+                SteamPhysics.rpm(of),
+                (float) pressure
         );
-    }
-
-    private void explodeBoiler(FluidTankBlockEntity boiler) {
-        if (!(level instanceof ServerLevel serverLevel) || boiler == null) {
-            return;
-        }
-        BlockPos pos = boiler.getBlockPos();
-        int width = Math.max(1, boiler.getWidth());
-        int height = Math.max(1, boiler.getHeight());
-        double cx = pos.getX() + width / 2.0D;
-        double cy = pos.getY() + height / 2.0D;
-        double cz = pos.getZ() + width / 2.0D;
-        double power = Math.min(
-                FullSteamConfig.overpressureMaxPower(),
-                FullSteamConfig.overpressureBasePower()
-                        + FullSteamConfig.overpressurePowerPerVolume() * boiler.getTotalTankSize());
-        Level.ExplosionInteraction interaction = FullSteamConfig.overpressureBreaksBlocks()
-                ? Level.ExplosionInteraction.BLOCK
-                : Level.ExplosionInteraction.NONE;
-        serverLevel.explode(null, cx, cy, cz, (float) power, interaction);
     }
 
     private BurnerHeat scanBurners() {
