@@ -221,14 +221,27 @@ public final class SteamNetworkManager {
         // Vent open ends first (relief), using the current pressure to set the vent rate, then recompute
         // pressure from what is left so an open vent can actually save a network from bursting.
         double prePressure = SteamPhysics.pressurePn(network.storedMb, tempK, volume);
-        int ventEach = SteamPhysics.ventMb(prePressure);
         int ventDrained = 0;
-        if (ventEach > 0 && !network.openEnds.isEmpty() && level instanceof ServerLevel serverLevel) {
+        if (!network.openEnds.isEmpty()) {
+            int ventEach = SteamPhysics.ventMb(prePressure);
+            int atmosphericRelief = SteamPhysics.drainToPressureMb(
+                    network.storedMb,
+                    tempK,
+                    volume,
+                    SteamPressure.rated()
+            );
+            int requestedDrain = Math.min(network.storedMb,
+                    Math.max(ventEach * network.openEnds.size(), atmosphericRelief));
+            if (requestedDrain > 0) {
+                ventDrained = drainFromNetwork(level, network, requestedDrain);
+            }
+        }
+        if (ventDrained > 0 && level instanceof ServerLevel serverLevel) {
             boolean emitCloud = level.getGameTime() % 4L == 0L;
-            for (OpenEnd end : network.openEnds) {
-                ventDrained += drainFromNetwork(level, network, ventEach);
-                if (emitCloud) {
-                    emitVentCloud(serverLevel, end, ventEach);
+            if (emitCloud) {
+                int cloudAmount = Math.max(1, (int) Math.ceil(ventDrained / (double) network.openEnds.size()));
+                for (OpenEnd end : network.openEnds) {
+                    emitVentCloud(serverLevel, end, cloudAmount);
                 }
             }
         }

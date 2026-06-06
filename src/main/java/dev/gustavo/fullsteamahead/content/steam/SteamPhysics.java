@@ -68,6 +68,26 @@ public final class SteamPhysics {
         return Math.max(0, Math.round((float) FullSteamConfig.steamVentCoefficient() * pf));
     }
 
+    /**
+     * Steam mass that must be removed to bring a network down to the requested pressure.
+     * Used by open pipe ends, which are atmospheric relief paths rather than small consumers.
+     */
+    public static int drainToPressureMb(double storedMb, double temperatureK, double volumeM3, double targetPressurePn) {
+        if (storedMb <= 0.0D || temperatureK <= 0.0D || volumeM3 <= 0.0D) {
+            return 0;
+        }
+        if (targetPressurePn <= 0.0D) {
+            return (int) Math.min(Integer.MAX_VALUE, Math.ceil(storedMb));
+        }
+
+        double targetStoredMb = targetPressurePn * volumeM3 / (FullSteamConfig.steamGasConstant() * temperatureK);
+        double toDrain = storedMb - targetStoredMb;
+        if (toDrain <= 0.0D) {
+            return 0;
+        }
+        return (int) Math.min(Integer.MAX_VALUE, Math.ceil(toDrain));
+    }
+
     /** Explosion power for a burst, scaling with network/boiler volume. */
     public static float burstPower(double volumeM3) {
         double power = FullSteamConfig.overpressureBasePower()
