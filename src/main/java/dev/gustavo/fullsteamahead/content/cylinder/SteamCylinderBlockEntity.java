@@ -201,8 +201,8 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
                 CreateLang.text("Engine").style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
                 shownAny = true;
             }
-            CreateLang.text("Pressure: " + SteamPressure.format(engine.getPressureBar()))
-                    .style(engine.getPressureBar() > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
+            CreateLang.text("Pressure: " + SteamPressure.format(engine.getPressurePn()))
+                    .style(engine.getPressurePn() > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
                     .forGoggles(tooltip, 2);
             CreateLang.text("RPM: " + Math.round(engine.getGeneratedSpeed()))
                     .style(engine.getGeneratedSpeed() != 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)

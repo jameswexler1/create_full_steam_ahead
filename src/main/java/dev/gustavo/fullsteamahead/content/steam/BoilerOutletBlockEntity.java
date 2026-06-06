@@ -41,7 +41,8 @@ import java.util.Set;
 
 public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation {
     private static final float PRESSURE_PER_MB = 2.0f;
-    private static final int BUFFER_CAPACITY = 256_000;
+    // Hard ceiling for the fluid tank; the effective storage cap is steamPhysics.bufferCapMb (config).
+    private static final int BUFFER_CAPACITY = 1_000_000;
     private static final int PRESSURE_REFRESH_TICKS = 5;
     private static final String BOILER_POS_KEY = "BoilerPos";
     private static final String BUFFER_KEY = "SteamBuffer";
@@ -50,7 +51,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     private static final String OUTLET_COUNT_KEY = "OutletCount";
     private static final String PRODUCTION_RATE_KEY = "ProductionRate";
     private static final String PUSHED_RATE_KEY = "PushedRate";
-    private static final String PRESSURE_BAR_KEY = "PressureBar";
+    private static final String PRESSURE_PN_KEY = "PressurePn";
     private static final String BOILER_VOLUME_KEY = "BoilerVolume";
     private static final String BOILER_TEMP_KEY = "BoilerTemperatureK";
     private static final String STATUS_KEY = "Status";
@@ -134,10 +135,14 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         outletCount = budget.outletCount();
         productionRate = budget.outletUnits();
 
-        // Boil steam into the vessel; deliver what consumers/open-ends will take (engine draw is capped
-        // by the network manager). Steam left behind raises the network's stored amount -> pressure.
+        // Boil steam into the vessel up to the configured storage cap; the network manager decides how
+        // much is drawn or vented. Steam left behind raises the network's stored amount -> pressure.
         if (productionRate > 0) {
-            steamBuffer.fill(new FluidStack(ModFluids.STEAM.get(), productionRate), IFluidHandler.FluidAction.EXECUTE);
+            int room = Math.max(0, FullSteamConfig.steamBufferCapMb() - steamBuffer.getFluidAmount());
+            int toFill = Math.min(productionRate, room);
+            if (toFill > 0) {
+                steamBuffer.fill(new FluidStack(ModFluids.STEAM.get(), toFill), IFluidHandler.FluidAction.EXECUTE);
+            }
         }
 
         if (steamBuffer.getFluidAmount() > 0) {
@@ -310,6 +315,14 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
 
     public int getStoredSteamMb() {
         return steamBuffer.getFluidAmount();
+    }
+
+    /** Drains up to {@code amount} mB from this outlet's vessel (used by the network manager for venting). */
+    public int drainSteam(int amount) {
+        if (amount <= 0) {
+            return 0;
+        }
+        return steamBuffer.drain(amount, IFluidHandler.FluidAction.EXECUTE).getAmount();
     }
 
     public int getBoilerProductionMb() {
@@ -508,8 +521,8 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                 }
 
                 if (FluidPropagator.isOpenEnd(level, node.pos(), direction)) {
+                    // Pressure marker only; the network manager physically vents + spawns the steam cloud.
                     pipe.addPressure(direction, false, pressure);
-                    spawnSteamLeakParticles(node.pos(), direction);
                     hasEndpoint = true;
                     openEnd = true;
                 }
@@ -804,7 +817,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         tag.putInt(OUTLET_COUNT_KEY, outletCount);
         tag.putInt(PRODUCTION_RATE_KEY, productionRate);
         tag.putInt(PUSHED_RATE_KEY, pushedRate);
-        tag.putDouble(PRESSURE_BAR_KEY, networkPressurePn);
+        tag.putDouble(PRESSURE_PN_KEY, networkPressurePn);
         tag.putInt(BOILER_VOLUME_KEY, boilerVolume);
         tag.putInt(BOILER_TEMP_KEY, boilerTemperatureK);
         tag.putString(STATUS_KEY, status);
@@ -820,7 +833,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         outletCount = tag.getInt(OUTLET_COUNT_KEY);
         productionRate = tag.getInt(PRODUCTION_RATE_KEY);
         pushedRate = tag.getInt(PUSHED_RATE_KEY);
-        networkPressurePn = tag.getDouble(PRESSURE_BAR_KEY);
+        networkPressurePn = tag.getDouble(PRESSURE_PN_KEY);
         boilerVolume = tag.getInt(BOILER_VOLUME_KEY);
         boilerTemperatureK = tag.getInt(BOILER_TEMP_KEY);
         status = tag.contains(STATUS_KEY) ? tag.getString(STATUS_KEY) : "Missing boiler";

@@ -336,7 +336,10 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
 
         private int acceptedSteamAllowance() {
-            int maxPerTick = FullSteamConfig.maxPipedSteamPerTick();
+            // The network manager governs how much this engine may draw; cap intake to that fair share
+            // (falling back to the full-engine flow before the manager has reported).
+            int cap = networkFresh() ? networkDrawCap : FullSteamConfig.maxPipedSteamPerTick();
+            int maxPerTick = Math.max(0, cap);
             if (level == null) {
                 return maxPerTick;
             }

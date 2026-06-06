@@ -49,7 +49,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private static final String HEAT_UNITS_KEY = "HeatUnits";
     private static final String GENERATED_SPEED_KEY = "GeneratedSpeed";
     private static final String GENERATED_CAPACITY_KEY = "GeneratedCapacity";
-    private static final String PRESSURE_RATIO_KEY = "PressureRatio";
+    private static final String PRESSURE_PN_KEY = "PressurePn";
     private static final String WATER_SUPPLY_KEY = "WaterSupply";
     private static final String SOURCE_MODE_KEY = "SourceMode";
     private static final String STEAM_CONSUMED_KEY = "SteamConsumed";
@@ -78,7 +78,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private int heatUnits;
     private float generatedSpeed;
     private float generatedCapacitySu;
-    private float pressureRatio;
+    private float pressurePn;
     private boolean hasWaterSupply;
     private SourceMode sourceMode = SourceMode.NONE;
     private int steamConsumedRate;
@@ -218,7 +218,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         heatUnits = 0;
         generatedSpeed = 0;
         generatedCapacitySu = 0;
-        pressureRatio = 0;
+        pressurePn = 0;
         hasWaterSupply = false;
         sourceMode = SourceMode.NONE;
         steamConsumedRate = 0;
@@ -255,8 +255,8 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         return getTargetCapacitySu();
     }
 
-    public float getPressureBar() {
-        return assembled ? pressureRatio : 0;
+    public float getPressurePn() {
+        return assembled ? pressurePn : 0;
     }
 
     public String getSourceModeName() {
@@ -436,8 +436,8 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
                     .style(hasWaterSupply ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
                     .forGoggles(tooltip, 1);
         }
-        CreateLang.text("Pressure: " + SteamPressure.format(pressureRatio))
-                .style(pressureRatio > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
+        CreateLang.text("Pressure: " + SteamPressure.format(pressurePn))
+                .style(pressurePn > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
                 .forGoggles(tooltip, 1);
         CreateLang.text("RPM: " + Math.round(getGeneratedSpeed()))
                 .style(getGeneratedSpeed() > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
@@ -574,7 +574,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private boolean applySteamOutput(SteamOutput output) {
         float speed = output.generatedSpeed();
         float capacity = output.capacitySu();
-        float pressure = output.canRun() ? output.pressureRatio() : 0.0F;
+        float pressure = output.canRun() ? output.pressurePn() : 0.0F;
         boolean changed = sourceMode != output.sourceMode()
                 || activeBurners != output.activeBurners()
                 || heatUnits != output.heatUnits()
@@ -582,7 +582,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
                 || steamConsumedRate != output.steamConsumedRate()
                 || !Mth.equal(generatedSpeed, speed)
                 || !Mth.equal(generatedCapacitySu, capacity)
-                || !Mth.equal(pressureRatio, pressure);
+                || !Mth.equal(pressurePn, pressure);
 
         sourceMode = output.sourceMode();
         activeBurners = output.activeBurners();
@@ -591,7 +591,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         steamConsumedRate = output.steamConsumedRate();
         generatedSpeed = speed;
         generatedCapacitySu = capacity;
-        pressureRatio = pressure;
+        pressurePn = pressure;
         return changed;
     }
 
@@ -818,7 +818,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         tag.putInt(HEAT_UNITS_KEY, heatUnits);
         tag.putFloat(GENERATED_SPEED_KEY, generatedSpeed);
         tag.putFloat(GENERATED_CAPACITY_KEY, generatedCapacitySu);
-        tag.putFloat(PRESSURE_RATIO_KEY, pressureRatio);
+        tag.putFloat(PRESSURE_PN_KEY, pressurePn);
         tag.putBoolean(WATER_SUPPLY_KEY, hasWaterSupply);
         tag.putString(SOURCE_MODE_KEY, sourceMode.name());
         tag.putInt(STEAM_CONSUMED_KEY, steamConsumedRate);
@@ -845,7 +845,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         heatUnits = tag.getInt(HEAT_UNITS_KEY);
         generatedSpeed = tag.getFloat(GENERATED_SPEED_KEY);
         generatedCapacitySu = tag.getFloat(GENERATED_CAPACITY_KEY);
-        pressureRatio = tag.getFloat(PRESSURE_RATIO_KEY);
+        pressurePn = tag.getFloat(PRESSURE_PN_KEY);
         hasWaterSupply = tag.getBoolean(WATER_SUPPLY_KEY);
         sourceMode = SourceMode.byName(tag.getString(SOURCE_MODE_KEY));
         steamConsumedRate = tag.getInt(STEAM_CONSUMED_KEY);
@@ -992,7 +992,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
             int steamConsumedRate,
             float targetCapacitySu,
             float targetSpeed,
-            float pressureRatio
+            float pressurePn
     ) {
         private static SteamOutput none(SourceMode sourceMode) {
             return new SteamOutput(sourceMode, 0, 0, false, 0, 0, 0, 0);

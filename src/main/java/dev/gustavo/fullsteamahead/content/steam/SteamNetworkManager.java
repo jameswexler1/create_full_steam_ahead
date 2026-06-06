@@ -8,9 +8,11 @@ import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModFluids;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
@@ -167,8 +169,16 @@ public final class SteamNetworkManager {
         // A bare fluid-handler or an open pipe end relieves pressure.
         IFluidHandler handler = level.getCapability(Capabilities.FluidHandler.BLOCK, pos, dir.getOpposite());
         if (handler == null && FluidPropagator.isOpenEnd(level, fromPipe, dir)) {
-            network.openEnds.add(fromPipe);
+            network.openEnds.add(new OpenEnd(fromPipe, dir));
         }
+    }
+
+    private static boolean hasWorkingEngine(Level level, SteamInletBlockEntity inlet) {
+        BlockPos enginePos = inlet.getEnginePos();
+        return enginePos != null
+                && level.isLoaded(enginePos)
+                && level.getBlockEntity(enginePos) instanceof PistonHeadBlockEntity engine
+                && engine.isEngineAssembled();
     }
 
     private static void addOutlet(Level level, BlockPos outletPos, Network network, Set<BlockPos> visitedOutlets,
@@ -204,22 +214,42 @@ public final class SteamNetworkManager {
 
         double pressure = SteamPhysics.pressurePn(network.storedMb, tempK, volume);
 
-        // Fair allocation: every engine requests fullFlow * pressureFactor; if short, split proportionally.
-        int requestedEach = SteamPhysics.requestedFlowMb(pressure);
-        int engineCount = network.inlets.size();
-        int totalRequested = requestedEach * engineCount;
-        int available = Math.min(network.storedMb, totalRequested);
-        int perEngineCap = requestedEach;
-        if (totalRequested > 0 && available < totalRequested) {
-            perEngineCap = available / Math.max(1, engineCount);
+        // Only inlets backed by a working engine demand steam; others just buffer it (storage).
+        List<SteamInletBlockEntity> engines = new ArrayList<>();
+        for (SteamInletBlockEntity inlet : network.inlets) {
+            if (hasWorkingEngine(level, inlet)) {
+                engines.add(inlet);
+            }
         }
 
-        boolean venting = !network.openEnds.isEmpty() && pressure > 0;
+        // Fair allocation: every engine requests fullFlow * pressureFactor; if short, split evenly.
+        int requestedEach = SteamPhysics.requestedFlowMb(pressure);
+        int engineCount = engines.size();
+        int totalRequested = requestedEach * engineCount;
+        int perEngineCap = requestedEach;
+        if (totalRequested > 0 && network.storedMb < totalRequested) {
+            perEngineCap = network.storedMb / Math.max(1, engineCount);
+        }
+
+        // Physically vent open pipe ends: drain steam (relief) every tick, emit the scald cloud less often.
+        int ventEach = SteamPhysics.ventMb(pressure);
+        int ventDrained = 0;
+        if (ventEach > 0 && !network.openEnds.isEmpty() && level instanceof ServerLevel serverLevel) {
+            boolean emitCloud = level.getGameTime() % 4L == 0L;
+            for (OpenEnd end : network.openEnds) {
+                ventDrained += drainFromOutlets(network, ventEach);
+                if (emitCloud) {
+                    emitVentCloud(serverLevel, end, ventEach);
+                }
+            }
+        }
+        boolean venting = ventDrained > 0;
+
         boolean burst = FullSteamConfig.overpressureEnabled() && pressure >= FullSteamConfig.steamBurstPressure();
         boolean warn = pressure >= FullSteamConfig.steamWarnPressure();
 
         for (SteamInletBlockEntity inlet : network.inlets) {
-            inlet.applyNetworkState(pressure, perEngineCap);
+            inlet.applyNetworkState(pressure, engines.contains(inlet) ? perEngineCap : 0);
         }
         for (BoilerOutletBlockEntity outlet : network.outlets) {
             outlet.applyNetworkState(pressure, venting, warn, network.productionMb, (int) Math.round(volume),
@@ -233,6 +263,24 @@ public final class SteamNetworkManager {
         }
     }
 
+    /** Drains up to {@code amount} mB of stored steam from the network's outlet buffers (for venting). */
+    private static int drainFromOutlets(Network network, int amount) {
+        int remaining = amount;
+        for (BoilerOutletBlockEntity outlet : network.outlets) {
+            if (remaining <= 0) {
+                break;
+            }
+            remaining -= outlet.drainSteam(remaining);
+        }
+        return amount - remaining;
+    }
+
+    private static void emitVentCloud(ServerLevel level, OpenEnd end, int amount) {
+        BlockPos ventPos = end.pipe().relative(end.dir());
+        AABB area = new AABB(ventPos);
+        SteamCloudEffects.emitOpenPipe(level, area, amount);
+    }
+
     /** Steam can move toward {@code side} only if the pipe both allows flow and can pull our steam (valve-aware). */
     private static boolean canSteamPassThrough(FluidTransportBehaviour pipe, BlockState state, Direction side) {
         return pipe.canHaveFlowToward(state, side)
@@ -242,12 +290,15 @@ public final class SteamNetworkManager {
     private record PipeNode(BlockPos pos, Direction incomingSide) {
     }
 
+    private record OpenEnd(BlockPos pipe, Direction dir) {
+    }
+
     private static final class Network {
         private final List<BoilerOutletBlockEntity> outlets = new ArrayList<>();
         private final List<SteamInletBlockEntity> inlets = new ArrayList<>();
         private final Set<BlockPos> boilers = new HashSet<>();
         private final Set<BlockPos> steamTanks = new HashSet<>();
-        private final Set<BlockPos> openEnds = new HashSet<>();
+        private final List<OpenEnd> openEnds = new ArrayList<>();
         private int storedMb;
         private int productionMb;
         private double volumeM3;
