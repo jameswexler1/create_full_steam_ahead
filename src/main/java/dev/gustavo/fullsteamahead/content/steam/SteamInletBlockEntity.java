@@ -161,8 +161,13 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         this.networkGameTime = level == null ? 0L : level.getGameTime();
     }
 
+    /** True when the network manager has reported state recently (so a draw cap of 0 is deliberate). */
+    public boolean isNetworkFresh() {
+        return level != null && level.getGameTime() - networkGameTime <= NETWORK_DECAY_TICKS;
+    }
+
     private boolean networkFresh() {
-        return level == null || level.getGameTime() - networkGameTime <= NETWORK_DECAY_TICKS;
+        return isNetworkFresh();
     }
 
     /** Network steam pressure (pN/m^2) at this inlet, or 0 if the manager has not refreshed recently. */

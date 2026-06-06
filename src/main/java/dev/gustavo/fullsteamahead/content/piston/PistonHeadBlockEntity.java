@@ -514,8 +514,9 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         // RPM/SU come from the shared network pressure; draw is the manager's fair per-engine cap.
         double pressure = inlet.getNetworkPressurePn();
         int requested = SteamPhysics.requestedFlowMb(pressure);
-        int cap = inlet.getNetworkDrawCap();
-        int allowed = cap > 0 ? Math.min(requested, cap) : requested;
+        // A fresh cap of 0 is a deliberate "no share" (shortage / no engine); only an absent report
+        // (manager hasn't run yet) falls back to the uncapped request.
+        int allowed = inlet.isNetworkFresh() ? Math.min(requested, inlet.getNetworkDrawCap()) : requested;
         int targetSteam = Math.min(allowed, inlet.getSteamAmount());
         if (targetSteam <= 0) {
             return SteamOutput.none(SourceMode.PIPED_STEAM);

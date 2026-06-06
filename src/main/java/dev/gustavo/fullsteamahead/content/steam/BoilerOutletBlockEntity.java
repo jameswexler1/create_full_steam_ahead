@@ -241,7 +241,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         CreateLang.text(status)
                 .style(productionRate > 0 ? ChatFormatting.GREEN : ChatFormatting.YELLOW)
                 .forGoggles(tooltip, 1);
-        CreateLang.text("Steam: " + steamBuffer.getFluidAmount() + "/" + steamBuffer.getCapacity() + " mB")
+        CreateLang.text("Steam: " + steamBuffer.getFluidAmount() + "/" + FullSteamConfig.steamBufferCapMb() + " mB")
                 .style(steamBuffer.getFluidAmount() > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
                 .forGoggles(tooltip, 1);
         CreateLang.text("Produced (outlet/boiler): " + heatUnits + "/" + totalHeatUnits + " mB/t")

@@ -212,6 +212,23 @@ public final class SteamNetworkManager {
         volume = Math.max(1.0D, volume);
         double tempK = network.temperatureK > 0 ? network.temperatureK : FullSteamConfig.steamTemperatureBaseK();
 
+        // Vent open ends first (relief), using the current pressure to set the vent rate, then recompute
+        // pressure from what is left so an open vent can actually save a network from bursting.
+        double prePressure = SteamPhysics.pressurePn(network.storedMb, tempK, volume);
+        int ventEach = SteamPhysics.ventMb(prePressure);
+        int ventDrained = 0;
+        if (ventEach > 0 && !network.openEnds.isEmpty() && level instanceof ServerLevel serverLevel) {
+            boolean emitCloud = level.getGameTime() % 4L == 0L;
+            for (OpenEnd end : network.openEnds) {
+                ventDrained += drainFromNetwork(level, network, ventEach);
+                if (emitCloud) {
+                    emitVentCloud(serverLevel, end, ventEach);
+                }
+            }
+        }
+        network.storedMb = Math.max(0, network.storedMb - ventDrained);
+        boolean venting = ventDrained > 0;
+
         double pressure = SteamPhysics.pressurePn(network.storedMb, tempK, volume);
 
         // Only inlets backed by a working engine demand steam; others just buffer it (storage).
@@ -231,20 +248,6 @@ public final class SteamNetworkManager {
             perEngineCap = network.storedMb / Math.max(1, engineCount);
         }
 
-        // Physically vent open pipe ends: drain steam (relief) every tick, emit the scald cloud less often.
-        int ventEach = SteamPhysics.ventMb(pressure);
-        int ventDrained = 0;
-        if (ventEach > 0 && !network.openEnds.isEmpty() && level instanceof ServerLevel serverLevel) {
-            boolean emitCloud = level.getGameTime() % 4L == 0L;
-            for (OpenEnd end : network.openEnds) {
-                ventDrained += drainFromOutlets(network, ventEach);
-                if (emitCloud) {
-                    emitVentCloud(serverLevel, end, ventEach);
-                }
-            }
-        }
-        boolean venting = ventDrained > 0;
-
         boolean burst = FullSteamConfig.overpressureEnabled() && pressure >= FullSteamConfig.steamBurstPressure();
         boolean warn = pressure >= FullSteamConfig.steamWarnPressure();
 
@@ -263,14 +266,25 @@ public final class SteamNetworkManager {
         }
     }
 
-    /** Drains up to {@code amount} mB of stored steam from the network's outlet buffers (for venting). */
-    private static int drainFromOutlets(Network network, int amount) {
+    /** Drains up to {@code amount} mB of steam from the network for venting: outlet buffers first, then tanks. */
+    private static int drainFromNetwork(Level level, Network network, int amount) {
         int remaining = amount;
         for (BoilerOutletBlockEntity outlet : network.outlets) {
             if (remaining <= 0) {
                 break;
             }
             remaining -= outlet.drainSteam(remaining);
+        }
+        for (BlockPos tankPos : network.steamTanks) {
+            if (remaining <= 0) {
+                break;
+            }
+            if (level.getBlockEntity(tankPos) instanceof FluidTankBlockEntity tank) {
+                FluidStack drained = tank.getTankInventory().drain(remaining, IFluidHandler.FluidAction.EXECUTE);
+                if (drained.is(ModFluids.STEAM.get())) {
+                    remaining -= drained.getAmount();
+                }
+            }
         }
         return amount - remaining;
     }
