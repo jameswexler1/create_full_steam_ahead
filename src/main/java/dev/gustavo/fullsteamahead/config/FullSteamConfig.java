@@ -32,9 +32,9 @@ public final class FullSteamConfig {
     private static final int DEFAULT_STEAM_BUFFER_CAP_MB = 256_000;
 
     private static final boolean DEFAULT_OVERPRESSURE_ENABLED = true;
-    private static final double DEFAULT_OVERPRESSURE_BASE_POWER = 4.0D;
-    private static final double DEFAULT_OVERPRESSURE_POWER_PER_VOLUME = 0.15D;
-    private static final double DEFAULT_OVERPRESSURE_MAX_POWER = 12.0D;
+    private static final double DEFAULT_OVERPRESSURE_BASE_POWER = 12.0D;
+    private static final double DEFAULT_OVERPRESSURE_POWER_PER_VOLUME = 0.45D;
+    private static final double DEFAULT_OVERPRESSURE_MAX_POWER = 36.0D;
     private static final boolean DEFAULT_OVERPRESSURE_BREAKS_BLOCKS = true;
 
     private static final boolean DEFAULT_STEAM_LEAK_DAMAGE_ENABLED = true;

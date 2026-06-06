@@ -1,6 +1,6 @@
 # Create: Full Steam Ahead — Design Plan
 
-Last updated: 2026-06-03
+Last updated: 2026-06-06
 
 ## Goal
 
@@ -71,7 +71,9 @@ The direct compact boiler must be at least 3×3×1 (9 fluid tank blocks) to supp
 
 `steam` becomes a real NeoForge/Create-compatible fluid. It can be stored in Create Fluid Tanks and moved through Create Fluid Pipes. It is not a replacement for water, and it is not produced by ordinary tanks full of stored steam.
 
-The only automatic pressure source for steam is `boiler_outlet`, and it must only generate/push steam when attached to a valid active Create boiler. Stored steam in normal tanks may be moved by normal Create logistics, but it must not get free boiler-outlet pressure.
+Current v1 rule: the only automatic pressure source for steam is `boiler_outlet`, and it must only generate/push steam when attached to a valid active Create boiler. Stored steam in normal tanks may be moved by normal Create logistics, but it must not get free boiler-outlet pressure.
+
+Future design track: investigate removing or demoting `boiler_outlet` by allowing Create Fluid Tank boilers to expose steam directly to adjacent Create Fluid Pipes. In that model, pressure belongs to the boiler/network itself, not to a special outlet block. Create already swaps active boilers to `BoilerData.BoilerFluidHandler`, which accepts water supply and does not drain water; direct steam output would need to wrap or replace that active-boiler handler so it can expose generated `steam` while preserving water-supply accounting, valves, contraptions, stored steam tanks, and Create boiler visuals. Until that design is implemented and verified, `boiler_outlet` remains the stable boiler steam port/valve block.
 
 For v1, `steam` should be non-placeable and should not need a bucket. It exists for tanks, pipes, gauges, and engine consumption.
 
@@ -755,18 +757,30 @@ heat/pressure/volume model so boiler *shape* gives different engine "specs". See
 
 ### Phase 13: Boiler Overpressure — Complete (vent valve still planned)
 
-**Goal**: surplus steam (production > consumption) builds boiler pressure until it explodes.
+**Goal**: stored steam in a closed pressure network builds pressure until it vents or explodes.
 
-- [x] Boiler outlet accumulates `overpressureMb += max(0, productionRate − pushedRate)` each tick;
-  bleeds down by `reliefMbPerTick` when not over-producing. Engines and vented/open-pipe steam count
-  as pushed, so they relieve pressure.
-- [x] Past `warnPressureMb`: status flips to "Overpressure!", hiss (FIRE_EXTINGUISH) + steam particles
-  at the boiler center on a cadence.
-- [x] Past `burstPressureMb`: explosion at the boiler center, power = `min(maxPower, basePower +
-  powerPerVolume · tankSize)`, block-breaking (configurable), then pressure resets.
-- [x] `steamOverpressure` config group (all tunable): enabled, burst/warn mB, reliefMbPerTick,
-  explosion base/per-volume/max power, breaksBlocks. Persisted in NBT, shown on the outlet goggle.
+- [x] `SteamNetworkManager` computes one network pressure from stored steam, temperature, and network volume.
+- [x] Open pipe ends vent first; pressure is recomputed after venting so sufficient relief can prevent a burst.
+- [x] Past `steamPhysics.warnPressure`: status flips to "Overpressure!", with hiss and steam particles at the boiler center on a cadence.
+- [x] Past `steamPhysics.burstPressure`: each attached boiler outlet bursts its linked boiler at the boiler center.
+- [x] Explosion power = `min(maxPower, basePower + powerPerVolume · networkVolume)`, with block-breaking configurable.
+- [x] `steamOverpressure` config group: enabled, explosion base/per-volume/max power, breaksBlocks.
 - [ ] **Steam vent valve block** (future): bleeds surplus on demand / redstone to prevent bursts.
+
+---
+
+### Optional Phase: Volumetric Steam Clouds
+
+**Goal**: upgrade current leak/exhaust particles from instant local effects into a sparse gas simulation for enclosed spaces.
+
+- [ ] Add a bounded server-side `SteamGasField` manager keyed by level/chunk/block position.
+- [ ] Represent steam as temporary gas cells in passable air blocks, storing steam mass, temperature, age, and derived pressure/density.
+- [ ] Feed cells from open pipe leaks, boiler vents, and cylinder bore exhaust while preserving the existing particle art style.
+- [ ] Diffuse gas to neighbouring passable cells every few ticks; solid blocks block diffusion so closed rooms can trap steam.
+- [ ] Cool cells over time toward ambient temperature; lower density/temperature reduces damage and particle opacity until the cell expires.
+- [ ] Apply scald damage from gas cells rather than only from the immediate leak AABB.
+- [ ] Add strict performance caps: max cells per chunk/level, low-density expiry, bounded spread radius, and server config for damage/lifetime/diffusion.
+- [ ] Keep particles client-side and visual only; gameplay state lives in the gas field.
 
 ---
 
