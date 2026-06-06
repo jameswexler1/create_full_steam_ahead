@@ -154,6 +154,14 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         return steamBuffer.getFluidAmount();
     }
 
+    /** Drains up to {@code amount} mB from this inlet's buffer (network venting; not counted as consumed). */
+    public int drainSteam(int amount) {
+        if (amount <= 0) {
+            return 0;
+        }
+        return steamBuffer.drain(amount, IFluidHandler.FluidAction.EXECUTE).getAmount();
+    }
+
     /** Called by SteamNetworkManager each tick: the engine's network pressure and fair draw cap. */
     public void applyNetworkState(double pressurePn, int drawCap) {
         this.networkPressurePn = pressurePn;
@@ -163,7 +171,9 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
 
     /** True when the network manager has reported state recently (so a draw cap of 0 is deliberate). */
     public boolean isNetworkFresh() {
-        return level != null && level.getGameTime() - networkGameTime <= NETWORK_DECAY_TICKS;
+        return level != null
+                && networkGameTime != Long.MIN_VALUE
+                && level.getGameTime() - networkGameTime <= NETWORK_DECAY_TICKS;
     }
 
     private boolean networkFresh() {

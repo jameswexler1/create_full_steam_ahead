@@ -266,7 +266,7 @@ public final class SteamNetworkManager {
         }
     }
 
-    /** Drains up to {@code amount} mB of steam from the network for venting: outlet buffers first, then tanks. */
+    /** Drains up to {@code amount} mB of steam from the network for venting: outlets, then tanks, then inlets. */
     private static int drainFromNetwork(Level level, Network network, int amount) {
         int remaining = amount;
         for (BoilerOutletBlockEntity outlet : network.outlets) {
@@ -280,11 +280,17 @@ public final class SteamNetworkManager {
                 break;
             }
             if (level.getBlockEntity(tankPos) instanceof FluidTankBlockEntity tank) {
-                FluidStack drained = tank.getTankInventory().drain(remaining, IFluidHandler.FluidAction.EXECUTE);
-                if (drained.is(ModFluids.STEAM.get())) {
-                    remaining -= drained.getAmount();
-                }
+                // Drain a steam-typed stack so no other fluid can ever be removed by accident.
+                FluidStack drained = tank.getTankInventory()
+                        .drain(new FluidStack(ModFluids.STEAM.get(), remaining), IFluidHandler.FluidAction.EXECUTE);
+                remaining -= drained.getAmount();
             }
+        }
+        for (SteamInletBlockEntity inlet : network.inlets) {
+            if (remaining <= 0) {
+                break;
+            }
+            remaining -= inlet.drainSteam(remaining);
         }
         return amount - remaining;
     }
