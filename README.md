@@ -66,7 +66,7 @@ pressure pN/m^2 = gasConstant * storedSteamMb * temperatureK / networkVolumeM3
 - Multiple `boiler_outlet` blocks on one boiler split one shared boiler budget and cannot duplicate steam.
 - Passive Create Fluid Tanks add pressure volume from their configured fluid capacity, so larger storage actually buffers pressure.
 - Create fluid valves block steam pressure traversal. Closed valves isolate pressure instead of leaking or bypassing steam.
-- Open pipe ends and unconnected outlets act as atmospheric relief. Broken pipe ends drain toward `steamPhysics.openPipeTargetPressure` (`0 pN/m²` by default) before burst checks.
+- Open pipe ends and unconnected outlets act as atmospheric relief. Broken pipe ends drain toward `steamPhysics.openPipeTargetPressure` (`0 pN/m²` by default); when smoothing is enabled, both stored steam and engine output fall along the same pressure curve instead of snapping off instantly.
 - Overpressure warns at `1.5 MpN/m²` and bursts at `2.5 MpN/m²`. A burst is deduped per physical boiler, depressurizes the whole connected steam network, and uses `12.0 + 0.45 * networkVolume` explosion power capped at `36.0`.
 - Direct compact engines still work, but remain a simplified compatibility mode. Full pressure storage, venting, and burst behavior belongs to pipe-fed networks.
 

@@ -764,7 +764,7 @@ changing engine balance.
 **Goal**: stored steam in a closed pressure network builds pressure until it vents or explodes.
 
 - [x] `SteamNetworkManager` computes one network pressure from stored steam, temperature, and network volume.
-- [x] Open pipe ends and unconnected outlets vent first. Broken pipe ends drain enough steam to move the network toward the configured atmospheric target before burst checks, not merely a small cosmetic leak amount.
+- [x] Open pipe ends and unconnected outlets vent first. Broken pipe ends drain enough steam to move the network toward the configured atmospheric target before burst checks, following pressure smoothing when enabled so engine output decays with the pressure instead of snapping off.
 - [x] Pressure is recomputed after venting so sufficient relief can prevent a burst.
 - [x] Past `steamPhysics.warnPressure`: status flips to "Overpressure!", with hiss and steam particles at the boiler center on a cadence.
 - [x] Past `steamPhysics.burstPressure`: each physical boiler bursts at most once even if several outlets are attached to it.

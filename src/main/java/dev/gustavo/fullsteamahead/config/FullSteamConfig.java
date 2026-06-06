@@ -167,7 +167,8 @@ public final class FullSteamConfig {
 
         STEAM_VENT_COEFFICIENT = builder
                 .comment("Fallback steam (mB/t) an open pipe end vents at rated pressure (scales with pressure factor).",
-                        "Open pipes also drain stored steam toward openPipeTargetPressure; this remains a minimum/visual scaler.")
+                        "Open pipes also drain stored steam toward openPipeTargetPressure using pressure smoothing when enabled.",
+                        "This remains a visual/damage scaler for leak clouds.")
                 .defineInRange("ventCoefficient", DEFAULT_STEAM_VENT_COEFFICIENT, 0.0D, 1_000_000.0D);
 
         OPEN_PIPE_TARGET_PRESSURE = builder

@@ -15,9 +15,10 @@ order). See `smoothing.md`.
   `networkPressurePn` (no separate state map — the outlet BE already persists/syncs it), eases toward
   target with asymmetric tau (rise 60 / fall 80), divides tau by the emergency divisor when
   `target >= burst * emergencyMultiplier`, and clamps the per-tick move to `maxPressureDeltaPerTick`.
-  Effective pressure drives engine draw/output, warnings, and bursts. Venting still uses the real
-  pre-vent target (open pipes relieve fast regardless of lag). Broken pipe ends drain toward
-  `steamPhysics.openPipeTargetPressure` (`0 pN/m^2` by default). After a burst, members'
+  Effective pressure drives engine draw/output, warnings, and bursts. Broken pipe ends drain stored
+  steam toward `steamPhysics.openPipeTargetPressure` (`0 pN/m^2` by default) using the same smoothing
+  curve, so the physical buffers do not empty instantly while engines still display nonzero pressure.
+  After a burst, members'
   effective pressure is cleared to 0 (`clearEffectivePressure`).
 - **Boiler thermal inertia** (`BoilerOutletBlockEntity.calculateSteamBudget` and
   `PistonHeadBlockEntity.calculateDirectSteamOutput`): pipe-fed boilers use shared manager state keyed
@@ -41,7 +42,7 @@ order). See `smoothing.md`.
 - [ ] Break one active burner -> RPM/SU/pressure decay over seconds, not instantly; replace -> recover over seconds.
 - [ ] Close a valve on a large boiler network -> pressure climbs over seconds (warning window), not 1-2 ticks.
 - [ ] Sealed over-producing network still warns then bursts; with target >= 2x burst it accelerates.
-- [ ] Open a pipe -> pressure collapses toward `openPipeTargetPressure` and relieves fast enough to prevent burst.
+- [ ] Open a pipe -> pressure decays toward `openPipeTargetPressure`; RPM/SU decay with the pressure instead of stopping on the first leak tick.
 - [ ] Add a passive tank -> volume jumps immediately but effective pressure transitions smoothly.
 - [ ] Multiple boilers on one network share one effective pressure; one boiler with multiple outlets does not multiply or temporarily lose production when a new outlet is added.
 - [ ] Display Link + goggle pressures move smoothly and match. Reload mid-transition keeps effective pressure and seeds boiler heat from the current boiler target.

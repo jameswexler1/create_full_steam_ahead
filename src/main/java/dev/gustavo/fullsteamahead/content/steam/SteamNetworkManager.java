@@ -230,39 +230,44 @@ public final class SteamNetworkManager {
                 ? network.temperatureNumerator / network.temperatureWeight
                 : FullSteamConfig.steamTemperatureBaseK();
 
-        // Vent open ends first (relief), using the current pressure to set the vent rate, then recompute
-        // pressure from what is left so an open vent can actually save a network from bursting.
+        // Vent open ends first (relief), then recompute pressure from what is left. The drain target
+        // follows the same pressure smoothing as the engine/display state; otherwise an open pipe
+        // would empty the physical buffers immediately while the shown pressure still falls gradually.
         double prePressure = SteamPhysics.pressurePn(network.storedMb, tempK, volume);
         int ventDrained = 0;
+        int ventVisualAmount = 0;
         if (!network.openEnds.isEmpty()) {
-            int ventEach = SteamPhysics.ventMb(prePressure);
+            ventVisualAmount = SteamPhysics.ventMb(prePressure) * network.openEnds.size();
+            double ventTargetPressure = ventTargetPressure(network, prePressure);
             int atmosphericRelief = SteamPhysics.drainToPressureMb(
                     network.storedMb,
                     tempK,
                     volume,
-                    FullSteamConfig.openPipeTargetPressure()
+                    ventTargetPressure
             );
-            int requestedDrain = Math.min(network.storedMb,
-                    Math.max(ventEach * network.openEnds.size(), atmosphericRelief));
+            int requestedDrain = Math.min(network.storedMb, atmosphericRelief);
             if (requestedDrain > 0) {
                 ventDrained = drainFromNetwork(level, network, requestedDrain);
             }
         }
-        if (ventDrained > 0 && level instanceof ServerLevel serverLevel) {
+        if ((ventDrained > 0 || ventVisualAmount > 0) && level instanceof ServerLevel serverLevel) {
             boolean emitCloud = level.getGameTime() % 4L == 0L;
             if (emitCloud) {
-                int cloudAmount = Math.max(1, (int) Math.ceil(ventDrained / (double) network.openEnds.size()));
+                int cloudTotal = Math.max(ventDrained, ventVisualAmount);
+                int cloudAmount = Math.max(1, (int) Math.ceil(cloudTotal / (double) network.openEnds.size()));
                 for (OpenEnd end : network.openEnds) {
                     emitVentCloud(serverLevel, end, cloudAmount);
                 }
             }
         }
         network.storedMb = Math.max(0, network.storedMb - ventDrained);
-        boolean venting = ventDrained > 0;
+        boolean venting = ventDrained > 0 || ventVisualAmount > 0;
 
         // Target = live ideal-gas pressure from real steam; effective = smoothed value gameplay sees.
+        // When venting is active, the physical drain target was already smoothed, so do not smooth
+        // the result a second time.
         double target = SteamPhysics.pressurePn(network.storedMb, tempK, volume);
-        double effective = smoothEffectivePressure(network, target);
+        double effective = !network.openEnds.isEmpty() ? target : smoothEffectivePressure(network, target);
 
         // Only inlets backed by a working engine demand steam; others just buffer it (storage).
         List<SteamInletBlockEntity> engines = new ArrayList<>();
@@ -324,10 +329,30 @@ public final class SteamNetworkManager {
         if (!FullSteamConfig.steamSmoothingEnabled()) {
             return target;
         }
+        return smoothPressure(previousEffectivePressure(network), target);
+    }
+
+    private static double previousEffectivePressure(Network network) {
         double prevEffective = 0.0D;
         for (BoilerOutletBlockEntity outlet : network.outlets) {
             prevEffective = Math.max(prevEffective, outlet.getNetworkPressurePn());
         }
+        return prevEffective;
+    }
+
+    private static double ventTargetPressure(Network network, double prePressure) {
+        double target = FullSteamConfig.openPipeTargetPressure();
+        if (!FullSteamConfig.steamSmoothingEnabled()) {
+            return target;
+        }
+        double current = previousEffectivePressure(network);
+        if (current <= 0.0D) {
+            current = prePressure;
+        }
+        return smoothPressure(current, target);
+    }
+
+    private static double smoothPressure(double prevEffective, double target) {
         double tau = target > prevEffective
                 ? FullSteamConfig.pressureRiseTauTicks()
                 : FullSteamConfig.pressureFallTauTicks();
