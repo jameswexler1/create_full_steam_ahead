@@ -14,10 +14,10 @@ import net.minecraft.util.Mth;
  */
 public final class SteamPhysics {
 
-    /** Steam temperature (Kelvin) from water-gated usable heat units. */
-    public static double temperatureK(int usableHeatUnits) {
+    /** Steam temperature (Kelvin) from water-gated usable heat units (fractional from smoothing). */
+    public static double temperatureK(double usableHeatUnits) {
         double base = FullSteamConfig.steamTemperatureBaseK();
-        if (usableHeatUnits <= 0) {
+        if (usableHeatUnits <= 0.0D) {
             return base;
         }
         return base + usableHeatUnits * FullSteamConfig.steamTemperaturePerHeatK();
@@ -32,11 +32,11 @@ public final class SteamPhysics {
     }
 
     /** Steam boiled per tick by a boiler: usable heat * height * steamPerHeatUnit (10 mB/t per unit). */
-    public static int productionMb(int usableHeatUnits, int boilerHeight) {
-        if (usableHeatUnits <= 0 || boilerHeight <= 0) {
+    public static int productionMb(double usableHeatUnits, int boilerHeight) {
+        if (usableHeatUnits <= 0.0D || boilerHeight <= 0) {
             return 0;
         }
-        return usableHeatUnits * boilerHeight * FullSteamConfig.steamPerHeatUnit();
+        return (int) Math.floor(usableHeatUnits * boilerHeight * FullSteamConfig.steamPerHeatUnit());
     }
 
     /** Steam (mB/t) one engine wants at a given pressure: full flow scaled by the pressure factor. */
@@ -93,6 +93,18 @@ public final class SteamPhysics {
         double power = FullSteamConfig.overpressureBasePower()
                 + FullSteamConfig.overpressurePowerPerVolume() * volumeM3;
         return (float) Math.min(FullSteamConfig.overpressureMaxPower(), power);
+    }
+
+    /**
+     * First-order (exponential) approach of {@code current} toward {@code target} over a time constant
+     * {@code tauTicks}. After one tau the value has moved ~63% of the way. tau &lt;= 0 snaps instantly.
+     */
+    public static double approachExp(double current, double target, double tauTicks) {
+        if (tauTicks <= 0.0D) {
+            return target;
+        }
+        double alpha = 1.0D - Math.exp(-1.0D / tauTicks);
+        return current + (target - current) * alpha;
     }
 
     /** Square Create Fluid Tank volume in blocks (m^3). */

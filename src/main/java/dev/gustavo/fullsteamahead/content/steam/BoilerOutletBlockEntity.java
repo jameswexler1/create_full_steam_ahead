@@ -58,6 +58,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     private static final String NETWORK_CONSUMED_KEY = "NetworkConsumed";
     private static final String NETWORK_VOLUME_KEY = "NetworkVolume";
     private static final String NETWORK_ENGINES_KEY = "NetworkEngines";
+    private static final String EFFECTIVE_HEAT_KEY = "EffectiveHeat";
     private static final String STATUS_KEY = "Status";
 
     private final FluidTank steamBuffer = new FluidTank(BUFFER_CAPACITY, stack -> stack.is(ModFluids.STEAM.get())) {
@@ -80,6 +81,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     private int boilerVolume;
     private int boilerTemperatureK;
     private boolean lit;
+    private double effectiveHeat;
     private double networkPressurePn;
     private boolean networkVenting;
     private boolean networkWarn;
@@ -300,17 +302,29 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         boilerVolume = volume;
 
         // Usable heat = burner heat (normal=1, cake=2) capped by water; production scales with height.
-        int usableHeat = FullSteamBoilerIntegration.usableHeatUnits(boiler);
-        boilerTemperatureK = (int) Math.round(SteamPhysics.temperatureK(usableHeat));
-        lit = usableHeat > 0;
+        int targetHeat = FullSteamBoilerIntegration.usableHeatUnits(boiler);
+        lit = targetHeat > 0;
+
+        // Boiler thermal inertia: heat eases toward the target (firing/breaking burners is gradual),
+        // but a dry boiler (no water) cools fast so it can't keep producing.
+        if (FullSteamConfig.thermalInertiaEnabled()) {
+            boolean dry = data.getMaxHeatLevelForWaterSupply() <= 0;
+            double tau = targetHeat >= effectiveHeat
+                    ? FullSteamConfig.heatUpTauTicks()
+                    : dry ? FullSteamConfig.dryBoilerCoolDownTauTicks() : FullSteamConfig.coolDownTauTicks();
+            effectiveHeat = SteamPhysics.approachExp(effectiveHeat, targetHeat, tau);
+        } else {
+            effectiveHeat = targetHeat;
+        }
+        boilerTemperatureK = (int) Math.round(SteamPhysics.temperatureK(effectiveHeat));
 
         int outlets = FullSteamBoilerIntegration.countAttachedOutlets(boiler);
-        if (!lit) {
+        if (!lit && effectiveHeat <= 0.0D) {
             return SteamBudget.withOutlets(outlets);
         }
 
         int height = Math.max(1, boiler.getHeight());
-        int totalProductionMb = SteamPhysics.productionMb(usableHeat, height);
+        int totalProductionMb = SteamPhysics.productionMb(effectiveHeat, height);
         if (totalProductionMb <= 0 || outlets <= 0) {
             return SteamBudget.withOutlets(outlets);
         }
@@ -364,6 +378,11 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
 
     public double getNetworkPressurePn() {
         return networkPressurePn;
+    }
+
+    /** Resets the smoothed (effective) network pressure to 0, e.g. right after a burst dump. */
+    public void clearEffectivePressure() {
+        networkPressurePn = 0.0D;
     }
 
     public int getNetworkProductionRate() {
@@ -888,6 +907,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         tag.putInt(NETWORK_CONSUMED_KEY, networkConsumedRate);
         tag.putInt(NETWORK_VOLUME_KEY, networkVolume);
         tag.putInt(NETWORK_ENGINES_KEY, networkEngines);
+        tag.putDouble(EFFECTIVE_HEAT_KEY, effectiveHeat);
         tag.putString(STATUS_KEY, status);
     }
 
@@ -908,6 +928,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         networkConsumedRate = tag.getInt(NETWORK_CONSUMED_KEY);
         networkVolume = tag.getInt(NETWORK_VOLUME_KEY);
         networkEngines = tag.getInt(NETWORK_ENGINES_KEY);
+        effectiveHeat = tag.getDouble(EFFECTIVE_HEAT_KEY);
         status = tag.contains(STATUS_KEY) ? tag.getString(STATUS_KEY) : "Missing boiler";
     }
 

@@ -31,6 +31,17 @@ public final class FullSteamConfig {
     private static final double DEFAULT_STEAM_VENT_COEFFICIENT = 120.0D;
     private static final int DEFAULT_STEAM_BUFFER_CAP_MB = 256_000;
 
+    private static final boolean DEFAULT_SMOOTHING_ENABLED = true;
+    private static final double DEFAULT_PRESSURE_RISE_TAU_TICKS = 60.0D;
+    private static final double DEFAULT_PRESSURE_FALL_TAU_TICKS = 80.0D;
+    private static final double DEFAULT_MAX_PRESSURE_DELTA_PER_TICK = 25_000.0D;
+    private static final boolean DEFAULT_THERMAL_INERTIA_ENABLED = true;
+    private static final double DEFAULT_HEAT_UP_TAU_TICKS = 80.0D;
+    private static final double DEFAULT_COOL_DOWN_TAU_TICKS = 160.0D;
+    private static final double DEFAULT_DRY_BOILER_COOL_DOWN_TAU_TICKS = 20.0D;
+    private static final double DEFAULT_EMERGENCY_PRESSURE_MULTIPLIER = 2.0D;
+    private static final double DEFAULT_EMERGENCY_PRESSURE_TAU_DIVISOR = 3.0D;
+
     private static final boolean DEFAULT_OVERPRESSURE_ENABLED = true;
     private static final double DEFAULT_OVERPRESSURE_BASE_POWER = 12.0D;
     private static final double DEFAULT_OVERPRESSURE_POWER_PER_VOLUME = 0.45D;
@@ -62,6 +73,16 @@ public final class FullSteamConfig {
     private static final ModConfigSpec.DoubleValue STEAM_MAX_RPM;
     private static final ModConfigSpec.DoubleValue STEAM_VENT_COEFFICIENT;
     private static final ModConfigSpec.IntValue STEAM_BUFFER_CAP_MB;
+    private static final ModConfigSpec.BooleanValue SMOOTHING_ENABLED;
+    private static final ModConfigSpec.DoubleValue PRESSURE_RISE_TAU_TICKS;
+    private static final ModConfigSpec.DoubleValue PRESSURE_FALL_TAU_TICKS;
+    private static final ModConfigSpec.DoubleValue MAX_PRESSURE_DELTA_PER_TICK;
+    private static final ModConfigSpec.BooleanValue THERMAL_INERTIA_ENABLED;
+    private static final ModConfigSpec.DoubleValue HEAT_UP_TAU_TICKS;
+    private static final ModConfigSpec.DoubleValue COOL_DOWN_TAU_TICKS;
+    private static final ModConfigSpec.DoubleValue DRY_BOILER_COOL_DOWN_TAU_TICKS;
+    private static final ModConfigSpec.DoubleValue EMERGENCY_PRESSURE_MULTIPLIER;
+    private static final ModConfigSpec.DoubleValue EMERGENCY_PRESSURE_TAU_DIVISOR;
     private static final ModConfigSpec.BooleanValue OVERPRESSURE_ENABLED;
     private static final ModConfigSpec.DoubleValue OVERPRESSURE_BASE_POWER;
     private static final ModConfigSpec.DoubleValue OVERPRESSURE_POWER_PER_VOLUME;
@@ -150,6 +171,52 @@ public final class FullSteamConfig {
         STEAM_BUFFER_CAP_MB = builder
                 .comment("Maximum steam (mB) a boiler outlet vessel stores. High enough that pressure can reach burst.")
                 .defineInRange("bufferCapMb", DEFAULT_STEAM_BUFFER_CAP_MB, 1, 1_000_000_000);
+
+        builder.pop();
+
+        builder.comment("Smoothing / inertia. Stored steam mass and volume stay real; only the applied",
+                        "pressure and boiler heat ease toward their live targets so changes feel gradual.")
+                .push("steamSmoothing");
+
+        SMOOTHING_ENABLED = builder
+                .comment("Master switch. When false, pressure and heat apply instantly (old behavior).")
+                .define("enabled", DEFAULT_SMOOTHING_ENABLED);
+
+        PRESSURE_RISE_TAU_TICKS = builder
+                .comment("Time constant (ticks) for effective network pressure rising toward target (60 = 3 s).")
+                .defineInRange("pressureRiseTauTicks", DEFAULT_PRESSURE_RISE_TAU_TICKS, 0.0D, 100_000.0D);
+
+        PRESSURE_FALL_TAU_TICKS = builder
+                .comment("Time constant (ticks) for effective network pressure falling toward target (80 = 4 s).")
+                .defineInRange("pressureFallTauTicks", DEFAULT_PRESSURE_FALL_TAU_TICKS, 0.0D, 100_000.0D);
+
+        MAX_PRESSURE_DELTA_PER_TICK = builder
+                .comment("Safety clamp: maximum pN/m^2 the effective pressure may move in one tick.")
+                .defineInRange("maxPressureDeltaPerTick", DEFAULT_MAX_PRESSURE_DELTA_PER_TICK, 0.0D, 1.0e12D);
+
+        THERMAL_INERTIA_ENABLED = builder
+                .comment("Whether boiler heat ramps over time (firing/breaking burners is gradual).")
+                .define("thermalInertiaEnabled", DEFAULT_THERMAL_INERTIA_ENABLED);
+
+        HEAT_UP_TAU_TICKS = builder
+                .comment("Time constant (ticks) for boiler heat rising when fired (80 = 4 s).")
+                .defineInRange("heatUpTauTicks", DEFAULT_HEAT_UP_TAU_TICKS, 0.0D, 100_000.0D);
+
+        COOL_DOWN_TAU_TICKS = builder
+                .comment("Time constant (ticks) for boiler heat falling when burners are removed (160 = 8 s).")
+                .defineInRange("coolDownTauTicks", DEFAULT_COOL_DOWN_TAU_TICKS, 0.0D, 100_000.0D);
+
+        DRY_BOILER_COOL_DOWN_TAU_TICKS = builder
+                .comment("Faster heat falloff (ticks) when water runs out, so a dry boiler cannot keep producing (20 = 1 s).")
+                .defineInRange("dryBoilerCoolDownTauTicks", DEFAULT_DRY_BOILER_COOL_DOWN_TAU_TICKS, 0.0D, 100_000.0D);
+
+        EMERGENCY_PRESSURE_MULTIPLIER = builder
+                .comment("If target pressure exceeds burst pressure times this, effective pressure catches up faster.")
+                .defineInRange("emergencyPressureMultiplier", DEFAULT_EMERGENCY_PRESSURE_MULTIPLIER, 1.0D, 1_000.0D);
+
+        EMERGENCY_PRESSURE_TAU_DIVISOR = builder
+                .comment("Rise time constant is divided by this during emergency overpressure (faster catch-up).")
+                .defineInRange("emergencyPressureTauDivisor", DEFAULT_EMERGENCY_PRESSURE_TAU_DIVISOR, 1.0D, 1_000.0D);
 
         builder.pop();
 
@@ -280,6 +347,46 @@ public final class FullSteamConfig {
 
     public static int steamBufferCapMb() {
         return loaded() ? STEAM_BUFFER_CAP_MB.get() : DEFAULT_STEAM_BUFFER_CAP_MB;
+    }
+
+    public static boolean steamSmoothingEnabled() {
+        return !loaded() || SMOOTHING_ENABLED.get();
+    }
+
+    public static double pressureRiseTauTicks() {
+        return loaded() ? PRESSURE_RISE_TAU_TICKS.get() : DEFAULT_PRESSURE_RISE_TAU_TICKS;
+    }
+
+    public static double pressureFallTauTicks() {
+        return loaded() ? PRESSURE_FALL_TAU_TICKS.get() : DEFAULT_PRESSURE_FALL_TAU_TICKS;
+    }
+
+    public static double maxPressureDeltaPerTick() {
+        return loaded() ? MAX_PRESSURE_DELTA_PER_TICK.get() : DEFAULT_MAX_PRESSURE_DELTA_PER_TICK;
+    }
+
+    public static boolean thermalInertiaEnabled() {
+        return steamSmoothingEnabled() && (!loaded() || THERMAL_INERTIA_ENABLED.get());
+    }
+
+    public static double heatUpTauTicks() {
+        return loaded() ? HEAT_UP_TAU_TICKS.get() : DEFAULT_HEAT_UP_TAU_TICKS;
+    }
+
+    public static double coolDownTauTicks() {
+        return loaded() ? COOL_DOWN_TAU_TICKS.get() : DEFAULT_COOL_DOWN_TAU_TICKS;
+    }
+
+    public static double dryBoilerCoolDownTauTicks() {
+        return loaded() ? DRY_BOILER_COOL_DOWN_TAU_TICKS.get() : DEFAULT_DRY_BOILER_COOL_DOWN_TAU_TICKS;
+    }
+
+    public static double emergencyPressureMultiplier() {
+        return loaded() ? EMERGENCY_PRESSURE_MULTIPLIER.get() : DEFAULT_EMERGENCY_PRESSURE_MULTIPLIER;
+    }
+
+    public static double emergencyPressureTauDivisor() {
+        return loaded() ? EMERGENCY_PRESSURE_TAU_DIVISOR.get() : DEFAULT_EMERGENCY_PRESSURE_TAU_DIVISOR;
     }
 
     public static boolean overpressureEnabled() {

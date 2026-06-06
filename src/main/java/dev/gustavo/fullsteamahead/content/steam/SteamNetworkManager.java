@@ -9,6 +9,7 @@ import dev.gustavo.fullsteamahead.registry.ModFluids;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -256,7 +257,9 @@ public final class SteamNetworkManager {
         network.storedMb = Math.max(0, network.storedMb - ventDrained);
         boolean venting = ventDrained > 0;
 
-        double pressure = SteamPhysics.pressurePn(network.storedMb, tempK, volume);
+        // Target = live ideal-gas pressure from real steam; effective = smoothed value gameplay sees.
+        double target = SteamPhysics.pressurePn(network.storedMb, tempK, volume);
+        double effective = smoothEffectivePressure(network, target);
 
         // Only inlets backed by a working engine demand steam; others just buffer it (storage).
         List<SteamInletBlockEntity> engines = new ArrayList<>();
@@ -267,7 +270,7 @@ public final class SteamNetworkManager {
         }
 
         // Fair allocation: every engine requests fullFlow * pressureFactor; if short, split evenly.
-        int requestedEach = SteamPhysics.requestedFlowMb(pressure);
+        int requestedEach = SteamPhysics.requestedFlowMb(effective);
         int engineCount = engines.size();
         int totalRequested = requestedEach * engineCount;
         int perEngineCap = requestedEach;
@@ -279,14 +282,14 @@ public final class SteamNetworkManager {
             consumedMb += inlet.getDisplayConsumedSteamMb();
         }
 
-        boolean burst = FullSteamConfig.overpressureEnabled() && pressure >= FullSteamConfig.steamBurstPressure();
-        boolean warn = pressure >= FullSteamConfig.steamWarnPressure();
+        boolean burst = FullSteamConfig.overpressureEnabled() && effective >= FullSteamConfig.steamBurstPressure();
+        boolean warn = effective >= FullSteamConfig.steamWarnPressure();
 
         for (SteamInletBlockEntity inlet : network.inlets) {
-            inlet.applyNetworkState(pressure, engines.contains(inlet) ? perEngineCap : 0);
+            inlet.applyNetworkState(effective, engines.contains(inlet) ? perEngineCap : 0);
         }
         for (BoilerOutletBlockEntity outlet : network.outlets) {
-            outlet.applyNetworkState(pressure, venting, warn, network.productionMb, (int) Math.round(volume),
+            outlet.applyNetworkState(effective, venting, warn, network.productionMb, (int) Math.round(volume),
                     engineCount, consumedMb);
         }
 
@@ -303,7 +306,38 @@ public final class SteamNetworkManager {
             // ...and the whole network depressurizes so it cannot re-burst every tick.
             drainFromNetwork(level, network, network.storedMb);
             network.storedMb = 0;
+            for (BoilerOutletBlockEntity outlet : network.outlets) {
+                outlet.clearEffectivePressure();
+            }
         }
+    }
+
+    /**
+     * Eases the network's effective pressure toward the live target (first-order). The previous
+     * effective is read back from the member outlets (which persist it), so no separate state map is
+     * needed. Catches up faster during emergency overpressure so smoothing can't hide a runaway.
+     */
+    private static double smoothEffectivePressure(Network network, double target) {
+        if (!FullSteamConfig.steamSmoothingEnabled()) {
+            return target;
+        }
+        double prevEffective = 0.0D;
+        for (BoilerOutletBlockEntity outlet : network.outlets) {
+            prevEffective = Math.max(prevEffective, outlet.getNetworkPressurePn());
+        }
+        double tau = target > prevEffective
+                ? FullSteamConfig.pressureRiseTauTicks()
+                : FullSteamConfig.pressureFallTauTicks();
+        double emergency = FullSteamConfig.steamBurstPressure() * FullSteamConfig.emergencyPressureMultiplier();
+        if (target >= emergency) {
+            tau /= Math.max(1.0D, FullSteamConfig.emergencyPressureTauDivisor());
+        }
+        double effective = SteamPhysics.approachExp(prevEffective, target, tau);
+        double maxDelta = FullSteamConfig.maxPressureDeltaPerTick();
+        if (maxDelta > 0.0D) {
+            effective = Mth.clamp(effective, prevEffective - maxDelta, prevEffective + maxDelta);
+        }
+        return Math.max(0.0D, effective);
     }
 
     /** Drains up to {@code amount} mB of steam from the network for venting: outlets, then tanks, then inlets. */

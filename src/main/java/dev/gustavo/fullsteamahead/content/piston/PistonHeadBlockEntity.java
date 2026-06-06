@@ -50,6 +50,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private static final String GENERATED_SPEED_KEY = "GeneratedSpeed";
     private static final String GENERATED_CAPACITY_KEY = "GeneratedCapacity";
     private static final String PRESSURE_PN_KEY = "PressurePn";
+    private static final String EFFECTIVE_HEAT_KEY = "EffectiveHeat";
     private static final String WATER_SUPPLY_KEY = "WaterSupply";
     private static final String SOURCE_MODE_KEY = "SourceMode";
     private static final String STEAM_CONSUMED_KEY = "SteamConsumed";
@@ -79,6 +80,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private float generatedSpeed;
     private float generatedCapacitySu;
     private float pressurePn;
+    private double effectiveHeat;
     private boolean hasWaterSupply;
     private SourceMode sourceMode = SourceMode.NONE;
     private int steamConsumedRate;
@@ -489,9 +491,21 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         boolean hasWater = data.getMaxHeatLevelForWaterSupply() > 0;
 
         // Direct/compact mode is an implicit one-boiler network: supply = production, demand = one engine.
-        int usableHeat = FullSteamBoilerIntegration.usableHeatUnits(boiler);
+        int targetHeat = FullSteamBoilerIntegration.usableHeatUnits(boiler);
+        // Boiler thermal inertia (only advanced on the real tick, not on revalidation).
+        if (FullSteamConfig.thermalInertiaEnabled()) {
+            if (execute) {
+                boolean dry = data.getMaxHeatLevelForWaterSupply() <= 0;
+                double tau = targetHeat >= effectiveHeat
+                        ? FullSteamConfig.heatUpTauTicks()
+                        : dry ? FullSteamConfig.dryBoilerCoolDownTauTicks() : FullSteamConfig.coolDownTauTicks();
+                effectiveHeat = SteamPhysics.approachExp(effectiveHeat, targetHeat, tau);
+            }
+        } else {
+            effectiveHeat = targetHeat;
+        }
         int height = Math.max(1, boiler.getHeight());
-        int production = SteamPhysics.productionMb(usableHeat, height);
+        int production = SteamPhysics.productionMb(effectiveHeat, height);
         int fullFlow = FullSteamConfig.steamFullEngineFlowMb();
         int consumed = Math.min(fullFlow, production);
         // Steady-state pressure: rated when the boiler can fully supply one engine, scaling down below that.
@@ -501,7 +515,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         return new SteamOutput(
                 SourceMode.DIRECT_BOILER,
                 burnerHeat.activeBurners(),
-                Math.max(usableHeat, burnerHeat.heatUnits()),
+                Math.max(targetHeat, burnerHeat.heatUnits()),
                 hasWater,
                 consumed,
                 SteamPhysics.su(of),
@@ -820,6 +834,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         tag.putFloat(GENERATED_SPEED_KEY, generatedSpeed);
         tag.putFloat(GENERATED_CAPACITY_KEY, generatedCapacitySu);
         tag.putFloat(PRESSURE_PN_KEY, pressurePn);
+        tag.putDouble(EFFECTIVE_HEAT_KEY, effectiveHeat);
         tag.putBoolean(WATER_SUPPLY_KEY, hasWaterSupply);
         tag.putString(SOURCE_MODE_KEY, sourceMode.name());
         tag.putInt(STEAM_CONSUMED_KEY, steamConsumedRate);
@@ -847,6 +862,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         generatedSpeed = tag.getFloat(GENERATED_SPEED_KEY);
         generatedCapacitySu = tag.getFloat(GENERATED_CAPACITY_KEY);
         pressurePn = tag.getFloat(PRESSURE_PN_KEY);
+        effectiveHeat = tag.getDouble(EFFECTIVE_HEAT_KEY);
         hasWaterSupply = tag.getBoolean(WATER_SUPPLY_KEY);
         sourceMode = SourceMode.byName(tag.getString(SOURCE_MODE_KEY));
         steamConsumedRate = tag.getInt(STEAM_CONSUMED_KEY);
