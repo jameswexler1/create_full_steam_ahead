@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SteamNetworkDisplaySource extends DisplaySource {
+    private static final int LIVE_REFRESH_TICKS = 10;
     private static final String MODE_KEY = "Mode";
     private static final int MODE_FULL_MONITOR = 0;
     private static final int MODE_PRESSURE = 1;
@@ -36,6 +37,11 @@ public class SteamNetworkDisplaySource extends DisplaySource {
             default -> fullMonitorLines(outlet);
         };
         return fitRows(lines, stats);
+    }
+
+    @Override
+    public int getPassiveRefreshTicks() {
+        return LIVE_REFRESH_TICKS;
     }
 
     @Override

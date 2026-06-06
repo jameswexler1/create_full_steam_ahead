@@ -27,6 +27,9 @@ Associated block entity: `boiler_outlet`
 The source is read-only. It reads cached values from `BoilerOutletBlockEntity` and does not tick,
 recalculate, mutate, vent, or move steam.
 
+The source overrides Create's default passive refresh interval from 100 ticks to 10 ticks, so
+pressure and flow telemetry updates roughly twice per second.
+
 ## Modes
 
 The Display Link source configuration stores `Mode`:
