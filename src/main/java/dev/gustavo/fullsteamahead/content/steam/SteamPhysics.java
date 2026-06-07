@@ -92,7 +92,8 @@ public final class SteamPhysics {
     public static float burstPower(double volumeM3) {
         double power = FullSteamConfig.overpressureBasePower()
                 + FullSteamConfig.overpressurePowerPerVolume() * volumeM3;
-        return (float) Math.min(FullSteamConfig.overpressureMaxPower(), power);
+        double capped = Math.min(FullSteamConfig.overpressureMaxPower(), power);
+        return (float) (capped * FullSteamConfig.overpressurePowerScale());
     }
 
     /**

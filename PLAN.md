@@ -773,7 +773,8 @@ changing engine balance.
 - [x] Bursts also send a client-side visual/audio packet for a large steam cloud, layered placeholder boom/hiss sounds, and configurable screen shake.
 - [x] Client burst sound radius is 200 blocks; screen shake radius is 150 blocks.
 - [x] Optional Sable/Aeronautics compat projects simulated-contraption burst effects into world coordinates and damages nearby sublevel blocks locally.
-- [x] `steamOverpressure` config group: enabled, explosion base/per-volume/max power, breaksBlocks, client effect packet radius.
+- [x] Simulated-contraption sublevel damage uses sparse explosion-like drops instead of dropping every destroyed block.
+- [x] `steamOverpressure` config group: enabled, explosion base/per-volume/max power, final power scale, breaksBlocks, client effect packet radius.
 - [x] Client config group: boiler burst visuals, sound volume scale/radius, steam cloud scale, screen shake enable/scale/radius, blast wave speed.
 - [ ] **Steam vent valve block** (future): bleeds surplus on demand / redstone to prevent bursts.
 

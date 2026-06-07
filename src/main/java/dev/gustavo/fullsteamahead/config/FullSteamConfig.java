@@ -47,6 +47,7 @@ public final class FullSteamConfig {
     private static final double DEFAULT_OVERPRESSURE_BASE_POWER = 12.0D;
     private static final double DEFAULT_OVERPRESSURE_POWER_PER_VOLUME = 0.45D;
     private static final double DEFAULT_OVERPRESSURE_MAX_POWER = 36.0D;
+    private static final double DEFAULT_OVERPRESSURE_POWER_SCALE = 0.5D;
     private static final boolean DEFAULT_OVERPRESSURE_BREAKS_BLOCKS = true;
     private static final double DEFAULT_OVERPRESSURE_EFFECT_RADIUS = 200.0D;
 
@@ -90,6 +91,7 @@ public final class FullSteamConfig {
     private static final ModConfigSpec.DoubleValue OVERPRESSURE_BASE_POWER;
     private static final ModConfigSpec.DoubleValue OVERPRESSURE_POWER_PER_VOLUME;
     private static final ModConfigSpec.DoubleValue OVERPRESSURE_MAX_POWER;
+    private static final ModConfigSpec.DoubleValue OVERPRESSURE_POWER_SCALE;
     private static final ModConfigSpec.BooleanValue OVERPRESSURE_BREAKS_BLOCKS;
     private static final ModConfigSpec.DoubleValue OVERPRESSURE_EFFECT_RADIUS;
     private static final ModConfigSpec.BooleanValue STEAM_LEAK_DAMAGE_ENABLED;
@@ -248,6 +250,11 @@ public final class FullSteamConfig {
         OVERPRESSURE_MAX_POWER = builder
                 .comment("Upper cap on explosion power regardless of system size.")
                 .defineInRange("explosionMaxPower", DEFAULT_OVERPRESSURE_MAX_POWER, 0.0D, 1_000.0D);
+
+        OVERPRESSURE_POWER_SCALE = builder
+                .comment("Final multiplier applied to boiler burst explosion power.",
+                        "Default 0.5 halves the physical blast radius while preserving the old base/per-volume tuning curve.")
+                .defineInRange("explosionPowerScale", DEFAULT_OVERPRESSURE_POWER_SCALE, 0.0D, 100.0D);
 
         OVERPRESSURE_BREAKS_BLOCKS = builder
                 .comment("Whether the burst explosion destroys blocks (false = entity damage only).")
@@ -421,6 +428,10 @@ public final class FullSteamConfig {
 
     public static double overpressureMaxPower() {
         return loaded() ? OVERPRESSURE_MAX_POWER.get() : DEFAULT_OVERPRESSURE_MAX_POWER;
+    }
+
+    public static double overpressurePowerScale() {
+        return loaded() ? OVERPRESSURE_POWER_SCALE.get() : DEFAULT_OVERPRESSURE_POWER_SCALE;
     }
 
     public static boolean overpressureBreaksBlocks() {

@@ -65,7 +65,8 @@ public final class SableBurstCompat {
                     if (!level.isLoaded(mutable) || !shouldDamage(level, mutable, center, radius, seed)) {
                         continue;
                     }
-                    level.destroyBlock(mutable.immutable(), true);
+                    BlockPos pos = mutable.immutable();
+                    level.destroyBlock(pos, shouldDrop(pos, center, radius, seed));
                 }
             }
         }
@@ -95,6 +96,18 @@ public final class SableBurstCompat {
         double normalized = distance / Math.max(1.0D, radius);
         double chance = Mth.clamp(1.05D - normalized * 0.92D, 0.08D, 1.0D);
         return randomUnit(seed ^ 0x9E3779B97F4A7C15L, pos) <= chance;
+    }
+
+    private static boolean shouldDrop(BlockPos pos, Vec3 center, int radius, long seed) {
+        double dx = pos.getX() + 0.5D - center.x;
+        double dy = pos.getY() + 0.5D - center.y;
+        double dz = pos.getZ() + 0.5D - center.z;
+        double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        double normalized = distance / Math.max(1.0D, radius);
+
+        // Mimic explosion decay: the core is vaporized, while edge damage may occasionally drop salvage.
+        double chance = Mth.clamp((normalized - 0.35D) * 0.24D, 0.0D, 0.12D);
+        return randomUnit(seed ^ 0xD1B54A32D192ED03L, pos) <= chance;
     }
 
     private static double randomUnit(long seed, BlockPos pos) {
