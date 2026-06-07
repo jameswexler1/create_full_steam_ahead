@@ -67,7 +67,8 @@ pressure pN/m^2 = gasConstant * storedSteamMb * temperatureK / networkVolumeM3
 - Passive Create Fluid Tanks add pressure volume from their configured fluid capacity, so larger storage actually buffers pressure.
 - Create fluid valves block steam pressure traversal. Closed valves isolate pressure instead of leaking or bypassing steam.
 - Open pipe ends and unconnected outlets act as atmospheric relief. Broken pipe ends drain toward `steamPhysics.openPipeTargetPressure` (`0 pN/m²` by default); when smoothing is enabled, both stored steam and engine output fall along the same pressure curve instead of snapping off instantly.
-- Overpressure warns at `1.5 MpN/m²` and bursts at `2.5 MpN/m²`. A burst is deduped per physical boiler, depressurizes the whole connected steam network, uses `12.0 + 0.45 * networkVolume` explosion power capped at `36.0`, and adds a client-side steam cloud, layered boom/hiss sounds, and configurable screen shake.
+- Overpressure warns at `1.5 MpN/m²` and bursts at `2.5 MpN/m²`. A burst is deduped per physical boiler, depressurizes the whole connected steam network, uses `12.0 + 0.45 * networkVolume` explosion power capped at `36.0`, and adds a client-side steam cloud, layered boom/hiss sounds within `200` blocks, and configurable screen shake within `150` blocks.
+- On Sable/Aeronautics simulated contraptions, boiler bursts project the visual/world explosion to real-world coordinates and also apply local randomized damage to nearby sublevel blocks.
 - Direct compact engines still work, but remain a simplified compatibility mode. Full pressure storage, venting, and burst behavior belongs to pipe-fed networks.
 
 Steam remains visible in Create tanks and pipes through a high-visibility tinted vanilla water render path. Unconnected boiler outlets, open pipe ends, running cylinder exhaust, and boiler bursts emit custom translucent steam particles, and leak clouds can scald entities.

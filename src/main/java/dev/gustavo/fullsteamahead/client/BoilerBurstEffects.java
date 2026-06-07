@@ -138,28 +138,35 @@ public final class BoilerBurstEffects {
         }
 
         double distance = player.position().distanceTo(wave.center);
-        double radius = Math.max(32.0D, wave.power * 16.0D);
-        double falloff = Mth.clamp(1.0D - distance / radius, 0.0D, 1.0D);
-        playLayeredSound(level, wave.center, wave.power, falloff);
+        double soundFalloff = falloff(distance, FullSteamClientConfig.burstSoundRadiusBlocks());
+        playLayeredSound(level, wave.center, wave.power, soundFalloff);
 
-        if (FullSteamClientConfig.burstScreenShakeEnabled() && falloff > 0.0D) {
+        double shakeFalloff = falloff(distance, FullSteamClientConfig.burstScreenShakeRadiusBlocks());
+        if (FullSteamClientConfig.burstScreenShakeEnabled() && shakeFalloff > 0.0D) {
             RandomSource random = RandomSource.create(wave.seed);
             float strength = (float) Math.min(
                     8.0D,
-                    (0.45D + wave.power * 0.15D) * falloff * FullSteamClientConfig.burstScreenShakeScale()
+                    (0.45D + wave.power * 0.15D) * shakeFalloff * FullSteamClientConfig.burstScreenShakeScale()
             );
             int duration = Mth.clamp(14 + Math.round(wave.power * 1.4F), 16, 72);
             SHAKES.add(new CameraShake(strength, duration, random.nextFloat() * TWO_PI));
         }
     }
 
+    private static double falloff(double distance, double radius) {
+        if (radius <= 0.0D || distance >= radius) {
+            return 0.0D;
+        }
+        return Mth.clamp(1.0D - distance / radius, 0.0D, 1.0D);
+    }
+
     private static void playLayeredSound(ClientLevel level, Vec3 center, float power, double falloff) {
         double scale = FullSteamClientConfig.burstSoundVolumeScale();
-        if (scale <= 0.0D) {
+        if (scale <= 0.0D || falloff <= 0.0D) {
             return;
         }
 
-        float baseVolume = (float) (Math.max(0.35D, falloff) * scale);
+        float baseVolume = (float) (falloff * scale);
         float boomVolume = (float) Mth.clamp(0.8D + power * 0.09D, 0.8D, 4.5D) * baseVolume;
         float hissVolume = (float) Mth.clamp(1.2D + power * 0.075D, 1.2D, 4.0D) * baseVolume;
         float pitch = (float) Mth.clamp(0.72D + 8.0D / Math.max(16.0D, power + 16.0D), 0.72D, 1.05D);

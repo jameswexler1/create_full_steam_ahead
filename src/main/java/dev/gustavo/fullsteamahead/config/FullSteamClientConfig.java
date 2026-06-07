@@ -12,6 +12,8 @@ public final class FullSteamClientConfig {
     private static final double DEFAULT_BURST_STEAM_CLOUD_SCALE = 1.0D;
     private static final double DEFAULT_BURST_SCREEN_SHAKE_SCALE = 1.0D;
     private static final double DEFAULT_BURST_WAVE_SPEED = 16.0D;
+    private static final double DEFAULT_BURST_SOUND_RADIUS_BLOCKS = 200.0D;
+    private static final double DEFAULT_BURST_SCREEN_SHAKE_RADIUS_BLOCKS = 150.0D;
 
     public static final ModConfigSpec SPEC;
     private static final ModConfigSpec.BooleanValue BURST_EFFECTS_ENABLED;
@@ -20,6 +22,8 @@ public final class FullSteamClientConfig {
     private static final ModConfigSpec.DoubleValue BURST_STEAM_CLOUD_SCALE;
     private static final ModConfigSpec.DoubleValue BURST_SCREEN_SHAKE_SCALE;
     private static final ModConfigSpec.DoubleValue BURST_WAVE_SPEED;
+    private static final ModConfigSpec.DoubleValue BURST_SOUND_RADIUS_BLOCKS;
+    private static final ModConfigSpec.DoubleValue BURST_SCREEN_SHAKE_RADIUS_BLOCKS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -49,6 +53,14 @@ public final class FullSteamClientConfig {
                 .comment("Blocks per tick traveled by the visual blast wave before local sound and shake play.")
                 .defineInRange("waveSpeedBlocksPerTick", DEFAULT_BURST_WAVE_SPEED, 1.0D, 128.0D);
 
+        BURST_SOUND_RADIUS_BLOCKS = builder
+                .comment("Maximum distance in blocks at which boiler burst sounds play.")
+                .defineInRange("soundRadiusBlocks", DEFAULT_BURST_SOUND_RADIUS_BLOCKS, 0.0D, 1024.0D);
+
+        BURST_SCREEN_SHAKE_RADIUS_BLOCKS = builder
+                .comment("Maximum distance in blocks at which boiler burst camera shake applies.")
+                .defineInRange("screenShakeRadiusBlocks", DEFAULT_BURST_SCREEN_SHAKE_RADIUS_BLOCKS, 0.0D, 1024.0D);
+
         builder.pop();
         SPEC = builder.build();
     }
@@ -75,6 +87,14 @@ public final class FullSteamClientConfig {
 
     public static double burstWaveSpeedBlocksPerTick() {
         return loaded() ? BURST_WAVE_SPEED.get() : DEFAULT_BURST_WAVE_SPEED;
+    }
+
+    public static double burstSoundRadiusBlocks() {
+        return loaded() ? BURST_SOUND_RADIUS_BLOCKS.get() : DEFAULT_BURST_SOUND_RADIUS_BLOCKS;
+    }
+
+    public static double burstScreenShakeRadiusBlocks() {
+        return loaded() ? BURST_SCREEN_SHAKE_RADIUS_BLOCKS.get() : DEFAULT_BURST_SCREEN_SHAKE_RADIUS_BLOCKS;
     }
 
     private static boolean loaded() {

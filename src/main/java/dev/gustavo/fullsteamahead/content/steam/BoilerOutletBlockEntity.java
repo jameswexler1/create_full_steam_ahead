@@ -9,6 +9,7 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
 import dev.gustavo.fullsteamahead.compat.create.FullSteamBoilerIntegration;
+import dev.gustavo.fullsteamahead.compat.simulated.SableBurstCompat;
 import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import dev.gustavo.fullsteamahead.network.BoilerBurstPayload;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
@@ -863,8 +864,15 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
             return;
         }
 
-        Vec3 center = boilerCenter(boiler);
+        Vec3 localCenter = boilerCenter(boiler);
         float power = SteamPhysics.burstPower(networkVolumeM3);
+        long seed = serverLevel.random.nextLong();
+        SableBurstCompat.BurstContext burstContext = SableBurstCompat.resolve(boiler, localCenter);
+        if (FullSteamConfig.overpressureBreaksBlocks()) {
+            SableBurstCompat.damageSubLevelBlocks(serverLevel, burstContext, power, seed);
+        }
+
+        Vec3 center = burstContext.worldCenter();
         double effectRadius = FullSteamConfig.overpressureEffectRadius();
         if (effectRadius > 0.0D) {
             PacketDistributor.sendToPlayersNear(
@@ -874,7 +882,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                     center.y,
                     center.z,
                     effectRadius,
-                    new BoilerBurstPayload(center.x, center.y, center.z, power, networkVolumeM3, serverLevel.random.nextLong())
+                    new BoilerBurstPayload(center.x, center.y, center.z, power, networkVolumeM3, seed)
             );
         }
         Level.ExplosionInteraction interaction = FullSteamConfig.overpressureBreaksBlocks()

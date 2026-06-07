@@ -48,7 +48,7 @@ public final class FullSteamConfig {
     private static final double DEFAULT_OVERPRESSURE_POWER_PER_VOLUME = 0.45D;
     private static final double DEFAULT_OVERPRESSURE_MAX_POWER = 36.0D;
     private static final boolean DEFAULT_OVERPRESSURE_BREAKS_BLOCKS = true;
-    private static final double DEFAULT_OVERPRESSURE_EFFECT_RADIUS = 192.0D;
+    private static final double DEFAULT_OVERPRESSURE_EFFECT_RADIUS = 200.0D;
 
     private static final boolean DEFAULT_STEAM_LEAK_DAMAGE_ENABLED = true;
     private static final int DEFAULT_STEAM_LEAK_DAMAGE_INTERVAL = 10;

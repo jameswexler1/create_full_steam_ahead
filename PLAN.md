@@ -771,8 +771,10 @@ changing engine balance.
 - [x] A burst drains/depressurizes the whole connected steam network so pressure does not survive the explosion.
 - [x] Explosion power = `min(maxPower, basePower + powerPerVolume · networkVolume)`, with block-breaking configurable. Defaults are `basePower=12.0`, `powerPerVolume=0.45`, `maxPower=36.0`.
 - [x] Bursts also send a client-side visual/audio packet for a large steam cloud, layered placeholder boom/hiss sounds, and configurable screen shake.
+- [x] Client burst sound radius is 200 blocks; screen shake radius is 150 blocks.
+- [x] Optional Sable/Aeronautics compat projects simulated-contraption burst effects into world coordinates and damages nearby sublevel blocks locally.
 - [x] `steamOverpressure` config group: enabled, explosion base/per-volume/max power, breaksBlocks, client effect packet radius.
-- [x] Client config group: boiler burst visuals, sound volume scale, steam cloud scale, screen shake enable/scale, blast wave speed.
+- [x] Client config group: boiler burst visuals, sound volume scale/radius, steam cloud scale, screen shake enable/scale/radius, blast wave speed.
 - [ ] **Steam vent valve block** (future): bleeds surplus on demand / redstone to prevent bursts.
 
 ### Phase 14: Display Link Pressure Readouts — Implemented (manual verification pending)
