@@ -50,6 +50,7 @@ public final class FullSteamConfig {
     private static final double DEFAULT_OVERPRESSURE_POWER_SCALE = 0.5D;
     private static final boolean DEFAULT_OVERPRESSURE_BREAKS_BLOCKS = true;
     private static final double DEFAULT_OVERPRESSURE_EFFECT_RADIUS = 200.0D;
+    private static final double DEFAULT_OVERPRESSURE_SUBLEVEL_RADIUS = 5.0D;
 
     private static final boolean DEFAULT_STEAM_LEAK_DAMAGE_ENABLED = true;
     private static final int DEFAULT_STEAM_LEAK_DAMAGE_INTERVAL = 10;
@@ -94,6 +95,7 @@ public final class FullSteamConfig {
     private static final ModConfigSpec.DoubleValue OVERPRESSURE_POWER_SCALE;
     private static final ModConfigSpec.BooleanValue OVERPRESSURE_BREAKS_BLOCKS;
     private static final ModConfigSpec.DoubleValue OVERPRESSURE_EFFECT_RADIUS;
+    private static final ModConfigSpec.DoubleValue OVERPRESSURE_SUBLEVEL_RADIUS;
     private static final ModConfigSpec.BooleanValue STEAM_LEAK_DAMAGE_ENABLED;
     private static final ModConfigSpec.IntValue STEAM_LEAK_DAMAGE_INTERVAL;
     private static final ModConfigSpec.DoubleValue STEAM_LEAK_DAMAGE_RADIUS;
@@ -263,6 +265,11 @@ public final class FullSteamConfig {
         OVERPRESSURE_EFFECT_RADIUS = builder
                 .comment("Radius in blocks for sending the custom client-side boiler burst cloud, sound, and shake packet.")
                 .defineInRange("explosionEffectRadius", DEFAULT_OVERPRESSURE_EFFECT_RADIUS, 0.0D, 1024.0D);
+
+        OVERPRESSURE_SUBLEVEL_RADIUS = builder
+                .comment("Local block-damage radius when a boiler bursts inside a Sable contraption sublevel (0 = none).",
+                        "Kept small and decoupled from explosion power so a contraption burst cannot scan a huge cube.")
+                .defineInRange("sublevelDamageRadius", DEFAULT_OVERPRESSURE_SUBLEVEL_RADIUS, 0.0D, 16.0D);
 
         builder.pop();
 
@@ -440,6 +447,10 @@ public final class FullSteamConfig {
 
     public static double overpressureEffectRadius() {
         return loaded() ? OVERPRESSURE_EFFECT_RADIUS.get() : DEFAULT_OVERPRESSURE_EFFECT_RADIUS;
+    }
+
+    public static double overpressureSublevelDamageRadius() {
+        return loaded() ? OVERPRESSURE_SUBLEVEL_RADIUS.get() : DEFAULT_OVERPRESSURE_SUBLEVEL_RADIUS;
     }
 
     public static boolean steamLeakDamageEnabled() {

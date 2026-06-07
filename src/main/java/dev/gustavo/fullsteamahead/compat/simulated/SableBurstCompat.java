@@ -1,14 +1,16 @@
 package dev.gustavo.fullsteamahead.compat.simulated;
 
 import dev.gustavo.fullsteamahead.FullSteamAhead;
+import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.fml.ModList;
 
 import java.lang.reflect.Field;
@@ -22,7 +24,6 @@ import java.lang.reflect.Method;
  * and adds the missing local block-damage pass only when a burst originates inside a sublevel.</p>
  */
 public final class SableBurstCompat {
-    private static final double MAX_LOCAL_DAMAGE_RADIUS = 48.0D;
     private static boolean initialized;
     private static boolean available;
     private static Object helper;
@@ -44,61 +45,62 @@ public final class SableBurstCompat {
     }
 
     public static void damageSubLevelBlocks(ServerLevel level, BurstContext context, float power, long seed) {
-        if (!context.inSubLevel() || power <= 0.0F) {
+        if (!context.inSubLevel()) {
+            return;
+        }
+        double radius = FullSteamConfig.overpressureSublevelDamageRadius();
+        if (radius <= 0.0D) {
             return;
         }
 
-        int radius = Mth.ceil(Mth.clamp(power * 1.5D, 2.0D, MAX_LOCAL_DAMAGE_RADIUS));
+        int r = Mth.ceil(radius);
+        double r2 = radius * radius;
         Vec3 center = context.localCenter();
-        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
-        int minX = Mth.floor(center.x - radius);
-        int minY = Mth.floor(center.y - radius);
-        int minZ = Mth.floor(center.z - radius);
-        int maxX = Mth.floor(center.x + radius);
-        int maxY = Mth.floor(center.y + radius);
-        int maxZ = Mth.floor(center.z + radius);
+        int cx = Mth.floor(center.x), cy = Mth.floor(center.y), cz = Mth.floor(center.z);
+        BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
 
-        for (int x = minX; x <= maxX; x++) {
-            for (int y = minY; y <= maxY; y++) {
-                for (int z = minZ; z <= maxZ; z++) {
-                    mutable.set(x, y, z);
-                    if (!level.isLoaded(mutable) || !shouldDamage(level, mutable, center, radius, seed)) {
+        // Iterate only the bounding cube, but sphere-cull (cheap integer test) BEFORE any world access,
+        // so a contraption burst never scans/queries an enormous volume.
+        for (int dx = -r; dx <= r; dx++) {
+            for (int dy = -r; dy <= r; dy++) {
+                for (int dz = -r; dz <= r; dz++) {
+                    double d2 = dx * dx + dy * dy + dz * dz;
+                    if (d2 > r2) {
                         continue;
                     }
-                    BlockPos pos = mutable.immutable();
-                    level.destroyBlock(pos, shouldDrop(pos, center, radius, seed));
+                    m.set(cx + dx, cy + dy, cz + dz);
+                    if (!level.isLoaded(m)) {
+                        continue;
+                    }
+                    BlockState state = level.getBlockState(m);
+                    if (state.isAir() || !state.getFluidState().isEmpty()) {
+                        continue;
+                    }
+                    BlockPos pos = m.immutable();
+                    double dist = Math.sqrt(d2);
+                    double noise = randomUnit(seed, pos);
+                    if (dist > radius * (0.72D + noise * 0.36D)) {           // irregular edge
+                        continue;
+                    }
+                    double chance = Mth.clamp(1.05D - (dist / radius) * 0.92D, 0.08D, 1.0D);
+                    if (randomUnit(seed ^ 0x9E3779B97F4A7C15L, pos) > chance) {
+                        continue;
+                    }
+                    removeBlockQuiet(level, pos, state, shouldDrop(pos, center, radius, seed));
                 }
             }
         }
     }
 
-    private static boolean shouldDamage(ServerLevel level, BlockPos pos, Vec3 center, int radius, long seed) {
-        BlockState state = level.getBlockState(pos);
-        if (state.isAir()) {
-            return false;
+    /** Removes a block without the per-block break event/particles/sound (the burst sends one client effect). */
+    private static void removeBlockQuiet(ServerLevel level, BlockPos pos, BlockState state, boolean drop) {
+        if (drop) {
+            Block.dropResources(state, level, pos);
         }
-
-        VoxelShape collision = state.getCollisionShape(level, pos);
-        if (!state.getFluidState().isEmpty() && collision.isEmpty()) {
-            return false;
-        }
-
-        double dx = pos.getX() + 0.5D - center.x;
-        double dy = pos.getY() + 0.5D - center.y;
-        double dz = pos.getZ() + 0.5D - center.z;
-        double distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        double noise = randomUnit(seed, pos);
-        double irregularRadius = radius * (0.72D + noise * 0.36D);
-        if (distance > irregularRadius) {
-            return false;
-        }
-
-        double normalized = distance / Math.max(1.0D, radius);
-        double chance = Mth.clamp(1.05D - normalized * 0.92D, 0.08D, 1.0D);
-        return randomUnit(seed ^ 0x9E3779B97F4A7C15L, pos) <= chance;
+        level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
     }
 
-    private static boolean shouldDrop(BlockPos pos, Vec3 center, int radius, long seed) {
+    private static boolean shouldDrop(BlockPos pos, Vec3 center, double radius, long seed) {
         double dx = pos.getX() + 0.5D - center.x;
         double dy = pos.getY() + 0.5D - center.y;
         double dz = pos.getZ() + 0.5D - center.z;
