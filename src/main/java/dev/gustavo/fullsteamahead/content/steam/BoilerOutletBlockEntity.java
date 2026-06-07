@@ -10,6 +10,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.utility.CreateLang;
 import dev.gustavo.fullsteamahead.compat.create.FullSteamBoilerIntegration;
 import dev.gustavo.fullsteamahead.config.FullSteamConfig;
+import dev.gustavo.fullsteamahead.network.BoilerBurstPayload;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModFluids;
 import dev.gustavo.fullsteamahead.registry.ModParticleTypes;
@@ -30,6 +31,7 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -863,6 +865,18 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
 
         Vec3 center = boilerCenter(boiler);
         float power = SteamPhysics.burstPower(networkVolumeM3);
+        double effectRadius = FullSteamConfig.overpressureEffectRadius();
+        if (effectRadius > 0.0D) {
+            PacketDistributor.sendToPlayersNear(
+                    serverLevel,
+                    null,
+                    center.x,
+                    center.y,
+                    center.z,
+                    effectRadius,
+                    new BoilerBurstPayload(center.x, center.y, center.z, power, networkVolumeM3, serverLevel.random.nextLong())
+            );
+        }
         Level.ExplosionInteraction interaction = FullSteamConfig.overpressureBreaksBlocks()
                 ? Level.ExplosionInteraction.BLOCK
                 : Level.ExplosionInteraction.NONE;

@@ -3,6 +3,7 @@ package dev.gustavo.fullsteamahead.client;
 import dev.engine_room.flywheel.api.visualization.VisualizerRegistry;
 import dev.engine_room.flywheel.lib.visualization.SimpleBlockEntityVisualizer;
 import dev.gustavo.fullsteamahead.FullSteamAhead;
+import dev.gustavo.fullsteamahead.client.particle.SteamBurstParticle;
 import dev.gustavo.fullsteamahead.client.particle.SteamLeakParticle;
 import dev.gustavo.fullsteamahead.client.ponder.FullSteamPonderPlugin;
 import dev.gustavo.fullsteamahead.client.render.FullSteamPartialModels;
@@ -21,6 +22,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.neoforged.neoforge.common.NeoForge;
 
 @SuppressWarnings("removal")
 @EventBusSubscriber(modid = FullSteamAhead.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
@@ -30,6 +32,7 @@ public final class FullSteamAheadClient {
         FullSteamAhead.LOGGER.info("Initializing Create: Full Steam Ahead client");
         event.enqueueWork(() -> {
             PonderIndex.addPlugin(new FullSteamPonderPlugin());
+            BoilerBurstEffects.register(NeoForge.EVENT_BUS);
             PistonHeadVisual.register();
             VisualizerRegistry.setVisualizer(
                     ModBlockEntities.POWERED_SHAFT.get(),
@@ -55,6 +58,7 @@ public final class FullSteamAheadClient {
     @SubscribeEvent
     public static void registerParticleFactories(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(ModParticleTypes.STEAM_LEAK.get(), SteamLeakParticle.Provider::new);
+        event.registerSpriteSet(ModParticleTypes.STEAM_BURST.get(), SteamBurstParticle.Provider::new);
     }
 
     private FullSteamAheadClient() {

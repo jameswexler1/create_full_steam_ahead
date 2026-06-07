@@ -15,6 +15,9 @@ public final class ModParticleTypes {
     public static final DeferredHolder<ParticleType<?>, SimpleParticleType> STEAM_LEAK =
             PARTICLE_TYPES.register("steam_leak", () -> new SimpleParticleType(false));
 
+    public static final DeferredHolder<ParticleType<?>, SimpleParticleType> STEAM_BURST =
+            PARTICLE_TYPES.register("steam_burst", () -> new SimpleParticleType(false));
+
     public static void register(IEventBus modEventBus) {
         PARTICLE_TYPES.register(modEventBus);
     }

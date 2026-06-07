@@ -3,10 +3,12 @@ package dev.gustavo.fullsteamahead;
 import com.mojang.logging.LogUtils;
 import dev.gustavo.fullsteamahead.compat.create.CreateMovementCompat;
 import dev.gustavo.fullsteamahead.compat.simulated.SimulatedMovementCompat;
+import dev.gustavo.fullsteamahead.config.FullSteamClientConfig;
 import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import dev.gustavo.fullsteamahead.content.piston.EngineShaftEventHandler;
 import dev.gustavo.fullsteamahead.content.steam.SteamNetworkManager;
 import dev.gustavo.fullsteamahead.content.steam.SteamOpenPipeEffectHandler;
+import dev.gustavo.fullsteamahead.network.ModPackets;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import dev.gustavo.fullsteamahead.registry.ModCapabilities;
@@ -37,9 +39,11 @@ public final class FullSteamAhead {
         ModItems.register(modEventBus);
         ModCreativeTabs.register(modEventBus);
         modEventBus.addListener(ModCapabilities::register);
+        modEventBus.addListener(ModPackets::register);
         modEventBus.addListener(this::commonSetup);
 
         modContainer.registerConfig(ModConfig.Type.SERVER, FullSteamConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.CLIENT, FullSteamClientConfig.SPEC);
 
         LOGGER.info("Initializing Create: Full Steam Ahead");
     }

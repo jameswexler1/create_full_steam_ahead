@@ -1,34 +1,38 @@
 # Boiler Overpressure Verification
 
-Date: 2026-06-05
+Date: 2026-06-07
 
 Implemented:
 
-- `BoilerOutletBlockEntity` accumulates `overpressureMb += max(0, productionRate - pushedRate)` each
-  tick (steam produced but not pushed to a consumer or vented). Bleeds by `reliefMbPerTick` when not
-  over-producing. Engines, open pipe ends, and any vented steam count as pushed -> relieve pressure.
-- Past `warnPressureMb`: status -> "Overpressure!", FIRE_EXTINGUISH hiss + STEAM_LEAK particles at the
-  boiler center every 8 ticks; goggle shows buildup %.
-- Past `burstPressureMb`: explosion at the boiler center, power = min(explosionMaxPower,
-  explosionBasePower + explosionPowerPerVolume * getTotalTankSize()), block-breaking by default. Resets.
-- `steamOverpressure` config (all tunable): enabled, burstPressureMb (60000), warnPressureMb (40000),
-  reliefMbPerTick (120), explosionBasePower (4.0), explosionPowerPerVolume (0.15), explosionMaxPower
-  (12.0), explosionBreaksBlocks (true). NBT-persisted.
+- `SteamNetworkManager` computes one effective pressure per connected steam network from stored steam,
+  temperature, and pressure volume.
+- Open pipe ends and unconnected outlets vent stored steam toward atmospheric pressure before burst
+  checks, so sufficient relief prevents an explosion.
+- Past `steamPhysics.warnPressure`, the outlet reports overpressure and emits warning hiss/steam at the
+  boiler center.
+- Past `steamPhysics.burstPressure`, each physical boiler bursts once, the whole connected network is
+  depressurized, and vanilla explosion gameplay still uses
+  `min(maxPower, basePower + powerPerVolume * networkVolume)`.
+- Phase A polish adds a clientbound boiler burst packet. Nearby clients spawn a large steam cloud,
+  play layered placeholder boom/hiss sounds, and apply distance-delayed configurable camera shake.
+- `steamOverpressure` config covers enabled, explosion base/per-volume/max power, block breaking, and
+  client effect packet radius. Client config covers local visuals, volume, cloud scale, shake scale, and
+  blast wave speed.
 
 Automated checks:
 
-- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`
+- [x] `git diff --check`
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`
 
 Manual runtime checklist:
 
-- [ ] Boiler producing into a closed pipe with no engine builds pressure (goggle %) and eventually
-      explodes, breaking nearby blocks.
-- [ ] Oversized boiler feeding a smaller engine load (consumes < produced) builds and bursts.
-- [ ] Opening a pipe end (steam venting) holds pressure down -> no burst (relief).
-- [ ] Enough engine load to consume all production -> pressure stays at 0, no warning.
-- [ ] Warning phase: hiss + steam particles + "Overpressure!" before the blast.
-- [ ] Bigger boiler -> bigger blast (power scales with tank size, capped at explosionMaxPower).
-- [ ] `enabled=false` -> no buildup, no explosion. `explosionBreaksBlocks=false` -> entity damage only.
-- [ ] Reload mid-buildup: overpressure value persists.
+- [ ] Boiler producing into a closed pipe with no engine builds pressure and eventually bursts.
+- [ ] Burst still breaks/damages blocks according to `steamOverpressure.explosionBreaksBlocks`.
+- [ ] Burst shows a large white steam cloud at the boiler center.
+- [ ] Burst plays louder layered boom/hiss placeholder sounds.
+- [ ] Screen shake happens near the burst, falls off with distance, and respects client config.
+- [ ] Multiple outlets on one boiler still produce one burst/effect, not duplicates.
+- [ ] Multiple separate boilers bursting create separate burst effects.
+- [ ] Opening a pipe end relieves pressure and prevents burst when relief is sufficient.
+- [ ] Enough engine load to consume production keeps pressure below warning/burst.

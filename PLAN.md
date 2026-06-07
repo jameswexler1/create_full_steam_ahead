@@ -770,7 +770,9 @@ changing engine balance.
 - [x] Past `steamPhysics.burstPressure`: each physical boiler bursts at most once even if several outlets are attached to it.
 - [x] A burst drains/depressurizes the whole connected steam network so pressure does not survive the explosion.
 - [x] Explosion power = `min(maxPower, basePower + powerPerVolume · networkVolume)`, with block-breaking configurable. Defaults are `basePower=12.0`, `powerPerVolume=0.45`, `maxPower=36.0`.
-- [x] `steamOverpressure` config group: enabled, explosion base/per-volume/max power, breaksBlocks.
+- [x] Bursts also send a client-side visual/audio packet for a large steam cloud, layered placeholder boom/hiss sounds, and configurable screen shake.
+- [x] `steamOverpressure` config group: enabled, explosion base/per-volume/max power, breaksBlocks, client effect packet radius.
+- [x] Client config group: boiler burst visuals, sound volume scale, steam cloud scale, screen shake enable/scale, blast wave speed.
 - [ ] **Steam vent valve block** (future): bleeds surplus on demand / redstone to prevent bursts.
 
 ### Phase 14: Display Link Pressure Readouts — Implemented (manual verification pending)

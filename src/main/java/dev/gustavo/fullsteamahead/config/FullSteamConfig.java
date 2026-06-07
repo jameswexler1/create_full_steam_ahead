@@ -48,6 +48,7 @@ public final class FullSteamConfig {
     private static final double DEFAULT_OVERPRESSURE_POWER_PER_VOLUME = 0.45D;
     private static final double DEFAULT_OVERPRESSURE_MAX_POWER = 36.0D;
     private static final boolean DEFAULT_OVERPRESSURE_BREAKS_BLOCKS = true;
+    private static final double DEFAULT_OVERPRESSURE_EFFECT_RADIUS = 192.0D;
 
     private static final boolean DEFAULT_STEAM_LEAK_DAMAGE_ENABLED = true;
     private static final int DEFAULT_STEAM_LEAK_DAMAGE_INTERVAL = 10;
@@ -90,6 +91,7 @@ public final class FullSteamConfig {
     private static final ModConfigSpec.DoubleValue OVERPRESSURE_POWER_PER_VOLUME;
     private static final ModConfigSpec.DoubleValue OVERPRESSURE_MAX_POWER;
     private static final ModConfigSpec.BooleanValue OVERPRESSURE_BREAKS_BLOCKS;
+    private static final ModConfigSpec.DoubleValue OVERPRESSURE_EFFECT_RADIUS;
     private static final ModConfigSpec.BooleanValue STEAM_LEAK_DAMAGE_ENABLED;
     private static final ModConfigSpec.IntValue STEAM_LEAK_DAMAGE_INTERVAL;
     private static final ModConfigSpec.DoubleValue STEAM_LEAK_DAMAGE_RADIUS;
@@ -250,6 +252,10 @@ public final class FullSteamConfig {
         OVERPRESSURE_BREAKS_BLOCKS = builder
                 .comment("Whether the burst explosion destroys blocks (false = entity damage only).")
                 .define("explosionBreaksBlocks", DEFAULT_OVERPRESSURE_BREAKS_BLOCKS);
+
+        OVERPRESSURE_EFFECT_RADIUS = builder
+                .comment("Radius in blocks for sending the custom client-side boiler burst cloud, sound, and shake packet.")
+                .defineInRange("explosionEffectRadius", DEFAULT_OVERPRESSURE_EFFECT_RADIUS, 0.0D, 1024.0D);
 
         builder.pop();
 
@@ -419,6 +425,10 @@ public final class FullSteamConfig {
 
     public static boolean overpressureBreaksBlocks() {
         return !loaded() || OVERPRESSURE_BREAKS_BLOCKS.get();
+    }
+
+    public static double overpressureEffectRadius() {
+        return loaded() ? OVERPRESSURE_EFFECT_RADIUS.get() : DEFAULT_OVERPRESSURE_EFFECT_RADIUS;
     }
 
     public static boolean steamLeakDamageEnabled() {
