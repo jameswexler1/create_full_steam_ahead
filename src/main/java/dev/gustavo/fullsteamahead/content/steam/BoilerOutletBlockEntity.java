@@ -868,9 +868,6 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         float power = SteamPhysics.burstPower(networkVolumeM3);
         long seed = serverLevel.random.nextLong();
         SableBurstCompat.BurstContext burstContext = SableBurstCompat.resolve(boiler, localCenter);
-        if (FullSteamConfig.overpressureBreaksBlocks()) {
-            SableBurstCompat.damageSubLevelBlocks(serverLevel, burstContext, power, seed);
-        }
 
         Vec3 center = burstContext.worldCenter();
         double effectRadius = FullSteamConfig.overpressureEffectRadius();
@@ -889,6 +886,12 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                 ? Level.ExplosionInteraction.BLOCK
                 : Level.ExplosionInteraction.NONE;
         serverLevel.explode(null, center.x, center.y, center.z, power, interaction);
+        // Carve only after the projected explosion: Sable's rays damage sublevel blocks themselves
+        // and must meet intact armor first, or the pre-carved hole lets them penetrate far deeper
+        // than an equivalent ground burst.
+        if (FullSteamConfig.overpressureBreaksBlocks()) {
+            SableBurstCompat.damageSubLevelBlocks(serverLevel, burstContext, power, seed);
+        }
     }
 
     private Vec3 boilerCenter(FluidTankBlockEntity boiler) {

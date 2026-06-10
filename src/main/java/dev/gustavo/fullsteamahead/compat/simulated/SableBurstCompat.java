@@ -19,9 +19,12 @@ import java.lang.reflect.Method;
 /**
  * Optional Sable integration for boiler bursts on simulated sublevels.
  *
- * <p>Sable projects vanilla explosions out of sublevels, which is correct for world/entity effects
- * but leaves the moving contraption's stored blocks under-damaged. This class keeps Sable optional
- * and adds the missing local block-damage pass only when a burst originates inside a sublevel.</p>
+ * <p>Sable projects vanilla explosions out of sublevels and already lets their rays damage the
+ * contraption's stored blocks (resistance-aware; one world-space ray step can cross several rotated
+ * sublevel blocks, so dense engine rooms absorb rays quickly and the blast core often survives).
+ * This class keeps Sable optional and adds a bounded local crater pass around the boiler, run
+ * AFTER the projected explosion so its rays meet intact armor first (parity with ground bursts).
+ * Unbreakable and blast-proof blocks survive, mirroring vanilla explosion rules.</p>
  */
 public final class SableBurstCompat {
     private static boolean initialized;
@@ -45,7 +48,7 @@ public final class SableBurstCompat {
     }
 
     public static void damageSubLevelBlocks(ServerLevel level, BurstContext context, float power, long seed) {
-        if (!context.inSubLevel()) {
+        if (!context.inSubLevel() || power <= 0.0F) {
             return;
         }
         double radius = FullSteamConfig.overpressureSublevelDamageRadius();
@@ -76,10 +79,19 @@ public final class SableBurstCompat {
                     if (state.isAir() || !state.getFluidState().isEmpty()) {
                         continue;
                     }
+                    if (state.getDestroySpeed(level, m) < 0.0F) {            // bedrock, barriers, ...
+                        continue;
+                    }
                     BlockPos pos = m.immutable();
                     double dist = Math.sqrt(d2);
                     double noise = randomUnit(seed, pos);
                     if (dist > radius * (0.72D + noise * 0.36D)) {           // irregular edge
+                        continue;
+                    }
+                    // Vanilla-style decay: blast power fades toward the carve edge and each block's
+                    // explosion resistance can absorb it, so obsidian-grade armor survives intact.
+                    double effectivePower = power * (1.0D - dist / radius);
+                    if ((state.getBlock().getExplosionResistance() + 0.3D) * 0.3D > effectivePower) {
                         continue;
                     }
                     double chance = Mth.clamp(1.05D - (dist / radius) * 0.92D, 0.08D, 1.0D);
@@ -92,12 +104,16 @@ public final class SableBurstCompat {
         }
     }
 
-    /** Removes a block without the per-block break event/particles/sound (the burst sends one client effect). */
+    /**
+     * Removes a block without the per-block break event/particles/sound (the burst sends one client
+     * effect; the old lag came from the unbounded scan and per-block break events). Neighbor and
+     * shape updates stay on so attached blocks pop and pipe/kinetic neighbors re-evaluate.
+     */
     private static void removeBlockQuiet(ServerLevel level, BlockPos pos, BlockState state, boolean drop) {
         if (drop) {
             Block.dropResources(state, level, pos);
         }
-        level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+        level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
     }
 
     private static boolean shouldDrop(BlockPos pos, Vec3 center, double radius, long seed) {
