@@ -84,6 +84,58 @@ public final class SteamNetworkManager {
         }
     }
 
+    public static boolean ruptureBoilerFromProjectile(ServerLevel level, FluidTankBlockEntity hitTank) {
+        if (level == null || hitTank == null || !FullSteamConfig.overpressureEnabled()) {
+            return false;
+        }
+
+        FluidTankBlockEntity boiler = controllerOrSelf(hitTank);
+        BlockPos boilerPos = boiler.getBlockPos();
+        Set<BlockPos> outlets = OUTLETS.get(level);
+        if (outlets == null || outlets.isEmpty()) {
+            return false;
+        }
+
+        Set<BlockPos> visitedOutlets = new HashSet<>();
+        List<BlockPos> snapshot = new ArrayList<>(outlets);
+        for (BlockPos outletPos : snapshot) {
+            if (visitedOutlets.contains(outletPos)) {
+                continue;
+            }
+            if (!level.isLoaded(outletPos)
+                    || !(level.getBlockEntity(outletPos) instanceof BoilerOutletBlockEntity)) {
+                outlets.remove(outletPos);
+                continue;
+            }
+
+            Network network = buildNetwork(level, outletPos, visitedOutlets);
+            if (network == null || !network.boilers.contains(boilerPos)) {
+                continue;
+            }
+
+            double volume = networkVolume(network);
+            double pressure = SteamPhysics.pressurePn(network.storedMb, networkTemperature(network), volume);
+            if (pressure <= 0.0D) {
+                return false;
+            }
+
+            for (BoilerOutletBlockEntity outlet : network.outlets) {
+                if (!boilerPos.equals(currentBoilerControllerPos(outlet))) {
+                    continue;
+                }
+
+                outlet.burst(volume, pressure);
+                drainFromNetwork(level, network, network.storedMb);
+                network.storedMb = 0;
+                for (BoilerOutletBlockEntity member : network.outlets) {
+                    member.clearEffectivePressure();
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static void onLevelTick(LevelTickEvent.Post event) {
         Level level = event.getLevel();
         if (level.isClientSide()) {
@@ -315,11 +367,8 @@ public final class SteamNetworkManager {
             return;
         }
         // Pipes and inlets add a little buffering volume so a long run of pipe holds pressure steadier.
-        double volume = network.volumeM3 + network.pipeCount * 0.5D + network.inlets.size() * 0.5D;
-        volume = Math.max(1.0D, volume);
-        double tempK = network.temperatureWeight > 0
-                ? network.temperatureNumerator / network.temperatureWeight
-                : FullSteamConfig.steamTemperatureBaseK();
+        double volume = networkVolume(network);
+        double tempK = networkTemperature(network);
 
         // Vent open ends first (relief), then recompute pressure from what is left. The drain target
         // follows the same pressure smoothing as the engine/display state; otherwise an open pipe
@@ -585,6 +634,21 @@ public final class SteamNetworkManager {
             effective = Mth.clamp(effective, prevEffective - maxDelta, prevEffective + maxDelta);
         }
         return Math.max(0.0D, effective);
+    }
+
+    private static double networkVolume(Network network) {
+        return Math.max(1.0D, network.volumeM3 + network.pipeCount * 0.5D + network.inlets.size() * 0.5D);
+    }
+
+    private static double networkTemperature(Network network) {
+        return network.temperatureWeight > 0
+                ? network.temperatureNumerator / network.temperatureWeight
+                : FullSteamConfig.steamTemperatureBaseK();
+    }
+
+    private static FluidTankBlockEntity controllerOrSelf(FluidTankBlockEntity tank) {
+        FluidTankBlockEntity controller = tank.getControllerBE();
+        return controller == null ? tank : controller;
     }
 
     public static double effectiveBoilerHeat(Level level, BlockPos boilerPos, double targetHeat, boolean dry) {

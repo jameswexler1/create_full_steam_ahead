@@ -433,9 +433,13 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
      * linked boiler only; the manager dumps the whole network's stored steam separately.
      */
     public void burst(double networkVolumeM3) {
+        burst(networkVolumeM3, FullSteamConfig.steamBurstPressure());
+    }
+
+    public void burst(double networkVolumeM3, double pressurePn) {
         FluidTankBlockEntity boiler = getBoiler();
         if (boiler != null) {
-            explodeBoiler(boiler, networkVolumeM3);
+            explodeBoiler(boiler, networkVolumeM3, pressurePn);
         }
     }
 
@@ -859,13 +863,13 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                 SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.7F, 0.6F);
     }
 
-    private void explodeBoiler(FluidTankBlockEntity boiler, double networkVolumeM3) {
+    private void explodeBoiler(FluidTankBlockEntity boiler, double networkVolumeM3, double pressurePn) {
         if (!(level instanceof ServerLevel serverLevel)) {
             return;
         }
 
         Vec3 localCenter = boilerCenter(boiler);
-        float power = SteamPhysics.burstPower(networkVolumeM3);
+        float power = SteamPhysics.burstPower(networkVolumeM3, pressurePn);
         long seed = serverLevel.random.nextLong();
         SableBurstCompat.BurstContext burstContext = SableBurstCompat.resolve(boiler, localCenter);
 

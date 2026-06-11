@@ -88,12 +88,19 @@ public final class SteamPhysics {
         return (int) Math.min(Integer.MAX_VALUE, Math.ceil(toDrain));
     }
 
-    /** Explosion power for a burst, scaling with network/boiler volume. */
+    /** Explosion power for a normal overpressure burst, scaling with network/boiler volume. */
     public static float burstPower(double volumeM3) {
+        return burstPower(volumeM3, FullSteamConfig.steamBurstPressure());
+    }
+
+    /** Explosion power for a rupture, scaling with network/boiler volume and current pressure. */
+    public static float burstPower(double volumeM3, double pressurePn) {
         double power = FullSteamConfig.overpressureBasePower()
                 + FullSteamConfig.overpressurePowerPerVolume() * volumeM3;
         double capped = Math.min(FullSteamConfig.overpressureMaxPower(), power);
-        return (float) (capped * FullSteamConfig.overpressurePowerScale());
+        double burstPressure = FullSteamConfig.steamBurstPressure();
+        double pressureScale = burstPressure <= 0.0D ? 1.0D : Mth.clamp(pressurePn / burstPressure, 0.0D, 1.0D);
+        return (float) (capped * FullSteamConfig.overpressurePowerScale() * pressureScale);
     }
 
     /**
