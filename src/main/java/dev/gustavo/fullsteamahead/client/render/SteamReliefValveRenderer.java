@@ -40,9 +40,14 @@ public class SteamReliefValveRenderer extends SafeBlockEntityRenderer<SteamRelie
         float jitter = valve.isVenting()
                 ? Mth.sin((gameTime + partialTicks) * 1.7F) * 0.012F
                 : 0.0F;
+        Direction attachedFace = SteamReliefValveBlock.getAttachedFace(state);
+        float lift = open * CAP_LIFT_BLOCKS + jitter;
+        float liftX = attachedFace.getStepX() * lift;
+        float liftY = attachedFace.getStepY() * lift;
+        float liftZ = attachedFace.getStepZ() * lift;
         SuperByteBuffer cap = CachedBuffers.partial(FullSteamPartialModels.steamReliefValveCap(), state);
         orient(cap, state)
-                .translate(0.0F, open * CAP_LIFT_BLOCKS + jitter, 0.0F)
+                .translate(liftX, liftY, liftZ)
                 .light(light)
                 .overlay(overlay)
                 .renderInto(poseStack, vertexConsumer);
@@ -58,7 +63,13 @@ public class SteamReliefValveRenderer extends SafeBlockEntityRenderer<SteamRelie
     }
 
     private static SuperByteBuffer orient(SuperByteBuffer buffer, BlockState state) {
-        float yRotation = AngleHelper.horizontalAngle(state.getValue(SteamReliefValveBlock.FACING));
-        return buffer.rotateCentered((yRotation / 180.0F) * (float) Math.PI, Direction.UP);
+        Direction attachedFace = SteamReliefValveBlock.getAttachedFace(state);
+        Direction visualFacing = state.getValue(SteamReliefValveBlock.FACING);
+        float yRotation = AngleHelper.horizontalAngle(attachedFace == Direction.UP ? visualFacing : attachedFace);
+        buffer.rotateCentered((yRotation / 180.0F) * (float) Math.PI, Direction.UP);
+        if (attachedFace != Direction.UP) {
+            buffer.rotateCentered((270.0F / 180.0F) * (float) Math.PI, Direction.EAST);
+        }
+        return buffer;
     }
 }

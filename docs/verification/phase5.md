@@ -48,7 +48,8 @@ Results:
 - Latest automated run on 2026-06-01 after preserving pipe-flow source steam and adding explicit fluid render overrides: `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-06-06 after scaling passive steam tank pressure volume by configured Create tank capacity: `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-06-11 after making boiler-outlet boiler activation geometric instead of block-entity-cache dependent: `git diff --check` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
-- Pending verification after relief valve smoothing fix: confirm an attached `steam_relief_valve` opens before burst pressure and prevents a closed boiler outlet network from exploding.
+- User report after relief valve smoothing fix: attached `steam_relief_valve` opens before burst pressure and prevents a closed boiler outlet network from exploding.
+- Latest automated run on 2026-06-11 after adding top/side-mounted steam relief valves: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 
 Manual runtime checklist:
 
@@ -74,6 +75,9 @@ Polish runtime checklist:
 - [ ] Confirm reopening the same valve restores steam transfer without replacing the pipes.
 - [ ] Confirm a closed valve does not make the outlet vent as if the pipe end were open.
 - [ ] Confirm steam remains visible inside Create tanks and fluid pipes after the pipe-flow reserve and explicit fluid render override fix.
+- [ ] Confirm `steam_relief_valve` can mount to the top, north, south, east, and west sides of a boiler.
+- [ ] Confirm bottom-mounted relief valves are rejected/not placeable.
+- [ ] Confirm side-mounted relief valves link to the boiler, animate, vent, and prevent burst pressure like top-mounted valves.
 
 User report after polish runtime test: everything works.
 

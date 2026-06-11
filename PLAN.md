@@ -102,7 +102,7 @@ Horizontal orientations are deferred to a future version.
 | `piston` | `Block` | Physical piston body block above the piston head. Animated when running. |
 | `powered_shaft` | `PoweredShaftBlock + FullSteamPoweredShaftBlockEntity` | Hidden internal replacement for a player-placed Create shaft. Provides kinetic output while cloning/dropping as a normal shaft. |
 | `boiler_outlet` | `Block + SmartBlockEntity` | Attaches to a Create Fluid Tank boiler, generates `steam`, and provides pressure into pipes. |
-| `steam_relief_valve` | `Block + SmartBlockEntity` | Top-mounted boiler safety valve. Auto-vents near burst pressure or vents on redstone command. |
+| `steam_relief_valve` | `Block + SmartBlockEntity` | Top/side-mounted boiler safety valve. Auto-vents near burst pressure or vents on redstone command. |
 | `steam_inlet` | `Block + SmartBlockEntity` | Phase 6 block. Replaces one cylinder shell block in the 3×3×2 ring and accepts `steam` from pipes. |
 | `engine_telegraph` | `HorizontalDirectionalBlock` | Inert decorative/control block for ship bridge theming. No engine control mechanics yet. |
 | `stepped_lever` | `FaceAttachedHorizontalDirectionalBlock + IBE<SteppedLeverBlockEntity>` | Create-style stepped analog redstone lever for ship controls and future bridge panels. |
@@ -298,7 +298,7 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 ### `SteamReliefValve` (`steam_relief_valve`)
 
 - Block entity: `SteamReliefValveBlockEntity extends SmartBlockEntity`
-- Placed directly on top of a Create Fluid Tank boiler block. It links to the tank controller below and protects every steam pipe network fed by boiler outlets on that same physical boiler.
+- Placed directly on the top or any horizontal side of a Create Fluid Tank boiler block. It links to the tank controller behind its attached face and protects every steam pipe network fed by boiler outlets on that same physical boiler. Bottom mounting is intentionally unsupported so it does not conflict with Blaze Burners.
 - It is not a pipe endpoint and does not replace `boiler_outlet`; it is a boiler-mounted safety device.
 - If the boiler has no active outlet/network, it can still sit on the boiler and show boiler-link status, but it has no pressure to relieve.
 - Automatic mode opens at `steamReliefValve.openPressure` and stays open until pressure falls below `steamReliefValve.closePressure`.
@@ -794,11 +794,12 @@ changing engine balance.
 - [x] Simulated-contraption sublevel damage uses a bounded local `sublevelDamageRadius`, sparse explosion-like drops instead of dropping every destroyed block, quiet block removal, neighbor updates, and vanilla-style checks for unbreakable/blast-resistant blocks.
 - [x] `steamOverpressure` config group: enabled, explosion base/per-volume/max power, final power scale, breaksBlocks, client effect packet radius, and Sable sublevel damage radius.
 - [x] Client config group: boiler burst visuals, sound volume scale/radius, steam cloud scale, screen shake enable/scale/radius, blast wave speed.
-- [x] Add `steam_relief_valve` as a top-mounted Create boiler safety block with block entity, model, item, recipe, loot, lang, tags, creative entry, movement rules, goggle tooltip, and client renderer.
+- [x] Add `steam_relief_valve` as a top/side-mounted Create boiler safety block with block entity, model, item, recipe, loot, lang, tags, creative entry, movement rules, goggle tooltip, and client renderer.
 - [x] Relief valves attach by Create Fluid Tank boiler controller, not by pipe network position, so one valve protects all outlet-fed networks on that physical boiler.
 - [x] Automatic relief opens at `2.2 MpN/m²`, closes below `1.7 MpN/m²`, and uses `720 mB/t` as the baseline per-valve vent rate while scaling effective safety relief with active boiler production.
 - [x] Redstone-powered relief valves force open and drain toward the configured open-pipe atmospheric target.
 - [x] Relief valve venting uses Create-style cap lift, handwheel spin, steam particles, scald hazard, and steam sound.
+- [x] Relief valves support top and horizontal side placement; bottom placement remains unsupported to avoid Blaze Burner/floor conflicts.
 - [ ] Follow-up: local Sable crater pass should skip fluid-only blocks without making waterlogged solid blocks immune.
 
 ### Phase 14: Display Link Pressure Readouts — Implemented (manual verification pending)

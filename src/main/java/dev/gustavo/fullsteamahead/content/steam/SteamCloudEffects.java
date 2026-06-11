@@ -37,13 +37,16 @@ public final class SteamCloudEffects {
         scaldEntities(level, area, amount, 1.0D, true);
     }
 
-    public static void emitReliefValve(ServerLevel level, Vec3 origin, Direction facing, int amount) {
+    public static void emitReliefValve(ServerLevel level, Vec3 origin, Direction attachedFace, Direction visualFacing, int amount) {
         if (amount <= 0) {
             return;
         }
 
-        Vec3 forward = Vec3.atLowerCornerOf(facing.getNormal());
-        Vec3 side = Vec3.atLowerCornerOf(facing.getClockWise().getNormal());
+        Vec3 forward = Vec3.atLowerCornerOf(attachedFace.getNormal());
+        Direction sideDirection = visualFacing.getAxis() == attachedFace.getAxis()
+                ? fallbackSide(attachedFace)
+                : visualFacing;
+        Vec3 side = Vec3.atLowerCornerOf(sideDirection.getNormal());
         RandomSource random = level.random;
         double intensity = Mth.clamp(amount / (double) Math.max(1, FullSteamConfig.reliefValveVentRateMb()),
                 0.35D, 1.0D);
@@ -66,13 +69,17 @@ public final class SteamCloudEffects {
                     pos.y + jitterY,
                     pos.z + jitterZ,
                     forward.x * speed + side.x * sideSign * 0.025D + jitterX,
-                    0.045D + intensity * 0.045D + jitterY,
+                    forward.y * speed + 0.025D + intensity * 0.035D + jitterY,
                     forward.z * speed + side.z * sideSign * 0.025D + jitterZ);
         }
 
         AABB damageArea = AABB.ofSize(origin.add(forward.scale(0.25D)),
                 0.75D, 0.65D, 0.75D);
         scaldEntities(level, damageArea, amount, 1.0D, true);
+    }
+
+    private static Direction fallbackSide(Direction attachedFace) {
+        return attachedFace.getAxis().isHorizontal() ? Direction.UP : Direction.NORTH;
     }
 
     public static void emitEngineExhaust(ServerLevel level, Vec3 origin, Direction direction, int amount) {

@@ -212,8 +212,8 @@ public final class FullSteamMovementRules {
             BlockPos neighborPos,
             Direction direction
     ) {
-        return direction == Direction.DOWN
-                && state.is(ModBlocks.STEAM_RELIEF_VALVE.get())
+        return state.is(ModBlocks.STEAM_RELIEF_VALVE.get())
+                && direction == SteamReliefValveBlock.getAttachedFace(state).getOpposite()
                 && level.getBlockEntity(neighborPos) instanceof FluidTankBlockEntity;
     }
 
@@ -247,7 +247,7 @@ public final class FullSteamMovementRules {
             BlockState valveState
     ) {
         return valveState.is(ModBlocks.STEAM_RELIEF_VALVE.get())
-                && SteamReliefValveBlock.getAttachedTankPos(valvePos).equals(pos)
+                && SteamReliefValveBlock.getAttachedTankPos(valvePos, valveState).equals(pos)
                 && level.getBlockEntity(pos) instanceof FluidTankBlockEntity;
     }
 

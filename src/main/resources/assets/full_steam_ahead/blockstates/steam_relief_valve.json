@@ -1,12 +1,36 @@
 {
-  "variants": {
-    "facing=north,powered=false": { "model": "full_steam_ahead:block/steam_relief_valve" },
-    "facing=north,powered=true": { "model": "full_steam_ahead:block/steam_relief_valve" },
-    "facing=east,powered=false": { "model": "full_steam_ahead:block/steam_relief_valve", "y": 90 },
-    "facing=east,powered=true": { "model": "full_steam_ahead:block/steam_relief_valve", "y": 90 },
-    "facing=south,powered=false": { "model": "full_steam_ahead:block/steam_relief_valve", "y": 180 },
-    "facing=south,powered=true": { "model": "full_steam_ahead:block/steam_relief_valve", "y": 180 },
-    "facing=west,powered=false": { "model": "full_steam_ahead:block/steam_relief_valve", "y": 270 },
-    "facing=west,powered=true": { "model": "full_steam_ahead:block/steam_relief_valve", "y": 270 }
-  }
+  "multipart": [
+    {
+      "when": { "attached_face": "up", "facing": "north" },
+      "apply": { "model": "full_steam_ahead:block/steam_relief_valve" }
+    },
+    {
+      "when": { "attached_face": "up", "facing": "east" },
+      "apply": { "model": "full_steam_ahead:block/steam_relief_valve", "y": 90 }
+    },
+    {
+      "when": { "attached_face": "up", "facing": "south" },
+      "apply": { "model": "full_steam_ahead:block/steam_relief_valve", "y": 180 }
+    },
+    {
+      "when": { "attached_face": "up", "facing": "west" },
+      "apply": { "model": "full_steam_ahead:block/steam_relief_valve", "y": 270 }
+    },
+    {
+      "when": { "attached_face": "north" },
+      "apply": { "model": "full_steam_ahead:block/steam_relief_valve", "x": 270 }
+    },
+    {
+      "when": { "attached_face": "east" },
+      "apply": { "model": "full_steam_ahead:block/steam_relief_valve", "x": 270, "y": 90 }
+    },
+    {
+      "when": { "attached_face": "south" },
+      "apply": { "model": "full_steam_ahead:block/steam_relief_valve", "x": 270, "y": 180 }
+    },
+    {
+      "when": { "attached_face": "west" },
+      "apply": { "model": "full_steam_ahead:block/steam_relief_valve", "x": 270, "y": 270 }
+    }
+  ]
 }

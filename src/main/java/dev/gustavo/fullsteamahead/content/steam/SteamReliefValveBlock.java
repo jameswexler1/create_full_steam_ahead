@@ -29,6 +29,8 @@ import java.util.Map;
 public class SteamReliefValveBlock extends Block implements IBE<SteamReliefValveBlockEntity>, FullSteamWrenchable {
     public static final MapCodec<SteamReliefValveBlock> CODEC = simpleCodec(SteamReliefValveBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+    public static final DirectionProperty ATTACHED_FACE =
+            DirectionProperty.create("attached_face", direction -> direction != Direction.DOWN);
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
     private static final Box[] NORTH_BOXES = new Box[] {
@@ -47,12 +49,14 @@ public class SteamReliefValveBlock extends Block implements IBE<SteamReliefValve
             new Box(7.5, 5, 1.4, 8.5, 10, 2.1),
             new Box(7.25, 6.75, 1.25, 8.75, 8.25, 4.5)
     };
-    private static final Map<Direction, VoxelShape> SHAPES = buildShapes();
+    private static final Map<Direction, VoxelShape> TOP_SHAPES = buildTopShapes();
+    private static final Map<Direction, VoxelShape> SIDE_SHAPES = buildSideShapes();
 
     public SteamReliefValveBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any()
                 .setValue(FACING, Direction.NORTH)
+                .setValue(ATTACHED_FACE, Direction.UP)
                 .setValue(POWERED, false));
     }
 
@@ -63,23 +67,34 @@ public class SteamReliefValveBlock extends Block implements IBE<SteamReliefValve
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
+        Direction attachedFace = context.getClickedFace();
+        if (attachedFace == Direction.DOWN) {
+            return null;
+        }
+
         Direction facing = FullSteamWrenchable.flipIfShifted(
                 context,
                 context.getHorizontalDirection().getOpposite()
         );
         return defaultBlockState()
-                .setValue(FACING, facing)
+                .setValue(FACING, normalizeVisualFacing(facing, attachedFace))
+                .setValue(ATTACHED_FACE, attachedFace)
                 .setValue(POWERED, context.getLevel().hasNeighborSignal(context.getClickedPos()));
     }
 
     @Override
     protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
-        return level.getBlockEntity(pos.below()) instanceof FluidTankBlockEntity;
+        return level.getBlockEntity(getAttachedTankPos(pos, state)) instanceof FluidTankBlockEntity;
     }
 
     @Override
     public BlockState getRotatedBlockState(BlockState state, Direction targetedFace) {
-        return state.setValue(FACING, state.getValue(FACING).getClockWise());
+        Direction attachedFace = getAttachedFace(state);
+        Direction facing = state.getValue(FACING);
+        do {
+            facing = facing.getClockWise();
+        } while (!canUseVisualFacing(facing, attachedFace));
+        return state.setValue(FACING, facing);
     }
 
     @Override
@@ -116,7 +131,7 @@ public class SteamReliefValveBlock extends Block implements IBE<SteamReliefValve
         if (powered != state.getValue(POWERED)) {
             level.setBlock(pos, state.setValue(POWERED, powered), Block.UPDATE_ALL);
         }
-        if (neighborPos.equals(pos.below())) {
+        if (neighborPos.equals(getAttachedTankPos(pos, state))) {
             withBlockEntityDo(level, pos, SteamReliefValveBlockEntity::refreshBoilerState);
         }
     }
@@ -154,21 +169,29 @@ public class SteamReliefValveBlock extends Block implements IBE<SteamReliefValve
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING, POWERED);
+        builder.add(FACING, ATTACHED_FACE, POWERED);
     }
 
     public static Direction getFacing(BlockState state) {
         return state.getValue(FACING);
     }
 
-    public static BlockPos getAttachedTankPos(BlockPos pos) {
-        return pos.below();
+    public static Direction getAttachedFace(BlockState state) {
+        return state.hasProperty(ATTACHED_FACE) ? state.getValue(ATTACHED_FACE) : Direction.UP;
+    }
+
+    public static BlockPos getAttachedTankPos(BlockPos pos, BlockState state) {
+        return pos.relative(getAttachedFace(state).getOpposite());
     }
 
     private static VoxelShape getInteractionShape(BlockState state) {
         // The authored model's visible front is opposite the logical horizontal facing used by
         // blockstate/model rotation. Mirror the model-derived hitbox to match the rendered valve.
-        return SHAPES.get(state.getValue(FACING).getOpposite());
+        Direction attachedFace = getAttachedFace(state);
+        if (attachedFace == Direction.UP) {
+            return TOP_SHAPES.get(state.getValue(FACING).getOpposite());
+        }
+        return SIDE_SHAPES.get(attachedFace);
     }
 
     @Override
@@ -181,12 +204,24 @@ public class SteamReliefValveBlock extends Block implements IBE<SteamReliefValve
         return ModBlockEntities.STEAM_RELIEF_VALVE.get();
     }
 
-    private static Map<Direction, VoxelShape> buildShapes() {
+    private static Map<Direction, VoxelShape> buildTopShapes() {
         Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             VoxelShape shape = Shapes.empty();
             for (Box box : NORTH_BOXES) {
                 shape = Shapes.or(shape, rotate(box, direction).shape());
+            }
+            shapes.put(direction, shape.optimize());
+        }
+        return shapes;
+    }
+
+    private static Map<Direction, VoxelShape> buildSideShapes() {
+        Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            VoxelShape shape = Shapes.empty();
+            for (Box box : NORTH_BOXES) {
+                shape = Shapes.or(shape, rotate(tiltUpToNorth(box), direction).shape());
             }
             shapes.put(direction, shape.optimize());
         }
@@ -205,9 +240,28 @@ public class SteamReliefValveBlock extends Block implements IBE<SteamReliefValve
         };
     }
 
+    private static Box tiltUpToNorth(Box box) {
+        return new Box(box.minX, box.minZ, 16 - box.maxY,
+                box.maxX, box.maxZ, 16 - box.minY);
+    }
+
     private record Box(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
         private VoxelShape shape() {
             return Block.box(minX, minY, minZ, maxX, maxY, maxZ);
         }
+    }
+
+    private static boolean canUseVisualFacing(Direction facing, Direction attachedFace) {
+        return attachedFace == Direction.UP || facing.getAxis() != attachedFace.getAxis();
+    }
+
+    private static Direction normalizeVisualFacing(Direction facing, Direction attachedFace) {
+        if (facing.getAxis().isVertical()) {
+            facing = Direction.NORTH;
+        }
+        if (canUseVisualFacing(facing, attachedFace)) {
+            return facing;
+        }
+        return attachedFace.getClockWise();
     }
 }

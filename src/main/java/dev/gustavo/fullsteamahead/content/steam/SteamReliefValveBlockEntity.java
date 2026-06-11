@@ -140,7 +140,7 @@ public class SteamReliefValveBlockEntity extends SmartBlockEntity implements IHa
             return null;
         }
 
-        BlockPos tankPos = SteamReliefValveBlock.getAttachedTankPos(worldPosition);
+        BlockPos tankPos = SteamReliefValveBlock.getAttachedTankPos(worldPosition, getBlockState());
         if (!level.isLoaded(tankPos)) {
             return null;
         }
@@ -214,10 +214,13 @@ public class SteamReliefValveBlockEntity extends SmartBlockEntity implements IHa
             return;
         }
 
-        Direction facing = SteamReliefValveBlock.getFacing(getBlockState());
-        Vec3 origin = Vec3.atCenterOf(worldPosition).add(0.0D, 0.28D, 0.0D);
+        BlockState state = getBlockState();
+        Direction attachedFace = SteamReliefValveBlock.getAttachedFace(state);
+        Direction facing = SteamReliefValveBlock.getFacing(state);
+        Vec3 normal = Vec3.atLowerCornerOf(attachedFace.getNormal());
+        Vec3 origin = Vec3.atCenterOf(worldPosition).add(normal.scale(0.28D));
         if (level.getGameTime() % 4L == 0L) {
-            SteamCloudEffects.emitReliefValve(serverLevel, origin, facing, amount);
+            SteamCloudEffects.emitReliefValve(serverLevel, origin, attachedFace, facing, amount);
         }
         if (level.getGameTime() % 8L == 0L) {
             float intensity = (float) Math.min(1.0D, amount / (double) Math.max(1, FullSteamConfig.reliefValveVentRateMb()));
@@ -251,7 +254,7 @@ public class SteamReliefValveBlockEntity extends SmartBlockEntity implements IHa
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         CreateLang.text("Steam Relief Valve").style(ChatFormatting.GRAY).forGoggles(tooltip);
-        CreateLang.text(boilerPos == null ? "No boiler below" : "Boiler linked")
+        CreateLang.text(boilerPos == null ? "No boiler attached" : "Boiler linked")
                 .style(boilerPos == null ? ChatFormatting.RED : ChatFormatting.GREEN)
                 .forGoggles(tooltip, 1);
         CreateLang.text(forcedOpen ? "Forced open" : open ? "Valve open" : "Valve closed")
