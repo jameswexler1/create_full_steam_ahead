@@ -1,6 +1,6 @@
 # Create: Full Steam Ahead — Design Plan
 
-Last updated: 2026-06-06
+Last updated: 2026-06-11
 
 ## Goal
 
@@ -102,6 +102,7 @@ Horizontal orientations are deferred to a future version.
 | `piston` | `Block` | Physical piston body block above the piston head. Animated when running. |
 | `powered_shaft` | `PoweredShaftBlock + FullSteamPoweredShaftBlockEntity` | Hidden internal replacement for a player-placed Create shaft. Provides kinetic output while cloning/dropping as a normal shaft. |
 | `boiler_outlet` | `Block + SmartBlockEntity` | Attaches to a Create Fluid Tank boiler, generates `steam`, and provides pressure into pipes. |
+| `steam_relief_valve` | `Block + SmartBlockEntity` | Top-mounted boiler safety valve. Auto-vents near burst pressure or vents on redstone command. |
 | `steam_inlet` | `Block + SmartBlockEntity` | Phase 6 block. Replaces one cylinder shell block in the 3×3×2 ring and accepts `steam` from pipes. |
 | `engine_telegraph` | `HorizontalDirectionalBlock` | Inert decorative/control block for ship bridge theming. No engine control mechanics yet. |
 | `stepped_lever` | `FaceAttachedHorizontalDirectionalBlock + IBE<SteppedLeverBlockEntity>` | Create-style stepped analog redstone lever for ship controls and future bridge panels. |
@@ -294,6 +295,18 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - Default pressure range target: 30 blocks, controlled by server config.
 - Goggle overlay: boiler linked/missing, outlet steam units, total boiler steam units, attached outlet count, steam production rate, internal buffer, output pressure state.
 
+### `SteamReliefValve` (`steam_relief_valve`)
+
+- Block entity: `SteamReliefValveBlockEntity extends SmartBlockEntity`
+- Placed directly on top of a Create Fluid Tank boiler block. It links to the tank controller below and protects every steam pipe network fed by boiler outlets on that same physical boiler.
+- It is not a pipe endpoint and does not replace `boiler_outlet`; it is a boiler-mounted safety device.
+- If the boiler has no active outlet/network, it can still sit on the boiler and show boiler-link status, but it has no pressure to relieve.
+- Automatic mode opens at `steamReliefValve.openPressure` and stays open until pressure falls below `steamReliefValve.closePressure`.
+- Redstone power forces the valve open and drains toward the same atmospheric target used by open pipe ends.
+- One valve vents up to `steamReliefValve.ventRateMb` per tick; multiple valves on the same boiler share the same physical boiler/network pressure and add relief capacity without duplicating steam production.
+- Visuals: cap lifts, handwheel spins while venting, Create-style steam particles/sound emit from the vent collar.
+- Goggle overlay: boiler link, valve state, current pressure, open threshold, last vented amount, and peak pressure while sneaking.
+
 ### `SteamInlet` (`steam_inlet`)
 
 - Block entity: `SteamInletBlockEntity extends SmartBlockEntity`
@@ -348,6 +361,8 @@ src/main/java/dev/gustavo/fullsteamahead/
     steam/
       BoilerOutletBlock.java
       BoilerOutletBlockEntity.java
+      SteamReliefValveBlock.java
+      SteamReliefValveBlockEntity.java
       SteamInletBlock.java
       SteamInletBlockEntity.java
     telegraph/
@@ -389,6 +404,9 @@ Boiler reference: vanilla Create steam engine baseline.
 | Full engine flow | 90 mB/t steam |
 | Rated pressure | 1.0 MpN/m² |
 | Warning pressure | 1.5 MpN/m² |
+| Relief valve opens | 2.2 MpN/m² |
+| Relief valve closes | 1.7 MpN/m² |
+| Relief valve vent rate | 720 mB/t per valve |
 | Burst pressure | 2.5 MpN/m² |
 
 Direct compact formula:
@@ -759,7 +777,7 @@ changing engine balance.
 - [x] `steamPhysics` server config covers gas constant, rated/warn/burst pressure, steam temperature, full engine flow/SU/RPM, vent coefficient, open-pipe target pressure, and buffer cap.
 - [x] Goggles surface pressure/volume/production on the outlet and pressure/RPM/SU on the cylinder ring.
 
-### Phase 13: Boiler Overpressure — Complete (vent valve still planned)
+### Phase 13: Boiler Overpressure — Complete
 
 **Goal**: stored steam in a closed pressure network builds pressure until it vents or explodes.
 
@@ -776,8 +794,12 @@ changing engine balance.
 - [x] Simulated-contraption sublevel damage uses a bounded local `sublevelDamageRadius`, sparse explosion-like drops instead of dropping every destroyed block, quiet block removal, neighbor updates, and vanilla-style checks for unbreakable/blast-resistant blocks.
 - [x] `steamOverpressure` config group: enabled, explosion base/per-volume/max power, final power scale, breaksBlocks, client effect packet radius, and Sable sublevel damage radius.
 - [x] Client config group: boiler burst visuals, sound volume scale/radius, steam cloud scale, screen shake enable/scale/radius, blast wave speed.
+- [x] Add `steam_relief_valve` as a top-mounted Create boiler safety block with block entity, model, item, recipe, loot, lang, tags, creative entry, movement rules, goggle tooltip, and client renderer.
+- [x] Relief valves attach by Create Fluid Tank boiler controller, not by pipe network position, so one valve protects all outlet-fed networks on that physical boiler.
+- [x] Automatic relief opens at `2.2 MpN/m²`, closes below `1.7 MpN/m²`, and vents up to `720 mB/t` per valve by default.
+- [x] Redstone-powered relief valves force open and drain toward the configured open-pipe atmospheric target.
+- [x] Relief valve venting uses Create-style cap lift, handwheel spin, steam particles, scald hazard, and steam sound.
 - [ ] Follow-up: local Sable crater pass should skip fluid-only blocks without making waterlogged solid blocks immune.
-- [ ] **Steam vent valve block** (future): bleeds surplus on demand / redstone to prevent bursts.
 
 ### Phase 14: Display Link Pressure Readouts — Implemented (manual verification pending)
 

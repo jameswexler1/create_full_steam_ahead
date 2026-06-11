@@ -9,6 +9,7 @@ import dev.gustavo.fullsteamahead.content.redstone.SteppedLeverBlock;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredGirderEncasedShaftBlock;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
+import dev.gustavo.fullsteamahead.content.steam.SteamReliefValveBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
 import dev.gustavo.fullsteamahead.content.telegraph.EngineTelegraphBlock;
 import net.minecraft.world.item.BlockItem;
@@ -46,6 +47,8 @@ public final class ModBlocks {
             );
     public static final DeferredBlock<BoilerOutletBlock> BOILER_OUTLET =
             registerBlock("boiler_outlet", BoilerOutletBlock::new, copperProperties());
+    public static final DeferredBlock<SteamReliefValveBlock> STEAM_RELIEF_VALVE =
+            registerBlock("steam_relief_valve", SteamReliefValveBlock::new, copperProperties().noOcclusion());
     public static final DeferredBlock<SteamInletBlock> STEAM_INLET =
             registerBlock("steam_inlet", SteamInletBlock::new, copperProperties().noOcclusion());
     public static final DeferredBlock<EngineTelegraphBlock> ENGINE_TELEGRAPH =

@@ -7,6 +7,7 @@ import dev.gustavo.fullsteamahead.content.redstone.SteppedLeverBlockEntity;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlockEntity;
+import dev.gustavo.fullsteamahead.content.steam.SteamReliefValveBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
@@ -44,6 +45,13 @@ public final class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             BoilerOutletBlockEntity::new,
                             ModBlocks.BOILER_OUTLET.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SteamReliefValveBlockEntity>> STEAM_RELIEF_VALVE =
+            BLOCK_ENTITY_TYPES.register("steam_relief_valve",
+                    () -> BlockEntityType.Builder.of(
+                            SteamReliefValveBlockEntity::new,
+                            ModBlocks.STEAM_RELIEF_VALVE.get()
                     ).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SteamInletBlockEntity>> STEAM_INLET =

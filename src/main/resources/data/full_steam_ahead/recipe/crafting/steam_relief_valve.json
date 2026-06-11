@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": { "tag": "c:plates/brass" },
+    "C": { "tag": "c:plates/copper" },
+    "P": { "item": "create:fluid_pipe" },
+    "S": { "item": "create:shaft" }
+  },
+  "pattern": [
+    " S ",
+    " B ",
+    "CPC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "full_steam_ahead:steam_relief_valve"
+  }
+}

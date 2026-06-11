@@ -22,6 +22,7 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.PISTON.get());
                         output.accept(ModBlocks.PISTON_HEAD.get());
                         output.accept(ModBlocks.BOILER_OUTLET.get());
+                        output.accept(ModBlocks.STEAM_RELIEF_VALVE.get());
                         output.accept(ModBlocks.STEAM_INLET.get());
                         output.accept(ModBlocks.ENGINE_TELEGRAPH.get());
                         output.accept(ModBlocks.STEPPED_LEVER.get());

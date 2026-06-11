@@ -43,6 +43,7 @@ import java.util.WeakHashMap;
 public final class SteamNetworkManager {
     private static final int BOILER_THERMAL_STATE_TTL = 100;
     private static final Map<Level, Set<BlockPos>> OUTLETS = new WeakHashMap<>();
+    private static final Map<Level, Set<BlockPos>> RELIEF_VALVES = new WeakHashMap<>();
     private static final Map<Level, Map<BlockPos, BoilerThermalState>> BOILER_THERMAL_STATES = new WeakHashMap<>();
 
     public static void register(IEventBus bus) {
@@ -66,18 +67,46 @@ public final class SteamNetworkManager {
         }
     }
 
+    public static void registerReliefValve(Level level, BlockPos pos) {
+        if (level == null || level.isClientSide()) {
+            return;
+        }
+        RELIEF_VALVES.computeIfAbsent(level, l -> new HashSet<>()).add(pos.immutable());
+    }
+
+    public static void unregisterReliefValve(Level level, BlockPos pos) {
+        if (level == null) {
+            return;
+        }
+        Set<BlockPos> set = RELIEF_VALVES.get(level);
+        if (set != null) {
+            set.remove(pos);
+        }
+    }
+
     private static void onLevelTick(LevelTickEvent.Post event) {
         Level level = event.getLevel();
         if (level.isClientSide()) {
             return;
         }
+        Map<BlockPos, List<SteamReliefValveBlockEntity>> valvesByBoiler = collectReliefValvesByBoiler(level);
         Set<BlockPos> outlets = OUTLETS.get(level);
         if (outlets == null || outlets.isEmpty()) {
+            applyReliefValveStates(Map.of(), valvesByBoiler);
             return;
         }
 
         Set<BlockPos> visitedOutlets = new HashSet<>();
         List<BlockPos> snapshot = new ArrayList<>(outlets);
+        Map<BlockPos, Integer> reliefValveBudgets = new HashMap<>();
+        Map<BlockPos, ValveTickState> reliefValveStates = new HashMap<>();
+        for (List<SteamReliefValveBlockEntity> valves : valvesByBoiler.values()) {
+            for (SteamReliefValveBlockEntity valve : valves) {
+                reliefValveBudgets.put(valve.getBlockPos().immutable(), FullSteamConfig.reliefValveVentRateMb());
+                reliefValveStates.put(valve.getBlockPos().immutable(), new ValveTickState());
+            }
+        }
+
         for (BlockPos outletPos : snapshot) {
             if (visitedOutlets.contains(outletPos)) {
                 continue;
@@ -89,9 +118,11 @@ public final class SteamNetworkManager {
             }
             Network network = buildNetwork(level, outletPos, visitedOutlets);
             if (network != null) {
-                stepAndApply(level, network);
+                attachReliefValves(network, valvesByBoiler);
+                stepAndApply(level, network, reliefValveBudgets, reliefValveStates);
             }
         }
+        applyReliefValveStates(reliefValveStates, valvesByBoiler);
     }
 
     private static Network buildNetwork(Level level, BlockPos startOutlet, Set<BlockPos> visitedOutlets) {
@@ -141,6 +172,50 @@ public final class SteamNetworkManager {
             }
         }
         return network;
+    }
+
+    private static Map<BlockPos, List<SteamReliefValveBlockEntity>> collectReliefValvesByBoiler(Level level) {
+        Map<BlockPos, List<SteamReliefValveBlockEntity>> byBoiler = new HashMap<>();
+        Set<BlockPos> valves = RELIEF_VALVES.get(level);
+        if (valves == null || valves.isEmpty()) {
+            return byBoiler;
+        }
+
+        List<BlockPos> snapshot = new ArrayList<>(valves);
+        for (BlockPos valvePos : snapshot) {
+            if (!level.isLoaded(valvePos)
+                    || !(level.getBlockEntity(valvePos) instanceof SteamReliefValveBlockEntity valve)) {
+                valves.remove(valvePos);
+                continue;
+            }
+            BlockPos boilerPos = valve.getBoilerControllerPos();
+            if (boilerPos == null) {
+                valve.refreshBoilerState();
+                boilerPos = valve.getBoilerControllerPos();
+            }
+            if (boilerPos != null) {
+                byBoiler.computeIfAbsent(boilerPos.immutable(), ignored -> new ArrayList<>()).add(valve);
+            }
+        }
+        return byBoiler;
+    }
+
+    private static void attachReliefValves(
+            Network network,
+            Map<BlockPos, List<SteamReliefValveBlockEntity>> valvesByBoiler
+    ) {
+        Set<BlockPos> seen = new HashSet<>();
+        for (BlockPos boilerPos : network.boilers) {
+            List<SteamReliefValveBlockEntity> valves = valvesByBoiler.get(boilerPos);
+            if (valves == null) {
+                continue;
+            }
+            for (SteamReliefValveBlockEntity valve : valves) {
+                if (seen.add(valve.getBlockPos())) {
+                    network.reliefValves.add(valve);
+                }
+            }
+        }
     }
 
     private static void classifyEndpoint(Level level, BlockPos pos, Direction dir, BlockPos fromPipe,
@@ -219,7 +294,12 @@ public final class SteamNetworkManager {
         }
     }
 
-    private static void stepAndApply(Level level, Network network) {
+    private static void stepAndApply(
+            Level level,
+            Network network,
+            Map<BlockPos, Integer> reliefValveBudgets,
+            Map<BlockPos, ValveTickState> reliefValveStates
+    ) {
         if (network.outlets.isEmpty()) {
             return;
         }
@@ -261,13 +341,26 @@ public final class SteamNetworkManager {
             }
         }
         network.storedMb = Math.max(0, network.storedMb - ventDrained);
-        boolean venting = ventDrained > 0 || ventVisualAmount > 0;
+
+        double pressureAfterOpenEnds = SteamPhysics.pressurePn(network.storedMb, tempK, volume);
+        double reliefReferencePressure = smoothEffectivePressure(network, pressureAfterOpenEnds);
+        ReliefResult relief = applyReliefValves(
+                level,
+                network,
+                tempK,
+                volume,
+                reliefReferencePressure,
+                reliefValveBudgets,
+                reliefValveStates
+        );
+        network.storedMb = Math.max(0, network.storedMb - relief.drained());
+        boolean venting = ventDrained > 0 || ventVisualAmount > 0 || relief.drained() > 0;
 
         // Target = live ideal-gas pressure from real steam; effective = smoothed value gameplay sees.
         // When venting is active, the physical drain target was already smoothed, so do not smooth
         // the result a second time.
         double target = SteamPhysics.pressurePn(network.storedMb, tempK, volume);
-        double effective = !network.openEnds.isEmpty() ? target : smoothEffectivePressure(network, target);
+        double effective = venting ? target : smoothEffectivePressure(network, target);
 
         // Only inlets backed by a working engine demand steam; others just buffer it (storage).
         List<SteamInletBlockEntity> engines = new ArrayList<>();
@@ -316,6 +409,102 @@ public final class SteamNetworkManager {
             network.storedMb = 0;
             for (BoilerOutletBlockEntity outlet : network.outlets) {
                 outlet.clearEffectivePressure();
+            }
+        }
+    }
+
+    private static ReliefResult applyReliefValves(
+            Level level,
+            Network network,
+            double tempK,
+            double volume,
+            double pressurePn,
+            Map<BlockPos, Integer> reliefValveBudgets,
+            Map<BlockPos, ValveTickState> reliefValveStates
+    ) {
+        if (network.reliefValves.isEmpty() || network.storedMb <= 0) {
+            recordReliefValvePressure(network, pressurePn, reliefValveStates);
+            return ReliefResult.NONE;
+        }
+
+        List<SteamReliefValveBlockEntity> openValves = new ArrayList<>();
+        int capacity = 0;
+        boolean forced = false;
+        for (SteamReliefValveBlockEntity valve : network.reliefValves) {
+            ValveTickState state = reliefValveStates.computeIfAbsent(valve.getBlockPos().immutable(), ignored -> new ValveTickState());
+            state.recordPressure(pressurePn);
+            if (!valve.wouldOpenAt(pressurePn)) {
+                continue;
+            }
+
+            int available = reliefValveBudgets.getOrDefault(valve.getBlockPos(), 0);
+            state.markOpen();
+            if (available <= 0) {
+                continue;
+            }
+
+            openValves.add(valve);
+            capacity += available;
+            forced |= valve.isForcedOpen();
+        }
+
+        if (capacity <= 0 || openValves.isEmpty()) {
+            return ReliefResult.NONE;
+        }
+
+        double targetPressure = forced
+                ? FullSteamConfig.openPipeTargetPressure()
+                : FullSteamConfig.reliefValveClosePressure();
+        int requestedDrain = Math.min(capacity, SteamPhysics.drainToPressureMb(
+                network.storedMb,
+                tempK,
+                volume,
+                targetPressure
+        ));
+        if (requestedDrain <= 0) {
+            return ReliefResult.NONE;
+        }
+
+        int drained = drainFromNetwork(level, network, requestedDrain);
+        int remaining = drained;
+        for (SteamReliefValveBlockEntity valve : openValves) {
+            if (remaining <= 0) {
+                break;
+            }
+            BlockPos valvePos = valve.getBlockPos();
+            int available = reliefValveBudgets.getOrDefault(valvePos, 0);
+            int used = Math.min(available, remaining);
+            if (used <= 0) {
+                continue;
+            }
+            reliefValveBudgets.put(valvePos.immutable(), available - used);
+            reliefValveStates.computeIfAbsent(valvePos.immutable(), ignored -> new ValveTickState())
+                    .recordVent(used);
+            remaining -= used;
+        }
+        return new ReliefResult(drained);
+    }
+
+    private static void recordReliefValvePressure(
+            Network network,
+            double pressurePn,
+            Map<BlockPos, ValveTickState> reliefValveStates
+    ) {
+        for (SteamReliefValveBlockEntity valve : network.reliefValves) {
+            reliefValveStates.computeIfAbsent(valve.getBlockPos().immutable(), ignored -> new ValveTickState())
+                    .recordPressure(pressurePn);
+        }
+    }
+
+    private static void applyReliefValveStates(
+            Map<BlockPos, ValveTickState> states,
+            Map<BlockPos, List<SteamReliefValveBlockEntity>> valvesByBoiler
+    ) {
+        for (List<SteamReliefValveBlockEntity> valves : valvesByBoiler.values()) {
+            for (SteamReliefValveBlockEntity valve : valves) {
+                ValveTickState state = states.getOrDefault(valve.getBlockPos(), ValveTickState.EMPTY);
+                boolean open = state.open() || valve.isForcedOpen();
+                valve.applyNetworkState(state.pressure(), open, state.vented() > 0, state.vented());
             }
         }
     }
@@ -442,6 +631,44 @@ public final class SteamNetworkManager {
     private record OpenEnd(BlockPos pipe, Direction dir) {
     }
 
+    private record ReliefResult(int drained) {
+        private static final ReliefResult NONE = new ReliefResult(0);
+    }
+
+    private static final class ValveTickState {
+        private static final ValveTickState EMPTY = new ValveTickState();
+        private double pressure;
+        private boolean open;
+        private int vented;
+
+        private void recordPressure(double pressure) {
+            this.pressure = Math.max(this.pressure, pressure);
+        }
+
+        private void markOpen() {
+            this.open = true;
+        }
+
+        private void recordVent(int amount) {
+            if (amount > 0) {
+                this.open = true;
+                this.vented += amount;
+            }
+        }
+
+        private double pressure() {
+            return pressure;
+        }
+
+        private boolean open() {
+            return open;
+        }
+
+        private int vented() {
+            return vented;
+        }
+    }
+
     private static final class BoilerThermalState {
         private double effectiveHeat;
         private long lastSeenGameTime;
@@ -460,6 +687,7 @@ public final class SteamNetworkManager {
         private final Set<BlockPos> boilers = new HashSet<>();
         private final Set<BlockPos> steamTanks = new HashSet<>();
         private final List<OpenEnd> openEnds = new ArrayList<>();
+        private final List<SteamReliefValveBlockEntity> reliefValves = new ArrayList<>();
         private int storedMb;
         private int productionMb;
         private double volumeM3;

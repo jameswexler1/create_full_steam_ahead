@@ -8,6 +8,7 @@ import dev.gustavo.fullsteamahead.content.piston.EngineValidator;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
+import dev.gustavo.fullsteamahead.content.steam.SteamReliefValveBlock;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -83,6 +84,7 @@ public final class FullSteamMovementRules {
 
         if (attachesToCompactBoiler(state, level, neighborPos, direction)
                 || attachesToBoilerOutletConnection(state, level, neighborPos, direction)
+                || attachesToReliefValveBoiler(state, level, neighborPos, direction)
                 || attachesToSteamPipe(state, level, neighborPos)) {
             return BlockMovementChecks.CheckResult.SUCCESS;
         }
@@ -108,6 +110,7 @@ public final class FullSteamMovementRules {
         BlockState neighborState = level.getBlockState(neighborPos);
         if (isCompactBoilerAttachedToCylinder(level, pos, neighborState, direction)
                 || isBoilerTankAttachedToOutlet(level, pos, neighborPos, neighborState)
+                || isBoilerTankAttachedToReliefValve(level, pos, neighborPos, neighborState)
                 || isPipeAttachedToInletOrOutlet(level, pos, neighborPos, neighborState)) {
             return BlockMovementChecks.CheckResult.SUCCESS;
         }
@@ -164,7 +167,8 @@ public final class FullSteamMovementRules {
                 || state.is(ModBlocks.PISTON.get())
                 || state.is(ModBlocks.PISTON_HEAD.get())
                 || FullSteamPoweredShaftBlock.isPoweredShaft(state)
-                || state.is(ModBlocks.BOILER_OUTLET.get());
+                || state.is(ModBlocks.BOILER_OUTLET.get())
+                || state.is(ModBlocks.STEAM_RELIEF_VALVE.get());
     }
 
     private static boolean attachesToCompactBoiler(
@@ -202,6 +206,17 @@ public final class FullSteamMovementRules {
         return state.is(ModBlocks.STEAM_INLET.get()) && FluidPropagator.getPipe(level, neighborPos) != null;
     }
 
+    private static boolean attachesToReliefValveBoiler(
+            BlockState state,
+            Level level,
+            BlockPos neighborPos,
+            Direction direction
+    ) {
+        return direction == Direction.DOWN
+                && state.is(ModBlocks.STEAM_RELIEF_VALVE.get())
+                && level.getBlockEntity(neighborPos) instanceof FluidTankBlockEntity;
+    }
+
     private static boolean isCompactBoilerAttachedToCylinder(
             Level level,
             BlockPos pos,
@@ -222,6 +237,17 @@ public final class FullSteamMovementRules {
     ) {
         return outletState.is(ModBlocks.BOILER_OUTLET.get())
                 && BoilerOutletBlock.getAttachedTankPos(outletPos, outletState).equals(pos)
+                && level.getBlockEntity(pos) instanceof FluidTankBlockEntity;
+    }
+
+    private static boolean isBoilerTankAttachedToReliefValve(
+            Level level,
+            BlockPos pos,
+            BlockPos valvePos,
+            BlockState valveState
+    ) {
+        return valveState.is(ModBlocks.STEAM_RELIEF_VALVE.get())
+                && SteamReliefValveBlock.getAttachedTankPos(valvePos).equals(pos)
                 && level.getBlockEntity(pos) instanceof FluidTankBlockEntity;
     }
 

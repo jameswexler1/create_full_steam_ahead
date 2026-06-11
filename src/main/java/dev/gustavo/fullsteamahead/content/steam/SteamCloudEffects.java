@@ -37,6 +37,44 @@ public final class SteamCloudEffects {
         scaldEntities(level, area, amount, 1.0D, true);
     }
 
+    public static void emitReliefValve(ServerLevel level, Vec3 origin, Direction facing, int amount) {
+        if (amount <= 0) {
+            return;
+        }
+
+        Vec3 forward = Vec3.atLowerCornerOf(facing.getNormal());
+        Vec3 side = Vec3.atLowerCornerOf(facing.getClockWise().getNormal());
+        RandomSource random = level.random;
+        double intensity = Mth.clamp(amount / (double) Math.max(1, FullSteamConfig.reliefValveVentRateMb()),
+                0.35D, 1.0D);
+        int particles = 10 + (int) Math.round(intensity * 12.0D);
+        double speed = 0.08D + intensity * 0.08D;
+
+        for (int i = 0; i < particles; i++) {
+            double sideSign = i % 2 == 0 ? 1.0D : -1.0D;
+            double slotOffset = sideSign * (0.22D + random.nextDouble() * 0.08D);
+            double height = (random.nextDouble() - 0.5D) * 0.14D;
+            Vec3 pos = origin
+                    .add(side.scale(slotOffset))
+                    .add(0.0D, height, 0.0D)
+                    .add(forward.scale(0.08D));
+            double jitterX = (random.nextDouble() - 0.5D) * 0.035D;
+            double jitterY = (random.nextDouble() - 0.5D) * 0.035D;
+            double jitterZ = (random.nextDouble() - 0.5D) * 0.035D;
+            sendSteamParticle(level,
+                    pos.x + jitterX,
+                    pos.y + jitterY,
+                    pos.z + jitterZ,
+                    forward.x * speed + side.x * sideSign * 0.025D + jitterX,
+                    0.045D + intensity * 0.045D + jitterY,
+                    forward.z * speed + side.z * sideSign * 0.025D + jitterZ);
+        }
+
+        AABB damageArea = AABB.ofSize(origin.add(forward.scale(0.25D)),
+                0.75D, 0.65D, 0.75D);
+        scaldEntities(level, damageArea, amount, 1.0D, true);
+    }
+
     public static void emitEngineExhaust(ServerLevel level, Vec3 origin, Direction direction, int amount) {
         if (amount <= 0) {
             return;

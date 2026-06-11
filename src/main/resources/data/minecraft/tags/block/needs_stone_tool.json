@@ -3,6 +3,7 @@
   "values": [
     "full_steam_ahead:steam_cylinder",
     "full_steam_ahead:boiler_outlet",
+    "full_steam_ahead:steam_relief_valve",
     "full_steam_ahead:steam_inlet",
     "full_steam_ahead:engine_telegraph"
   ]

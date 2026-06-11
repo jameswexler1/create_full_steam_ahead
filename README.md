@@ -2,7 +2,7 @@
 
 Create: Full Steam Ahead is a NeoForge 1.21.1 Create addon centered on large Create-style reciprocating steam engines for ships, aircraft, and industrial power plants.
 
-The addon keeps Create's own Fluid Tank boiler as the boiler. Full Steam Ahead adds cylinder walls, pistons, piston heads, boiler outlets, steam inlets, storable steam, and a hidden powered shaft that lets the assembled engine drive a normal Create shaft network.
+The addon keeps Create's own Fluid Tank boiler as the boiler. Full Steam Ahead adds cylinder walls, pistons, piston heads, boiler outlets, relief valves, steam inlets, storable steam, and a hidden powered shaft that lets the assembled engine drive a normal Create shaft network.
 
 ## Locked Targets
 
@@ -67,6 +67,7 @@ pressure pN/m^2 = gasConstant * storedSteamMb * temperatureK / networkVolumeM3
 - Passive Create Fluid Tanks add pressure volume from their configured fluid capacity, so larger storage actually buffers pressure.
 - Create fluid valves block steam pressure traversal. Closed valves isolate pressure instead of leaking or bypassing steam.
 - Open pipe ends and unconnected outlets act as atmospheric relief. Broken pipe ends drain toward `steamPhysics.openPipeTargetPressure` (`0 pN/m²` by default); when smoothing is enabled, both stored steam and engine output fall along the same pressure curve instead of snapping off instantly.
+- Boiler-mounted `steam_relief_valve` blocks protect the physical Create Fluid Tank boiler they sit on. They auto-open at `2.2 MpN/m²`, close below `1.7 MpN/m²`, vent `720 mB/t` per valve by default, and can be forced open with redstone.
 - Overpressure warns at `1.5 MpN/m²` and bursts at `2.5 MpN/m²`. A burst is deduped per physical boiler, depressurizes the whole connected steam network, uses `(12.0 + 0.45 * networkVolume) * 0.5` explosion power capped before scaling at `36.0`, and adds a client-side steam cloud, layered boom/hiss sounds within `200` blocks, and configurable screen shake within `150` blocks.
 - On Sable/Aeronautics simulated contraptions, boiler bursts project the visual/world explosion to real-world coordinates and also apply local randomized damage to nearby sublevel blocks. Most destroyed sublevel blocks are vaporized; only sparse edge damage drops items.
 - Direct compact engines still work, but remain a simplified compatibility mode. Full pressure storage, venting, and burst behavior belongs to pipe-fed networks.

@@ -1,0 +1,221 @@
+{
+  "credit": "Converted from vent_valve.bbmodel",
+  "ambientocclusion": true,
+  "texture_size": [
+    16,
+    16
+  ],
+  "textures": {
+    "0": "full_steam_ahead:block/vent_valve",
+    "particle": "full_steam_ahead:block/vent_valve"
+  },
+  "elements": [
+    {
+      "name": "cap_plate",
+      "from": [
+        3.5,
+        13,
+        3.5
+      ],
+      "to": [
+        12.5,
+        15,
+        12.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            4.5,
+            10.5,
+            5.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            6,
+            4.5,
+            10.5,
+            5.5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            6,
+            4.5,
+            10.5,
+            5.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            6,
+            4.5,
+            10.5,
+            5.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            6,
+            0,
+            10.5,
+            4.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            7,
+            7,
+            11.5,
+            11.5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "stem",
+      "from": [
+        7,
+        14.5,
+        7
+      ],
+      "to": [
+        9,
+        18,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            14.5,
+            0,
+            15.5,
+            1.75
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            14.5,
+            0,
+            15.5,
+            1.75
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            14.5,
+            0,
+            15.5,
+            1.75
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            14.5,
+            0,
+            15.5,
+            1.75
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            14.5,
+            0,
+            15.5,
+            0.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            14.5,
+            0,
+            15.5,
+            0.5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "stem_nut",
+      "from": [
+        6.5,
+        17.5,
+        6.5
+      ],
+      "to": [
+        9.5,
+        18.5,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9,
+            5.5,
+            10.5,
+            6
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            9,
+            5.5,
+            10.5,
+            6
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            9,
+            5.5,
+            10.5,
+            6
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            9,
+            5.5,
+            10.5,
+            6
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            14.5,
+            2,
+            16,
+            3.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            14.5,
+            2,
+            16,
+            3.5
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}

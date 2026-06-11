@@ -52,6 +52,10 @@ public final class FullSteamConfig {
     private static final double DEFAULT_OVERPRESSURE_EFFECT_RADIUS = 200.0D;
     private static final double DEFAULT_OVERPRESSURE_SUBLEVEL_RADIUS = 5.0D;
 
+    private static final double DEFAULT_RELIEF_VALVE_OPEN_PRESSURE = 2_200_000.0D;
+    private static final double DEFAULT_RELIEF_VALVE_CLOSE_PRESSURE = 1_700_000.0D;
+    private static final int DEFAULT_RELIEF_VALVE_VENT_RATE_MB = 720;
+
     private static final boolean DEFAULT_STEAM_LEAK_DAMAGE_ENABLED = true;
     private static final int DEFAULT_STEAM_LEAK_DAMAGE_INTERVAL = 10;
     private static final double DEFAULT_STEAM_LEAK_DAMAGE_RADIUS = 0.75D;
@@ -96,6 +100,9 @@ public final class FullSteamConfig {
     private static final ModConfigSpec.BooleanValue OVERPRESSURE_BREAKS_BLOCKS;
     private static final ModConfigSpec.DoubleValue OVERPRESSURE_EFFECT_RADIUS;
     private static final ModConfigSpec.DoubleValue OVERPRESSURE_SUBLEVEL_RADIUS;
+    private static final ModConfigSpec.DoubleValue RELIEF_VALVE_OPEN_PRESSURE;
+    private static final ModConfigSpec.DoubleValue RELIEF_VALVE_CLOSE_PRESSURE;
+    private static final ModConfigSpec.IntValue RELIEF_VALVE_VENT_RATE_MB;
     private static final ModConfigSpec.BooleanValue STEAM_LEAK_DAMAGE_ENABLED;
     private static final ModConfigSpec.IntValue STEAM_LEAK_DAMAGE_INTERVAL;
     private static final ModConfigSpec.DoubleValue STEAM_LEAK_DAMAGE_RADIUS;
@@ -270,6 +277,23 @@ public final class FullSteamConfig {
                 .comment("Local block-damage radius when a boiler bursts inside a Sable contraption sublevel (0 = none).",
                         "Kept small and decoupled from explosion power so a contraption burst cannot scan a huge cube.")
                 .defineInRange("sublevelDamageRadius", DEFAULT_OVERPRESSURE_SUBLEVEL_RADIUS, 0.0D, 16.0D);
+
+        builder.pop();
+
+        builder.comment("Boiler-mounted steam relief valve safety behavior.")
+                .push("steamReliefValve");
+
+        RELIEF_VALVE_OPEN_PRESSURE = builder
+                .comment("Pressure (pN/m^2) at which an automatic relief valve opens.")
+                .defineInRange("openPressure", DEFAULT_RELIEF_VALVE_OPEN_PRESSURE, 0.0D, 1.0e12D);
+
+        RELIEF_VALVE_CLOSE_PRESSURE = builder
+                .comment("Pressure (pN/m^2) below which an automatic relief valve closes again.")
+                .defineInRange("closePressure", DEFAULT_RELIEF_VALVE_CLOSE_PRESSURE, 0.0D, 1.0e12D);
+
+        RELIEF_VALVE_VENT_RATE_MB = builder
+                .comment("Maximum steam (mB/t) one relief valve can vent from all networks fed by its boiler.")
+                .defineInRange("ventRateMb", DEFAULT_RELIEF_VALVE_VENT_RATE_MB, 0, 1_000_000);
 
         builder.pop();
 
@@ -451,6 +475,18 @@ public final class FullSteamConfig {
 
     public static double overpressureSublevelDamageRadius() {
         return loaded() ? OVERPRESSURE_SUBLEVEL_RADIUS.get() : DEFAULT_OVERPRESSURE_SUBLEVEL_RADIUS;
+    }
+
+    public static double reliefValveOpenPressure() {
+        return loaded() ? RELIEF_VALVE_OPEN_PRESSURE.get() : DEFAULT_RELIEF_VALVE_OPEN_PRESSURE;
+    }
+
+    public static double reliefValveClosePressure() {
+        return loaded() ? RELIEF_VALVE_CLOSE_PRESSURE.get() : DEFAULT_RELIEF_VALVE_CLOSE_PRESSURE;
+    }
+
+    public static int reliefValveVentRateMb() {
+        return loaded() ? RELIEF_VALVE_VENT_RATE_MB.get() : DEFAULT_RELIEF_VALVE_VENT_RATE_MB;
     }
 
     public static boolean steamLeakDamageEnabled() {
