@@ -40,14 +40,10 @@ public class SteamReliefValveRenderer extends SafeBlockEntityRenderer<SteamRelie
         float jitter = valve.isVenting()
                 ? Mth.sin((gameTime + partialTicks) * 1.7F) * 0.012F
                 : 0.0F;
-        Direction attachedFace = SteamReliefValveBlock.getAttachedFace(state);
         float lift = open * CAP_LIFT_BLOCKS + jitter;
-        float liftX = attachedFace.getStepX() * lift;
-        float liftY = attachedFace.getStepY() * lift;
-        float liftZ = attachedFace.getStepZ() * lift;
         SuperByteBuffer cap = CachedBuffers.partial(FullSteamPartialModels.steamReliefValveCap(), state);
+        cap.translate(0.0F, lift, 0.0F);
         orient(cap, state)
-                .translate(liftX, liftY, liftZ)
                 .light(light)
                 .overlay(overlay)
                 .renderInto(poseStack, vertexConsumer);

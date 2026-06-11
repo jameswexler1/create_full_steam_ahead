@@ -221,7 +221,7 @@ public class SteamReliefValveBlock extends Block implements IBE<SteamReliefValve
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             VoxelShape shape = Shapes.empty();
             for (Box box : NORTH_BOXES) {
-                shape = Shapes.or(shape, rotate(tiltUpToNorth(box), direction).shape());
+                shape = Shapes.or(shape, rotate(tiltUpToNorthWithHandleUp(box), direction).shape());
             }
             shapes.put(direction, shape.optimize());
         }
@@ -240,9 +240,9 @@ public class SteamReliefValveBlock extends Block implements IBE<SteamReliefValve
         };
     }
 
-    private static Box tiltUpToNorth(Box box) {
-        return new Box(box.minX, box.minZ, 16 - box.maxY,
-                box.maxX, box.maxZ, 16 - box.minY);
+    private static Box tiltUpToNorthWithHandleUp(Box box) {
+        return new Box(box.minX, 16 - box.maxZ, 16 - box.maxY,
+                box.maxX, 16 - box.minZ, 16 - box.minY);
     }
 
     private record Box(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
