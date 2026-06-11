@@ -68,7 +68,7 @@ public class SteamReliefValveRenderer extends SafeBlockEntityRenderer<SteamRelie
         float yRotation = AngleHelper.horizontalAngle(attachedFace == Direction.UP ? visualFacing : attachedFace);
         buffer.rotateCentered((yRotation / 180.0F) * (float) Math.PI, Direction.UP);
         if (attachedFace != Direction.UP) {
-            buffer.rotateCentered((270.0F / 180.0F) * (float) Math.PI, Direction.EAST);
+            buffer.rotateCentered((90.0F / 180.0F) * (float) Math.PI, Direction.EAST);
         }
         return buffer;
     }
