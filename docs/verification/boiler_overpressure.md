@@ -15,7 +15,7 @@ Implemented:
   `min(maxPower, basePower + powerPerVolume * networkVolume) * explosionPowerScale`.
 - Phase A polish adds a clientbound boiler burst packet. Nearby clients spawn a large steam cloud,
   play layered placeholder boom/hiss sounds, and apply distance-delayed configurable camera shake.
-- Default burst power scale is now `2.0`, 400% as strong as the old `0.5` scale while preserving
+- Default burst power scale is now `1.0`, 200% as strong as the old `0.5` scale while preserving
   the same base/per-volume curve.
 - Create Big Cannons projectiles striking an active boiler tank force a rupture through the same
   burst path. Outlet-fed networks use current pressure and depressurize; active boilers without a

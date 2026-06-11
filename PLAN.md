@@ -790,7 +790,7 @@ changing engine balance.
 - [x] Past `steamPhysics.warnPressure`: status flips to "Overpressure!", with hiss and steam particles at the boiler center on a cadence.
 - [x] Past `steamPhysics.burstPressure`: each physical boiler bursts at most once even if several outlets are attached to it.
 - [x] A burst drains/depressurizes the whole connected steam network so pressure does not survive the explosion.
-- [x] Explosion power = `min(maxPower, basePower + powerPerVolume · networkVolume) · powerScale`, with block-breaking configurable. Defaults are `basePower=12.0`, `powerPerVolume=0.45`, `maxPower=36.0`, `powerScale=2.0`.
+- [x] Explosion power = `min(maxPower, basePower + powerPerVolume · networkVolume) · powerScale`, with block-breaking configurable. Defaults are `basePower=12.0`, `powerPerVolume=0.45`, `maxPower=36.0`, `powerScale=1.0`.
 - [x] Create Big Cannons projectiles that hit a Create Fluid Tank belonging to an active steam boiler trigger a boiler rupture. Outlet-fed pressure networks use current pressure and depressurize the connected steam network; active boilers without a pressure network rupture at full burst pressure.
 - [x] Bursts also send a client-side visual/audio packet for a large steam cloud, layered placeholder boom/hiss sounds, and configurable screen shake.
 - [x] Client burst sound radius is 200 blocks; screen shake radius is 150 blocks.
