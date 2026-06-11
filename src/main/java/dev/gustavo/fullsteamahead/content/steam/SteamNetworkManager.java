@@ -365,13 +365,16 @@ public final class SteamNetworkManager {
                 reliefValveStates
         );
         network.storedMb = Math.max(0, network.storedMb - relief.drained());
-        boolean venting = ventDrained > 0 || ventVisualAmount > 0 || relief.drained() > 0;
+        boolean openEndVenting = ventDrained > 0 || ventVisualAmount > 0;
+        boolean reliefVenting = relief.drained() > 0;
+        boolean venting = openEndVenting || reliefVenting;
 
         // Target = live ideal-gas pressure from real steam; effective = smoothed value gameplay sees.
-        // When venting is active, the physical drain target was already smoothed, so do not smooth
-        // the result a second time.
+        // Open pipe drains already target a smoothed pressure, so they must not be smoothed twice.
+        // Relief valves are capacity-limited safety devices; keep smoothing their effective pressure
+        // so a valve can start venting before the burst check sees the still-high raw pressure.
         double target = SteamPhysics.pressurePn(network.storedMb, tempK, volume);
-        double effective = venting ? target : smoothEffectivePressure(network, target);
+        double effective = openEndVenting ? target : smoothEffectivePressure(network, target);
 
         // Only inlets backed by a working engine demand steam; others just buffer it (storage).
         List<SteamInletBlockEntity> engines = new ArrayList<>();
