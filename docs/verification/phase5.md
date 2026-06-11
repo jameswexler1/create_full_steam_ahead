@@ -47,6 +47,7 @@ Results:
 - Latest automated run on 2026-05-31 after switching steam leak vents to custom particles and restoring pipe fluid visibility: `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-06-01 after preserving pipe-flow source steam and adding explicit fluid render overrides: `find src/main/resources \( -name '*.json' -o -name '*.mcmeta' \) -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-06-06 after scaling passive steam tank pressure volume by configured Create tank capacity: `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
+- Latest automated run on 2026-06-11 after making boiler-outlet boiler activation geometric instead of block-entity-cache dependent: `git diff --check` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 
 Manual runtime checklist:
 

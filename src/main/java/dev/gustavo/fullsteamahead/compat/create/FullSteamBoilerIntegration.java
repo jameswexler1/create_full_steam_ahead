@@ -4,12 +4,10 @@ import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import dev.gustavo.fullsteamahead.content.piston.EngineValidator;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
-import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
@@ -57,7 +55,7 @@ public final class FullSteamBoilerIntegration {
     }
 
     public static int countAttachedEngines(FluidTankBlockEntity boiler) {
-        FluidTankBlockEntity controller = boiler == null ? null : boiler.getControllerBE();
+        FluidTankBlockEntity controller = resolveController(boiler);
         if (controller == null) {
             return 0;
         }
@@ -124,6 +122,7 @@ public final class FullSteamBoilerIntegration {
     }
 
     public static List<BlockPos> attachedOutletPositions(FluidTankBlockEntity controller) {
+        controller = resolveController(controller);
         if (controller == null) {
             return List.of();
         }
@@ -154,11 +153,11 @@ public final class FullSteamBoilerIntegration {
                             continue;
                         }
 
-                        BlockEntity blockEntity = level.getBlockEntity(outletPos);
-                        if (blockEntity instanceof BoilerOutletBlockEntity outlet
-                                && outlet.isAttachedToBoiler(controller)) {
-                            outlets.add(outletPos);
-                        }
+                        // Boiler visuals must not depend on the outlet block entity having refreshed
+                        // its cached controller yet. Create's own boiler scan is geometric, so match
+                        // that behaviour: a correctly facing outlet adjacent to this tank footprint
+                        // counts as an attached boiler device immediately.
+                        outlets.add(outletPos);
                     }
                 }
             }
@@ -174,6 +173,14 @@ public final class FullSteamBoilerIntegration {
 
     public static int compactBoilerHeatLimit(int tankSize) {
         return Math.min(MAX_COMPACT_HEAT_LEVEL, tankSize);
+    }
+
+    private static FluidTankBlockEntity resolveController(FluidTankBlockEntity tank) {
+        if (tank == null) {
+            return null;
+        }
+        FluidTankBlockEntity controller = tank.getControllerBE();
+        return controller == null ? tank : controller;
     }
 
     private FullSteamBoilerIntegration() {
