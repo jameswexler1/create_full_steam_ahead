@@ -15,10 +15,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 public final class EngineValidator {
     public static final int MIN_PISTON_BODIES = 1;
     public static final int MAX_PISTON_BODIES = 3;
+    public static final int MIN_SHAFT_GAP = 1;
+    public static final int MAX_SHAFT_GAP = 3;
 
     private static final Comparator<BlockPos> ROOT_ORDER = Comparator
             .comparingInt((BlockPos pos) -> pos.getY())
@@ -112,6 +115,7 @@ public final class EngineValidator {
                 pistons.pistonHead(),
                 pistons.pistons(),
                 pistons.pistonBodyCount(),
+                pistons.shaftGap(),
                 pistons.emptyStrokeSpaces(),
                 pistons.shaft()
         );
@@ -126,50 +130,69 @@ public final class EngineValidator {
     }
 
     public static PistonPositions pistonPositions(BlockPos pistonHeadPos, Direction strokeDirection, int pistonBodyCount) {
+        return pistonPositions(
+                pistonHeadPos,
+                strokeDirection,
+                pistonBodyCount,
+                defaultShaftGapForPistonBodies(pistonBodyCount)
+        );
+    }
+
+    public static PistonPositions pistonPositions(
+            BlockPos pistonHeadPos,
+            Direction strokeDirection,
+            int pistonBodyCount,
+            int shaftGap
+    ) {
         int count = Math.max(0, pistonBodyCount);
+        int gap = clampShaftGap(shaftGap);
         List<BlockPos> pistons = new ArrayList<>(count);
         for (int offset = 1; offset <= count; offset++) {
             pistons.add(pistonHeadPos.relative(strokeDirection, offset));
         }
-        List<BlockPos> strokeSpaces = strokeSpacePositions(pistonHeadPos, strokeDirection, count);
+        List<BlockPos> strokeSpaces = strokeSpacePositions(pistonHeadPos, strokeDirection, count, gap);
         return new PistonPositions(
                 pistonHeadPos,
                 List.copyOf(pistons),
                 count,
+                gap,
                 strokeSpaces,
-                pistonHeadPos.relative(strokeDirection, shaftDistanceForPistonBodies(count))
+                pistonHeadPos.relative(strokeDirection, shaftDistanceForPistonBodies(count, gap))
         );
     }
 
     private static PistonPositions pistonPositions(Level level, BlockPos pistonHeadPos, Direction strokeDirection) {
-        List<BlockPos> pistons = new ArrayList<>(MAX_PISTON_BODIES + 1);
-        for (int offset = 1; offset <= MAX_PISTON_BODIES + 1; offset++) {
-            BlockPos pistonPos = pistonHeadPos.relative(strokeDirection, offset);
-            if (!isPiston(level, pistonPos)) {
-                break;
-            }
-            pistons.add(pistonPos);
-        }
-
-        int count = pistons.size();
-        List<BlockPos> strokeSpaces = strokeSpacePositions(pistonHeadPos, strokeDirection, count);
-        return new PistonPositions(
-                pistonHeadPos,
-                List.copyOf(pistons),
-                count,
-                strokeSpaces,
-                pistonHeadPos.relative(strokeDirection, shaftDistanceForPistonBodies(count))
-        );
+        int count = scanPistonBodyCount(level, pistonHeadPos, strokeDirection);
+        int gap = selectExistingShaftGap(level, pistonHeadPos, strokeDirection, count);
+        return pistonPositions(pistonHeadPos, strokeDirection, count, gap);
     }
 
     public static int shaftDistanceForPistonBodies(int pistonBodyCount) {
-        return Math.max(0, pistonBodyCount) * 2 + 1;
+        return shaftDistanceForPistonBodies(pistonBodyCount, defaultShaftGapForPistonBodies(pistonBodyCount));
     }
 
-    private static List<BlockPos> strokeSpacePositions(BlockPos pistonHeadPos, Direction strokeDirection, int pistonBodyCount) {
+    public static int shaftDistanceForPistonBodies(int pistonBodyCount, int shaftGap) {
+        return Math.max(0, pistonBodyCount) + clampShaftGap(shaftGap) + 1;
+    }
+
+    public static int defaultShaftGapForPistonBodies(int pistonBodyCount) {
+        return Math.max(MIN_SHAFT_GAP, Math.min(MAX_SHAFT_GAP, pistonBodyCount));
+    }
+
+    public static int clampShaftGap(int shaftGap) {
+        return Math.max(MIN_SHAFT_GAP, Math.min(MAX_SHAFT_GAP, shaftGap));
+    }
+
+    private static List<BlockPos> strokeSpacePositions(
+            BlockPos pistonHeadPos,
+            Direction strokeDirection,
+            int pistonBodyCount,
+            int shaftGap
+    ) {
         int count = Math.max(0, pistonBodyCount);
-        List<BlockPos> strokeSpaces = new ArrayList<>(count);
-        for (int offset = count + 1; offset <= count * 2; offset++) {
+        int gap = clampShaftGap(shaftGap);
+        List<BlockPos> strokeSpaces = new ArrayList<>(gap);
+        for (int offset = count + 1; offset <= count + gap; offset++) {
             strokeSpaces.add(pistonHeadPos.relative(strokeDirection, offset));
         }
         return List.copyOf(strokeSpaces);
@@ -209,34 +232,48 @@ public final class EngineValidator {
     }
 
     public static boolean isReadyForShaftPlacement(Level level, BlockPos pistonPos) {
+        return shaftPlacementPositionsFromBody(level, pistonPos).isPresent();
+    }
+
+    public static Optional<PistonPositions> shaftPlacementPositionsFromBody(Level level, BlockPos pistonPos) {
         PistonPositions pistons = pistonPositionsFromBody(level, pistonPos);
         if (!isPistonHead(level, pistons.pistonHead())
                 || pistons.pistonBodyCount() < MIN_PISTON_BODIES
                 || pistons.pistonBodyCount() > MAX_PISTON_BODIES) {
-            return false;
+            return Optional.empty();
         }
         for (BlockPos piston : pistons.pistons()) {
             if (!isPiston(level, piston)) {
-                return false;
+                return Optional.empty();
             }
-        }
-        for (BlockPos strokeSpace : pistons.emptyStrokeSpaces()) {
-            if (!isEmpty(level, strokeSpace)) {
-                return false;
-            }
-        }
-        if (!level.isLoaded(pistons.shaft()) || !level.getBlockState(pistons.shaft()).canBeReplaced()) {
-            return false;
         }
 
         Direction strokeDirection = strokeDirectionFor(pistons);
         BlockPos ringOrigin = ringOriginFor(pistons.pistonHead(), strokeDirection);
-        return isRingReady(level, ringOrigin, strokeDirection);
+        if (!isRingReady(level, ringOrigin, strokeDirection)) {
+            return Optional.empty();
+        }
+
+        for (int gap : preferredShaftGaps(pistons.pistonBodyCount())) {
+            PistonPositions candidate = pistonPositions(
+                    pistons.pistonHead(),
+                    strokeDirection,
+                    pistons.pistonBodyCount(),
+                    gap
+            );
+            if (!hasEmptyStrokeSpaces(level, candidate)) {
+                continue;
+            }
+            if (level.isLoaded(candidate.shaft()) && level.getBlockState(candidate.shaft()).canBeReplaced()) {
+                return Optional.of(candidate);
+            }
+        }
+        return Optional.empty();
     }
 
     public static List<BlockPos> candidatePistonHeadsNear(BlockPos changedPos) {
         List<BlockPos> candidates = new ArrayList<>(175);
-        int maxVerticalDistance = shaftDistanceForPistonBodies(MAX_PISTON_BODIES);
+        int maxVerticalDistance = shaftDistanceForPistonBodies(MAX_PISTON_BODIES, MAX_SHAFT_GAP);
         for (int dx = -2; dx <= 2; dx++) {
             for (int dy = -maxVerticalDistance; dy <= maxVerticalDistance; dy++) {
                 for (int dz = -2; dz <= 2; dz++) {
@@ -257,6 +294,10 @@ public final class EngineValidator {
 
     private static boolean isEmpty(Level level, BlockPos pos) {
         return level.isLoaded(pos) && level.getBlockState(pos).isAir();
+    }
+
+    private static boolean isPoweredShaft(Level level, BlockPos pos) {
+        return level.isLoaded(pos) && FullSteamPoweredShaftBlock.isPoweredShaft(level.getBlockState(pos));
     }
 
     public static boolean isValidShaft(Level level, BlockPos pos) {
@@ -294,6 +335,66 @@ public final class EngineValidator {
 
     private static Direction strokeDirectionFor(PistonPositions pistons) {
         return pistons.shaft().getY() < pistons.pistonHead().getY() ? Direction.DOWN : Direction.UP;
+    }
+
+    private static int scanPistonBodyCount(Level level, BlockPos pistonHeadPos, Direction strokeDirection) {
+        int count = 0;
+        for (int offset = 1; offset <= MAX_PISTON_BODIES + 1; offset++) {
+            BlockPos pistonPos = pistonHeadPos.relative(strokeDirection, offset);
+            if (!isPiston(level, pistonPos)) {
+                break;
+            }
+            count++;
+        }
+        return count;
+    }
+
+    private static int selectExistingShaftGap(
+            Level level,
+            BlockPos pistonHeadPos,
+            Direction strokeDirection,
+            int pistonBodyCount
+    ) {
+        for (int gap : preferredShaftGaps(pistonBodyCount)) {
+            BlockPos shaft = pistonHeadPos.relative(
+                    strokeDirection,
+                    shaftDistanceForPistonBodies(pistonBodyCount, gap)
+            );
+            if (isPoweredShaft(level, shaft)) {
+                return gap;
+            }
+        }
+        for (int gap : preferredShaftGaps(pistonBodyCount)) {
+            BlockPos shaft = pistonHeadPos.relative(
+                    strokeDirection,
+                    shaftDistanceForPistonBodies(pistonBodyCount, gap)
+            );
+            if (isValidShaft(level, shaft)) {
+                return gap;
+            }
+        }
+        return defaultShaftGapForPistonBodies(pistonBodyCount);
+    }
+
+    private static boolean hasEmptyStrokeSpaces(Level level, PistonPositions positions) {
+        for (BlockPos strokeSpace : positions.emptyStrokeSpaces()) {
+            if (!isEmpty(level, strokeSpace)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static List<Integer> preferredShaftGaps(int pistonBodyCount) {
+        int preferred = defaultShaftGapForPistonBodies(pistonBodyCount);
+        List<Integer> gaps = new ArrayList<>(MAX_SHAFT_GAP);
+        gaps.add(preferred);
+        for (int gap = MIN_SHAFT_GAP; gap <= MAX_SHAFT_GAP; gap++) {
+            if (gap != preferred) {
+                gaps.add(gap);
+            }
+        }
+        return gaps;
     }
 
     private static boolean isAssembled(
@@ -395,6 +496,7 @@ public final class EngineValidator {
             BlockPos pistonHead,
             List<BlockPos> pistons,
             int pistonBodyCount,
+            int shaftGap,
             List<BlockPos> emptyStrokeSpaces,
             BlockPos shaft
     ) {
@@ -411,11 +513,13 @@ public final class EngineValidator {
             BlockPos pistonHead,
             List<BlockPos> pistons,
             int pistonBodyCount,
+            int shaftGap,
             List<BlockPos> emptyStrokeSpaces,
             BlockPos shaft
     ) {
         public static Result invalid(String message) {
-            return new Result(false, message, null, null, null, null, Direction.UP, null, List.of(), 0, List.of(), null);
+            return new Result(false, message, null, null, null, null,
+                    Direction.UP, null, List.of(), 0, MIN_SHAFT_GAP, List.of(), null);
         }
     }
 

@@ -69,8 +69,8 @@ public final class FullSteamPartialModels {
         return PartialModel.of(CRANK_LOCATION);
     }
 
-    public static PartialModel crank(int pistonBodyCount) {
-        return PartialModel.of(switch (PistonHeadAnimation.clampPistonBodyCount(pistonBodyCount)) {
+    public static PartialModel crank(int shaftGap) {
+        return PartialModel.of(switch (PistonHeadAnimation.clampShaftGap(shaftGap)) {
             case 2 -> CRANK_2_LOCATION;
             case 3 -> CRANK_3_LOCATION;
             default -> CRANK_LOCATION;

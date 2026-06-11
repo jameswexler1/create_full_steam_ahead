@@ -124,7 +124,7 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
                 0
         );
         for (int segmentIndex = 0;
-             segmentIndex < PistonHeadAnimation.connectingRodMiddleSegments(animation.pistonBodyCount());
+             segmentIndex < animation.connectingRodMiddleSegments();
              segmentIndex++) {
             renderConnectingRodPart(
                     FullSteamPartialModels.connectingRodMiddle(),
@@ -145,7 +145,7 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
                 light,
                 overlay,
                 animation,
-                PistonHeadAnimation.connectingRodUpperOffset(animation.pistonBodyCount())
+                animation.connectingRodUpperOffset()
         );
     }
 
@@ -179,7 +179,7 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             int overlay,
             PistonHeadAnimation.State animation
     ) {
-        SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.crank(animation.pistonBodyCount()), state);
+        SuperByteBuffer buffer = CachedBuffers.partial(FullSteamPartialModels.crank(animation.shaftGap()), state);
         orientForStroke(buffer, animation);
         rotateCrank(
                 buffer.translate(0, animation.crankY(), 0),
@@ -255,7 +255,10 @@ public class PistonHeadRenderer extends SafeBlockEntityRenderer<PistonHeadBlockE
             return fallbackLight;
         }
 
-        int maxDistance = EngineValidator.shaftDistanceForPistonBodies(EngineValidator.MAX_PISTON_BODIES);
+        int maxDistance = EngineValidator.shaftDistanceForPistonBodies(
+                EngineValidator.MAX_PISTON_BODIES,
+                EngineValidator.MAX_SHAFT_GAP
+        );
         int blockOffset = Math.max(0, Math.min(maxDistance, Math.round(Math.abs(y))));
         return LevelRenderer.getLightColor(level, basePos.relative(strokeDirection, blockOffset));
     }

@@ -36,7 +36,15 @@ public final class PistonHeadAnimation {
                 ? KineticBlockEntityRenderer.getAngleForBe(shaft, shaft.getBlockPos(), shaftAxis)
                 : 0;
         angle += engine.getAnimationPhaseOffset();
-        return state(visible, angle, shaftAxis, engine.getStrokeDirection(), engine.getPistonBodyCount());
+        return state(
+                visible,
+                angle,
+                shaftAxis,
+                engine.getStrokeDirection(),
+                engine.getPistonBodyCount(),
+                engine.getShaftGap(),
+                engine.getShaftDistance()
+        );
     }
 
     public static State state(boolean visible, float angle) {
@@ -59,9 +67,39 @@ public final class PistonHeadAnimation {
             int pistonBodyCount
     ) {
         int count = clampPistonBodyCount(pistonBodyCount);
-        float crankRadius = crankRadius(count);
-        float connectingRodLength = connectingRodLength(count);
-        float shaftBaseY = EngineValidator.shaftDistanceForPistonBodies(count);
+        int gap = EngineValidator.defaultShaftGapForPistonBodies(count);
+        return state(
+                visible,
+                angle,
+                shaftAxis,
+                strokeDirection,
+                count,
+                gap,
+                EngineValidator.shaftDistanceForPistonBodies(count, gap)
+        );
+    }
+
+    public static State state(
+            boolean visible,
+            float angle,
+            Direction.Axis shaftAxis,
+            Direction strokeDirection,
+            int pistonBodyCount,
+            int shaftGap,
+            int shaftDistance
+    ) {
+        int count = clampPistonBodyCount(pistonBodyCount);
+        int gap = clampShaftGap(shaftGap);
+        int distance = Math.max(
+                EngineValidator.shaftDistanceForPistonBodies(count, EngineValidator.MIN_SHAFT_GAP),
+                Math.min(
+                        shaftDistance,
+                        EngineValidator.shaftDistanceForPistonBodies(count, EngineValidator.MAX_SHAFT_GAP)
+                )
+        );
+        float crankRadius = crankRadius(gap);
+        float connectingRodLength = connectingRodLength(gap);
+        float shaftBaseY = distance;
         float shaftCenterY = shaftBaseY + 0.5F;
         float linkageAngle = angle + CRANK_DOWN_REST_OFFSET;
         float crankDepth = crankRadius * Mth.cos(linkageAngle);
@@ -84,7 +122,8 @@ public final class PistonHeadAnimation {
                 shaftAxis,
                 strokeDirection,
                 count,
-                EngineValidator.shaftDistanceForPistonBodies(count),
+                gap,
+                distance,
                 headY,
                 pistonY,
                 connectingRodY,
@@ -96,37 +135,41 @@ public final class PistonHeadAnimation {
         return Mth.clamp(pistonBodyCount, EngineValidator.MIN_PISTON_BODIES, EngineValidator.MAX_PISTON_BODIES);
     }
 
-    public static float crankRadius(int pistonBodyCount) {
-        return CRANK_RADII[clampPistonBodyCount(pistonBodyCount) - 1];
+    public static int clampShaftGap(int shaftGap) {
+        return EngineValidator.clampShaftGap(shaftGap);
     }
 
-    public static float connectingRodLength(int pistonBodyCount) {
-        return connectingRodLengthUnits(pistonBodyCount) / 16.0F;
+    public static float crankRadius(int shaftGap) {
+        return CRANK_RADII[clampShaftGap(shaftGap) - 1];
     }
 
-    public static int connectingRodMiddleSegments(int pistonBodyCount) {
-        int extraUnits = connectingRodUpperOffsetUnits(pistonBodyCount);
+    public static float connectingRodLength(int shaftGap) {
+        return connectingRodLengthUnits(shaftGap) / 16.0F;
+    }
+
+    public static int connectingRodMiddleSegmentsForGap(int shaftGap) {
+        int extraUnits = connectingRodUpperOffsetUnits(shaftGap);
         return (int) Math.ceil(extraUnits / (float) CONNECTING_ROD_SEGMENT_UNITS) + 1;
     }
 
     public static int maxConnectingRodMiddleSegments() {
-        return connectingRodMiddleSegments(EngineValidator.MAX_PISTON_BODIES);
+        return connectingRodMiddleSegmentsForGap(EngineValidator.MAX_SHAFT_GAP);
     }
 
     public static float connectingRodMiddleOffset(int segmentIndex) {
         return segmentIndex * CONNECTING_ROD_SEGMENT_UNITS / 16.0F;
     }
 
-    public static float connectingRodUpperOffset(int pistonBodyCount) {
-        return connectingRodUpperOffsetUnits(pistonBodyCount) / 16.0F;
+    public static float connectingRodUpperOffsetForGap(int shaftGap) {
+        return connectingRodUpperOffsetUnits(shaftGap) / 16.0F;
     }
 
-    private static int connectingRodUpperOffsetUnits(int pistonBodyCount) {
-        return connectingRodLengthUnits(pistonBodyCount) - CONNECTING_ROD_BASE_LENGTH_UNITS;
+    private static int connectingRodUpperOffsetUnits(int shaftGap) {
+        return connectingRodLengthUnits(shaftGap) - CONNECTING_ROD_BASE_LENGTH_UNITS;
     }
 
-    private static int connectingRodLengthUnits(int pistonBodyCount) {
-        return CONNECTING_ROD_LENGTH_UNITS[clampPistonBodyCount(pistonBodyCount) - 1];
+    private static int connectingRodLengthUnits(int shaftGap) {
+        return CONNECTING_ROD_LENGTH_UNITS[clampShaftGap(shaftGap) - 1];
     }
 
     public record State(
@@ -135,6 +178,7 @@ public final class PistonHeadAnimation {
             Direction.Axis shaftAxis,
             Direction strokeDirection,
             int pistonBodyCount,
+            int shaftGap,
             int shaftDistance,
             float headY,
             float pistonY,
@@ -147,6 +191,14 @@ public final class PistonHeadAnimation {
 
         public boolean isRodConnectionPiston(int blockIndex) {
             return blockIndex == pistonBodyCount - 1;
+        }
+
+        public int connectingRodMiddleSegments() {
+            return PistonHeadAnimation.connectingRodMiddleSegmentsForGap(shaftGap);
+        }
+
+        public float connectingRodUpperOffset() {
+            return PistonHeadAnimation.connectingRodUpperOffsetForGap(shaftGap);
         }
 
         public float connectingRodRotation() {

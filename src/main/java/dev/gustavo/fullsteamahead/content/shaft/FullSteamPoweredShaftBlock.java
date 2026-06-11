@@ -92,7 +92,10 @@ public class FullSteamPoweredShaftBlock extends PoweredShaftBlock {
     }
 
     public static boolean stillValid(BlockState state, LevelReader level, BlockPos shaftPos) {
-        int maxDistance = EngineValidator.shaftDistanceForPistonBodies(EngineValidator.MAX_PISTON_BODIES);
+        int maxDistance = EngineValidator.shaftDistanceForPistonBodies(
+                EngineValidator.MAX_PISTON_BODIES,
+                EngineValidator.MAX_SHAFT_GAP
+        );
         for (int dy = -maxDistance; dy <= maxDistance; dy++) {
             BlockPos headPos = shaftPos.offset(0, dy, 0);
             if (level instanceof Level loadedLevel && !loadedLevel.isLoaded(headPos)) {

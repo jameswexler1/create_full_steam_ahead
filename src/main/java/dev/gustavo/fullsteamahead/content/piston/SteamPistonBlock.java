@@ -232,7 +232,12 @@ public class SteamPistonBlock extends Block implements FullSteamWrenchable {
             }
 
             Direction.Axis axis = preferredShaftAxis(player, state, ray);
-            BlockPos shaftPos = EngineValidator.pistonPositionsFromBody(level, pos).shaft();
+            BlockPos shaftPos = EngineValidator.shaftPlacementPositionsFromBody(level, pos)
+                    .map(EngineValidator.PistonPositions::shaft)
+                    .orElse(null);
+            if (shaftPos == null) {
+                return PlacementOffset.fail();
+            }
             return PlacementOffset.success(shaftPos, placedState -> {
                 BlockState shaftState = AllBlocks.SHAFT.getDefaultState()
                         .setValue(ShaftBlock.AXIS, axis);

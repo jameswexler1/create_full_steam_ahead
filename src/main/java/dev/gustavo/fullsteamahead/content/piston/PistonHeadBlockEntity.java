@@ -45,6 +45,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private static final String INLET_POS_KEY = "InletPos";
     private static final String SHAFT_POS_KEY = "ShaftPos";
     private static final String PISTON_BODY_COUNT_KEY = "PistonBodyCount";
+    private static final String SHAFT_GAP_KEY = "ShaftGap";
     private static final String ACTIVE_BURNERS_KEY = "ActiveBurners";
     private static final String HEAT_UNITS_KEY = "HeatUnits";
     private static final String GENERATED_SPEED_KEY = "GeneratedSpeed";
@@ -75,6 +76,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private BlockPos inletPos;
     private BlockPos shaftPos;
     private int pistonBodyCount = EngineValidator.MIN_PISTON_BODIES;
+    private int shaftGap = EngineValidator.MIN_SHAFT_GAP;
     private int activeBurners;
     private int heatUnits;
     private float generatedSpeed;
@@ -160,6 +162,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
                 || !Objects.equals(inletPos, result.inletPos())
                 || !Objects.equals(shaftPos, result.shaft())
                 || pistonBodyCount != result.pistonBodyCount()
+                || shaftGap != result.shaftGap()
                 || !Objects.equals(status, result.message());
 
         assembled = true;
@@ -169,6 +172,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         inletPos = result.inletPos();
         shaftPos = result.shaft();
         pistonBodyCount = result.pistonBodyCount();
+        shaftGap = result.shaftGap();
         status = result.message();
 
         setPistonsAssembled(result);
@@ -202,6 +206,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
                 || inletPos != null
                 || shaftPos != null
                 || pistonBodyCount != EngineValidator.MIN_PISTON_BODIES
+                || shaftGap != EngineValidator.MIN_SHAFT_GAP
                 || steamConsumedRate != 0
                 || sourceMode != SourceMode.NONE
                 || !Objects.equals(status, reason);
@@ -216,6 +221,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         inletPos = null;
         shaftPos = null;
         pistonBodyCount = EngineValidator.MIN_PISTON_BODIES;
+        shaftGap = EngineValidator.MIN_SHAFT_GAP;
         activeBurners = 0;
         heatUnits = 0;
         generatedSpeed = 0;
@@ -281,8 +287,12 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         return Mth.clamp(pistonBodyCount, EngineValidator.MIN_PISTON_BODIES, EngineValidator.MAX_PISTON_BODIES);
     }
 
+    public int getShaftGap() {
+        return EngineValidator.clampShaftGap(shaftGap);
+    }
+
     public int getShaftDistance() {
-        return EngineValidator.shaftDistanceForPistonBodies(getPistonBodyCount());
+        return EngineValidator.shaftDistanceForPistonBodies(getPistonBodyCount(), getShaftGap());
     }
 
     public Direction getStrokeDirection() {
@@ -415,6 +425,9 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
                 .style(ChatFormatting.DARK_GRAY)
                 .forGoggles(tooltip, 1);
         CreateLang.text("Piston bodies: " + getPistonBodyCount() + "/" + EngineValidator.MAX_PISTON_BODIES)
+                .style(ChatFormatting.DARK_GRAY)
+                .forGoggles(tooltip, 1);
+        CreateLang.text("Stroke gap: " + getShaftGap() + "/" + EngineValidator.MAX_SHAFT_GAP)
                 .style(ChatFormatting.DARK_GRAY)
                 .forGoggles(tooltip, 1);
         CreateLang.text("Source: " + sourceMode.displayName())
@@ -829,6 +842,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         writePos(tag, INLET_POS_KEY, inletPos);
         writePos(tag, SHAFT_POS_KEY, shaftPos);
         tag.putInt(PISTON_BODY_COUNT_KEY, pistonBodyCount);
+        tag.putInt(SHAFT_GAP_KEY, shaftGap);
         tag.putInt(ACTIVE_BURNERS_KEY, activeBurners);
         tag.putInt(HEAT_UNITS_KEY, heatUnits);
         tag.putFloat(GENERATED_SPEED_KEY, generatedSpeed);
@@ -857,6 +871,9 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
                         EngineValidator.MAX_PISTON_BODIES
                 )
                 : EngineValidator.MIN_PISTON_BODIES;
+        shaftGap = tag.contains(SHAFT_GAP_KEY)
+                ? EngineValidator.clampShaftGap(tag.getInt(SHAFT_GAP_KEY))
+                : EngineValidator.defaultShaftGapForPistonBodies(pistonBodyCount);
         activeBurners = tag.getInt(ACTIVE_BURNERS_KEY);
         heatUnits = tag.getInt(HEAT_UNITS_KEY);
         generatedSpeed = tag.getFloat(GENERATED_SPEED_KEY);

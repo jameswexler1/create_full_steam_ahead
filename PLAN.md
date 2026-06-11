@@ -145,9 +145,9 @@ Block counts for a minimal engine:
 - Direct compact mode: 16 × `steam_cylinder` (8 per layer × 2 layers)
 - Pipe-fed mode: 15 × `steam_cylinder` + 1 × `steam_inlet` occupying any cylinder shell slot
 - 1 × `piston_head` in the lower cylinder bore center
-- 1 × `piston` above it, in the upper cylinder bore
-- 1 × empty stroke block above the piston
-- 1 × regular horizontal Create `shaft` above the empty stroke space
+- 1-3 × `piston` above it, with the highest piston body carrying the rod connection
+- 1-3 × empty stroke blocks above the highest piston body
+- 1 × regular horizontal Create `shaft` above the empty stroke space stack
 - At least 9 × Create `fluid_tank` (3×3×1 minimum)
 - At least 1 × Create `blaze_burner`
 
@@ -202,11 +202,13 @@ The cylinder ring also disassembles visually if any of the 16 shell blocks is re
 
 When the `piston_head` block entity revalidates, it scans upward along its Y axis:
 
-1. Expects one `piston` block directly above it
-2. Expects one empty stroke block above the piston
-3. Expects a horizontal regular Create shaft or hidden Full Steam Ahead powered shaft above the empty stroke space
+1. Expects one to three contiguous `piston` blocks directly above it
+2. Expects one to three empty stroke blocks above the highest piston body
+3. Expects a horizontal regular Create shaft or hidden Full Steam Ahead powered shaft above the empty stroke space stack
 4. Expects a valid assembled `SteamCylinder` ring around the lower piston head and upper piston body
 5. Checks for either a valid Create fluid tank layer directly below the ring's bottom layer, or one assembled `steam_inlet` occupying a cylinder shell slot, but a missing steam source does not block mechanical assembly
+
+By default, the shaft gap matches the piston body count: one piston body uses one empty stroke space, two bodies use two, and three bodies use three. Manually placed shafts are also accepted at any one-to-three-block stroke gap after the final piston body. The connecting rod and crank visual tier follow the actual shaft gap, while the piston body count only controls how many piston body blocks render.
 
 If all mechanical checks pass: the piston head stores references to the cylinder root, inlet, boiler, and shaft. If the player placed a normal Create shaft, it is swapped to `full_steam_ahead:powered_shaft`. The piston/head/linkage visuals assemble around the shaft even with no active steam source, matching Create's own passive linkage behavior. Direct compact mode reads boiler heat/water when present. Pipe-fed mode consumes stored `steam` from the inlet when present. If both sources exist, piped steam is preferred while available, with direct boiler output as fallback. If neither source can supply steam, the engine remains assembled but generates 0 RPM and 0 SU.
 
@@ -217,7 +219,7 @@ If any mechanical check fails: the piston head clears assembly, restores the hid
 - Any `steam_cylinder` block placed or removed within the expected positions
 - Any Create fluid tank block placed or removed directly below the cylinder's bottom ring
 - Piston head block entity loads from disk or lazy-ticks after the player places the shaft
-- Looking at the completed piston body with a Create shaft in hand uses Create's placement-helper preview to show the shaft ghost at the required top-link position, then places the shaft into that position on right-click
+- Looking at the completed piston body with a Create shaft in hand uses Create's placement-helper preview to show the default shaft ghost at the top-link position, then places the shaft into that position on right-click
 
 Pipe-fed mode accepts either the direct boiler below the ring or a valid steam inlet occupying one assembled cylinder shell slot. Direct compact mode must remain working during the transition.
 
@@ -518,7 +520,7 @@ Implementation note: Phase 3 uses `Block implements IBE<SteamCylinderBlockEntity
 Tasks:
 - [x] Initially implemented `CrankshaftBlockEntity extends GeneratingKineticBlockEntity`
 - [x] Refactored output ownership to `PistonHeadBlockEntity` plus hidden `FullSteamPoweredShaftBlockEntity`, matching Create's vanilla shaft-grab pattern
-- [x] Upward scan from piston head: piston body → empty stroke → horizontal Create shaft; ring and boiler/inlet are validated around/below the piston head
+- [x] Upward scan from piston head: one to three piston bodies → one to three empty stroke spaces → horizontal Create shaft; ring and boiler/inlet are validated around/below the piston head
 - [x] If valid: store cylinder root, inlet, boiler, and shaft refs; power the hidden shaft block entity
 - [x] Initial Phase 4 `getGeneratedSpeed()` followed exact active-burner RPM tiers: 1-2 = 16 RPM, 3-4 = 32 RPM, 5-8 = 48 RPM, 9 = 64 RPM. Phase 12 later superseded runtime output with pressure/flow output factors.
 - [x] Initial Phase 4 `calculateAddedStressCapacity()` followed exact burner SU output, including Blaze Cake doubling. Phase 12 later capped one engine at the configured full-engine rating and moved surplus heat into pipe-fed production/pressure.
@@ -621,6 +623,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Add `PistonHeadRenderer` fallback for non-visualized rendering so piston motion is still visible if Flywheel visualization is disabled
 - [x] Remove the custom `crankshaft` block and use a regular Create shaft as the player-facing output
 - [x] Add a Create-style shaft placement helper: looking at a mechanically complete piston body with a Create shaft in hand previews and places the shaft at the required top-link position
+- [x] Allow the shaft to be placed manually at one to three empty stroke spaces beyond the final piston body; rod/crank visuals now scale from that actual shaft gap
 - [x] Allow a mechanically complete piston/head/ring/shaft structure to assemble its linkage with no steam source; steam availability only controls generated RPM/SU
 - [x] Expose minimal client-safe getters on `PistonHeadBlockEntity`: assembled state, source mode/running state, active speed, ring origin, inlet position, and shaft position
 - [x] Hide or simplify static assembled piston block geometry so it does not fight the moving visual
