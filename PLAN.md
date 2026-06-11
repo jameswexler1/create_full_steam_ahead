@@ -769,13 +769,14 @@ changing engine balance.
 - [x] Past `steamPhysics.warnPressure`: status flips to "Overpressure!", with hiss and steam particles at the boiler center on a cadence.
 - [x] Past `steamPhysics.burstPressure`: each physical boiler bursts at most once even if several outlets are attached to it.
 - [x] A burst drains/depressurizes the whole connected steam network so pressure does not survive the explosion.
-- [x] Explosion power = `min(maxPower, basePower + powerPerVolume · networkVolume)`, with block-breaking configurable. Defaults are `basePower=12.0`, `powerPerVolume=0.45`, `maxPower=36.0`.
+- [x] Explosion power = `min(maxPower, basePower + powerPerVolume · networkVolume) · powerScale`, with block-breaking configurable. Defaults are `basePower=12.0`, `powerPerVolume=0.45`, `maxPower=36.0`, `powerScale=0.5`.
 - [x] Bursts also send a client-side visual/audio packet for a large steam cloud, layered placeholder boom/hiss sounds, and configurable screen shake.
 - [x] Client burst sound radius is 200 blocks; screen shake radius is 150 blocks.
 - [x] Optional Sable/Aeronautics compat projects simulated-contraption burst effects into world coordinates and damages nearby sublevel blocks locally.
-- [x] Simulated-contraption sublevel damage uses sparse explosion-like drops instead of dropping every destroyed block.
-- [x] `steamOverpressure` config group: enabled, explosion base/per-volume/max power, final power scale, breaksBlocks, client effect packet radius.
+- [x] Simulated-contraption sublevel damage uses a bounded local `sublevelDamageRadius`, sparse explosion-like drops instead of dropping every destroyed block, quiet block removal, neighbor updates, and vanilla-style checks for unbreakable/blast-resistant blocks.
+- [x] `steamOverpressure` config group: enabled, explosion base/per-volume/max power, final power scale, breaksBlocks, client effect packet radius, and Sable sublevel damage radius.
 - [x] Client config group: boiler burst visuals, sound volume scale/radius, steam cloud scale, screen shake enable/scale/radius, blast wave speed.
+- [ ] Follow-up: local Sable crater pass should skip fluid-only blocks without making waterlogged solid blocks immune.
 - [ ] **Steam vent valve block** (future): bleeds surplus on demand / redstone to prevent bursts.
 
 ### Phase 14: Display Link Pressure Readouts — Implemented (manual verification pending)
