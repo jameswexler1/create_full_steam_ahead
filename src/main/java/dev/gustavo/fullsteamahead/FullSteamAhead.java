@@ -1,6 +1,7 @@
 package dev.gustavo.fullsteamahead;
 
 import com.mojang.logging.LogUtils;
+import dev.gustavo.fullsteamahead.compat.cbc.CbcProjectileDamageCompat;
 import dev.gustavo.fullsteamahead.compat.create.CreateMovementCompat;
 import dev.gustavo.fullsteamahead.compat.simulated.SimulatedMovementCompat;
 import dev.gustavo.fullsteamahead.config.FullSteamClientConfig;
@@ -54,6 +55,7 @@ public final class FullSteamAhead {
             SteamNetworkManager.register(NeoForge.EVENT_BUS);
             SteamOpenPipeEffectHandler.register();
             ModDisplaySources.registerAssociations();
+            CbcProjectileDamageCompat.registerIfPresent(NeoForge.EVENT_BUS);
             CreateMovementCompat.register();
             SimulatedMovementCompat.registerIfPresent();
         });

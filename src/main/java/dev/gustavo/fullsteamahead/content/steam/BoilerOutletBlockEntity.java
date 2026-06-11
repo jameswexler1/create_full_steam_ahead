@@ -9,9 +9,7 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
 import dev.gustavo.fullsteamahead.compat.create.FullSteamBoilerIntegration;
-import dev.gustavo.fullsteamahead.compat.simulated.SableBurstCompat;
 import dev.gustavo.fullsteamahead.config.FullSteamConfig;
-import dev.gustavo.fullsteamahead.network.BoilerBurstPayload;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModFluids;
 import dev.gustavo.fullsteamahead.registry.ModParticleTypes;
@@ -32,7 +30,6 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -868,34 +865,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
             return;
         }
 
-        Vec3 localCenter = boilerCenter(boiler);
-        float power = SteamPhysics.burstPower(networkVolumeM3, pressurePn);
-        long seed = serverLevel.random.nextLong();
-        SableBurstCompat.BurstContext burstContext = SableBurstCompat.resolve(boiler, localCenter);
-
-        Vec3 center = burstContext.worldCenter();
-        double effectRadius = FullSteamConfig.overpressureEffectRadius();
-        if (effectRadius > 0.0D) {
-            PacketDistributor.sendToPlayersNear(
-                    serverLevel,
-                    null,
-                    center.x,
-                    center.y,
-                    center.z,
-                    effectRadius,
-                    new BoilerBurstPayload(center.x, center.y, center.z, power, networkVolumeM3, seed)
-            );
-        }
-        Level.ExplosionInteraction interaction = FullSteamConfig.overpressureBreaksBlocks()
-                ? Level.ExplosionInteraction.BLOCK
-                : Level.ExplosionInteraction.NONE;
-        serverLevel.explode(null, center.x, center.y, center.z, power, interaction);
-        // Carve only after the projected explosion: Sable's rays damage sublevel blocks themselves
-        // and must meet intact armor first, or the pre-carved hole lets them penetrate far deeper
-        // than an equivalent ground burst.
-        if (FullSteamConfig.overpressureBreaksBlocks()) {
-            SableBurstCompat.damageSubLevelBlocks(serverLevel, burstContext, power, seed);
-        }
+        BoilerBurst.explode(serverLevel, boiler, networkVolumeM3, pressurePn);
     }
 
     private Vec3 boilerCenter(FluidTankBlockEntity boiler) {

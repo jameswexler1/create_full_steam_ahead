@@ -15,10 +15,11 @@ Implemented:
   `min(maxPower, basePower + powerPerVolume * networkVolume) * explosionPowerScale`.
 - Phase A polish adds a clientbound boiler burst packet. Nearby clients spawn a large steam cloud,
   play layered placeholder boom/hiss sounds, and apply distance-delayed configurable camera shake.
-- Default burst power scale is now `0.75`, 50% larger than the old `0.5` scale while preserving
+- Default burst power scale is now `2.0`, 400% as strong as the old `0.5` scale while preserving
   the same base/per-volume curve.
-- Create Big Cannons projectiles striking a pressurized boiler tank force a pressure-scaled rupture
-  through the same burst path, then depressurize the connected steam network.
+- Create Big Cannons projectiles striking an active boiler tank force a rupture through the same
+  burst path. Outlet-fed networks use current pressure and depressurize; active boilers without a
+  pressure network rupture at full burst pressure.
 - Burst sound now cuts off past 200 blocks, and screen shake cuts off past 150 blocks.
 - Optional Sable/Aeronautics compat projects simulated-contraption burst effects into real-world
   coordinates and applies a randomized local block-damage pass to nearby sublevel blocks. Local
@@ -59,6 +60,8 @@ Manual runtime checklist:
 - [ ] Opening a pipe end relieves pressure and prevents burst when relief is sufficient.
 - [ ] Create Big Cannons projectile hit on a pressurized outlet-fed boiler triggers one boiler burst,
       depressurizes the network, and does not require Create Big Cannons as a hard dependency.
+- [ ] Create Big Cannons projectile hit on an active heated/watered boiler with no outlet-fed
+      pressure network still triggers one full-pressure boiler rupture.
 - [ ] `Steam Relief Valve` appears in the Full Steam Ahead creative tab and places only on top of
       a Create Fluid Tank boiler.
 - [ ] A valve on a boiler with no outlet/network shows a boiler link but does not vent.

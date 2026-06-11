@@ -3,6 +3,8 @@ package dev.gustavo.fullsteamahead.content.steam;
 import com.simibubi.create.content.fluids.FluidPropagator;
 import com.simibubi.create.content.fluids.FluidTransportBehaviour;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
+import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
+import dev.gustavo.fullsteamahead.compat.create.FullSteamBoilerIntegration;
 import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModFluids;
@@ -13,6 +15,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -116,7 +119,7 @@ public final class SteamNetworkManager {
             double volume = networkVolume(network);
             double pressure = SteamPhysics.pressurePn(network.storedMb, networkTemperature(network), volume);
             if (pressure <= 0.0D) {
-                return false;
+                return ruptureActiveBoilerFallback(level, boiler);
             }
 
             for (BoilerOutletBlockEntity outlet : network.outlets) {
@@ -132,8 +135,9 @@ public final class SteamNetworkManager {
                 }
                 return true;
             }
+            return ruptureActiveBoilerFallback(level, boiler);
         }
-        return false;
+        return ruptureActiveBoilerFallback(level, boiler);
     }
 
     private static void onLevelTick(LevelTickEvent.Post event) {
@@ -649,6 +653,59 @@ public final class SteamNetworkManager {
     private static FluidTankBlockEntity controllerOrSelf(FluidTankBlockEntity tank) {
         FluidTankBlockEntity controller = tank.getControllerBE();
         return controller == null ? tank : controller;
+    }
+
+    private static boolean ruptureActiveBoilerFallback(ServerLevel level, FluidTankBlockEntity boiler) {
+        if (boiler == null || boiler.isRemoved()) {
+            return false;
+        }
+
+        boolean heatedWaterTank = hasHeatedWaterTank(boiler);
+        boiler.updateBoilerState();
+        if (boiler.boiler == null) {
+            if (!heatedWaterTank) {
+                return false;
+            }
+        } else if (boiler.boiler.needsHeatLevelUpdate) {
+            boiler.boiler.updateTemperature(boiler);
+        }
+
+        int usableHeat = boiler.boiler == null ? 0 : FullSteamBoilerIntegration.usableHeatUnits(boiler);
+        if (usableHeat <= 0 && !heatedWaterTank) {
+            return false;
+        }
+
+        double volume = Math.max(1.0D, boiler.getTotalTankSize());
+        BoilerBurst.explode(level, boiler, volume, FullSteamConfig.steamBurstPressure());
+        return true;
+    }
+
+    private static boolean hasHeatedWaterTank(FluidTankBlockEntity boiler) {
+        if (boiler.getTankInventory().getFluidAmount() <= 0
+                || !boiler.getTankInventory().getFluid().is(Fluids.WATER)) {
+            return false;
+        }
+        Level level = boiler.getLevel();
+        if (level == null) {
+            return false;
+        }
+
+        BlockPos origin = boiler.getBlockPos();
+        int width = Math.max(1, boiler.getWidth());
+        int y = origin.getY() - 1;
+        for (int x = 0; x < width; x++) {
+            for (int z = 0; z < width; z++) {
+                BlockPos burnerPos = new BlockPos(origin.getX() + x, y, origin.getZ() + z);
+                if (!level.isLoaded(burnerPos)) {
+                    continue;
+                }
+                BlazeBurnerBlock.HeatLevel heat = BlazeBurnerBlock.getHeatLevelOf(level.getBlockState(burnerPos));
+                if (heat.isAtLeast(BlazeBurnerBlock.HeatLevel.FADING)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public static double effectiveBoilerHeat(Level level, BlockPos boilerPos, double targetHeat, boolean dry) {

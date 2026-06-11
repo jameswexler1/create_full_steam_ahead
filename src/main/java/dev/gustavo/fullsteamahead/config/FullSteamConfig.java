@@ -47,7 +47,7 @@ public final class FullSteamConfig {
     private static final double DEFAULT_OVERPRESSURE_BASE_POWER = 12.0D;
     private static final double DEFAULT_OVERPRESSURE_POWER_PER_VOLUME = 0.45D;
     private static final double DEFAULT_OVERPRESSURE_MAX_POWER = 36.0D;
-    private static final double DEFAULT_OVERPRESSURE_POWER_SCALE = 0.75D;
+    private static final double DEFAULT_OVERPRESSURE_POWER_SCALE = 2.0D;
     private static final boolean DEFAULT_OVERPRESSURE_BREAKS_BLOCKS = true;
     private static final double DEFAULT_OVERPRESSURE_EFFECT_RADIUS = 200.0D;
     private static final double DEFAULT_OVERPRESSURE_SUBLEVEL_RADIUS = 5.0D;
@@ -262,7 +262,7 @@ public final class FullSteamConfig {
 
         OVERPRESSURE_POWER_SCALE = builder
                 .comment("Final multiplier applied to boiler burst explosion power.",
-                        "Default 0.75 preserves the base/per-volume tuning curve while making bursts 50% larger than the old 0.5 scale.")
+                        "Default 2.0 preserves the base/per-volume tuning curve while making bursts 400% as strong as the old 0.5 scale.")
                 .defineInRange("explosionPowerScale", DEFAULT_OVERPRESSURE_POWER_SCALE, 0.0D, 100.0D);
 
         OVERPRESSURE_BREAKS_BLOCKS = builder
