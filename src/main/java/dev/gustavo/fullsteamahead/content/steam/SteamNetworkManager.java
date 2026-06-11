@@ -188,10 +188,13 @@ public final class SteamNetworkManager {
                 valves.remove(valvePos);
                 continue;
             }
-            BlockPos boilerPos = valve.getBoilerControllerPos();
-            if (boilerPos == null) {
+            FluidTankBlockEntity boiler = valve.getBoiler();
+            BlockPos boilerPos = boiler == null ? valve.getBoilerControllerPos() : boiler.getBlockPos();
+            if (boiler == null && boilerPos == null) {
                 valve.refreshBoilerState();
                 boilerPos = valve.getBoilerControllerPos();
+            } else if (boiler != null && !boiler.getBlockPos().equals(valve.getBoilerControllerPos())) {
+                valve.refreshBoilerState();
             }
             if (boilerPos != null) {
                 byBoiler.computeIfAbsent(boilerPos.immutable(), ignored -> new ArrayList<>()).add(valve);
@@ -282,7 +285,7 @@ public final class SteamNetworkManager {
         double weight = Math.max(1, outlet.getStoredSteamMb() + outlet.getBoilerProductionMb());
         network.temperatureNumerator += outlet.getTemperatureK() * weight;
         network.temperatureWeight += weight;
-        BlockPos boiler = outlet.getBoilerControllerPos();
+        BlockPos boiler = currentBoilerControllerPos(outlet);
         if (boiler != null && network.boilers.add(boiler)) {
             network.volumeM3 += Math.max(1, outlet.getBoilerVolume());
         }
@@ -292,6 +295,14 @@ public final class SteamNetworkManager {
         if (level.isLoaded(pipePos) && FluidPropagator.getPipe(level, pipePos) != null && visitedPipes.add(pipePos)) {
             queue.add(new PipeNode(pipePos, facing.getOpposite()));
         }
+    }
+
+    private static BlockPos currentBoilerControllerPos(BoilerOutletBlockEntity outlet) {
+        FluidTankBlockEntity boiler = outlet.getBoiler();
+        if (boiler != null) {
+            return boiler.getBlockPos();
+        }
+        return outlet.getBoilerControllerPos();
     }
 
     private static void stepAndApply(
@@ -398,7 +409,7 @@ public final class SteamNetworkManager {
             // One physical boiler bursts once regardless of how many outlets it has...
             Set<BlockPos> burstBoilers = new HashSet<>();
             for (BoilerOutletBlockEntity outlet : network.outlets) {
-                BlockPos boilerPos = outlet.getBoilerControllerPos();
+                BlockPos boilerPos = currentBoilerControllerPos(outlet);
                 if (boilerPos != null && !burstBoilers.add(boilerPos)) {
                     continue;
                 }
@@ -428,7 +439,7 @@ public final class SteamNetworkManager {
         }
 
         List<SteamReliefValveBlockEntity> openValves = new ArrayList<>();
-        int capacity = 0;
+        int configuredCapacity = 0;
         boolean forced = false;
         for (SteamReliefValveBlockEntity valve : network.reliefValves) {
             ValveTickState state = reliefValveStates.computeIfAbsent(valve.getBlockPos().immutable(), ignored -> new ValveTickState());
@@ -444,10 +455,11 @@ public final class SteamNetworkManager {
             }
 
             openValves.add(valve);
-            capacity += available;
+            configuredCapacity += available;
             forced |= valve.isForcedOpen();
         }
 
+        int capacity = effectiveReliefCapacity(network, configuredCapacity);
         if (capacity <= 0 || openValves.isEmpty()) {
             return ReliefResult.NONE;
         }
@@ -467,22 +479,37 @@ public final class SteamNetworkManager {
 
         int drained = drainFromNetwork(level, network, requestedDrain);
         int remaining = drained;
+        int remainingValves = openValves.size();
         for (SteamReliefValveBlockEntity valve : openValves) {
             if (remaining <= 0) {
                 break;
             }
+            int used = (int) Math.ceil(remaining / (double) remainingValves);
             BlockPos valvePos = valve.getBlockPos();
             int available = reliefValveBudgets.getOrDefault(valvePos, 0);
-            int used = Math.min(available, remaining);
             if (used <= 0) {
                 continue;
             }
-            reliefValveBudgets.put(valvePos.immutable(), available - used);
+            reliefValveBudgets.put(valvePos.immutable(), Math.max(0, available - Math.min(available, used)));
             reliefValveStates.computeIfAbsent(valvePos.immutable(), ignored -> new ValveTickState())
                     .recordVent(used);
             remaining -= used;
+            remainingValves--;
         }
         return new ReliefResult(drained);
+    }
+
+    private static int effectiveReliefCapacity(Network network, int configuredCapacity) {
+        if (network.productionMb <= 0) {
+            return configuredCapacity;
+        }
+
+        // A safety valve must be sized against the boiler it protects, not only act as another
+        // small consumer. Keep the configured value as the baseline, but guarantee enough authority
+        // to outrun the current boiler production once the valve opens.
+        long productionGuard = (long) network.productionMb * 4L;
+        long effective = Math.max(configuredCapacity, productionGuard);
+        return (int) Math.min(Integer.MAX_VALUE, Math.max(0L, effective));
     }
 
     private static void recordReliefValvePressure(

@@ -292,7 +292,9 @@ public final class FullSteamConfig {
                 .defineInRange("closePressure", DEFAULT_RELIEF_VALVE_CLOSE_PRESSURE, 0.0D, 1.0e12D);
 
         RELIEF_VALVE_VENT_RATE_MB = builder
-                .comment("Maximum steam (mB/t) one relief valve can vent from all networks fed by its boiler.")
+                .comment("Baseline steam (mB/t) one relief valve can vent.",
+                        "When an attached boiler is actively producing more steam, relief capacity scales upward",
+                        "from this baseline so a valid safety valve can outrun the boiler before burst pressure.")
                 .defineInRange("ventRateMb", DEFAULT_RELIEF_VALVE_VENT_RATE_MB, 0, 1_000_000);
 
         builder.pop();

@@ -139,7 +139,7 @@ public class SteamReliefValveBlock extends Block implements IBE<SteamReliefValve
             BlockPos pos,
             CollisionContext context
     ) {
-        return SHAPES.get(state.getValue(FACING));
+        return getInteractionShape(state);
     }
 
     @Override
@@ -149,7 +149,7 @@ public class SteamReliefValveBlock extends Block implements IBE<SteamReliefValve
             BlockPos pos,
             CollisionContext context
     ) {
-        return SHAPES.get(state.getValue(FACING));
+        return getInteractionShape(state);
     }
 
     @Override
@@ -163,6 +163,12 @@ public class SteamReliefValveBlock extends Block implements IBE<SteamReliefValve
 
     public static BlockPos getAttachedTankPos(BlockPos pos) {
         return pos.below();
+    }
+
+    private static VoxelShape getInteractionShape(BlockState state) {
+        // The authored model's visible front is opposite the logical horizontal facing used by
+        // blockstate/model rotation. Mirror the model-derived hitbox to match the rendered valve.
+        return SHAPES.get(state.getValue(FACING).getOpposite());
     }
 
     @Override

@@ -303,7 +303,7 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - If the boiler has no active outlet/network, it can still sit on the boiler and show boiler-link status, but it has no pressure to relieve.
 - Automatic mode opens at `steamReliefValve.openPressure` and stays open until pressure falls below `steamReliefValve.closePressure`.
 - Redstone power forces the valve open and drains toward the same atmospheric target used by open pipe ends.
-- One valve vents up to `steamReliefValve.ventRateMb` per tick; multiple valves on the same boiler share the same physical boiler/network pressure and add relief capacity without duplicating steam production.
+- One valve starts from `steamReliefValve.ventRateMb` baseline vent capacity, then scales effective relief capacity with the active boiler network's production so a valid safety valve can outrun the boiler before burst pressure. Multiple valves on the same boiler share the same physical boiler/network pressure and add relief capacity without duplicating steam production.
 - Visuals: cap lifts, handwheel spins while venting, Create-style steam particles/sound emit from the vent collar.
 - Goggle overlay: boiler link, valve state, current pressure, open threshold, last vented amount, and peak pressure while sneaking.
 
@@ -406,7 +406,7 @@ Boiler reference: vanilla Create steam engine baseline.
 | Warning pressure | 1.5 MpN/m² |
 | Relief valve opens | 2.2 MpN/m² |
 | Relief valve closes | 1.7 MpN/m² |
-| Relief valve vent rate | 720 mB/t per valve |
+| Relief valve baseline vent rate | 720 mB/t per valve |
 | Burst pressure | 2.5 MpN/m² |
 
 Direct compact formula:
@@ -796,7 +796,7 @@ changing engine balance.
 - [x] Client config group: boiler burst visuals, sound volume scale/radius, steam cloud scale, screen shake enable/scale/radius, blast wave speed.
 - [x] Add `steam_relief_valve` as a top-mounted Create boiler safety block with block entity, model, item, recipe, loot, lang, tags, creative entry, movement rules, goggle tooltip, and client renderer.
 - [x] Relief valves attach by Create Fluid Tank boiler controller, not by pipe network position, so one valve protects all outlet-fed networks on that physical boiler.
-- [x] Automatic relief opens at `2.2 MpN/m²`, closes below `1.7 MpN/m²`, and vents up to `720 mB/t` per valve by default.
+- [x] Automatic relief opens at `2.2 MpN/m²`, closes below `1.7 MpN/m²`, and uses `720 mB/t` as the baseline per-valve vent rate while scaling effective safety relief with active boiler production.
 - [x] Redstone-powered relief valves force open and drain toward the configured open-pipe atmospheric target.
 - [x] Relief valve venting uses Create-style cap lift, handwheel spin, steam particles, scald hazard, and steam sound.
 - [ ] Follow-up: local Sable crater pass should skip fluid-only blocks without making waterlogged solid blocks immune.

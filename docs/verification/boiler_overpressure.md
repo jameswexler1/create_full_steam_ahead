@@ -21,8 +21,8 @@ Implemented:
   sublevel destruction mostly vaporizes blocks and only drops sparse edge salvage.
 - `steam_relief_valve` is a top-mounted Create Fluid Tank boiler safety block. It links to the
   boiler controller below, protects steam networks fed by that physical boiler, opens at
-  `2.2 MpN/m²`, closes below `1.7 MpN/m²`, vents `720 mB/t` per valve by default, and can be
-  forced open with redstone.
+  `2.2 MpN/m²`, closes below `1.7 MpN/m²`, uses `720 mB/t` as its baseline vent rate, scales
+  effective relief with active boiler production once open, and can be forced open with redstone.
 - `steamOverpressure` config covers enabled, explosion base/per-volume/max power, block breaking, and
   final power scale, and client effect packet radius. Client config covers local visuals, volume,
   sound radius, cloud scale, shake scale/radius, and blast wave speed.
@@ -34,6 +34,8 @@ Automated checks:
 - [x] `git diff --check`
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`
 - Latest automated run on 2026-06-11 after adding `steam_relief_valve`: all three checks passed.
+- Latest automated run on 2026-06-11 after fixing relief-valve hitbox orientation and pressure
+  authority: all three checks passed.
 
 Manual runtime checklist:
 
@@ -56,6 +58,8 @@ Manual runtime checklist:
 - [ ] A valve on a boiler with no outlet/network shows a boiler link but does not vent.
 - [ ] A closed network opens the valve near `2.2 MpN/m²`, vents steam particles/sound, and closes
       after pressure falls below `1.7 MpN/m²`.
+- [ ] A large or Blaze Cake-fired boiler with one valid relief valve vents fast enough to avoid
+      crossing the burst threshold during normal pressure buildup.
 - [ ] A redstone-powered valve opens below the automatic threshold and drains toward atmospheric
       pressure.
 - [ ] Multiple valves on the same boiler add relief capacity without duplicating outlet production.
