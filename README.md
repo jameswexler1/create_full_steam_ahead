@@ -42,7 +42,7 @@ Steam is a real fluid. Production still uses the readable Create-style unit scal
 - One pipe-fed engine consumes up to `9 steam units` or `90 mB/t`
 - A full normal engine output is `9 units = 90 mB/t = 147,456 SU` at `64 RPM`
 
-Boiler outlets produce steam from the attached Create Fluid Tank boiler:
+Boiler outlets and direct boiler pipe ports produce steam from the attached Create Fluid Tank boiler:
 
 ```text
 total steam units = min(active burner units, water supply heat level) * boiler height
@@ -51,6 +51,8 @@ total steam units = min(active burner units, water supply heat level) * boiler h
 Normal Blaze Burners contribute `1` burner unit each. Blaze Cake burners contribute `2` each. Boiler height multiplies the burner footprint, so a `3x3x6` boiler with 9 normal active burners produces `54` steam units, enough for six full normal engines. With 9 Blaze Cake burners it produces `108` units, enough for twelve full pipe-fed engines.
 
 Pipe networks distribute usable steam evenly across reachable assembled `steam_inlet` blocks, capped at `90 mB/t` per inlet from all sources combined, before filling passive storage tanks. If supply is short, every reachable engine receives the same share as closely as whole mB/t allows; SU scales from exact consumed mB/t.
+
+A boiler can expose steam in two ways. A `boiler_outlet` is still the explicit Create-style port block. Active Create Fluid Tank boilers can also feed steam directly into Create Fluid Pipes attached to any top-layer tank face except the bottom face: the top face and all horizontal side faces are valid. Direct boiler ports and `boiler_outlet` blocks share the same boiler budget, so adding more ports splits output instead of multiplying it. Ordinary tanks that merely store `steam` do not gain this pressure source.
 
 ## Pressure Network
 
@@ -63,7 +65,7 @@ pressure pN/m^2 = gasConstant * storedSteamMb * temperatureK / networkVolumeM3
 - Rated pressure is `1.0 MpN/m²`; a full-flow engine at rated pressure reaches full SU and `64 RPM`.
 - Engine output is gated by both pressure and delivered flow: `min(pressure factor, flow factor)`.
 - Multiple boilers can feed one pipe network. Network temperature is weighted by contributed steam, not simply copied from the hottest boiler.
-- Multiple `boiler_outlet` blocks on one boiler split one shared boiler budget and cannot duplicate steam.
+- Multiple steam ports on one boiler, whether `boiler_outlet` blocks or direct pipe connections, split one shared boiler budget and cannot duplicate steam.
 - Passive Create Fluid Tanks add pressure volume from their configured fluid capacity, so larger storage actually buffers pressure.
 - Create fluid valves block steam pressure traversal. Closed valves isolate pressure instead of leaking or bypassing steam.
 - Open pipe ends and unconnected outlets act as atmospheric relief. Broken pipe ends drain toward `steamPhysics.openPipeTargetPressure` (`0 pN/m²` by default); when smoothing is enabled, both stored steam and engine output fall along the same pressure curve instead of snapping off instantly.
@@ -78,9 +80,8 @@ Steam remains visible in Create tanks and pipes through a high-visibility tinted
 
 ## Display Link Readout
 
-Create Display Links can read `boiler_outlet` steam network data through the `Steam Network` source. The source supports Summary, Pressure, Safety, Flow, and Network modes from the normal Display Link configuration screen. Each mode writes one row, so multiple Display Links can target different rows on the same Display Board without overwriting each other.
+Create Display Links can read steam network data from `boiler_outlet` blocks and active Create Fluid Tank boiler controllers through the `Steam Network` source. The source supports Summary, Pressure, Safety, Flow, and Network modes from the normal Display Link configuration screen. Each mode writes one row, so multiple Display Links can target different rows on the same Display Board without overwriting each other.
 
 ## Planned Polish
 
-- Future direct pipe-to-boiler support so active Create Fluid Tank boilers can expose steam without a dedicated `boiler_outlet`.
 - Optional volumetric steam cloud simulation for steam trapped in closed spaces.

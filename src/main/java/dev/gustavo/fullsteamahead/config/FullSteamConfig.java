@@ -17,6 +17,7 @@ public final class FullSteamConfig {
     private static final int DEFAULT_BASE_ENGINE_CAPACITY = 147_456;
     private static final int DEFAULT_STEAM_PER_HEAT_UNIT = 10;
     private static final int DEFAULT_PRESSURE_RANGE = 30;
+    private static final boolean DEFAULT_DIRECT_BOILER_PIPE_OUTPUT_ENABLED = true;
 
     // Per-network ideal-gas steam model (P pN/m^2 = gasConstant * storedMb * tempK / volumeM3).
     private static final double DEFAULT_STEAM_GAS_CONSTANT = 1.4D;
@@ -73,6 +74,7 @@ public final class FullSteamConfig {
     private static final ModConfigSpec.IntValue STEAM_PER_HEAT_UNIT;
     private static final ModConfigSpec.IntValue BOILER_OUTLET_PRESSURE_RANGE;
     private static final ModConfigSpec.BooleanValue ENABLE_DIRECT_COMPACT_MODE;
+    private static final ModConfigSpec.BooleanValue DIRECT_BOILER_PIPE_OUTPUT_ENABLED;
     private static final ModConfigSpec.DoubleValue STEAM_GAS_CONSTANT;
     private static final ModConfigSpec.DoubleValue STEAM_RATED_PRESSURE;
     private static final ModConfigSpec.DoubleValue STEAM_WARN_PRESSURE;
@@ -132,6 +134,11 @@ public final class FullSteamConfig {
         BOILER_OUTLET_PRESSURE_RANGE = builder
                 .comment("How many blocks along a pipe network steam pressure traverses from a boiler outlet.")
                 .defineInRange("boilerOutletPressureRange", DEFAULT_PRESSURE_RANGE, 1, 512);
+
+        DIRECT_BOILER_PIPE_OUTPUT_ENABLED = builder
+                .comment("Allow active Create Fluid Tank boilers to feed FSA steam directly into valid top-layer pipes.",
+                        "Physical boiler_outlet blocks remain supported when this is false.")
+                .define("directBoilerPipeOutputEnabled", DEFAULT_DIRECT_BOILER_PIPE_OUTPUT_ENABLED);
 
         ENABLE_DIRECT_COMPACT_MODE = builder
                 .comment("Allow upright engines to run directly from a compact boiler.",
@@ -373,6 +380,10 @@ public final class FullSteamConfig {
 
     public static int boilerOutletPressureRange() {
         return loaded() ? BOILER_OUTLET_PRESSURE_RANGE.get() : DEFAULT_PRESSURE_RANGE;
+    }
+
+    public static boolean directBoilerPipeOutputEnabled() {
+        return !loaded() || DIRECT_BOILER_PIPE_OUTPUT_ENABLED.get();
     }
 
     public static boolean directCompactModeEnabled() {

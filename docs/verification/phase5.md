@@ -24,6 +24,10 @@ Implemented:
 - Multiple outlets on the same boiler split one shared steam budget instead of duplicating output.
 - One pipe-fed engine consumes at most `90 mB/t`, producing at most `147,456 SU`; surplus steam is for additional engines.
 - Passive Create Fluid Tanks now contribute network pressure volume from their configured fluid capacity, not only their block count.
+- Active Create Fluid Tank boilers can now feed steam directly into Create Fluid Pipes attached to top-layer `UP` or horizontal tank faces.
+- Direct boiler pipe ports and `boiler_outlet` blocks split the same physical boiler steam budget; adding direct pipes cannot duplicate production.
+- Direct boiler pipe ports wrap Create's Fluid Tank capability only on valid active boiler faces, reject steam insertion, and preserve normal water supply behavior.
+- Create Display Links can read `Steam Network` data from active boiler controllers as well as `boiler_outlet` blocks.
 
 Automated checks run:
 
@@ -50,6 +54,7 @@ Results:
 - Latest automated run on 2026-06-11 after making boiler-outlet boiler activation geometric instead of block-entity-cache dependent: `git diff --check` and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - User report after relief valve smoothing fix: attached `steam_relief_valve` opens before burst pressure and prevents a closed boiler outlet network from exploding.
 - Latest automated run on 2026-06-11 after adding top/side-mounted steam relief valves: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
+- Latest automated run on 2026-06-12 after adding direct boiler pipe output and boiler Display Link readouts: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 
 Manual runtime checklist:
 
@@ -95,3 +100,15 @@ Scaled production checklist:
 - [ ] Confirm two independent boilers feeding the same pipe network both contribute steam and the combined stream is still shared across reachable engine inlets.
 - [ ] Confirm adjacent engines on one shaft alternate piston phase instead of rising and falling together.
 - [ ] Confirm adding a large passive Create Fluid Tank to a closed steam network increases displayed network volume by its configured capacity and buffers pressure instead of rapidly climbing while barely filled.
+
+Direct boiler pipe checklist:
+
+- [ ] Confirm a Create pipe attached to the top face of a top-layer active boiler tank receives visible `steam` without a `boiler_outlet`.
+- [ ] Confirm a Create pipe attached to a horizontal side face of a top-layer active boiler tank receives visible `steam` without a `boiler_outlet`.
+- [ ] Confirm bottom faces and lower boiler layers do not become steam outputs.
+- [ ] Confirm direct boiler pipes still allow water to be supplied to the boiler through normal Create fluid handling where applicable.
+- [ ] Confirm a normal Create Fluid Tank containing stored `steam` but not acting as an active boiler does not auto-pressurize adjacent pipes.
+- [ ] Confirm one `boiler_outlet` plus one direct boiler pipe on the same boiler split one shared steam budget instead of both receiving full production.
+- [ ] Confirm direct pipe output respects closed Create fluid valves and resumes when the valve reopens.
+- [ ] Confirm open direct boiler pipe ends vent toward atmospheric pressure instead of exploding a valid boiler.
+- [ ] Confirm a Display Link on the active boiler controller can show the `Steam Network` source without a `boiler_outlet`.

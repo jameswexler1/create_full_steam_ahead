@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "BoilerDataMixin",
+    "FluidTankBlockEntityMixin",
     "FluidTankProjectileHitMixin",
     "FluidPipeWrenchMixin"
   ],

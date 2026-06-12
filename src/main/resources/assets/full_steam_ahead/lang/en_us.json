@@ -21,6 +21,7 @@
   "full_steam_ahead.display_source.steam_network.safety": "Safety",
   "full_steam_ahead.display_source.steam_network.flow": "Flow",
   "full_steam_ahead.display_source.steam_network.network": "Network",
+  "full_steam_ahead.display_source.steam_network.status.no_network": "No steam network",
   "full_steam_ahead.display_source.steam_network.status.no_boiler": "No boiler",
   "full_steam_ahead.display_source.steam_network.status.no_heat_water": "No heat/water",
   "full_steam_ahead.display_source.steam_network.status.low_pressure": "Low pressure",

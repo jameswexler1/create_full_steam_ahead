@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
-public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation {
+public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation, SteamNetworkReadout {
     private static final float PRESSURE_PER_MB = 2.0f;
     // Hard ceiling for the fluid tank; the effective storage cap is steamPhysics.bufferCapMb (config).
     private static final int BUFFER_CAPACITY = 1_000_000;
@@ -253,7 +253,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         CreateLang.text("Produced (outlet/boiler): " + heatUnits + "/" + totalHeatUnits + " mB/t")
                 .style(heatUnits > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
                 .forGoggles(tooltip, 1);
-        CreateLang.text("Attached outlets: " + outletCount)
+        CreateLang.text("Steam ports: " + outletCount)
                 .style(outletCount > 1 ? ChatFormatting.GRAY : ChatFormatting.DARK_GRAY)
                 .forGoggles(tooltip, 1);
         CreateLang.text("Production: " + productionRate + " mB/t")
@@ -308,7 +308,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         double effectiveHeat = SteamNetworkManager.effectiveBoilerHeat(level, boiler.getBlockPos(), targetHeat, dry);
         boilerTemperatureK = (int) Math.round(SteamPhysics.temperatureK(effectiveHeat));
 
-        int outlets = FullSteamBoilerIntegration.countAttachedOutlets(boiler);
+        int outlets = FullSteamBoilerIntegration.countAttachedSteamPorts(boiler);
         if (!lit && effectiveHeat <= 0.0D) {
             return SteamBudget.withOutlets(outlets);
         }
@@ -711,8 +711,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     }
 
     private boolean canSteamPassThrough(FluidTransportBehaviour pipe, BlockState state, Direction side) {
-        return pipe.canHaveFlowToward(state, side)
-                && pipe.canPullFluidFrom(new FluidStack(ModFluids.STEAM.get(), 1), state, side);
+        return SteamPipeUtil.canSteamPassThrough(pipe, state, side);
     }
 
     private int fillTargetsEvenly(List<FillTarget> targets, int maxAmount) {

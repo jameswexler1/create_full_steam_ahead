@@ -63,7 +63,7 @@ We do not add a custom boiler block. The player builds a standard Create Fluid T
 Two boiler connection modes are supported in the plan:
 
 1. **Direct compact mode** — the current Phase 4 engine still works with the cylinder sitting directly on a 3×3×1 Create Fluid Tank boiler.
-2. **Pipe-fed mode** — Phase 5 adds a `boiler_outlet` block that converts valid Create boiler output into storable `steam` fluid and pushes that steam into Create fluid pipes.
+2. **Pipe-fed mode** — Phase 5 adds storable `steam` fluid. Valid Create boilers can feed that steam through either a `boiler_outlet` block or direct Create Fluid Pipe connections on top-layer tank faces.
 
 The direct compact boiler must be at least 3×3×1 (9 fluid tank blocks) to support a full cylinder frame above it.
 
@@ -71,9 +71,9 @@ The direct compact boiler must be at least 3×3×1 (9 fluid tank blocks) to supp
 
 `steam` becomes a real NeoForge/Create-compatible fluid. It can be stored in Create Fluid Tanks and moved through Create Fluid Pipes. It is not a replacement for water, and it is not produced by ordinary tanks full of stored steam.
 
-Current v1 rule: the only automatic pressure source for steam is `boiler_outlet`, and it must only generate/push steam when attached to a valid active Create boiler. Stored steam in normal tanks may be moved by normal Create logistics, but it must not get free boiler-outlet pressure.
+Current v1 rule: automatic pressure sources are valid active Create boilers exposed through steam ports. A steam port is either a `boiler_outlet` block or a direct Create Fluid Pipe connection on a top-layer boiler tank face. Stored steam in normal tanks may be moved by normal Create logistics, but it must not get free boiler pressure.
 
-Future design track: investigate removing or demoting `boiler_outlet` by allowing Create Fluid Tank boilers to expose steam directly to adjacent Create Fluid Pipes. In that model, pressure belongs to the boiler/network itself, not to a special outlet block. Create already swaps active boilers to `BoilerData.BoilerFluidHandler`, which accepts water supply and does not drain water; direct steam output would need to wrap or replace that active-boiler handler so it can expose generated `steam` while preserving water-supply accounting, valves, contraptions, stored steam tanks, and Create boiler visuals. Until that design is implemented and verified, `boiler_outlet` remains the stable boiler steam port/valve block.
+Direct boiler pipe output is implemented as a wrapped Fluid Tank capability on eligible active boiler faces. The wrapper exposes generated `steam` while preserving Create's boiler water-supply accounting, Fluid Tank water fill behavior, pipe valves, stored steam tanks, and boiler visuals. Valid direct faces are the `UP` face and horizontal faces of top-layer tank blocks. Bottom faces and lower tank layers are not steam outputs. All physical outlets and direct pipe ports attached to one boiler split that boiler's shared production budget.
 
 For v1, `steam` should be non-placeable and should not need a bucket. It exists for tanks, pipes, gauges, and engine consumption.
 
@@ -101,7 +101,7 @@ Horizontal orientations are deferred to a future version.
 | `piston_head` | `Block + IBE<PistonHeadBlockEntity>` | Physical piston head and engine brain. Validates the stack, reads steam/boiler state, and powers the linked shaft. |
 | `piston` | `Block` | Physical piston body block above the piston head. Animated when running. |
 | `powered_shaft` | `PoweredShaftBlock + FullSteamPoweredShaftBlockEntity` | Hidden internal replacement for a player-placed Create shaft. Provides kinetic output while cloning/dropping as a normal shaft. |
-| `boiler_outlet` | `Block + SmartBlockEntity` | Attaches to a Create Fluid Tank boiler, generates `steam`, and provides pressure into pipes. |
+| `boiler_outlet` | `Block + SmartBlockEntity` | Optional explicit port attached to a Create Fluid Tank boiler. Generates `steam` and provides pressure into pipes while sharing budget with any direct boiler pipe ports. |
 | `steam_relief_valve` | `Block + SmartBlockEntity` | Top/side-mounted boiler safety valve. Auto-vents near burst pressure or vents on redstone command. |
 | `steam_inlet` | `Block + SmartBlockEntity` | Phase 6 block. Replaces one cylinder shell block in the 3×3×2 ring and accepts `steam` from pipes. |
 | `engine_telegraph` | `HorizontalDirectionalBlock` | Inert decorative/control block for ship bridge theming. No engine control mechanics yet. |
@@ -180,7 +180,7 @@ The player builds a Create Fluid Tank structure and heats it with Blaze Burners.
 
 In direct compact mode, the `piston_head` block entity reads this boiler's `BoilerData` directly.
 
-In pipe-fed mode, `boiler_outlet` reads this boiler's `BoilerData`, creates `steam` fluid from valid active heat and water supply, and pushes that steam into Create pipes. This still does not replace Create's boiler; it is an outlet/valve attached to it.
+In pipe-fed mode, steam ports read this boiler's `BoilerData`, create `steam` fluid from valid active heat and water supply, and push that steam into Create pipes. Steam ports can be explicit `boiler_outlet` blocks or direct pipes attached to valid top-layer tank faces. This still does not replace Create's boiler; it exposes steam from the existing Create boiler.
 
 ### Layer 2 — The Cylinder Ring (our auto-assembly)
 
@@ -274,7 +274,7 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 ### `BoilerOutlet` (`boiler_outlet`)
 
 - Block entity: `BoilerOutletBlockEntity extends SmartBlockEntity`
-- Placed on a Create Fluid Tank block face. The block's back side must touch a `FluidTankBlockEntity`; the front side outputs steam.
+- Placed on a Create Fluid Tank block face. The block's back side must touch a `FluidTankBlockEntity`; the front side outputs steam. It remains useful as an explicit port, visual device, and easy display/goggle target even though direct boiler pipe ports now exist.
 - Validates the attached tank's controller and reads its `BoilerData`.
 - Counts as an attached boiler device in our Create boiler integration so Create's own tank visuals and compact boiler sizing activate even for small outlet-only boilers.
 - Generates `steam` fluid only from valid boiler heat and water supply. It must never drain or re-pressurize steam from normal storage tanks.
@@ -286,16 +286,17 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
   - `3x3x6` with 9 normal burners produces 54 units, enough for six full normal engines
   - `3x3x6` with 9 Blaze Cake burners produces 108 units, enough for twelve full pipe-fed engines
 - Pipe-fed steam is generic stored steam in v1: one engine consumes at most 9 units or 90 mB/t and produces at most 147,456 SU. Blaze Cakes increase total steam-stream capacity; they do not make one pipe-fed engine exceed normal full output without a future superheated-steam design.
-- Multiple `boiler_outlet` blocks attached to one boiler split the same total steam unit budget in a stable position order; they must not duplicate steam.
-- Connected pipe networks split active boiler outlet steam evenly across reachable assembled `steam_inlet` blocks, capped at 90 mB/t per inlet from all sources combined, before sending surplus to passive storage. Multiple boilers on the same pipe network contribute additive outlet budgets; no single boiler or outlet may duplicate steam.
-- Network pressure is computed from stored steam mass, weighted steam temperature, and network volume. The outlet reports pressure/status to goggles and should later expose the same data to Create Display Links.
+- Multiple steam ports attached to one boiler split the same total steam unit budget in a stable position order; they must not duplicate steam. Steam ports are `boiler_outlet` blocks plus eligible direct boiler pipe faces.
+- Direct boiler pipe ports are valid only on the `UP` face or horizontal faces of top-layer Create Fluid Tank boiler blocks. They expose steam through a wrapped Fluid Tank capability, reject steam insertion, and keep ordinary water fill delegated to Create's own boiler handler.
+- Connected pipe networks split active boiler steam evenly across reachable assembled `steam_inlet` blocks, capped at 90 mB/t per inlet from all sources combined, before sending surplus to passive storage. Multiple boilers on the same pipe network contribute additive budgets; no single boiler or steam port may duplicate steam.
+- Network pressure is computed from stored steam mass, weighted steam temperature, and network volume. Outlets and active direct-boiler tank controllers expose pressure/status to goggles and Display Links.
 - Boiler outlet pressure traversal respects Create pipe blockers such as closed fluid valves by consulting each pipe behaviour's flow permission before crossing a side. A closed valve blocks steam; it is not treated as an open vent.
 - Exposes an output-only `IFluidHandler` for `steam`.
 - Applies pressure to the connected Create pipe network so the player does not need a mechanical pump directly at the boiler outlet.
 - Open-pipe visual: when outlet or pipe end vents to air, spawn custom translucent steam leak particles inspired by TFMG-style gas visuals.
 - Steam fluid visual: keep the tinted vanilla water render path for tanks and pipes, with explicit stack/world render overrides and enough outlet buffer reserve for Create's native pipe flow renderer to keep showing steam.
 - Default pressure range target: 30 blocks, controlled by server config.
-- Goggle overlay: boiler linked/missing, outlet steam units, total boiler steam units, attached outlet count, steam production rate, internal buffer, output pressure state.
+- Goggle overlay: boiler linked/missing, port steam units, total boiler steam units, attached steam port count, steam production rate, internal buffer, output pressure state.
 
 ### `SteamReliefValve` (`steam_relief_valve`)
 
@@ -449,7 +450,7 @@ capacity_su       = full_engine_su * output_factor
 output_speed_rpm  = tier_by_output_factor(output_factor)
 ```
 
-Important balance distinction: stored steam does not remember which burner produced it. The pipe network stores steam mass, network volume, and weighted temperature. Multiple boilers can feed one network, but one boiler's production is split across all outlets attached to that boiler and cannot be duplicated.
+Important balance distinction: stored steam does not remember which burner produced it. The pipe network stores steam mass, network volume, and weighted temperature. Multiple boilers can feed one network, but one boiler's production is split across all steam ports attached to that boiler and cannot be duplicated.
 
 RPM tiers:
 
@@ -540,7 +541,7 @@ Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerD
 
 ### Phase 5: Steam Fluid and Boiler Outlet
 
-**Goal**: Add storable `steam` fluid and a boiler-attached outlet that generates and pressure-feeds steam into Create pipes. The current direct compact engine must continue working.
+**Goal**: Add storable `steam` fluid and boiler steam ports that generate and pressure-feed steam into Create pipes. The current direct compact engine must continue working.
 
 - [x] Add `ModFluids.java` and register `steam` as a storable NeoForge fluid compatible with `FluidStack`, Create tanks, and Create pipes
 - [x] Keep `steam` non-placeable and no-bucket unless a later gameplay reason requires otherwise
@@ -563,13 +564,17 @@ Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerD
 - [x] Scale boiler outlet production by boiler height: active burner units × tank height
 - [x] Gate scaled steam production by measured water supply at 10 mB/t per steam unit
 - [x] Split one boiler's steam budget across all attached boiler outlets so multiple outlets cannot duplicate output
+- [x] Add direct boiler pipe output from active Create Fluid Tank boilers on top-layer `UP` and horizontal faces
+- [x] Split one boiler's steam budget across both `boiler_outlet` blocks and direct boiler pipe ports so direct pipes cannot duplicate output
+- [x] Register active boiler controllers as `Steam Network` Display Link sources for outlet-free direct pipe setups
 
 Implementation notes:
 
 - Create's `BoilerData.BoilerFluidHandler` records water supply rate; it does not expose a stored steam inventory. Use `BoilerData` as the source of truth.
 - Create's mechanical pump range is exposed through `FluidPropagator.getPumpRange()`, but our outlet should have its own configurable default target of 30 blocks.
-- The outlet is a boiler pressure source, not a general-purpose pump.
+- Steam ports are boiler pressure sources, not general-purpose pumps.
 - The outlet applies Create pipe pressure for normal pipe flow rendering and keeps a bounded `IFluidHandler` transfer as a no-drain fallback. The fallback must not drain the outlet below its pipe-flow reserve, because Create needs live source fluid to keep pipe/tank contents visible.
+- Direct boiler pipe ports wrap the Fluid Tank's existing fluid capability only on valid active-boiler faces. Non-steam fill/drain delegates to Create's handler, steam insertion is rejected, and steam drain comes from the direct port's generated buffer.
 - The outlet production model is unit-based: `10 mB/t = 1 steam unit = 16,384 SU when consumed by an engine`.
 - `BoilerData.activeHeat` and `BoilerData.getMaxHeatLevelForWaterSupply()` are multiplied by boiler controller height for pipe-fed steam production. This keeps taller boilers from being incorrectly capped by a single-layer water budget.
 
@@ -733,7 +738,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 
 ### Phase 9: Balance, Config, Recipes
 
-- [x] Server config for: base capacity, steam production rate, boiler outlet pressure range, direct mode enablement (max piston height deferred — v1 uses a fixed single-piston stroke, so there is no column height to cap yet)
+- [x] Server config for: base capacity, steam production rate, boiler outlet pressure range, direct boiler pipe output enablement, direct mode enablement (max piston height deferred — v1 uses a fixed single-piston stroke, so there is no column height to cap yet)
 - [x] Recipes for active blocks balanced against vanilla Create steam engine
 - [x] JEI/EMI display (crafting recipes are vanilla recipe types and display automatically; JEI added as a runtime-only test dependency to verify in-game, no shipped plugin)
 
@@ -774,7 +779,7 @@ changing engine balance.
 - [x] Pipe-fed engine output is capped per engine: full output is `90 mB/t`, `147,456 SU`, and `64 RPM`.
 - [x] Engine output factor is `min(pressureFactor, flowFactor)`, so weak pressure or insufficient fair-flow share both reduce output.
 - [x] Pipe networks distribute usable steam fairly across reachable assembled `steam_inlet` blocks. A short network gives every engine a proportional share instead of powering all-or-nothing.
-- [x] Multiple boilers can feed one pipe network; multiple outlets on one physical boiler split one shared boiler budget and cannot duplicate steam.
+- [x] Multiple boilers can feed one pipe network; multiple steam ports on one physical boiler split one shared boiler budget and cannot duplicate steam.
 - [x] Create fluid valves are pressure blockers. Closed valves split networks instead of being bypassed by outlet pressure traversal.
 - [x] Direct compact mode is retained as an upright-only compatibility shortcut. It derives a rated-pressure factor from local boiler production, but does not store steam, burst, or overdrive one engine.
 - [x] `steamPhysics` server config covers gas constant, rated/warn/burst pressure, steam temperature, full engine flow/SU/RPM, vent coefficient, open-pipe target pressure, and buffer cap.
@@ -799,7 +804,7 @@ changing engine balance.
 - [x] `steamOverpressure` config group: enabled, explosion base/per-volume/max power, final power scale, breaksBlocks, client effect packet radius, and Sable sublevel damage radius.
 - [x] Client config group: boiler burst visuals, sound volume scale/radius, steam cloud scale, screen shake enable/scale/radius, blast wave speed.
 - [x] Add `steam_relief_valve` as a top/side-mounted Create boiler safety block with block entity, model, item, recipe, loot, lang, tags, creative entry, movement rules, goggle tooltip, and client renderer.
-- [x] Relief valves attach by Create Fluid Tank boiler controller, not by pipe network position, so one valve protects all outlet-fed networks on that physical boiler.
+- [x] Relief valves attach by Create Fluid Tank boiler controller, not by pipe network position, so one valve protects all steam-port-fed networks on that physical boiler.
 - [x] Automatic relief opens at `2.2 MpN/m²`, closes below `1.7 MpN/m²`, and uses `720 mB/t` as the baseline per-valve vent rate while scaling effective safety relief with active boiler production.
 - [x] Redstone-powered relief valves force open and drain toward the configured open-pipe atmospheric target.
 - [x] Relief valve venting uses Create-style cap lift, handwheel spin, steam particles, scald hazard, and steam sound.
@@ -816,7 +821,7 @@ changing engine balance.
 - [x] Make the source a Create `SingleLineDisplaySource` so multiple Display Links can target different rows on one Display Board without clearing or overwriting each other.
 - [x] Format pressure through `SteamPressure.format(...)` so displays show `pN/m²`, `kpN/m²`, or `MpN/m²`, never `bar`.
 - [x] Keep the source passive and server-authoritative; Display Links must only read pressure state and must not tick or mutate the steam network.
-- [ ] Later, when direct pipe-to-boiler support exists, add an equivalent Create Fluid Tank boiler display source so players can read pressure directly from the boiler without requiring an outlet.
+- [x] Add an equivalent Create Fluid Tank boiler display source so players can read pressure directly from the boiler without requiring an outlet.
 - [ ] Verify with a Display Link and Display Board: stable pressure line while running, warning text under overpressure, no crash when the outlet unloads or loses its boiler.
 
 ### Phase 15: Aeronautics Steam Vent Consumption — Implemented (manual verification pending)
@@ -870,8 +875,8 @@ changing engine balance.
 | Risk | Mitigation |
 |---|---|
 | Create `BoilerData` API changes | Read through `FluidTankBlockEntity`; isolate in one method |
-| Create pipe pressure internals are brittle | Keep boiler outlet pressure code isolated; fallback to bounded `IFluidHandler` push |
-| Steam storage becomes an exploit | `boiler_outlet` only generates from valid active boilers and never auto-pumps stored steam |
+| Create pipe pressure internals are brittle | Keep steam-port pressure code isolated; fallback to bounded `IFluidHandler` push |
+| Steam storage becomes an exploit | Steam ports only generate from valid active boilers and never auto-pump stored steam |
 | Pipe-fed mode loses burner-count metadata | Store network steam mass, weighted temperature, and volume; piston derives RPM/SU from pressure and fair delivered flow (`SteamPhysics`) |
 | Cylinder ring scan too expensive | Run only on placement/removal, not every tick; cache result |
 | Piston animation desync | Drive animation entirely from linked shaft rotation angle on client |

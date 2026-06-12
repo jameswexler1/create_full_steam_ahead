@@ -4,6 +4,7 @@ import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
 import com.simibubi.create.content.redstone.displayLink.source.SingleLineDisplaySource;
 import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
+import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
 import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import net.minecraft.network.chat.Component;
@@ -24,17 +25,17 @@ public class SteamNetworkDisplaySource extends SingleLineDisplaySource {
 
     @Override
     protected MutableComponent provideLine(DisplayLinkContext context, DisplayTargetStats stats) {
-        BlockEntity source = context.getSourceBlockEntity();
-        if (!(source instanceof BoilerOutletBlockEntity outlet)) {
+        SteamNetworkReadout readout = readoutFrom(context.getSourceBlockEntity());
+        if (readout == null) {
             return DisplaySource.EMPTY_LINE;
         }
 
         return switch (getMode(context)) {
-            case MODE_PRESSURE -> pressureLines(outlet);
-            case MODE_SAFETY -> safetyLines(outlet);
-            case MODE_FLOW -> flowLines(outlet);
-            case MODE_NETWORK -> networkLines(outlet);
-            default -> fullMonitorLines(outlet);
+            case MODE_PRESSURE -> pressureLines(readout);
+            case MODE_SAFETY -> safetyLines(readout);
+            case MODE_FLOW -> flowLines(readout);
+            case MODE_NETWORK -> networkLines(readout);
+            default -> fullMonitorLines(readout);
         };
     }
 
@@ -74,38 +75,49 @@ public class SteamNetworkDisplaySource extends SingleLineDisplaySource {
         return mode;
     }
 
-    private static MutableComponent fullMonitorLines(BoilerOutletBlockEntity outlet) {
-        return line("P: " + SteamPressure.format(outlet.getNetworkPressurePn()) + " | ")
-                .append(statusComponent(outlet));
+    private static SteamNetworkReadout readoutFrom(BlockEntity blockEntity) {
+        if (blockEntity instanceof SteamNetworkReadout readout) {
+            return readout;
+        }
+        if (blockEntity instanceof FluidTankBlockEntity tank
+                && tank.getControllerBE() instanceof SteamNetworkReadout readout) {
+            return readout;
+        }
+        return null;
     }
 
-    private static MutableComponent pressureLines(BoilerOutletBlockEntity outlet) {
-        return line("Pressure: " + SteamPressure.format(outlet.getNetworkPressurePn()));
+    private static MutableComponent fullMonitorLines(SteamNetworkReadout readout) {
+        return line("P: " + SteamPressure.format(readout.getNetworkPressurePn()) + " | ")
+                .append(statusComponent(readout));
     }
 
-    private static MutableComponent safetyLines(BoilerOutletBlockEntity outlet) {
+    private static MutableComponent pressureLines(SteamNetworkReadout readout) {
+        return line("Pressure: " + SteamPressure.format(readout.getNetworkPressurePn()));
+    }
+
+    private static MutableComponent safetyLines(SteamNetworkReadout readout) {
         return line("Safety: ")
-                .append(statusComponent(outlet))
+                .append(statusComponent(readout))
                 .append(line(" | Burst: " + SteamPressure.format(FullSteamConfig.steamBurstPressure())));
     }
 
-    private static MutableComponent flowLines(BoilerOutletBlockEntity outlet) {
-        return line("Flow: " + outlet.getNetworkProductionRate()
-                + " -> " + outlet.getNetworkConsumedRate() + " mB/t");
+    private static MutableComponent flowLines(SteamNetworkReadout readout) {
+        return line("Flow: " + readout.getNetworkProductionRate()
+                + " -> " + readout.getNetworkConsumedRate() + " mB/t");
     }
 
-    private static MutableComponent networkLines(BoilerOutletBlockEntity outlet) {
-        return line("Network: " + outlet.getNetworkVolume()
-                + " m³ | " + outlet.getNetworkEngineCount() + " engines");
+    private static MutableComponent networkLines(SteamNetworkReadout readout) {
+        return line("Network: " + readout.getNetworkVolume()
+                + " m³ | " + readout.getNetworkEngineCount() + " engines");
     }
 
     private static MutableComponent line(String text) {
         return Component.literal(text);
     }
 
-    private static MutableComponent statusComponent(BoilerOutletBlockEntity outlet) {
+    private static MutableComponent statusComponent(SteamNetworkReadout readout) {
         return Component.translatable("full_steam_ahead.display_source.steam_network.status."
-                + outlet.getSteamNetworkStatusKey());
+                + readout.getSteamNetworkStatusKey());
     }
 
     private static MutableComponent modeLabel(String key) {

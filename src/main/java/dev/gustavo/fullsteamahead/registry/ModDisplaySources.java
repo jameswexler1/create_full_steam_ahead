@@ -2,6 +2,7 @@ package dev.gustavo.fullsteamahead.registry;
 
 import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.registry.CreateBuiltInRegistries;
+import com.simibubi.create.AllBlockEntityTypes;
 import dev.gustavo.fullsteamahead.FullSteamAhead;
 import dev.gustavo.fullsteamahead.content.steam.SteamNetworkDisplaySource;
 import net.neoforged.bus.api.IEventBus;
@@ -21,6 +22,7 @@ public final class ModDisplaySources {
 
     public static void registerAssociations() {
         DisplaySource.BY_BLOCK_ENTITY.add(ModBlockEntities.BOILER_OUTLET.get(), STEAM_NETWORK.get());
+        DisplaySource.BY_BLOCK_ENTITY.add(AllBlockEntityTypes.FLUID_TANK.get(), STEAM_NETWORK.get());
     }
 
     private ModDisplaySources() {
