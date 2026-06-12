@@ -6,8 +6,10 @@ import dev.gustavo.fullsteamahead.compat.create.BoilerSteamPort;
 import dev.gustavo.fullsteamahead.compat.create.FullSteamBoilerIntegration;
 import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import dev.gustavo.fullsteamahead.content.steam.BoilerBurst;
+import dev.gustavo.fullsteamahead.content.steam.DirectBoilerPortState;
 import dev.gustavo.fullsteamahead.content.steam.DirectBoilerPipeTransfer;
 import dev.gustavo.fullsteamahead.content.steam.DirectBoilerSteamHandler;
+import dev.gustavo.fullsteamahead.content.steam.DirectBoilerSteamBudget;
 import dev.gustavo.fullsteamahead.content.steam.FullSteamDirectBoilerSource;
 import dev.gustavo.fullsteamahead.content.steam.SteamNetworkManager;
 import dev.gustavo.fullsteamahead.content.steam.SteamPhysics;
@@ -68,7 +70,7 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
     public abstract void updateBoilerState();
 
     @Unique
-    private final Map<BoilerSteamPort, DirectPortState> fullSteamAhead$directPortStates = new HashMap<>();
+    private final Map<BoilerSteamPort, DirectBoilerPortState> fullSteamAhead$directPortStates = new HashMap<>();
     @Unique
     private int fullSteamAhead$networkProductionRate;
     @Unique
@@ -109,9 +111,9 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
             return;
         }
 
-        SteamBudget budget = fullSteamAhead$calculateSteamBudget(self);
+        DirectBoilerSteamBudget budget = fullSteamAhead$calculateSteamBudget(self);
         for (BoilerSteamPort port : ports) {
-            DirectPortState state = fullSteamAhead$directPortStates.computeIfAbsent(port, ignored -> new DirectPortState());
+            DirectBoilerPortState state = fullSteamAhead$directPortStates.computeIfAbsent(port, ignored -> new DirectBoilerPortState());
             int previousStored = state.storedMb;
             int previousProduction = state.productionMb;
             boolean previousVenting = state.venting;
@@ -173,8 +175,8 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
         }
 
         ListTag ports = new ListTag();
-        for (Map.Entry<BoilerSteamPort, DirectPortState> entry : fullSteamAhead$directPortStates.entrySet()) {
-            DirectPortState state = entry.getValue();
+        for (Map.Entry<BoilerSteamPort, DirectBoilerPortState> entry : fullSteamAhead$directPortStates.entrySet()) {
+            DirectBoilerPortState state = entry.getValue();
             if (state.storedMb <= 0) {
                 continue;
             }
@@ -215,7 +217,7 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
                     BlockPos.of(portTag.getLong(fullSteamAhead$PORT_POS_KEY)),
                     directions[directionIndex]
             );
-            DirectPortState state = new DirectPortState();
+            DirectBoilerPortState state = new DirectBoilerPortState();
             state.storedMb = Math.min(FullSteamConfig.steamBufferCapMb(), Math.max(0, portTag.getInt(fullSteamAhead$PORT_STEAM_KEY)));
             fullSteamAhead$directPortStates.put(port, state);
         }
@@ -251,37 +253,37 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
 
     @Override
     public int fullSteamAhead$getDirectStoredSteamMb(BoilerSteamPort port) {
-        DirectPortState state = fullSteamAhead$directPortStates.get(port);
+        DirectBoilerPortState state = fullSteamAhead$directPortStates.get(port);
         return state == null ? 0 : state.storedMb;
     }
 
     @Override
     public int fullSteamAhead$getDirectProductionMb(BoilerSteamPort port) {
-        DirectPortState state = fullSteamAhead$directPortStates.get(port);
+        DirectBoilerPortState state = fullSteamAhead$directPortStates.get(port);
         return state == null ? 0 : state.productionMb;
     }
 
     @Override
     public int fullSteamAhead$getDirectBoilerVolume(BoilerSteamPort port) {
-        DirectPortState state = fullSteamAhead$directPortStates.get(port);
+        DirectBoilerPortState state = fullSteamAhead$directPortStates.get(port);
         return state == null ? Math.max(1, fullSteamAhead$self().getTotalTankSize()) : state.boilerVolume;
     }
 
     @Override
     public double fullSteamAhead$getDirectTemperatureK(BoilerSteamPort port) {
-        DirectPortState state = fullSteamAhead$directPortStates.get(port);
+        DirectBoilerPortState state = fullSteamAhead$directPortStates.get(port);
         return state == null ? FullSteamConfig.steamTemperatureBaseK() : state.temperatureK;
     }
 
     @Override
     public double fullSteamAhead$getDirectNetworkPressurePn(BoilerSteamPort port) {
-        DirectPortState state = fullSteamAhead$directPortStates.get(port);
+        DirectBoilerPortState state = fullSteamAhead$directPortStates.get(port);
         return state == null ? 0.0D : state.pressurePn;
     }
 
     @Override
     public int fullSteamAhead$drainDirectSteam(BoilerSteamPort port, int amount, boolean externallyDrained) {
-        DirectPortState state = fullSteamAhead$directPortStates.get(port);
+        DirectBoilerPortState state = fullSteamAhead$directPortStates.get(port);
         if (state == null || amount <= 0 || state.storedMb <= 0) {
             return 0;
         }
@@ -306,7 +308,7 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
             int engines,
             int consumed
     ) {
-        DirectPortState state = fullSteamAhead$directPortStates.computeIfAbsent(port, ignored -> new DirectPortState());
+        DirectBoilerPortState state = fullSteamAhead$directPortStates.computeIfAbsent(port, ignored -> new DirectBoilerPortState());
         state.pressurePn = pressurePn;
         state.networkVenting = venting;
         state.networkWarn = warn;
@@ -333,7 +335,7 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
 
     @Override
     public void fullSteamAhead$clearDirectEffectivePressure() {
-        for (DirectPortState state : fullSteamAhead$directPortStates.values()) {
+        for (DirectBoilerPortState state : fullSteamAhead$directPortStates.values()) {
             state.pressurePn = 0.0D;
         }
         fullSteamAhead$networkPressurePn = 0.0D;
@@ -403,11 +405,11 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
     }
 
     @Unique
-    private SteamBudget fullSteamAhead$calculateSteamBudget(FluidTankBlockEntity boilerController) {
+    private DirectBoilerSteamBudget fullSteamAhead$calculateSteamBudget(FluidTankBlockEntity boilerController) {
         int boilerVolume = Math.max(1, boilerController.getTotalTankSize());
         int temperatureK = (int) Math.round(FullSteamConfig.steamTemperatureBaseK());
         if (boilerController.boiler == null) {
-            return new SteamBudget(0, 0, boilerVolume, temperatureK, false);
+            return new DirectBoilerSteamBudget(0, 0, boilerVolume, temperatureK, false);
         }
 
         BoilerData data = boilerController.boiler;
@@ -428,11 +430,11 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
         temperatureK = (int) Math.round(SteamPhysics.temperatureK(effectiveHeat));
         int portCount = FullSteamBoilerIntegration.countAttachedSteamPorts(boilerController);
         if (!lit && effectiveHeat <= 0.0D) {
-            return new SteamBudget(0, portCount, boilerVolume, temperatureK, false);
+            return new DirectBoilerSteamBudget(0, portCount, boilerVolume, temperatureK, false);
         }
 
         int totalProductionMb = SteamPhysics.productionMb(effectiveHeat, Math.max(1, boilerController.getHeight()));
-        return new SteamBudget(totalProductionMb, portCount, boilerVolume, temperatureK, lit);
+        return new DirectBoilerSteamBudget(totalProductionMb, portCount, boilerVolume, temperatureK, lit);
     }
 
     @Unique
@@ -460,26 +462,4 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
         return (FluidTankBlockEntity) (Object) this;
     }
 
-    private record SteamBudget(int totalProductionMb, int portCount, int boilerVolume, int temperatureK, boolean lit) {
-    }
-
-    private static final class DirectPortState {
-        private int storedMb;
-        private int productionMb;
-        private int totalProductionMb;
-        private int portCount;
-        private int pushedMb;
-        private int externallyDrainedSteam;
-        private int boilerVolume = 1;
-        private int temperatureK = (int) Math.round(FullSteamConfig.steamTemperatureBaseK());
-        private boolean lit;
-        private boolean venting;
-        private double pressurePn;
-        private boolean networkVenting;
-        private boolean networkWarn;
-        private int networkProductionMb;
-        private int networkVolume;
-        private int networkEngines;
-        private int networkConsumedMb;
-    }
 }
