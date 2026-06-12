@@ -12,6 +12,9 @@ description = '''${mod_description}'''
 [[mixins]]
 config = "full_steam_ahead.mixins.json"
 
+[[mixins]]
+config = "full_steam_ahead_aeronautics.mixins.json"
+
 [[dependencies.${mod_id}]]
 modId = "minecraft"
 type = "required"

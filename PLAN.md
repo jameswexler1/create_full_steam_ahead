@@ -834,6 +834,20 @@ changing engine balance.
 - [ ] Manual test: one boiler + one powered Aeronautics steam vent should show roughly +10 mB/t network consumption at default vent settings.
 - [ ] Manual test: changing `aeronauticsCompat.steamVentMbPerM3` should scale vent demand without a code change.
 
+### Phase 16: Pipe-Fed Aeronautics Steam Vents — Implemented (manual verification pending)
+
+**Goal**: let Aeronautics steam vents consume FSA steam from Create fluid pipes, not only by sitting directly on boilers.
+
+- [x] Keep Aeronautics optional through a separate non-required mixin config and no hard Aeronautics imports.
+- [x] Register a dynamic FSA steam fluid capability on `aeronautics:steam_vent` when Aeronautics is loaded.
+- [x] Allow pipe-fed vents to survive when placed directly on top of a Create fluid pipe while preserving normal boiler-mounted placement.
+- [x] Add pressure-limited pipe-fed vent output: rated FSA pressure gives full Aeronautics hot-air output, low pressure reduces output, and no pressure gives no output.
+- [x] Add pipe-fed vents to `SteamNetworkManager` as fair steam consumers with a small internal buffer.
+- [x] Preserve boiler-mounted vent behavior and current boiler-mounted FSA consumption.
+- [ ] Manual test: pipe `steam` from an FSA boiler outlet into an Aeronautics steam vent placed above a Create fluid pipe, then power the vent and confirm it outputs hot air.
+- [ ] Manual test: close a valve or open a leak before the vent and confirm vent output drops with network pressure.
+- [ ] Manual test: changing `aeronauticsCompat.steamVentMbPerM3` changes pipe-fed vent load.
+
 ---
 
 ### Optional Phase: Volumetric Steam Clouds

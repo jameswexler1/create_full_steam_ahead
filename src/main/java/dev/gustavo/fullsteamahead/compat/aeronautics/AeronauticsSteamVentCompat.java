@@ -14,7 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public final class AeronauticsSteamVentCompat {
-    private static final ResourceLocation STEAM_VENT_ID =
+    public static final ResourceLocation STEAM_VENT_ID =
             ResourceLocation.fromNamespaceAndPath("aeronautics", "steam_vent");
     private static final String STEAM_VENT_BE_CLASS =
             "dev.eriksonn.aeronautics.content.blocks.hot_air.steam_vent.SteamVentBlockEntity";
@@ -41,7 +41,7 @@ public final class AeronauticsSteamVentCompat {
         for (int x = 0; x < width; x++) {
             for (int z = 0; z < width; z++) {
                 BlockPos ventPos = new BlockPos(origin.getX() + x, topY, origin.getZ() + z);
-                if (!level.isLoaded(ventPos) || !isAeronauticsSteamVent(level.getBlockState(ventPos))) {
+                if (!level.isLoaded(ventPos) || !isSteamVent(level.getBlockState(ventPos))) {
                     continue;
                 }
 
@@ -57,8 +57,18 @@ public final class AeronauticsSteamVentCompat {
         return (int) Math.min(Integer.MAX_VALUE, Math.max(0L, Math.round(steamMb)));
     }
 
-    private static boolean isAeronauticsSteamVent(BlockState state) {
+    public static boolean isSteamVent(BlockState state) {
         return STEAM_VENT_ID.equals(BuiltInRegistries.BLOCK.getKey(state.getBlock()));
+    }
+
+    public static int steamMbForGasOutput(double gasOutput) {
+        if (!FullSteamConfig.aeronauticsSteamVentConsumptionEnabled()
+                || FullSteamConfig.aeronauticsSteamVentMbPerM3() <= 0.0D
+                || gasOutput <= 0.0D) {
+            return 0;
+        }
+        double steamMb = gasOutput * FullSteamConfig.aeronauticsSteamVentMbPerM3();
+        return (int) Math.min(Integer.MAX_VALUE, Math.max(0L, Math.round(steamMb)));
     }
 
     private static double gasOutput(BlockEntity blockEntity) {

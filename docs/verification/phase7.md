@@ -42,6 +42,9 @@ Implementation notes:
   blocks mounted on boilers with FSA outlets consume FSA steam proportional to their live Aeronautics
   `getGasOutput()`. The default conversion is `5000 m³ -> 10 mB/t`, configurable through
   `aeronauticsCompat.steamVentMbPerM3`.
+- Pipe-fed Aeronautics steam vent compatibility is guarded by a non-required optional mixin config:
+  vents placed above Create fluid pipes can accept FSA `steam`, draw from network pressure, and output
+  Aeronautics hot air without requiring a boiler directly below.
 - `steam_cylinder`, `piston_head`, `powered_shaft`, `boiler_outlet`, and `steam_inlet` are listed in `create:safe_nbt`.
 
 Runtime status:
@@ -49,6 +52,9 @@ Runtime status:
 - Standalone automated checks pass without Aeronautics, Simulated, or Sable installed.
 - Aeronautics/Sable sublevel runtime testing passed in a profile that includes those mods.
 - Save/reload verification inside an assembled Aeronautics/Sable sublevel passed.
+- 2026-06-12 automated checks for pipe-fed Aeronautics steam vent compatibility passed:
+  `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and
+  `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`.
 
 Manual runtime checklist:
 
@@ -59,6 +65,8 @@ Manual runtime checklist:
 - [x] Confirm engine NBT/state survives assembly, disassembly, world reload, and sublevel reload.
 - [x] Confirm Create shafts linked to the engine output can power Aeronautics propellers while assembled on the sublevel.
 - [ ] With Aeronautics installed, place a powered steam vent on an FSA-fed boiler and confirm outlet/display flow consumption rises by the configured amount.
+- [ ] With Aeronautics installed, place a steam vent above a Create fluid pipe carrying FSA `steam`, power it with redstone, and confirm it outputs hot air.
+- [ ] Close a valve or open a pipe leak before the pipe-fed vent and confirm output falls with pressure.
 - [ ] Change `aeronauticsCompat.steamVentMbPerM3` and confirm the steam vent's consumption changes proportionally.
 
 User report on 2026-05-21: Create Aeronautics was added to the dev runtime, a simulated contraption containing the engine and components was assembled in-game, and the engine worked correctly while assembled.

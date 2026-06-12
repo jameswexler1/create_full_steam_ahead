@@ -1,0 +1,13 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.gustavo.fullsteamahead.mixin.aeronautics",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "SteamVentBlockEntityMixin",
+    "SteamVentBlockMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

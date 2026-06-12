@@ -5,6 +5,7 @@ import com.simibubi.create.content.fluids.FluidTransportBehaviour;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import dev.gustavo.fullsteamahead.compat.aeronautics.AeronauticsSteamVentCompat;
+import dev.gustavo.fullsteamahead.compat.aeronautics.FullSteamAeronauticsSteamVent;
 import dev.gustavo.fullsteamahead.compat.create.FullSteamBoilerIntegration;
 import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
@@ -291,6 +292,11 @@ public final class SteamNetworkManager {
             network.addStoredAtBaseTemp(inlet.getStoredSteamMb());
             return;
         }
+        if (be instanceof FullSteamAeronauticsSteamVent vent && vent.fullSteamAhead$isPipeFedSteamVent()) {
+            network.aeronauticsVents.add(vent);
+            network.addStoredAtBaseTemp(vent.fullSteamAhead$getStoredSteamMb());
+            return;
+        }
         if (be instanceof FluidTankBlockEntity tank && !(be instanceof BoilerOutletBlockEntity)) {
             FluidTankBlockEntity controller = tank.getControllerBE();
             FluidTankBlockEntity vessel = controller == null ? tank : controller;
@@ -423,12 +429,12 @@ public final class SteamNetworkManager {
         boolean reliefVenting = relief.drained() > 0;
         boolean venting = openEndVenting || reliefVenting;
 
-        int aeronauticsVentDemand = collectAeronauticsVentDemand(level, network);
-        int aeronauticsVentConsumed = 0;
-        if (aeronauticsVentDemand > 0 && network.storedMb > 0) {
-            int requestedDrain = Math.min(network.storedMb, aeronauticsVentDemand);
-            aeronauticsVentConsumed = drainFromNetwork(level, network, requestedDrain);
-            network.storedMb = Math.max(0, network.storedMb - aeronauticsVentConsumed);
+        int mountedAeronauticsVentDemand = collectAeronauticsVentDemand(level, network);
+        int mountedAeronauticsVentConsumed = 0;
+        if (mountedAeronauticsVentDemand > 0 && network.storedMb > 0) {
+            int requestedDrain = Math.min(network.storedMb, mountedAeronauticsVentDemand);
+            mountedAeronauticsVentConsumed = drainFromNetwork(level, network, requestedDrain);
+            network.storedMb = Math.max(0, network.storedMb - mountedAeronauticsVentConsumed);
         }
 
         // Target = live ideal-gas pressure from real steam; effective = smoothed value gameplay sees.
@@ -449,22 +455,44 @@ public final class SteamNetworkManager {
         // Fair allocation: every engine requests fullFlow * pressureFactor; if short, split evenly.
         int requestedEach = SteamPhysics.requestedFlowMb(effective);
         int engineCount = engines.size();
-        int totalRequested = requestedEach * engineCount;
+        Map<FullSteamAeronauticsSteamVent, Integer> ventRequests = new HashMap<>();
+        int totalVentRequested = 0;
+        for (FullSteamAeronauticsSteamVent vent : network.aeronauticsVents) {
+            int requested = vent.fullSteamAhead$getRequestedSteamMb(effective);
+            if (requested <= 0) {
+                continue;
+            }
+            ventRequests.put(vent, requested);
+            totalVentRequested += requested;
+        }
+
+        int totalRequested = requestedEach * engineCount + totalVentRequested;
+        double drawScale = totalRequested > 0 && network.storedMb < totalRequested
+                ? network.storedMb / (double) totalRequested
+                : 1.0D;
         int perEngineCap = requestedEach;
-        if (totalRequested > 0 && network.storedMb < totalRequested) {
-            perEngineCap = network.storedMb / Math.max(1, engineCount);
+        if (drawScale < 1.0D) {
+            perEngineCap = (int) Math.floor(requestedEach * drawScale);
         }
         int consumedMb = 0;
         for (SteamInletBlockEntity inlet : engines) {
             consumedMb += inlet.getDisplayConsumedSteamMb();
         }
-        consumedMb += aeronauticsVentConsumed;
+        for (FullSteamAeronauticsSteamVent vent : network.aeronauticsVents) {
+            consumedMb += vent.fullSteamAhead$getDisplayConsumedSteamMb();
+        }
+        consumedMb += mountedAeronauticsVentConsumed;
 
         boolean burst = FullSteamConfig.overpressureEnabled() && effective >= FullSteamConfig.steamBurstPressure();
         boolean warn = effective >= FullSteamConfig.steamWarnPressure();
 
         for (SteamInletBlockEntity inlet : network.inlets) {
             inlet.applyNetworkState(effective, engines.contains(inlet) ? perEngineCap : 0);
+        }
+        for (FullSteamAeronauticsSteamVent vent : network.aeronauticsVents) {
+            int requested = ventRequests.getOrDefault(vent, 0);
+            int cap = drawScale < 1.0D ? (int) Math.floor(requested * drawScale) : requested;
+            vent.fullSteamAhead$applyNetworkState(effective, cap);
         }
         for (BoilerOutletBlockEntity outlet : network.outlets) {
             outlet.applyNetworkState(effective, venting, warn, network.productionMb, (int) Math.round(volume),
@@ -703,7 +731,10 @@ public final class SteamNetworkManager {
     }
 
     private static double networkVolume(Network network) {
-        return Math.max(1.0D, network.volumeM3 + network.pipeCount * 0.5D + network.inlets.size() * 0.5D);
+        return Math.max(1.0D, network.volumeM3
+                + network.pipeCount * 0.5D
+                + network.inlets.size() * 0.5D
+                + network.aeronauticsVents.size() * 0.5D);
     }
 
     private static double networkTemperature(Network network) {
@@ -823,6 +854,12 @@ public final class SteamNetworkManager {
             }
             remaining -= inlet.drainSteam(remaining);
         }
+        for (FullSteamAeronauticsSteamVent vent : network.aeronauticsVents) {
+            if (remaining <= 0) {
+                break;
+            }
+            remaining -= vent.fullSteamAhead$drainSteam(remaining);
+        }
         return amount - remaining;
     }
 
@@ -897,6 +934,7 @@ public final class SteamNetworkManager {
     private static final class Network {
         private final List<BoilerOutletBlockEntity> outlets = new ArrayList<>();
         private final List<SteamInletBlockEntity> inlets = new ArrayList<>();
+        private final List<FullSteamAeronauticsSteamVent> aeronauticsVents = new ArrayList<>();
         private final Set<BlockPos> boilers = new HashSet<>();
         private final Set<BlockPos> steamTanks = new HashSet<>();
         private final List<OpenEnd> openEnds = new ArrayList<>();
