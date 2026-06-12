@@ -43,7 +43,13 @@ public abstract class SteamVentBlockEntityMixin implements FullSteamAeronauticsS
     public int signalStrength;
 
     @Shadow
+    public int rawSignalStrength;
+
+    @Shadow
     protected ScrollValueBehaviour steamAmountBehaviour;
+
+    @Shadow
+    public abstract void updateSignal(int signalStrength);
 
     @Unique
     private final FluidTank fullSteamAhead$steamBuffer =
@@ -85,6 +91,7 @@ public abstract class SteamVentBlockEntityMixin implements FullSteamAeronauticsS
         if (level == null || level.isClientSide()) {
             return;
         }
+        fullSteamAhead$syncPipeFedSignal();
 
         if (fullSteamAhead$acceptedLastTick != fullSteamAhead$acceptedThisTick
                 || fullSteamAhead$consumedLastTick != fullSteamAhead$consumedThisTick) {
@@ -113,6 +120,15 @@ public abstract class SteamVentBlockEntityMixin implements FullSteamAeronauticsS
         if (Math.abs(previousOutput - fullSteamAhead$pipeGasOutput) > 0.1D
                 || (previousOutput > 0.0D) != (fullSteamAhead$pipeGasOutput > 0.0D)) {
             fullSteamAhead$notifyUpdate();
+        }
+    }
+
+    @Inject(method = "updateRawSignal", at = @At("RETURN"))
+    private void fullSteamAhead$syncPipeFedRawSignal(CallbackInfoReturnable<Boolean> cir) {
+        BlockEntity self = fullSteamAhead$self();
+        Level level = self.getLevel();
+        if (level != null && !level.isClientSide()) {
+            fullSteamAhead$syncPipeFedSignal();
         }
     }
 
@@ -245,6 +261,13 @@ public abstract class SteamVentBlockEntityMixin implements FullSteamAeronauticsS
         return level != null
                 && fullSteamAhead$networkGameTime != Long.MIN_VALUE
                 && level.getGameTime() - fullSteamAhead$networkGameTime <= fullSteamAhead$NETWORK_DECAY_TICKS;
+    }
+
+    @Unique
+    private void fullSteamAhead$syncPipeFedSignal() {
+        if (fullSteamAhead$isPipeFedSteamVent() && signalStrength != rawSignalStrength) {
+            updateSignal(rawSignalStrength);
+        }
     }
 
     @Unique
