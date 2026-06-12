@@ -102,7 +102,11 @@ public final class FullSteamBoilerIntegration {
     }
 
     public static int steamUnitsForOutlet(FluidTankBlockEntity controller, BlockPos outletPos, int totalSteamUnits) {
-        if (totalSteamUnits <= 0) {
+        return amountForOutlet(controller, outletPos, totalSteamUnits);
+    }
+
+    public static int amountForOutlet(FluidTankBlockEntity controller, BlockPos outletPos, int totalAmount) {
+        if (totalAmount <= 0) {
             return 0;
         }
 
@@ -116,8 +120,8 @@ public final class FullSteamBoilerIntegration {
             return 0;
         }
 
-        int baseShare = totalSteamUnits / outlets.size();
-        int remainder = totalSteamUnits % outlets.size();
+        int baseShare = totalAmount / outlets.size();
+        int remainder = totalAmount % outlets.size();
         return baseShare + (index < remainder ? 1 : 0);
     }
 

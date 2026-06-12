@@ -65,6 +65,9 @@ public final class FullSteamConfig {
     private static final boolean DEFAULT_ENGINE_EXHAUST_ENABLED = true;
     private static final double DEFAULT_ENGINE_EXHAUST_DAMAGE_SCALE = 0.5D;
 
+    private static final boolean DEFAULT_AERONAUTICS_STEAM_VENT_CONSUMPTION_ENABLED = true;
+    private static final double DEFAULT_AERONAUTICS_STEAM_VENT_MB_PER_M3 = 0.002D;
+
     public static final ModConfigSpec SPEC;
     private static final ModConfigSpec.IntValue BASE_ENGINE_CAPACITY;
     private static final ModConfigSpec.IntValue STEAM_PER_HEAT_UNIT;
@@ -111,6 +114,8 @@ public final class FullSteamConfig {
     private static final ModConfigSpec.DoubleValue STEAM_LEAK_MAX_DAMAGE;
     private static final ModConfigSpec.BooleanValue ENGINE_EXHAUST_ENABLED;
     private static final ModConfigSpec.DoubleValue ENGINE_EXHAUST_DAMAGE_SCALE;
+    private static final ModConfigSpec.BooleanValue AERONAUTICS_STEAM_VENT_CONSUMPTION_ENABLED;
+    private static final ModConfigSpec.DoubleValue AERONAUTICS_STEAM_VENT_MB_PER_M3;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -336,6 +341,21 @@ public final class FullSteamConfig {
                 .defineInRange("engineExhaustDamageScale", DEFAULT_ENGINE_EXHAUST_DAMAGE_SCALE, 0.0D, 100.0D);
 
         builder.pop();
+
+        builder.comment("Optional Create Aeronautics compatibility. Ignored when Aeronautics is not installed.")
+                .push("aeronauticsCompat");
+
+        AERONAUTICS_STEAM_VENT_CONSUMPTION_ENABLED = builder
+                .comment("Whether Aeronautics steam vents mounted on FSA-fed Create boilers consume FSA steam.")
+                .define("steamVentConsumesSteam", DEFAULT_AERONAUTICS_STEAM_VENT_CONSUMPTION_ENABLED);
+
+        AERONAUTICS_STEAM_VENT_MB_PER_M3 = builder
+                .comment("Steam cost in mB/t per Aeronautics steam vent m^3 output.",
+                        "Default 0.002 means a default 5000 m^3 vent consumes 10 mB/t, or one FSA steam unit.",
+                        "Raise this to make Aeronautics lift more expensive; lower it to make lift cheaper.")
+                .defineInRange("steamVentMbPerM3", DEFAULT_AERONAUTICS_STEAM_VENT_MB_PER_M3, 0.0D, 1_000.0D);
+
+        builder.pop();
         SPEC = builder.build();
     }
 
@@ -521,6 +541,14 @@ public final class FullSteamConfig {
 
     public static double engineExhaustDamageScale() {
         return loaded() ? ENGINE_EXHAUST_DAMAGE_SCALE.get() : DEFAULT_ENGINE_EXHAUST_DAMAGE_SCALE;
+    }
+
+    public static boolean aeronauticsSteamVentConsumptionEnabled() {
+        return !loaded() || AERONAUTICS_STEAM_VENT_CONSUMPTION_ENABLED.get();
+    }
+
+    public static double aeronauticsSteamVentMbPerM3() {
+        return loaded() ? AERONAUTICS_STEAM_VENT_MB_PER_M3.get() : DEFAULT_AERONAUTICS_STEAM_VENT_MB_PER_M3;
     }
 
     /** Stress Units per mB of steam consumed, derived from the fixed SU-per-unit and the steam rate. */

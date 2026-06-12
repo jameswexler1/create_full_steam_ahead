@@ -1,6 +1,6 @@
 # Create: Full Steam Ahead — Design Plan
 
-Last updated: 2026-06-11
+Last updated: 2026-06-12
 
 ## Goal
 
@@ -818,6 +818,21 @@ changing engine balance.
 - [x] Keep the source passive and server-authoritative; Display Links must only read pressure state and must not tick or mutate the steam network.
 - [ ] Later, when direct pipe-to-boiler support exists, add an equivalent Create Fluid Tank boiler display source so players can read pressure directly from the boiler without requiring an outlet.
 - [ ] Verify with a Display Link and Display Board: stable pressure line while running, warning text under overpressure, no crash when the outlet unloads or loses its boiler.
+
+### Phase 15: Aeronautics Steam Vent Consumption — Implemented (manual verification pending)
+
+**Goal**: make Create Aeronautics steam vents consume Full Steam Ahead steam when mounted on boilers that feed FSA steam networks.
+
+- [x] Keep Aeronautics optional: no compile dependency and no direct Aeronautics imports.
+- [x] Detect `aeronautics:steam_vent` blocks mounted on top of physical Create Fluid Tank boilers already feeding an FSA `boiler_outlet` network.
+- [x] Read each vent's live Aeronautics `getGasOutput()` reflectively, gated by `canOutputGas()`.
+- [x] Convert Aeronautics gas output to FSA steam demand through server config:
+  `aeronauticsCompat.steamVentMbPerM3`.
+- [x] Default conversion is `0.002 mB/t per m³`, so a default `5000 m³` steam vent consumes `10 mB/t`, or one FSA steam unit.
+- [x] Split one boiler's vent demand across that boiler's attached FSA outlets using the same stable outlet-share rule as production, so multiple outlets do not duplicate consumption.
+- [x] Drain vent consumption before final pressure and engine draw-cap calculation, so pressure and engine output reflect the Aeronautics load immediately.
+- [ ] Manual test: one boiler + one powered Aeronautics steam vent should show roughly +10 mB/t network consumption at default vent settings.
+- [ ] Manual test: changing `aeronauticsCompat.steamVentMbPerM3` should scale vent demand without a code change.
 
 ---
 

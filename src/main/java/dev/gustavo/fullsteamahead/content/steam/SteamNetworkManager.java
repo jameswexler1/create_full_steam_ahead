@@ -4,6 +4,7 @@ import com.simibubi.create.content.fluids.FluidPropagator;
 import com.simibubi.create.content.fluids.FluidTransportBehaviour;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
+import dev.gustavo.fullsteamahead.compat.aeronautics.AeronauticsSteamVentCompat;
 import dev.gustavo.fullsteamahead.compat.create.FullSteamBoilerIntegration;
 import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
@@ -422,6 +423,14 @@ public final class SteamNetworkManager {
         boolean reliefVenting = relief.drained() > 0;
         boolean venting = openEndVenting || reliefVenting;
 
+        int aeronauticsVentDemand = collectAeronauticsVentDemand(level, network);
+        int aeronauticsVentConsumed = 0;
+        if (aeronauticsVentDemand > 0 && network.storedMb > 0) {
+            int requestedDrain = Math.min(network.storedMb, aeronauticsVentDemand);
+            aeronauticsVentConsumed = drainFromNetwork(level, network, requestedDrain);
+            network.storedMb = Math.max(0, network.storedMb - aeronauticsVentConsumed);
+        }
+
         // Target = live ideal-gas pressure from real steam; effective = smoothed value gameplay sees.
         // Open pipe drains already target a smoothed pressure, so they must not be smoothed twice.
         // Relief valves are capacity-limited safety devices; keep smoothing their effective pressure
@@ -449,6 +458,7 @@ public final class SteamNetworkManager {
         for (SteamInletBlockEntity inlet : engines) {
             consumedMb += inlet.getDisplayConsumedSteamMb();
         }
+        consumedMb += aeronauticsVentConsumed;
 
         boolean burst = FullSteamConfig.overpressureEnabled() && effective >= FullSteamConfig.steamBurstPressure();
         boolean warn = effective >= FullSteamConfig.steamWarnPressure();
@@ -478,6 +488,58 @@ public final class SteamNetworkManager {
                 outlet.clearEffectivePressure();
             }
         }
+    }
+
+    private static int collectAeronauticsVentDemand(Level level, Network network) {
+        int demand = 0;
+        Set<BlockPos> seenBoilers = new HashSet<>();
+        for (BoilerOutletBlockEntity outlet : network.outlets) {
+            FluidTankBlockEntity boiler = outlet.getBoiler();
+            BlockPos boilerPos = boiler == null ? outlet.getBoilerControllerPos() : boiler.getBlockPos();
+            if (boilerPos == null || !seenBoilers.add(boilerPos)) {
+                continue;
+            }
+
+            FluidTankBlockEntity controller = resolveBoilerController(level, boiler, boilerPos);
+            if (controller == null) {
+                continue;
+            }
+
+            int totalDemand = AeronauticsSteamVentCompat.steamDemandMb(level, controller);
+            if (totalDemand <= 0) {
+                continue;
+            }
+
+            for (BoilerOutletBlockEntity member : network.outlets) {
+                BlockPos memberBoiler = currentBoilerControllerPos(member);
+                if (!boilerPos.equals(memberBoiler)) {
+                    continue;
+                }
+                demand += FullSteamBoilerIntegration.amountForOutlet(
+                        controller,
+                        member.getBlockPos(),
+                        totalDemand
+                );
+            }
+        }
+        return demand;
+    }
+
+    private static FluidTankBlockEntity resolveBoilerController(
+            Level level,
+            FluidTankBlockEntity boiler,
+            BlockPos boilerPos
+    ) {
+        if (boiler != null && !boiler.isRemoved()) {
+            return controllerOrSelf(boiler);
+        }
+        if (boilerPos == null || !level.isLoaded(boilerPos)) {
+            return null;
+        }
+        if (level.getBlockEntity(boilerPos) instanceof FluidTankBlockEntity tank) {
+            return controllerOrSelf(tank);
+        }
+        return null;
     }
 
     private static ReliefResult applyReliefValves(

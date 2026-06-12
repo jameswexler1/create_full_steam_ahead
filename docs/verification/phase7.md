@@ -24,6 +24,9 @@ Automated results:
 - `processResources`: passed
 - `build`: passed
 - JSON validation: passed
+- Latest automated run on 2026-06-12 after adding Aeronautics steam vent consumption:
+  `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and
+  `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 
 Implementation notes:
 
@@ -35,6 +38,10 @@ Implementation notes:
 - `steam_inlet` attaches to adjacent Create pipes.
 - Create Fluid Tank and Create pipe checks are symmetric for these Full Steam Ahead connections, so assembly can discover the link from either side.
 - Simulated compatibility uses guarded reflection against `dev.simulated_team.simulated.index.SimBlockMovementChecks`; there are no hard imports from Simulated, Aeronautics, or Sable.
+- Aeronautics steam vent compatibility is guarded by block id/reflection: powered `aeronautics:steam_vent`
+  blocks mounted on boilers with FSA outlets consume FSA steam proportional to their live Aeronautics
+  `getGasOutput()`. The default conversion is `5000 m³ -> 10 mB/t`, configurable through
+  `aeronauticsCompat.steamVentMbPerM3`.
 - `steam_cylinder`, `piston_head`, `powered_shaft`, `boiler_outlet`, and `steam_inlet` are listed in `create:safe_nbt`.
 
 Runtime status:
@@ -51,6 +58,8 @@ Manual runtime checklist:
 - [x] Confirm cylinder, inlet, piston, piston head, powered shaft, boiler outlet, and attached boiler/pipe connections move together.
 - [x] Confirm engine NBT/state survives assembly, disassembly, world reload, and sublevel reload.
 - [x] Confirm Create shafts linked to the engine output can power Aeronautics propellers while assembled on the sublevel.
+- [ ] With Aeronautics installed, place a powered steam vent on an FSA-fed boiler and confirm outlet/display flow consumption rises by the configured amount.
+- [ ] Change `aeronauticsCompat.steamVentMbPerM3` and confirm the steam vent's consumption changes proportionally.
 
 User report on 2026-05-21: Create Aeronautics was added to the dev runtime, a simulated contraption containing the engine and components was assembled in-game, and the engine worked correctly while assembled.
 
