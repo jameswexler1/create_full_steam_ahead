@@ -132,7 +132,8 @@ public final class SteamNetworkManager {
             }
             return ruptureActiveBoilerFallback(level, boiler);
         }
-        for (BoilerSteamPort directPort : collectDirectPorts(level)) {
+        List<BlockPos> directBoilers = collectDirectBoilerControllers(level);
+        for (BoilerSteamPort directPort : collectDirectPorts(level, directBoilers)) {
             if (visitedDirectPorts.contains(directPort)) {
                 continue;
             }
@@ -145,6 +146,15 @@ public final class SteamNetworkManager {
                 return true;
             }
             return ruptureActiveBoilerFallback(level, boiler);
+        }
+        if (directBoilers.contains(boilerPos)) {
+            Network network = buildNetworkFromDirectBoiler(level, boilerPos);
+            if (network != null) {
+                if (ruptureBoilerInNetwork(level, network, boilerPos)) {
+                    return true;
+                }
+                return ruptureActiveBoilerFallback(level, boiler);
+            }
         }
         return ruptureActiveBoilerFallback(level, boiler);
     }
@@ -180,6 +190,13 @@ public final class SteamNetworkManager {
             }
         }
         if (!burst) {
+            FullSteamDirectBoilerSource source = network.directBoilers.get(boilerPos);
+            if (source != null) {
+                source.fullSteamAhead$burstDirectBoiler(volume, pressure);
+                burst = true;
+            }
+        }
+        if (!burst) {
             return false;
         }
 
@@ -201,14 +218,16 @@ public final class SteamNetworkManager {
         }
         Map<BlockPos, List<SteamReliefValveBlockEntity>> valvesByBoiler = collectReliefValvesByBoiler(level);
         Set<BlockPos> outlets = OUTLETS.get(level);
-        List<BoilerSteamPort> directPorts = collectDirectPorts(level);
-        if ((outlets == null || outlets.isEmpty()) && directPorts.isEmpty()) {
+        List<BlockPos> directBoilers = collectDirectBoilerControllers(level);
+        List<BoilerSteamPort> directPorts = collectDirectPorts(level, directBoilers);
+        if ((outlets == null || outlets.isEmpty()) && directPorts.isEmpty() && directBoilers.isEmpty()) {
             applyReliefValveStates(Map.of(), valvesByBoiler);
             return;
         }
 
         Set<BlockPos> visitedOutlets = new HashSet<>();
         Set<BoilerSteamPort> visitedDirectPorts = new HashSet<>();
+        Set<BlockPos> visitedBoilers = new HashSet<>();
         List<BlockPos> snapshot = outlets == null ? List.of() : new ArrayList<>(outlets);
         Map<BlockPos, Integer> reliefValveBudgets = new HashMap<>();
         Map<BlockPos, ValveTickState> reliefValveStates = new HashMap<>();
@@ -232,6 +251,7 @@ public final class SteamNetworkManager {
             }
             Network network = buildNetworkFromOutlet(level, outletPos, visitedOutlets, visitedDirectPorts);
             if (network != null) {
+                visitedBoilers.addAll(network.boilers);
                 attachReliefValves(network, valvesByBoiler);
                 stepAndApply(level, network, reliefValveBudgets, reliefValveStates);
             }
@@ -242,6 +262,17 @@ public final class SteamNetworkManager {
             }
             Network network = buildNetworkFromDirectPort(level, directPort, visitedOutlets, visitedDirectPorts);
             if (network != null) {
+                visitedBoilers.addAll(network.boilers);
+                attachReliefValves(network, valvesByBoiler);
+                stepAndApply(level, network, reliefValveBudgets, reliefValveStates);
+            }
+        }
+        for (BlockPos boilerPos : directBoilers) {
+            if (visitedBoilers.contains(boilerPos)) {
+                continue;
+            }
+            Network network = buildNetworkFromDirectBoiler(level, boilerPos);
+            if (network != null) {
                 attachReliefValves(network, valvesByBoiler);
                 stepAndApply(level, network, reliefValveBudgets, reliefValveStates);
             }
@@ -249,13 +280,13 @@ public final class SteamNetworkManager {
         applyReliefValveStates(reliefValveStates, valvesByBoiler);
     }
 
-    private static List<BoilerSteamPort> collectDirectPorts(Level level) {
+    private static List<BlockPos> collectDirectBoilerControllers(Level level) {
         Set<BlockPos> directBoilers = DIRECT_BOILERS.get(level);
         if (directBoilers == null || directBoilers.isEmpty() || !FullSteamConfig.directBoilerPipeOutputEnabled()) {
             return List.of();
         }
 
-        List<BoilerSteamPort> ports = new ArrayList<>();
+        Set<BlockPos> controllers = new HashSet<>();
         List<BlockPos> snapshot = new ArrayList<>(directBoilers);
         for (BlockPos controllerPos : snapshot) {
             if (!level.isLoaded(controllerPos)
@@ -269,6 +300,26 @@ public final class SteamNetworkManager {
                 directBoilers.remove(controllerPos);
                 directBoilers.add(controller.getBlockPos().immutable());
             }
+            controllers.add(controller.getBlockPos().immutable());
+        }
+
+        List<BlockPos> sorted = new ArrayList<>(controllers);
+        sorted.sort(BlockPos::compareTo);
+        return sorted;
+    }
+
+    private static List<BoilerSteamPort> collectDirectPorts(Level level, List<BlockPos> directBoilers) {
+        if (directBoilers.isEmpty() || !FullSteamConfig.directBoilerPipeOutputEnabled()) {
+            return List.of();
+        }
+
+        List<BoilerSteamPort> ports = new ArrayList<>();
+        for (BlockPos controllerPos : directBoilers) {
+            if (!level.isLoaded(controllerPos)
+                    || !(level.getBlockEntity(controllerPos) instanceof FluidTankBlockEntity tank)) {
+                continue;
+            }
+            FluidTankBlockEntity controller = controllerOrSelf(tank);
             ports.addAll(FullSteamBoilerIntegration.attachedDirectPipePorts(controller));
         }
         ports.sort(BoilerSteamPort::compareTo);
@@ -290,6 +341,11 @@ public final class SteamNetworkManager {
         addOutlet(level, startOutlet, network, visitedOutlets, queue, visitedPipes);
         traverseNetwork(level, network, visitedOutlets, visitedDirectPorts, queue, visitedPipes, seenEndpoints);
         return network;
+    }
+
+    private static Network buildNetworkFromDirectBoiler(Level level, BlockPos controllerPos) {
+        Network network = new Network();
+        return addBoilerSource(level, controllerPos, network) ? network : null;
     }
 
     private static Network buildNetworkFromDirectPort(
@@ -537,6 +593,26 @@ public final class SteamNetworkManager {
         }
     }
 
+    private static boolean addBoilerSource(Level level, BlockPos boilerPos, Network network) {
+        if (boilerPos == null || !level.isLoaded(boilerPos)
+                || !(level.getBlockEntity(boilerPos) instanceof FullSteamDirectBoilerSource source)) {
+            return false;
+        }
+
+        network.directBoilers.put(boilerPos.immutable(), source);
+        network.storedMb += source.fullSteamAhead$getBoilerStoredSteamMb();
+        network.productionMb += source.fullSteamAhead$getBoilerProductionMb();
+        int stored = source.fullSteamAhead$getBoilerStoredSteamMb();
+        int production = source.fullSteamAhead$getBoilerProductionMb();
+        double weight = Math.max(1, stored + production);
+        network.temperatureNumerator += source.fullSteamAhead$getBoilerTemperatureK() * weight;
+        network.temperatureWeight += weight;
+        if (network.boilers.add(boilerPos.immutable())) {
+            network.volumeM3 += Math.max(1, source.fullSteamAhead$getBoilerVolume());
+        }
+        return true;
+    }
+
     private static BlockPos currentBoilerControllerPos(BoilerOutletBlockEntity outlet) {
         FluidTankBlockEntity boiler = outlet.getBoiler();
         if (boiler != null) {
@@ -561,13 +637,23 @@ public final class SteamNetworkManager {
         return boilerPos == null ? null : network.directBoilers.get(boilerPos);
     }
 
+    private static FullSteamDirectBoilerSource directSourceForBoiler(Level level, BlockPos boilerPos) {
+        if (boilerPos == null || !level.isLoaded(boilerPos)) {
+            return null;
+        }
+        if (level.getBlockEntity(boilerPos) instanceof FullSteamDirectBoilerSource source) {
+            return source;
+        }
+        return null;
+    }
+
     private static void stepAndApply(
             Level level,
             Network network,
             Map<BlockPos, Integer> reliefValveBudgets,
             Map<BlockPos, ValveTickState> reliefValveStates
     ) {
-        if (network.outlets.isEmpty() && network.directPorts.isEmpty()) {
+        if (network.outlets.isEmpty() && network.directPorts.isEmpty() && network.directBoilers.isEmpty()) {
             return;
         }
         // Pipes and inlets add a little buffering volume so a long run of pipe holds pressure steadier.
@@ -698,6 +784,13 @@ public final class SteamNetworkManager {
                         (int) Math.round(volume), engineCount, consumedMb);
             }
         }
+        for (BlockPos boilerPos : network.boilers) {
+            FullSteamDirectBoilerSource source = directSourceForBoiler(level, boilerPos);
+            if (source != null) {
+                source.fullSteamAhead$applyBoilerNetworkState(effective, venting, warn, network.productionMb,
+                        (int) Math.round(volume), engineCount, consumedMb);
+            }
+        }
 
         if (burst) {
             // One physical boiler bursts once regardless of how many outlets it has...
@@ -716,8 +809,14 @@ public final class SteamNetworkManager {
                 }
                 FullSteamDirectBoilerSource source = directSourceForPort(level, port);
                 if (source != null) {
-                    source.fullSteamAhead$burstDirectBoiler(volume, FullSteamConfig.steamBurstPressure());
+                    source.fullSteamAhead$burstDirectBoiler(volume, effective);
                 }
+            }
+            for (Map.Entry<BlockPos, FullSteamDirectBoilerSource> entry : network.directBoilers.entrySet()) {
+                if (!burstBoilers.add(entry.getKey())) {
+                    continue;
+                }
+                entry.getValue().fullSteamAhead$burstDirectBoiler(volume, effective);
             }
             // ...and the whole network depressurizes so it cannot re-burst every tick.
             drainFromNetwork(level, network, network.storedMb);
@@ -733,11 +832,13 @@ public final class SteamNetworkManager {
 
     private static int collectAeronauticsVentDemand(Level level, Network network) {
         int demand = 0;
+        Set<BlockPos> boilersWithPortAllocation = new HashSet<>();
         for (Map.Entry<BlockPos, List<BoilerSteamPort>> entry : network.portsByBoiler.entrySet()) {
             BlockPos boilerPos = entry.getKey();
             if (boilerPos == null) {
                 continue;
             }
+            boilersWithPortAllocation.add(boilerPos);
 
             FluidTankBlockEntity controller = resolveBoilerController(level, null, boilerPos);
             if (controller == null) {
@@ -751,6 +852,15 @@ public final class SteamNetworkManager {
 
             for (BoilerSteamPort port : entry.getValue()) {
                 demand += FullSteamBoilerIntegration.amountForPort(controller, port, totalDemand);
+            }
+        }
+        for (BlockPos boilerPos : network.boilers) {
+            if (boilersWithPortAllocation.contains(boilerPos)) {
+                continue;
+            }
+            FluidTankBlockEntity controller = resolveBoilerController(level, null, boilerPos);
+            if (controller != null) {
+                demand += AeronauticsSteamVentCompat.steamDemandMb(level, controller);
             }
         }
         return demand;
@@ -908,6 +1018,9 @@ public final class SteamNetworkManager {
                 prevEffective = Math.max(prevEffective, source.fullSteamAhead$getDirectNetworkPressurePn(port));
             }
         }
+        for (FullSteamDirectBoilerSource source : network.directBoilers.values()) {
+            prevEffective = Math.max(prevEffective, source.fullSteamAhead$getBoilerNetworkPressurePn());
+        }
         return prevEffective;
     }
 
@@ -1054,6 +1167,15 @@ public final class SteamNetworkManager {
             if (source != null) {
                 remaining -= source.fullSteamAhead$drainDirectSteam(port, remaining, false);
             }
+        }
+        for (Map.Entry<BlockPos, FullSteamDirectBoilerSource> entry : network.directBoilers.entrySet()) {
+            if (remaining <= 0) {
+                break;
+            }
+            if (network.portsByBoiler.containsKey(entry.getKey())) {
+                continue;
+            }
+            remaining -= entry.getValue().fullSteamAhead$drainBoilerSteam(remaining);
         }
         for (BlockPos tankPos : network.steamTanks) {
             if (remaining <= 0) {

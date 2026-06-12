@@ -28,6 +28,9 @@ Implemented:
 - Direct boiler pipe ports and `boiler_outlet` blocks split the same physical boiler steam budget; adding direct pipes cannot duplicate production.
 - Direct boiler pipe ports wrap Create's Fluid Tank capability only on valid active boiler faces, reject steam insertion, and preserve normal water supply behavior.
 - Create Display Links can read `Steam Network` data from active boiler controllers as well as `boiler_outlet` blocks.
+- Active boiler controllers now store generated steam and build pressure even with no `boiler_outlet` or direct pipe attached.
+- Create Fluid Tank boiler goggles now include Full Steam Ahead pressure, stored steam, production, and status lines.
+- Display Links attached to any block in a Fluid Tank multiblock resolve to the controller readout instead of reading empty child state.
 
 Automated checks run:
 
@@ -55,6 +58,7 @@ Results:
 - User report after relief valve smoothing fix: attached `steam_relief_valve` opens before burst pressure and prevents a closed boiler outlet network from exploding.
 - Latest automated run on 2026-06-11 after adding top/side-mounted steam relief valves: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-06-12 after adding direct boiler pipe output and boiler Display Link readouts: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
+- Latest automated/runtime run on 2026-06-12 after making boilers build sealed pressure without ports: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` passed.
 
 Manual runtime checklist:
 
@@ -103,6 +107,10 @@ Scaled production checklist:
 
 Direct boiler pipe checklist:
 
+- [ ] Confirm an active boiler with no `boiler_outlet`, no direct pipe, and no relief valve builds pressure over time.
+- [ ] Confirm the same sealed boiler can burst from overpressure.
+- [ ] Confirm a boiler-mounted `steam_relief_valve` on a sealed boiler sees the pressure and vents before burst pressure.
+- [ ] Confirm Create goggles on a boiler tank show Full Steam Ahead pressure, stored steam, production, and status lines.
 - [ ] Confirm a Create pipe attached to the top face of a top-layer active boiler tank receives visible `steam` without a `boiler_outlet`.
 - [ ] Confirm a Create pipe attached to a horizontal side face of a top-layer active boiler tank receives visible `steam` without a `boiler_outlet`.
 - [ ] Confirm bottom faces and lower boiler layers do not become steam outputs.
@@ -112,3 +120,4 @@ Direct boiler pipe checklist:
 - [ ] Confirm direct pipe output respects closed Create fluid valves and resumes when the valve reopens.
 - [ ] Confirm open direct boiler pipe ends vent toward atmospheric pressure instead of exploding a valid boiler.
 - [ ] Confirm a Display Link on the active boiler controller can show the `Steam Network` source without a `boiler_outlet`.
+- [ ] Confirm a Display Link on a non-controller tank block in the same boiler still shows the controller's `Steam Network` values.

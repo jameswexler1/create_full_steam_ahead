@@ -42,7 +42,7 @@ Steam is a real fluid. Production still uses the readable Create-style unit scal
 - One pipe-fed engine consumes up to `9 steam units` or `90 mB/t`
 - A full normal engine output is `9 units = 90 mB/t = 147,456 SU` at `64 RPM`
 
-Boiler outlets and direct boiler pipe ports produce steam from the attached Create Fluid Tank boiler:
+Active Create Fluid Tank boilers produce steam internally from Create's boiler data:
 
 ```text
 total steam units = min(active burner units, water supply heat level) * boiler height
@@ -50,13 +50,13 @@ total steam units = min(active burner units, water supply heat level) * boiler h
 
 Normal Blaze Burners contribute `1` burner unit each. Blaze Cake burners contribute `2` each. Boiler height multiplies the burner footprint, so a `3x3x6` boiler with 9 normal active burners produces `54` steam units, enough for six full normal engines. With 9 Blaze Cake burners it produces `108` units, enough for twelve full pipe-fed engines.
 
-Pipe networks distribute usable steam evenly across reachable assembled `steam_inlet` blocks, capped at `90 mB/t` per inlet from all sources combined, before filling passive storage tanks. If supply is short, every reachable engine receives the same share as closely as whole mB/t allows; SU scales from exact consumed mB/t.
+A sealed active boiler still stores generated steam and builds pressure even when no outlet or pipe is attached. Pipe networks distribute usable steam evenly across reachable assembled `steam_inlet` blocks, capped at `90 mB/t` per inlet from all sources combined, before filling passive storage tanks. If supply is short, every reachable engine receives the same share as closely as whole mB/t allows; SU scales from exact consumed mB/t.
 
-A boiler can expose steam in two ways. A `boiler_outlet` is still the explicit Create-style port block. Active Create Fluid Tank boilers can also feed steam directly into Create Fluid Pipes attached to any top-layer tank face except the bottom face: the top face and all horizontal side faces are valid. Direct boiler ports and `boiler_outlet` blocks share the same boiler budget, so adding more ports splits output instead of multiplying it. Ordinary tanks that merely store `steam` do not gain this pressure source.
+A boiler can expose stored steam in two ways. A `boiler_outlet` is still the explicit Create-style port block. Active Create Fluid Tank boilers can also feed steam directly into Create Fluid Pipes attached to any top-layer tank face except the bottom face: the top face and all horizontal side faces are valid. Direct boiler ports and `boiler_outlet` blocks share the same boiler budget, so adding more ports splits output instead of multiplying it. Ordinary tanks that merely store `steam` do not gain this pressure source.
 
 ## Pressure Network
 
-Pipe-fed steam networks use a per-network ideal-gas pressure model:
+Boilers and pipe-fed steam networks use a per-network ideal-gas pressure model:
 
 ```text
 pressure pN/m^2 = gasConstant * storedSteamMb * temperatureK / networkVolumeM3
@@ -65,6 +65,7 @@ pressure pN/m^2 = gasConstant * storedSteamMb * temperatureK / networkVolumeM3
 - Rated pressure is `1.0 MpN/m²`; a full-flow engine at rated pressure reaches full SU and `64 RPM`.
 - Engine output is gated by both pressure and delivered flow: `min(pressure factor, flow factor)`.
 - Multiple boilers can feed one pipe network. Network temperature is weighted by contributed steam, not simply copied from the hottest boiler.
+- A boiler with no connected steam ports is treated as its own sealed pressure network. Relief valves, goggles, Display Links, and burst logic still see its pressure.
 - Multiple steam ports on one boiler, whether `boiler_outlet` blocks or direct pipe connections, split one shared boiler budget and cannot duplicate steam.
 - Passive Create Fluid Tanks add pressure volume from their configured fluid capacity, so larger storage actually buffers pressure.
 - Create fluid valves block steam pressure traversal. Closed valves isolate pressure instead of leaking or bypassing steam.
@@ -72,7 +73,7 @@ pressure pN/m^2 = gasConstant * storedSteamMb * temperatureK / networkVolumeM3
 - Boiler-mounted `steam_relief_valve` blocks protect the physical Create Fluid Tank boiler they attach to. They can mount on the top or horizontal sides of the boiler, auto-open at `2.2 MpN/m²`, close below `1.7 MpN/m²`, have a `720 mB/t` baseline vent rate, scale relief authority with active boiler production once open, and can be forced open with redstone.
 - When Create Aeronautics is installed, powered `aeronautics:steam_vent` blocks consume FSA steam proportional to their live Aeronautics gas output. Vents can either sit on FSA-fed boilers or be pipe-fed by placing them on top of a Create fluid pipe carrying FSA `steam`. The default conversion is `5000 m³ -> 10 mB/t`, controlled by `aeronauticsCompat.steamVentMbPerM3`.
 - Overpressure warns at `1.5 MpN/m²` and bursts at `2.5 MpN/m²`. A burst is deduped per physical boiler, depressurizes the whole connected steam network, uses `(12.0 + 0.45 * networkVolume) * 1.0` explosion power capped before scaling at `36.0`, and adds a client-side steam cloud, layered boom/hiss sounds within `200` blocks, and configurable screen shake within `150` blocks.
-- Create Big Cannons projectiles that strike a Create Fluid Tank belonging to an active steam boiler force a boiler rupture. Outlet-fed pressure networks use current pressure and depressurize the connected steam network; active boilers without a pressure network rupture at full burst pressure.
+- Create Big Cannons projectiles that strike a Create Fluid Tank belonging to an active steam boiler force a boiler rupture. Pressure networks use current pressure and depressurize the connected steam network; active boilers without stored pressure still rupture at full burst pressure.
 - On Sable/Aeronautics simulated contraptions, boiler bursts project the visual/world explosion to real-world coordinates and also apply local randomized damage to nearby sublevel blocks. Most destroyed sublevel blocks are vaporized; only sparse edge damage drops items.
 - Direct compact engines still work, but remain a simplified compatibility mode. Full pressure storage, venting, and burst behavior belongs to pipe-fed networks.
 

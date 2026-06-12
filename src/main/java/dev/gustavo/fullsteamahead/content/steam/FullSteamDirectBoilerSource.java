@@ -24,8 +24,30 @@ public interface FullSteamDirectBoilerSource extends SteamNetworkReadout {
 
     int fullSteamAhead$drainDirectSteam(BoilerSteamPort port, int amount, boolean externallyDrained);
 
+    int fullSteamAhead$getBoilerStoredSteamMb();
+
+    int fullSteamAhead$getBoilerProductionMb();
+
+    int fullSteamAhead$getBoilerVolume();
+
+    double fullSteamAhead$getBoilerTemperatureK();
+
+    double fullSteamAhead$getBoilerNetworkPressurePn();
+
+    int fullSteamAhead$drainBoilerSteam(int amount);
+
     void fullSteamAhead$applyDirectNetworkState(
             BoilerSteamPort port,
+            double pressurePn,
+            boolean venting,
+            boolean warn,
+            int production,
+            int networkVolume,
+            int engines,
+            int consumed
+    );
+
+    void fullSteamAhead$applyBoilerNetworkState(
             double pressurePn,
             boolean venting,
             boolean warn,

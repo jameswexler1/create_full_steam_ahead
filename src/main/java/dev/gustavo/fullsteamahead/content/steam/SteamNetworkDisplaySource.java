@@ -76,11 +76,16 @@ public class SteamNetworkDisplaySource extends SingleLineDisplaySource {
     }
 
     private static SteamNetworkReadout readoutFrom(BlockEntity blockEntity) {
-        if (blockEntity instanceof SteamNetworkReadout readout) {
-            return readout;
+        if (blockEntity instanceof FluidTankBlockEntity tank) {
+            FluidTankBlockEntity controller = tank.getControllerBE();
+            if (controller instanceof SteamNetworkReadout readout) {
+                return readout;
+            }
+            if (tank instanceof SteamNetworkReadout readout) {
+                return readout;
+            }
         }
-        if (blockEntity instanceof FluidTankBlockEntity tank
-                && tank.getControllerBE() instanceof SteamNetworkReadout readout) {
+        if (blockEntity instanceof SteamNetworkReadout readout) {
             return readout;
         }
         return null;
