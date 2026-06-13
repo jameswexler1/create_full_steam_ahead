@@ -1192,6 +1192,13 @@ public final class SteamNetworkManager {
             if (remaining <= 0) {
                 break;
             }
+            // Don't vent steam already delivered to a running engine's inlet: that buffer is the
+            // engine's committed flow, not stagnant network steam. Without this, venting empties an
+            // active engine's buffer every tick and the engine cuts out instead of winding down with
+            // the (gradually falling) network pressure. Storage inlets with no engine are still vented.
+            if (hasWorkingEngine(level, inlet)) {
+                continue;
+            }
             remaining -= inlet.drainSteam(remaining);
         }
         for (FullSteamAeronauticsSteamVent vent : network.aeronauticsVents) {

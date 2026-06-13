@@ -3,6 +3,7 @@ package dev.gustavo.fullsteamahead.compat.create;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.content.fluids.FluidPropagator;
 import com.simibubi.create.content.fluids.FluidTransportBehaviour;
+import com.simibubi.create.content.fluids.PipeConnection;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
 import dev.gustavo.fullsteamahead.content.steam.FullSteamDirectBoilerSource;
@@ -10,11 +11,13 @@ import dev.gustavo.fullsteamahead.content.steam.SteamPressure;
 import dev.gustavo.fullsteamahead.content.steam.SteamPipeUtil;
 import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
+import dev.gustavo.fullsteamahead.registry.ModFluids;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.fluids.FluidStack;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -246,6 +249,13 @@ public final class FullSteamBoilerIntegration {
         if (!SteamPipeUtil.canSteamPassThrough(pipe, pipeState, outputDirection.getOpposite())) {
             return null;
         }
+        // A face whose pipe is supplying water (or any non-steam fluid) toward the boiler is a water
+        // inlet, not a steam outlet. This matters most on 1-tall boilers, where the only faces are the
+        // top layer that also feeds water in: steam must not flow back out against the pump and mix
+        // water and steam in that same pipe.
+        if (pipeSuppliesNonSteamToward(pipe, outputDirection)) {
+            return null;
+        }
         return BoilerSteamPort.directPipe(tankPos, outputDirection);
     }
 
@@ -308,6 +318,22 @@ public final class FullSteamBoilerIntegration {
                 .thenComparingInt(pos -> pos.getX())
                 .thenComparingInt(pos -> pos.getZ()));
         return sorted;
+    }
+
+    /**
+     * True when the pipe adjacent to this boiler face is carrying a non-steam fluid (e.g. water from a
+     * pump) toward the boiler. Such a face is a water supply, not a steam outlet; letting steam leave
+     * through it would push against the pump and mix water and steam in the same pipe.
+     */
+    private static boolean pipeSuppliesNonSteamToward(FluidTransportBehaviour pipe, Direction outputDirection) {
+        Direction towardBoiler = outputDirection.getOpposite();
+        FluidStack provided = pipe.getProvidedOutwardFluid(towardBoiler);
+        if (!provided.isEmpty() && !provided.is(ModFluids.STEAM.get())) {
+            return true;
+        }
+        PipeConnection.Flow flow = pipe.getFlow(towardBoiler);
+        return flow != null && flow.fluid != null && !flow.fluid.isEmpty()
+                && !flow.fluid.is(ModFluids.STEAM.get());
     }
 
     private static boolean isDirectSteamFace(Direction direction) {
