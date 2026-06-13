@@ -28,7 +28,7 @@ public class DirectBoilerSteamHandler implements IFluidHandler {
         if (stored > 0) {
             return new FluidStack(ModFluids.STEAM.get(), stored);
         }
-        return fallback == null ? FluidStack.EMPTY : fallback.getFluidInTank(tank);
+        return FluidStack.EMPTY;
     }
 
     @Override
@@ -60,7 +60,7 @@ public class DirectBoilerSteamHandler implements IFluidHandler {
                     : source.fullSteamAhead$drainDirectSteam(port, resource.getAmount(), true);
             return drained <= 0 ? FluidStack.EMPTY : new FluidStack(ModFluids.STEAM.get(), drained);
         }
-        return fallback == null ? FluidStack.EMPTY : fallback.drain(resource, action);
+        return FluidStack.EMPTY;
     }
 
     @Override
@@ -72,6 +72,6 @@ public class DirectBoilerSteamHandler implements IFluidHandler {
                     : source.fullSteamAhead$drainDirectSteam(port, maxDrain, true);
             return drained <= 0 ? FluidStack.EMPTY : new FluidStack(ModFluids.STEAM.get(), drained);
         }
-        return fallback == null ? FluidStack.EMPTY : fallback.drain(maxDrain, action);
+        return FluidStack.EMPTY;
     }
 }

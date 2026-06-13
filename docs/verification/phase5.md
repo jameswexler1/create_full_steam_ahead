@@ -35,6 +35,7 @@ Implemented:
 - Create Fluid Tank boiler pressure readouts now use immediate tank sync like the outlet/valve readouts, and direct/sealed boilers emit overpressure steam warning particles/sound again.
 - Steam relief valves keep an audible steam hiss while open under pressure, even when smoothed relief drains in small bursts.
 - Direct boiler pipe ports are gated by the same physical boiler rule as sealed boilers: the tank must contain water and have active heat. Pipes or outlets alone do not make an ordinary Fluid Tank become a boiler.
+- Direct boiler pipe ports remain in steam-output mode after heat is cut while residual boiler steam/pressure exists; they stop falling back to water output until pressure is gone.
 
 Automated checks run:
 
@@ -66,6 +67,7 @@ Results:
 - Latest automated run on 2026-06-13 after fixing boiler goggle pressure sync and removing fake vanilla steam-engine capacity for FSA devices: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-06-13 after smoothing boiler goggle sync cadence and restoring pressure warning audio/particles: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-06-13 after preventing top pipes from activating ordinary Fluid Tanks as boilers: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
+- Latest automated run on 2026-06-13 after keeping cooling boilers in steam-output mode until residual pressure is gone: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 
 Manual runtime checklist:
 
@@ -125,6 +127,8 @@ Direct boiler pipe checklist:
 - [ ] Confirm a Create pipe attached to the top face of a top-layer active boiler tank receives visible `steam` without a `boiler_outlet`.
 - [ ] Confirm a Create pipe attached to a horizontal side face of a top-layer active boiler tank receives visible `steam` without a `boiler_outlet`.
 - [ ] Confirm a Create pipe on the top face of an unheated or empty Fluid Tank does not make it render or report as a boiler.
+- [ ] Confirm cutting heat from a pressurized direct-pipe boiler keeps the pipe face outputting/venting steam, not water, until stored pressure reaches zero.
+- [ ] Confirm the same cooled boiler returns to normal Fluid Tank water behavior after residual steam pressure is fully gone.
 - [ ] Confirm bottom faces and lower boiler layers do not become steam outputs.
 - [ ] Confirm direct boiler pipes still allow water to be supplied to the boiler through normal Create fluid handling where applicable.
 - [ ] Confirm a normal Create Fluid Tank containing stored `steam` but not acting as an active boiler does not auto-pressurize adjacent pipes.

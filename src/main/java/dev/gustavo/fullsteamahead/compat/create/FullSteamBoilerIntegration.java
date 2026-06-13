@@ -5,6 +5,7 @@ import com.simibubi.create.content.fluids.FluidPropagator;
 import com.simibubi.create.content.fluids.FluidTransportBehaviour;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
+import dev.gustavo.fullsteamahead.content.steam.FullSteamDirectBoilerSource;
 import dev.gustavo.fullsteamahead.content.steam.SteamPipeUtil;
 import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
@@ -69,7 +70,7 @@ public final class FullSteamBoilerIntegration {
             return 0;
         }
 
-        return isPhysicallyActiveBoiler(controller) ? 1 : 0;
+        return isBoilerSteamSource(controller) ? 1 : 0;
     }
 
     public static int countAttachedOutlets(FluidTankBlockEntity controller) {
@@ -83,6 +84,11 @@ public final class FullSteamBoilerIntegration {
     public static boolean isPhysicallyActiveBoiler(FluidTankBlockEntity controller) {
         controller = resolveController(controller);
         return controller != null && hasHeatedWaterSupply(controller);
+    }
+
+    public static boolean isBoilerSteamSource(FluidTankBlockEntity controller) {
+        controller = resolveController(controller);
+        return controller != null && (isPhysicallyActiveBoiler(controller) || hasResidualSteamPressure(controller));
     }
 
     public static int steamUnitsForOutlet(FluidTankBlockEntity controller, BlockPos outletPos, int totalSteamUnits) {
@@ -177,7 +183,7 @@ public final class FullSteamBoilerIntegration {
         }
 
         Level level = controller.getLevel();
-        if (level == null || controller.boiler == null || !isPhysicallyActiveBoiler(controller)) {
+        if (level == null || controller.boiler == null || !isBoilerSteamSource(controller)) {
             return List.of();
         }
 
@@ -222,7 +228,7 @@ public final class FullSteamBoilerIntegration {
         if (controller == null
                 || controller.boiler == null
                 || !isTopLayerTank(controller, tankPos)
-                || !isPhysicallyActiveBoiler(controller)) {
+                || !isBoilerSteamSource(controller)) {
             return null;
         }
 
@@ -342,6 +348,15 @@ public final class FullSteamBoilerIntegration {
             }
         }
         return false;
+    }
+
+    private static boolean hasResidualSteamPressure(FluidTankBlockEntity controller) {
+        if (!(controller instanceof FullSteamDirectBoilerSource source)) {
+            return false;
+        }
+        return source.fullSteamAhead$getBoilerStoredSteamMb() > 0
+                || source.fullSteamAhead$getBoilerNetworkPressurePn() > 0.0D
+                || source.getNetworkPressurePn() > 0.0D;
     }
 
     public static int compactBoilerHeatLimit(int tankSize) {
