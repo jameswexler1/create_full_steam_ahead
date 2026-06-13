@@ -6,6 +6,7 @@ import com.simibubi.create.content.fluids.FluidTransportBehaviour;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
 import dev.gustavo.fullsteamahead.content.steam.FullSteamDirectBoilerSource;
+import dev.gustavo.fullsteamahead.content.steam.SteamPressure;
 import dev.gustavo.fullsteamahead.content.steam.SteamPipeUtil;
 import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
@@ -355,8 +356,8 @@ public final class FullSteamBoilerIntegration {
             return false;
         }
         return source.fullSteamAhead$getBoilerStoredSteamMb() > 0
-                || source.fullSteamAhead$getBoilerNetworkPressurePn() > 0.0D
-                || source.getNetworkPressurePn() > 0.0D;
+                || !SteamPressure.isEffectivelyZero(source.fullSteamAhead$getBoilerNetworkPressurePn())
+                || !SteamPressure.isEffectivelyZero(source.getNetworkPressurePn());
     }
 
     public static int compactBoilerHeatLimit(int tankSize) {

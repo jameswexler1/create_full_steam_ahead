@@ -219,6 +219,7 @@ public abstract class SteamVentBlockEntityMixin implements FullSteamAeronauticsS
 
     @Override
     public void fullSteamAhead$applyNetworkState(double pressurePn, int drawCap) {
+        pressurePn = SteamPressure.zeroIfNegligible(pressurePn);
         fullSteamAhead$networkPressurePn = pressurePn;
         fullSteamAhead$networkDrawCap = drawCap;
         Level level = fullSteamAhead$self().getLevel();

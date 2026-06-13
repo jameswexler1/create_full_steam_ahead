@@ -1002,7 +1002,7 @@ public final class SteamNetworkManager {
      */
     private static double smoothEffectivePressure(Network network, double target) {
         if (!FullSteamConfig.steamSmoothingEnabled()) {
-            return target;
+            return SteamPressure.zeroIfNegligible(target);
         }
         return smoothPressure(previousEffectivePressure(network), target);
     }
@@ -1049,7 +1049,7 @@ public final class SteamNetworkManager {
         if (maxDelta > 0.0D) {
             effective = Mth.clamp(effective, prevEffective - maxDelta, prevEffective + maxDelta);
         }
-        return Math.max(0.0D, effective);
+        return SteamPressure.zeroIfNegligible(effective);
     }
 
     private static double networkVolume(Network network) {

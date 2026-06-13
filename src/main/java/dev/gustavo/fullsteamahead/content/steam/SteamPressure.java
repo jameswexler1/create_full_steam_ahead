@@ -14,6 +14,7 @@ import net.minecraft.util.Mth;
 public final class SteamPressure {
     public static final double KILO = 1_000.0D;
     public static final double MEGA = 1_000_000.0D;
+    public static final double ZERO_EPSILON = 1.0D;
 
     /** Rated operating pressure: a normally supplied single engine stabilizes here. */
     public static double rated() {
@@ -46,6 +47,7 @@ public final class SteamPressure {
 
     /** Format a pN/m^2 value with metric prefixes, e.g. "1.02 MpN/m^2". */
     public static String format(double pressurePn) {
+        pressurePn = zeroIfNegligible(pressurePn);
         if (pressurePn >= MEGA) {
             return String.format("%.2f MpN/m²", pressurePn / MEGA);
         }
@@ -53,6 +55,17 @@ public final class SteamPressure {
             return String.format("%.1f kpN/m²", pressurePn / KILO);
         }
         return String.format("%.0f pN/m²", pressurePn);
+    }
+
+    public static boolean isEffectivelyZero(double pressurePn) {
+        if (!Double.isFinite(pressurePn)) {
+            return true;
+        }
+        return Math.abs(pressurePn) <= ZERO_EPSILON;
+    }
+
+    public static double zeroIfNegligible(double pressurePn) {
+        return isEffectivelyZero(pressurePn) ? 0.0D : Math.max(0.0D, pressurePn);
     }
 
     private SteamPressure() {

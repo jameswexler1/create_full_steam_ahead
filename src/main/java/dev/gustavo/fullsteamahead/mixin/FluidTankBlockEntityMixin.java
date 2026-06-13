@@ -344,7 +344,9 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
             fullSteamAhead$boilerVesselState.boilerVolume = Math.max(1, vesselTag.getInt(fullSteamAhead$VESSEL_VOLUME_KEY));
             fullSteamAhead$boilerVesselState.temperatureK = Math.max(1, vesselTag.getInt(fullSteamAhead$VESSEL_TEMPERATURE_KEY));
             fullSteamAhead$boilerVesselState.lit = vesselTag.getBoolean(fullSteamAhead$VESSEL_LIT_KEY);
-            fullSteamAhead$boilerVesselState.pressurePn = Math.max(0.0D, vesselTag.getDouble(fullSteamAhead$VESSEL_PRESSURE_KEY));
+            fullSteamAhead$boilerVesselState.pressurePn = SteamPressure.zeroIfNegligible(
+                    vesselTag.getDouble(fullSteamAhead$VESSEL_PRESSURE_KEY)
+            );
             fullSteamAhead$boilerVesselState.networkVenting = vesselTag.getBoolean(fullSteamAhead$VESSEL_NETWORK_VENTING_KEY);
             fullSteamAhead$boilerVesselState.networkWarn = vesselTag.getBoolean(fullSteamAhead$VESSEL_NETWORK_WARN_KEY);
             fullSteamAhead$boilerVesselState.networkProductionMb = Math.max(0, vesselTag.getInt(fullSteamAhead$VESSEL_NETWORK_PRODUCTION_KEY));
@@ -476,6 +478,7 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
             int engines,
             int consumed
     ) {
+        pressurePn = SteamPressure.zeroIfNegligible(pressurePn);
         DirectBoilerPortState state = fullSteamAhead$directPortStates.computeIfAbsent(port, ignored -> new DirectBoilerPortState());
         state.pressurePn = pressurePn;
         state.networkVenting = venting;
@@ -496,6 +499,7 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
             int engines,
             int consumed
     ) {
+        pressurePn = SteamPressure.zeroIfNegligible(pressurePn);
         boolean changed = Double.compare(fullSteamAhead$boilerVesselState.pressurePn, pressurePn) != 0
                 || fullSteamAhead$boilerVesselState.networkVenting != venting
                 || fullSteamAhead$boilerVesselState.networkWarn != warn
@@ -757,6 +761,7 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
             int engines,
             int consumed
     ) {
+        pressurePn = SteamPressure.zeroIfNegligible(pressurePn);
         Level level = fullSteamAhead$self().getLevel();
         long gameTime = level == null ? 0L : level.getGameTime();
         if (fullSteamAhead$lastNetworkGameTime != gameTime) {

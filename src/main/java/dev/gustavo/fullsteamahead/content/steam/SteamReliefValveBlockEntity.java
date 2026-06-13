@@ -82,7 +82,7 @@ public class SteamReliefValveBlockEntity extends SmartBlockEntity implements IHa
     protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         boilerPos = compound.contains(BOILER_POS_KEY) ? BlockPos.of(compound.getLong(BOILER_POS_KEY)) : null;
         autoOpen = compound.getBoolean(AUTO_OPEN_KEY);
-        networkPressurePn = compound.getDouble(PRESSURE_KEY);
+        networkPressurePn = SteamPressure.zeroIfNegligible(compound.getDouble(PRESSURE_KEY));
         open = compound.getBoolean(OPEN_KEY);
         venting = compound.getBoolean(VENTING_KEY);
         forcedOpen = compound.getBoolean(FORCED_OPEN_KEY);
@@ -176,6 +176,7 @@ public class SteamReliefValveBlockEntity extends SmartBlockEntity implements IHa
     }
 
     public void applyNetworkState(double pressurePn, boolean open, boolean venting, int ventedMb) {
+        pressurePn = SteamPressure.zeroIfNegligible(pressurePn);
         boolean previousOpen = this.open;
         boolean previousVenting = this.venting;
         boolean previousForced = this.forcedOpen;

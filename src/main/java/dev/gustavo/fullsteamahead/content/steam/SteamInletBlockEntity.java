@@ -168,6 +168,7 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
 
     /** Called by SteamNetworkManager each tick: the engine's network pressure and fair draw cap. */
     public void applyNetworkState(double pressurePn, int drawCap) {
+        pressurePn = SteamPressure.zeroIfNegligible(pressurePn);
         this.networkPressurePn = pressurePn;
         this.networkDrawCap = drawCap;
         this.networkGameTime = level == null ? 0L : level.getGameTime();

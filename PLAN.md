@@ -305,7 +305,7 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - Block entity: `SteamReliefValveBlockEntity extends SmartBlockEntity`
 - Placed directly on the top or any horizontal side of a Create Fluid Tank boiler block. It links to the tank controller behind its attached face and protects every steam pipe network fed by boiler outlets on that same physical boiler. Bottom mounting is intentionally unsupported so it does not conflict with Blaze Burners.
 - It is not a pipe endpoint and does not replace `boiler_outlet`; it is a boiler-mounted safety device.
-- If the boiler has no active outlet/network, it can still sit on the boiler and show boiler-link status, but it has no pressure to relieve.
+- If the boiler has no active outlet/network, it still sees the sealed boiler vessel pressure and can relieve it before burst.
 - Automatic mode opens at `steamReliefValve.openPressure` and stays open until pressure falls below `steamReliefValve.closePressure`.
 - Redstone power forces the valve open and drains toward the same atmospheric target used by open pipe ends.
 - One valve starts from `steamReliefValve.ventRateMb` baseline vent capacity, then scales effective relief capacity with the active boiler network's production so a valid safety valve can outrun the boiler before burst pressure. Multiple valves on the same boiler share the same physical boiler/network pressure and add relief capacity without duplicating steam production.

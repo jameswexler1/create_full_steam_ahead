@@ -354,6 +354,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
     /** Called by SteamNetworkManager each tick with the resolved network state. */
     public void applyNetworkState(double pressurePn, boolean venting, boolean warn, int production,
                                   int networkVolume, int engines, int consumed) {
+        pressurePn = SteamPressure.zeroIfNegligible(pressurePn);
         this.networkPressurePn = pressurePn;
         this.networkVenting = venting;
         this.networkWarn = warn;
@@ -908,7 +909,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
         outletCount = tag.getInt(OUTLET_COUNT_KEY);
         productionRate = tag.getInt(PRODUCTION_RATE_KEY);
         pushedRate = tag.getInt(PUSHED_RATE_KEY);
-        networkPressurePn = tag.getDouble(PRESSURE_PN_KEY);
+        networkPressurePn = SteamPressure.zeroIfNegligible(tag.getDouble(PRESSURE_PN_KEY));
         boilerVolume = tag.getInt(BOILER_VOLUME_KEY);
         boilerTemperatureK = tag.getInt(BOILER_TEMP_KEY);
         networkProductionRate = tag.getInt(NETWORK_PRODUCTION_KEY);

@@ -36,6 +36,8 @@ Implemented:
 - Steam relief valves keep an audible steam hiss while open under pressure, even when smoothed relief drains in small bursts.
 - Direct boiler pipe ports are gated by the same physical boiler rule as sealed boilers: the tank must contain water and have active heat. Pipes or outlets alone do not make an ordinary Fluid Tank become a boiler.
 - Direct boiler pipe ports remain in steam-output mode after heat is cut while residual boiler steam/pressure exists; they stop falling back to water output until pressure is gone.
+- Cooling boilers snap negligible smoothed pressure to zero, so an unheated empty-pressure Fluid Tank can fully stop being an FSA boiler again.
+- Powered `steam_relief_valve` blocks force-open and drain toward the same atmospheric target as open pipe ends, even below the automatic open threshold.
 
 Automated checks run:
 
@@ -68,6 +70,7 @@ Results:
 - Latest automated run on 2026-06-13 after smoothing boiler goggle sync cadence and restoring pressure warning audio/particles: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-06-13 after preventing top pipes from activating ordinary Fluid Tanks as boilers: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated run on 2026-06-13 after keeping cooling boilers in steam-output mode until residual pressure is gone: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
+- Latest automated run on 2026-06-13 after letting cooled zero-pressure boilers return to normal tanks and verifying redstone-forced relief valve support: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 
 Manual runtime checklist:
 
@@ -129,6 +132,8 @@ Direct boiler pipe checklist:
 - [ ] Confirm a Create pipe on the top face of an unheated or empty Fluid Tank does not make it render or report as a boiler.
 - [ ] Confirm cutting heat from a pressurized direct-pipe boiler keeps the pipe face outputting/venting steam, not water, until stored pressure reaches zero.
 - [ ] Confirm the same cooled boiler returns to normal Fluid Tank water behavior after residual steam pressure is fully gone.
+- [ ] Confirm the same cooled boiler no longer renders/reports as an FSA boiler once stored steam and pressure reach zero.
+- [ ] Confirm redstone power forces an attached `steam_relief_valve` open and relieves pressure on demand before the automatic threshold.
 - [ ] Confirm bottom faces and lower boiler layers do not become steam outputs.
 - [ ] Confirm direct boiler pipes still allow water to be supplied to the boiler through normal Create fluid handling where applicable.
 - [ ] Confirm a normal Create Fluid Tank containing stored `steam` but not acting as an active boiler does not auto-pressurize adjacent pipes.
