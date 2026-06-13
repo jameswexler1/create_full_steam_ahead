@@ -16,6 +16,7 @@ import dev.gustavo.fullsteamahead.content.steam.FullSteamDirectBoilerSource;
 import dev.gustavo.fullsteamahead.content.steam.SteamNetworkManager;
 import dev.gustavo.fullsteamahead.content.steam.SteamPressure;
 import dev.gustavo.fullsteamahead.content.steam.SteamPhysics;
+import dev.gustavo.fullsteamahead.registry.ModParticleTypes;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -25,7 +26,10 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -222,7 +226,7 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
                 || previousTemperature != fullSteamAhead$boilerVesselState.temperatureK
                 || previousLit != fullSteamAhead$boilerVesselState.lit) {
             self.setChanged();
-            self.sendData();
+            self.sendDataImmediately();
         }
     }
 
@@ -457,7 +461,7 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
         int drained = Math.min(amount, fullSteamAhead$boilerVesselState.storedMb);
         fullSteamAhead$boilerVesselState.storedMb -= drained;
         fullSteamAhead$self().setChanged();
-        fullSteamAhead$self().sendData();
+        fullSteamAhead$self().sendDataImmediately();
         return drained;
     }
 
@@ -508,9 +512,12 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
         fullSteamAhead$boilerVesselState.networkConsumedMb = consumed;
 
         fullSteamAhead$recordAggregateReadout(pressurePn, venting, warn, production, networkVolume, engines, consumed);
+        if (warn && FullSteamBoilerIntegration.countAttachedOutlets(fullSteamAhead$self()) <= 0) {
+            fullSteamAhead$emitOverpressureWarning();
+        }
         if (changed) {
             fullSteamAhead$self().setChanged();
-            fullSteamAhead$self().sendData();
+            fullSteamAhead$self().sendDataImmediately();
         }
     }
 
@@ -525,7 +532,7 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
         fullSteamAhead$networkPressurePn = 0.0D;
         if (changed) {
             fullSteamAhead$self().setChanged();
-            fullSteamAhead$self().sendData();
+            fullSteamAhead$self().sendDataImmediately();
         }
     }
 
@@ -688,6 +695,29 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
 
         int totalProductionMb = SteamPhysics.productionMb(effectiveHeat, Math.max(1, boilerController.getHeight()));
         return new DirectBoilerSteamBudget(totalProductionMb, portCount, boilerVolume, temperatureK, lit);
+    }
+
+    @Unique
+    private void fullSteamAhead$emitOverpressureWarning() {
+        FluidTankBlockEntity self = fullSteamAhead$self();
+        Level level = self.getLevel();
+        if (!(level instanceof ServerLevel serverLevel) || level.getGameTime() % 8L != 0L) {
+            return;
+        }
+
+        Vec3 center = fullSteamAhead$boilerCenter(self);
+        serverLevel.sendParticles(ModParticleTypes.STEAM_LEAK.get(),
+                center.x, center.y, center.z, 12, 0.4D, 0.4D, 0.4D, 0.02D);
+        serverLevel.playSound(null, center.x, center.y, center.z,
+                SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.7F, 0.6F);
+    }
+
+    @Unique
+    private Vec3 fullSteamAhead$boilerCenter(FluidTankBlockEntity boiler) {
+        BlockPos pos = boiler.getBlockPos();
+        int width = Math.max(1, boiler.getWidth());
+        int height = Math.max(1, boiler.getHeight());
+        return new Vec3(pos.getX() + width / 2.0D, pos.getY() + height / 2.0D, pos.getZ() + width / 2.0D);
     }
 
     @Unique

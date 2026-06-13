@@ -32,6 +32,8 @@ Implemented:
 - Create Fluid Tank boiler goggles now include Full Steam Ahead pressure, stored steam, production, and status lines.
 - Display Links attached to any block in a Fluid Tank multiblock resolve to the controller readout instead of reading empty child state.
 - Create Fluid Tank boiler goggles no longer add a separate "Full Steam Ahead" heading, and FSA ports/engines no longer appear as vanilla Create steam-engine stress capacity.
+- Create Fluid Tank boiler pressure readouts now use immediate tank sync like the outlet/valve readouts, and direct/sealed boilers emit overpressure steam warning particles/sound again.
+- Steam relief valves keep an audible steam hiss while open under pressure, even when smoothed relief drains in small bursts.
 
 Automated checks run:
 
@@ -61,6 +63,7 @@ Results:
 - Latest automated run on 2026-06-12 after adding direct boiler pipe output and boiler Display Link readouts: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated/runtime run on 2026-06-12 after making boilers build sealed pressure without ports: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` passed.
 - Latest automated run on 2026-06-13 after fixing boiler goggle pressure sync and removing fake vanilla steam-engine capacity for FSA devices: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
+- Latest automated run on 2026-06-13 after smoothing boiler goggle sync cadence and restoring pressure warning audio/particles: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 
 Manual runtime checklist:
 
@@ -114,6 +117,9 @@ Direct boiler pipe checklist:
 - [ ] Confirm a boiler-mounted `steam_relief_valve` on a sealed boiler sees the pressure and vents before burst pressure.
 - [ ] Confirm Create goggles on a boiler tank show steam pressure, stored steam, production, and status lines without a separate "Full Steam Ahead" heading.
 - [ ] Confirm Create goggles on a boiler tank do not show vanilla steam-engine capacity/SU lines for FSA multiblock engines, direct pipe ports, or `boiler_outlet` blocks.
+- [ ] Confirm Create goggles on a boiler tank update pressure smoothly like the `boiler_outlet` and `steam_relief_valve` goggles.
+- [ ] Confirm a sealed/direct boiler in overpressure emits steam warning particles and the pre-burst hiss before exploding.
+- [ ] Confirm an open `steam_relief_valve` under pressure plays its steam hiss while relieving pressure.
 - [ ] Confirm a Create pipe attached to the top face of a top-layer active boiler tank receives visible `steam` without a `boiler_outlet`.
 - [ ] Confirm a Create pipe attached to a horizontal side face of a top-layer active boiler tank receives visible `steam` without a `boiler_outlet`.
 - [ ] Confirm bottom faces and lower boiler layers do not become steam outputs.

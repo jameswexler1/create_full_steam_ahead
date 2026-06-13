@@ -195,8 +195,11 @@ public class SteamReliefValveBlockEntity extends SmartBlockEntity implements IHa
         this.venting = venting;
         this.ventedLastTick = ventedMb;
 
+        int audibleAmount = Math.max(ventedMb, FullSteamConfig.reliefValveVentRateMb() / 4);
         if (venting && ventedMb > 0) {
-            emitSteam(ventedMb);
+            emitSteam(ventedMb, true);
+        } else if (this.open && pressurePn >= FullSteamConfig.reliefValveClosePressure()) {
+            emitSteam(audibleAmount, false);
         }
 
         if (previousOpen != this.open
@@ -209,7 +212,7 @@ public class SteamReliefValveBlockEntity extends SmartBlockEntity implements IHa
         }
     }
 
-    private void emitSteam(int amount) {
+    private void emitSteam(int amount, boolean particles) {
         if (!(level instanceof ServerLevel serverLevel)) {
             return;
         }
@@ -219,12 +222,12 @@ public class SteamReliefValveBlockEntity extends SmartBlockEntity implements IHa
         Direction facing = SteamReliefValveBlock.getFacing(state);
         Vec3 normal = Vec3.atLowerCornerOf(attachedFace.getNormal());
         Vec3 origin = Vec3.atCenterOf(worldPosition).add(normal.scale(0.28D));
-        if (level.getGameTime() % 4L == 0L) {
+        if (particles && level.getGameTime() % 4L == 0L) {
             SteamCloudEffects.emitReliefValve(serverLevel, origin, attachedFace, facing, amount);
         }
         if (level.getGameTime() % 8L == 0L) {
             float intensity = (float) Math.min(1.0D, amount / (double) Math.max(1, FullSteamConfig.reliefValveVentRateMb()));
-            AllSoundEvents.STEAM.playAt(level, origin, 0.45F + 0.35F * intensity, 0.68F, false);
+            AllSoundEvents.STEAM.playAt(level, origin, 0.55F + 0.35F * intensity, 0.68F, false);
         }
     }
 
