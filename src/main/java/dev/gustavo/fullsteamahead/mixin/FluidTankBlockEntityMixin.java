@@ -68,6 +68,20 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
     private static final String fullSteamAhead$VESSEL_TEMPERATURE_KEY = "TemperatureK";
     @Unique
     private static final String fullSteamAhead$VESSEL_LIT_KEY = "Lit";
+    @Unique
+    private static final String fullSteamAhead$VESSEL_PRESSURE_KEY = "Pressure";
+    @Unique
+    private static final String fullSteamAhead$VESSEL_NETWORK_VENTING_KEY = "NetworkVenting";
+    @Unique
+    private static final String fullSteamAhead$VESSEL_NETWORK_WARN_KEY = "NetworkWarn";
+    @Unique
+    private static final String fullSteamAhead$VESSEL_NETWORK_PRODUCTION_KEY = "NetworkProduction";
+    @Unique
+    private static final String fullSteamAhead$VESSEL_NETWORK_VOLUME_KEY = "NetworkVolume";
+    @Unique
+    private static final String fullSteamAhead$VESSEL_NETWORK_ENGINES_KEY = "NetworkEngines";
+    @Unique
+    private static final String fullSteamAhead$VESSEL_NETWORK_CONSUMED_KEY = "NetworkConsumed";
 
     @Shadow
     public BoilerData boiler;
@@ -137,6 +151,8 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
         int previousProduction = fullSteamAhead$boilerVesselState.productionMb;
         int previousTotalProduction = fullSteamAhead$boilerVesselState.totalProductionMb;
         int previousPortCount = fullSteamAhead$boilerVesselState.portCount;
+        int previousVolume = fullSteamAhead$boilerVesselState.boilerVolume;
+        int previousTemperature = fullSteamAhead$boilerVesselState.temperatureK;
         boolean previousLit = fullSteamAhead$boilerVesselState.lit;
 
         int totalPortCount = budget.portCount();
@@ -202,8 +218,11 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
                 || previousProduction != fullSteamAhead$boilerVesselState.productionMb
                 || previousTotalProduction != fullSteamAhead$boilerVesselState.totalProductionMb
                 || previousPortCount != fullSteamAhead$boilerVesselState.portCount
+                || previousVolume != fullSteamAhead$boilerVesselState.boilerVolume
+                || previousTemperature != fullSteamAhead$boilerVesselState.temperatureK
                 || previousLit != fullSteamAhead$boilerVesselState.lit) {
             self.setChanged();
+            self.sendData();
         }
     }
 
@@ -252,7 +271,11 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
         if (fullSteamAhead$boilerVesselState.storedMb > 0
                 || fullSteamAhead$boilerVesselState.productionMb > 0
                 || fullSteamAhead$boilerVesselState.totalProductionMb > 0
-                || fullSteamAhead$boilerVesselState.pressurePn > 0) {
+                || fullSteamAhead$boilerVesselState.pressurePn > 0
+                || fullSteamAhead$boilerVesselState.networkVenting
+                || fullSteamAhead$boilerVesselState.networkWarn
+                || fullSteamAhead$boilerVesselState.networkProductionMb > 0
+                || fullSteamAhead$boilerVesselState.networkConsumedMb > 0) {
             CompoundTag vesselTag = new CompoundTag();
             vesselTag.putInt(fullSteamAhead$VESSEL_STORED_KEY, fullSteamAhead$boilerVesselState.storedMb);
             vesselTag.putInt(fullSteamAhead$VESSEL_PRODUCTION_KEY, fullSteamAhead$boilerVesselState.productionMb);
@@ -261,6 +284,13 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
             vesselTag.putInt(fullSteamAhead$VESSEL_VOLUME_KEY, fullSteamAhead$boilerVesselState.boilerVolume);
             vesselTag.putInt(fullSteamAhead$VESSEL_TEMPERATURE_KEY, fullSteamAhead$boilerVesselState.temperatureK);
             vesselTag.putBoolean(fullSteamAhead$VESSEL_LIT_KEY, fullSteamAhead$boilerVesselState.lit);
+            vesselTag.putDouble(fullSteamAhead$VESSEL_PRESSURE_KEY, fullSteamAhead$boilerVesselState.pressurePn);
+            vesselTag.putBoolean(fullSteamAhead$VESSEL_NETWORK_VENTING_KEY, fullSteamAhead$boilerVesselState.networkVenting);
+            vesselTag.putBoolean(fullSteamAhead$VESSEL_NETWORK_WARN_KEY, fullSteamAhead$boilerVesselState.networkWarn);
+            vesselTag.putInt(fullSteamAhead$VESSEL_NETWORK_PRODUCTION_KEY, fullSteamAhead$boilerVesselState.networkProductionMb);
+            vesselTag.putInt(fullSteamAhead$VESSEL_NETWORK_VOLUME_KEY, fullSteamAhead$boilerVesselState.networkVolume);
+            vesselTag.putInt(fullSteamAhead$VESSEL_NETWORK_ENGINES_KEY, fullSteamAhead$boilerVesselState.networkEngines);
+            vesselTag.putInt(fullSteamAhead$VESSEL_NETWORK_CONSUMED_KEY, fullSteamAhead$boilerVesselState.networkConsumedMb);
             tag.put(fullSteamAhead$BOILER_VESSEL_KEY, vesselTag);
         }
     }
@@ -310,6 +340,13 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
             fullSteamAhead$boilerVesselState.boilerVolume = Math.max(1, vesselTag.getInt(fullSteamAhead$VESSEL_VOLUME_KEY));
             fullSteamAhead$boilerVesselState.temperatureK = Math.max(1, vesselTag.getInt(fullSteamAhead$VESSEL_TEMPERATURE_KEY));
             fullSteamAhead$boilerVesselState.lit = vesselTag.getBoolean(fullSteamAhead$VESSEL_LIT_KEY);
+            fullSteamAhead$boilerVesselState.pressurePn = Math.max(0.0D, vesselTag.getDouble(fullSteamAhead$VESSEL_PRESSURE_KEY));
+            fullSteamAhead$boilerVesselState.networkVenting = vesselTag.getBoolean(fullSteamAhead$VESSEL_NETWORK_VENTING_KEY);
+            fullSteamAhead$boilerVesselState.networkWarn = vesselTag.getBoolean(fullSteamAhead$VESSEL_NETWORK_WARN_KEY);
+            fullSteamAhead$boilerVesselState.networkProductionMb = Math.max(0, vesselTag.getInt(fullSteamAhead$VESSEL_NETWORK_PRODUCTION_KEY));
+            fullSteamAhead$boilerVesselState.networkVolume = Math.max(0, vesselTag.getInt(fullSteamAhead$VESSEL_NETWORK_VOLUME_KEY));
+            fullSteamAhead$boilerVesselState.networkEngines = Math.max(0, vesselTag.getInt(fullSteamAhead$VESSEL_NETWORK_ENGINES_KEY));
+            fullSteamAhead$boilerVesselState.networkConsumedMb = Math.max(0, vesselTag.getInt(fullSteamAhead$VESSEL_NETWORK_CONSUMED_KEY));
         } else if (migratedPortSteam > 0) {
             fullSteamAhead$boilerVesselState.storedMb = Math.min(FullSteamConfig.steamBufferCapMb(), migratedPortSteam);
         }
@@ -420,6 +457,7 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
         int drained = Math.min(amount, fullSteamAhead$boilerVesselState.storedMb);
         fullSteamAhead$boilerVesselState.storedMb -= drained;
         fullSteamAhead$self().setChanged();
+        fullSteamAhead$self().sendData();
         return drained;
     }
 
@@ -454,6 +492,13 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
             int engines,
             int consumed
     ) {
+        boolean changed = Double.compare(fullSteamAhead$boilerVesselState.pressurePn, pressurePn) != 0
+                || fullSteamAhead$boilerVesselState.networkVenting != venting
+                || fullSteamAhead$boilerVesselState.networkWarn != warn
+                || fullSteamAhead$boilerVesselState.networkProductionMb != production
+                || fullSteamAhead$boilerVesselState.networkVolume != networkVolume
+                || fullSteamAhead$boilerVesselState.networkEngines != engines
+                || fullSteamAhead$boilerVesselState.networkConsumedMb != consumed;
         fullSteamAhead$boilerVesselState.pressurePn = pressurePn;
         fullSteamAhead$boilerVesselState.networkVenting = venting;
         fullSteamAhead$boilerVesselState.networkWarn = warn;
@@ -463,6 +508,10 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
         fullSteamAhead$boilerVesselState.networkConsumedMb = consumed;
 
         fullSteamAhead$recordAggregateReadout(pressurePn, venting, warn, production, networkVolume, engines, consumed);
+        if (changed) {
+            fullSteamAhead$self().setChanged();
+            fullSteamAhead$self().sendData();
+        }
     }
 
     @Override
@@ -470,8 +519,14 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
         for (DirectBoilerPortState state : fullSteamAhead$directPortStates.values()) {
             state.pressurePn = 0.0D;
         }
+        boolean changed = fullSteamAhead$boilerVesselState.pressurePn != 0.0D
+                || fullSteamAhead$networkPressurePn != 0.0D;
         fullSteamAhead$boilerVesselState.pressurePn = 0.0D;
         fullSteamAhead$networkPressurePn = 0.0D;
+        if (changed) {
+            fullSteamAhead$self().setChanged();
+            fullSteamAhead$self().sendData();
+        }
     }
 
     @Override
@@ -485,40 +540,57 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
     @Override
     public double getNetworkPressurePn() {
         fullSteamAhead$expireAggregateReadout();
-        return fullSteamAhead$networkPressurePn;
+        return fullSteamAhead$networkPressurePn > 0.0D
+                ? fullSteamAhead$networkPressurePn
+                : fullSteamAhead$boilerVesselState.pressurePn;
     }
 
     @Override
     public int getNetworkProductionRate() {
         fullSteamAhead$expireAggregateReadout();
-        return fullSteamAhead$networkProductionRate > 0
-                ? fullSteamAhead$networkProductionRate
-                : fullSteamAhead$boilerVesselState.totalProductionMb;
+        if (fullSteamAhead$networkProductionRate > 0) {
+            return fullSteamAhead$networkProductionRate;
+        }
+        if (fullSteamAhead$boilerVesselState.networkProductionMb > 0) {
+            return fullSteamAhead$boilerVesselState.networkProductionMb;
+        }
+        return fullSteamAhead$boilerVesselState.totalProductionMb;
     }
 
     @Override
     public int getNetworkConsumedRate() {
         fullSteamAhead$expireAggregateReadout();
-        return fullSteamAhead$networkConsumedRate;
+        return fullSteamAhead$networkConsumedRate > 0
+                ? fullSteamAhead$networkConsumedRate
+                : fullSteamAhead$boilerVesselState.networkConsumedMb;
     }
 
     @Override
     public int getNetworkVolume() {
         fullSteamAhead$expireAggregateReadout();
-        return fullSteamAhead$networkVolume > 0
-                ? fullSteamAhead$networkVolume
-                : fullSteamAhead$boilerVesselState.boilerVolume;
+        if (fullSteamAhead$networkVolume > 0) {
+            return fullSteamAhead$networkVolume;
+        }
+        if (fullSteamAhead$boilerVesselState.networkVolume > 0) {
+            return fullSteamAhead$boilerVesselState.networkVolume;
+        }
+        return fullSteamAhead$boilerVesselState.boilerVolume;
     }
 
     @Override
     public int getNetworkEngineCount() {
         fullSteamAhead$expireAggregateReadout();
-        return fullSteamAhead$networkEngines;
+        return fullSteamAhead$networkEngines > 0
+                ? fullSteamAhead$networkEngines
+                : fullSteamAhead$boilerVesselState.networkEngines;
     }
 
     @Override
     public String getSteamNetworkStatusKey() {
         fullSteamAhead$expireAggregateReadout();
+        double pressure = getNetworkPressurePn();
+        boolean warn = fullSteamAhead$networkWarn || fullSteamAhead$boilerVesselState.networkWarn;
+        boolean venting = fullSteamAhead$networkVenting || fullSteamAhead$boilerVesselState.networkVenting;
         if (!FullSteamConfig.directBoilerPipeOutputEnabled()) {
             return "no_network";
         }
@@ -528,16 +600,16 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
                 && fullSteamAhead$boilerVesselState.storedMb <= 0) {
             return "no_heat_water";
         }
-        if (fullSteamAhead$networkPressurePn >= FullSteamConfig.steamBurstPressure()) {
+        if (pressure >= FullSteamConfig.steamBurstPressure()) {
             return "burst_risk";
         }
-        if (fullSteamAhead$networkWarn) {
+        if (warn) {
             return "overpressure";
         }
-        if (fullSteamAhead$networkVenting) {
+        if (venting) {
             return "venting";
         }
-        if (fullSteamAhead$networkPressurePn < FullSteamConfig.steamRatedPressure()) {
+        if (pressure < FullSteamConfig.steamRatedPressure()) {
             return "low_pressure";
         }
         return "stable";
@@ -561,7 +633,6 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
         int production = source.getNetworkProductionRate();
         int stored = source.fullSteamAhead$getBoilerStoredSteamMb();
         int volume = source.getNetworkVolume();
-        CreateLang.text("Full Steam Ahead").style(ChatFormatting.GRAY).forGoggles(tooltip);
         CreateLang.text("Pressure: " + SteamPressure.format(pressure))
                 .style(pressure >= FullSteamConfig.steamWarnPressure()
                         ? ChatFormatting.RED

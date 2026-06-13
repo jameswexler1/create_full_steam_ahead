@@ -182,6 +182,8 @@ In direct compact mode, the `piston_head` block entity reads this boiler's `Boil
 
 In pipe-fed mode, the Create Fluid Tank boiler controller reads its own `BoilerData`, creates stored `steam` from valid active heat and water supply, and tracks pressure even when sealed. Steam ports can be explicit `boiler_outlet` blocks or direct pipes attached to valid top-layer tank faces. They expose the existing Create boiler vessel to Create pipes; they do not create independent steam.
 
+Create Fluid Tank boiler goggles may show Full Steam Ahead pressure, stored steam, production, and status lines, but they must not label those lines with a separate mod heading and must not report Full Steam Ahead multiblock engines as vanilla Create steam-engine stress capacity. Boiler-mounted Display Links expose the same `Steam Network` readout modes as a `boiler_outlet`.
+
 ### Layer 2 — The Cylinder Ring (our auto-assembly)
 
 The 3×3×2 ring self-assembles when all 16 shell positions are filled correctly. In direct compact mode all 16 positions are `steam_cylinder`. In pipe-fed mode exactly one shell position may be `steam_inlet`, with the other 15 positions being `steam_cylinder`. The inlet can occupy any of the 16 shell slots. The moment the 16th shell block is placed and the ring is complete:

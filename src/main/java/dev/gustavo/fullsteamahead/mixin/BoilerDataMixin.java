@@ -16,29 +16,32 @@ public abstract class BoilerDataMixin {
     public int attachedEngines;
 
     @Shadow
+    public int attachedWhistles;
+
+    @Shadow
     public boolean needsHeatLevelUpdate;
 
     @Unique
-    private int fullSteamAhead$lastAttachedEngines;
+    private int fullSteamAhead$lastAttachedDevices;
 
     @Unique
     private boolean fullSteamAhead$compactBoiler;
 
     @Inject(method = "evaluate", at = @At("RETURN"), cancellable = true)
-    private void fullSteamAhead$countFullSteamEngines(
+    private void fullSteamAhead$countFullSteamBoilerDevices(
             FluidTankBlockEntity boiler,
             CallbackInfoReturnable<Boolean> cir
     ) {
-        int fullSteamEngines = FullSteamBoilerIntegration.countAttachedEngines(boiler);
-        fullSteamAhead$compactBoiler = fullSteamEngines > 0;
+        int fullSteamDevices = FullSteamBoilerIntegration.countAttachedBoilerDevices(boiler);
+        fullSteamAhead$compactBoiler = fullSteamDevices > 0;
 
-        if (fullSteamEngines > 0) {
-            attachedEngines += fullSteamEngines;
+        if (fullSteamDevices > 0) {
+            attachedWhistles += fullSteamDevices;
             needsHeatLevelUpdate = true;
         }
 
-        boolean changed = cir.getReturnValue() || fullSteamAhead$lastAttachedEngines != attachedEngines;
-        fullSteamAhead$lastAttachedEngines = attachedEngines;
+        boolean changed = cir.getReturnValue() || fullSteamAhead$lastAttachedDevices != fullSteamDevices;
+        fullSteamAhead$lastAttachedDevices = fullSteamDevices;
         if (changed) {
             cir.setReturnValue(true);
         }

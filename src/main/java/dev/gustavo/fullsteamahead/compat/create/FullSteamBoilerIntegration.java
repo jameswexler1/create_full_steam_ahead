@@ -13,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluids;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -58,7 +59,7 @@ public final class FullSteamBoilerIntegration {
         return Math.max(0, Math.min(burnerHeat, waterCap));
     }
 
-    public static int countAttachedEngines(FluidTankBlockEntity boiler) {
+    public static int countAttachedBoilerDevices(FluidTankBlockEntity boiler) {
         FluidTankBlockEntity controller = resolveController(boiler);
         if (controller == null) {
             return 0;
@@ -69,7 +70,8 @@ public final class FullSteamBoilerIntegration {
             return 0;
         }
 
-        return countAttachedDirectEngines(controller) + countAttachedSteamPorts(controller);
+        int devices = countAttachedDirectEngines(controller) + countAttachedSteamPorts(controller);
+        return Math.max(devices, hasHeatedWaterSupply(controller) ? 1 : 0);
     }
 
     private static int countAttachedDirectEngines(FluidTankBlockEntity controller) {
@@ -338,6 +340,32 @@ public final class FullSteamBoilerIntegration {
                 && tankPos.getX() < controllerPos.getX() + width
                 && tankPos.getZ() >= controllerPos.getZ()
                 && tankPos.getZ() < controllerPos.getZ() + width;
+    }
+
+    private static boolean hasHeatedWaterSupply(FluidTankBlockEntity controller) {
+        Level level = controller.getLevel();
+        if (level == null
+                || controller.getTankInventory().getFluidAmount() <= 0
+                || !controller.getTankInventory().getFluid().is(Fluids.WATER)) {
+            return false;
+        }
+
+        BlockPos origin = controller.getBlockPos();
+        int width = Math.max(1, controller.getWidth());
+        int y = origin.getY() - 1;
+        for (int x = 0; x < width; x++) {
+            for (int z = 0; z < width; z++) {
+                BlockPos burnerPos = new BlockPos(origin.getX() + x, y, origin.getZ() + z);
+                if (!level.isLoaded(burnerPos)) {
+                    continue;
+                }
+                if (BlazeBurnerBlock.getHeatLevelOf(level.getBlockState(burnerPos))
+                        .isAtLeast(BlazeBurnerBlock.HeatLevel.FADING)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public static int compactBoilerHeatLimit(int tankSize) {
