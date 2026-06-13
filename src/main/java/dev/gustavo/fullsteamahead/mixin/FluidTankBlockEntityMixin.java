@@ -639,6 +639,13 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
         double pressure = source.getNetworkPressurePn();
         int production = source.getNetworkProductionRate();
         int stored = source.fullSteamAhead$getBoilerStoredSteamMb();
+        if (pressure <= 0.0D
+                && production <= 0
+                && stored <= 0
+                && !FullSteamBoilerIntegration.isPhysicallyActiveBoiler(controller)) {
+            return;
+        }
+
         int volume = source.getNetworkVolume();
         CreateLang.text("Pressure: " + SteamPressure.format(pressure))
                 .style(pressure >= FullSteamConfig.steamWarnPressure()

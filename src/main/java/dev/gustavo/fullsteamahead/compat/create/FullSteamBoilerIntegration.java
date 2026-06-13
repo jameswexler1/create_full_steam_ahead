@@ -4,7 +4,6 @@ import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.content.fluids.FluidPropagator;
 import com.simibubi.create.content.fluids.FluidTransportBehaviour;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
-import dev.gustavo.fullsteamahead.content.piston.EngineValidator;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamPipeUtil;
 import dev.gustavo.fullsteamahead.config.FullSteamConfig;
@@ -70,37 +69,7 @@ public final class FullSteamBoilerIntegration {
             return 0;
         }
 
-        int devices = countAttachedDirectEngines(controller) + countAttachedSteamPorts(controller);
-        return Math.max(devices, hasHeatedWaterSupply(controller) ? 1 : 0);
-    }
-
-    private static int countAttachedDirectEngines(FluidTankBlockEntity controller) {
-        Level level = controller.getLevel();
-        int width = controller.getWidth();
-        int height = controller.getHeight();
-        if (width < 3 || height < 1) {
-            return 0;
-        }
-
-        BlockPos controllerPos = controller.getBlockPos();
-        Set<BlockPos> engines = new HashSet<>();
-        for (int x = 0; x <= width - 3; x++) {
-            for (int z = 0; z <= width - 3; z++) {
-                BlockPos ringOrigin = controllerPos.offset(x, height, z);
-                BlockPos enginePos = ringOrigin.offset(1, 0, 1);
-                if (!level.isLoaded(enginePos)
-                        || !level.getBlockState(enginePos).is(ModBlocks.PISTON_HEAD.get())) {
-                    continue;
-                }
-
-                EngineValidator.Result result = EngineValidator.validate(level, enginePos);
-                if (result.valid() && controllerPos.equals(result.boilerPos())) {
-                    engines.add(enginePos);
-                }
-            }
-        }
-
-        return engines.size();
+        return isPhysicallyActiveBoiler(controller) ? 1 : 0;
     }
 
     public static int countAttachedOutlets(FluidTankBlockEntity controller) {
@@ -109,6 +78,11 @@ public final class FullSteamBoilerIntegration {
 
     public static int countAttachedSteamPorts(FluidTankBlockEntity controller) {
         return attachedSteamPorts(controller).size();
+    }
+
+    public static boolean isPhysicallyActiveBoiler(FluidTankBlockEntity controller) {
+        controller = resolveController(controller);
+        return controller != null && hasHeatedWaterSupply(controller);
     }
 
     public static int steamUnitsForOutlet(FluidTankBlockEntity controller, BlockPos outletPos, int totalSteamUnits) {
@@ -203,7 +177,7 @@ public final class FullSteamBoilerIntegration {
         }
 
         Level level = controller.getLevel();
-        if (level == null || controller.boiler == null) {
+        if (level == null || controller.boiler == null || !isPhysicallyActiveBoiler(controller)) {
             return List.of();
         }
 
@@ -245,7 +219,10 @@ public final class FullSteamBoilerIntegration {
         }
 
         FluidTankBlockEntity controller = resolveController(tank);
-        if (controller == null || controller.boiler == null || !isTopLayerTank(controller, tankPos)) {
+        if (controller == null
+                || controller.boiler == null
+                || !isTopLayerTank(controller, tankPos)
+                || !isPhysicallyActiveBoiler(controller)) {
             return null;
         }
 
@@ -309,10 +286,9 @@ public final class FullSteamBoilerIntegration {
                             continue;
                         }
 
-                        // Boiler visuals must not depend on the outlet block entity having refreshed
-                        // its cached controller yet. Create's own boiler scan is geometric, so match
-                        // that behaviour: a correctly facing outlet adjacent to this tank footprint
-                        // counts as an attached boiler device immediately.
+                        // Outlet discovery is geometric so budget splitting does not depend on the
+                        // outlet block entity cache. Boiler activation itself is still gated by
+                        // actual water plus active heat in countAttachedBoilerDevices().
                         outlets.add(outletPos);
                     }
                 }
