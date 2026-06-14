@@ -456,7 +456,9 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
 
         FluidTransportBehaviour startPipe = FluidPropagator.getPipe(level, startPos);
         if (startPipe != null) {
-            if (!canSteamPassThrough(startPipe, level.getBlockState(startPos), facing.getOpposite())) {
+            BlockState startState = level.getBlockState(startPos);
+            if (!canSteamPassThrough(startPipe, startState, facing.getOpposite())
+                    || !SteamPipeUtil.pumpPassable(startState, facing)) {
                 resetPipePressureCache();
                 return SteamOutput.BLOCKED;
             }
@@ -568,7 +570,8 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                 if (direction == node.incomingSide()) {
                     continue;
                 }
-                if (!canSteamPassThrough(pipe, pipeState, direction)) {
+                if (!canSteamPassThrough(pipe, pipeState, direction)
+                        || !SteamPipeUtil.pumpPassable(pipeState, direction)) {
                     blocked = true;
                     continue;
                 }
@@ -580,7 +583,9 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
 
                 FluidTransportBehaviour nextPipe = FluidPropagator.getPipe(level, next);
                 if (nextPipe != null) {
-                    if (!canSteamPassThrough(nextPipe, level.getBlockState(next), direction.getOpposite())) {
+                    BlockState nextState = level.getBlockState(next);
+                    if (!canSteamPassThrough(nextPipe, nextState, direction.getOpposite())
+                            || !SteamPipeUtil.pumpPassable(nextState, direction)) {
                         blocked = true;
                         continue;
                     }
@@ -667,7 +672,8 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                 if (direction == node.incomingSide()) {
                     continue;
                 }
-                if (!canSteamPassThrough(pipe, pipeState, direction)) {
+                if (!canSteamPassThrough(pipe, pipeState, direction)
+                        || !SteamPipeUtil.pumpPassable(pipeState, direction)) {
                     continue;
                 }
 
@@ -678,7 +684,9 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
 
                 FluidTransportBehaviour nextPipe = FluidPropagator.getPipe(level, next);
                 if (nextPipe != null) {
-                    if (!canSteamPassThrough(nextPipe, level.getBlockState(next), direction.getOpposite())) {
+                    BlockState nextState = level.getBlockState(next);
+                    if (!canSteamPassThrough(nextPipe, nextState, direction.getOpposite())
+                            || !SteamPipeUtil.pumpPassable(nextState, direction)) {
                         continue;
                     }
                     if (node.distance() + 1 <= FullSteamConfig.boilerOutletPressureRange() && visited.add(next)) {

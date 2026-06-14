@@ -40,7 +40,9 @@ public final class DirectBoilerPipeTransfer {
         }
 
         Direction sourceSide = port.direction().getOpposite();
-        if (!SteamPipeUtil.canSteamPassThrough(startPipe, level.getBlockState(startPos), sourceSide)) {
+        BlockState startState = level.getBlockState(startPos);
+        if (!SteamPipeUtil.canSteamPassThrough(startPipe, startState, sourceSide)
+                || !SteamPipeUtil.pumpPassable(startState, sourceSide.getOpposite())) {
             return Result.BLOCKED;
         }
 
@@ -99,7 +101,8 @@ public final class DirectBoilerPipeTransfer {
                 if (direction == node.incomingSide()) {
                     continue;
                 }
-                if (!SteamPipeUtil.canSteamPassThrough(pipe, pipeState, direction)) {
+                if (!SteamPipeUtil.canSteamPassThrough(pipe, pipeState, direction)
+                        || !SteamPipeUtil.pumpPassable(pipeState, direction)) {
                     blocked = true;
                     continue;
                 }
@@ -111,7 +114,9 @@ public final class DirectBoilerPipeTransfer {
 
                 FluidTransportBehaviour nextPipe = FluidPropagator.getPipe(level, next);
                 if (nextPipe != null) {
-                    if (!SteamPipeUtil.canSteamPassThrough(nextPipe, level.getBlockState(next), direction.getOpposite())) {
+                    BlockState nextState = level.getBlockState(next);
+                    if (!SteamPipeUtil.canSteamPassThrough(nextPipe, nextState, direction.getOpposite())
+                            || !SteamPipeUtil.pumpPassable(nextState, direction)) {
                         blocked = true;
                         continue;
                     }
@@ -207,7 +212,8 @@ public final class DirectBoilerPipeTransfer {
 
             for (Direction direction : FluidPropagator.getPipeConnections(pipeState, pipe)) {
                 if (direction == node.incomingSide()
-                        || !SteamPipeUtil.canSteamPassThrough(pipe, pipeState, direction)) {
+                        || !SteamPipeUtil.canSteamPassThrough(pipe, pipeState, direction)
+                        || !SteamPipeUtil.pumpPassable(pipeState, direction)) {
                     continue;
                 }
 
@@ -218,7 +224,9 @@ public final class DirectBoilerPipeTransfer {
 
                 FluidTransportBehaviour nextPipe = FluidPropagator.getPipe(level, next);
                 if (nextPipe != null) {
-                    if (SteamPipeUtil.canSteamPassThrough(nextPipe, level.getBlockState(next), direction.getOpposite())
+                    BlockState nextState = level.getBlockState(next);
+                    if (SteamPipeUtil.canSteamPassThrough(nextPipe, nextState, direction.getOpposite())
+                            && SteamPipeUtil.pumpPassable(nextState, direction)
                             && node.distance() + 1 <= FullSteamConfig.boilerOutletPressureRange()
                             && visited.add(next)) {
                         queue.add(new PipeNode(next, direction.getOpposite(), node.distance() + 1));

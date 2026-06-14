@@ -387,7 +387,8 @@ public final class SteamNetworkManager {
             BlockState pipeState = level.getBlockState(node.pos());
 
             for (Direction dir : FluidPropagator.getPipeConnections(pipeState, pipe)) {
-                if (dir == node.incomingSide() || !canSteamPassThrough(pipe, pipeState, dir)) {
+                if (dir == node.incomingSide() || !canSteamPassThrough(pipe, pipeState, dir)
+                        || !SteamPipeUtil.pumpPassable(pipeState, dir)) {
                     continue;
                 }
                 BlockPos next = node.pos().relative(dir);
@@ -397,7 +398,9 @@ public final class SteamNetworkManager {
 
                 FluidTransportBehaviour nextPipe = FluidPropagator.getPipe(level, next);
                 if (nextPipe != null) {
-                    if (canSteamPassThrough(nextPipe, level.getBlockState(next), dir.getOpposite())
+                    BlockState nextState = level.getBlockState(next);
+                    if (canSteamPassThrough(nextPipe, nextState, dir.getOpposite())
+                            && SteamPipeUtil.pumpPassable(nextState, dir)
                             && visitedPipes.add(next)) {
                         queue.add(new PipeNode(next, dir.getOpposite()));
                     }

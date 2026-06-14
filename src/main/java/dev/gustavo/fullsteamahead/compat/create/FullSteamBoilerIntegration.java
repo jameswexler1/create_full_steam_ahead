@@ -246,7 +246,8 @@ public final class FullSteamBoilerIntegration {
             return null;
         }
         BlockState pipeState = level.getBlockState(pipePos);
-        if (!SteamPipeUtil.canSteamPassThrough(pipe, pipeState, outputDirection.getOpposite())) {
+        if (!SteamPipeUtil.canSteamPassThrough(pipe, pipeState, outputDirection.getOpposite())
+                || !SteamPipeUtil.pumpPassable(pipeState, outputDirection)) {
             return null;
         }
         // A face whose pipe is supplying water (or any non-steam fluid) toward the boiler is a water
