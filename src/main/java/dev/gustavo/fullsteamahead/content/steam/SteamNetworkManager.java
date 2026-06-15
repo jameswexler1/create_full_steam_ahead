@@ -650,6 +650,30 @@ public final class SteamNetworkManager {
         return null;
     }
 
+    /**
+     * True while at least one steam producer in this network sits inside the server's block-ticking
+     * range — i.e. its boiler outlet / direct-boiler controller block entity is actually being
+     * ticked this tick. Mirrors {@link Level#shouldTickBlocksAt(BlockPos)}, the very gate
+     * {@code Level.tickBlockEntities} uses to decide whether to call a block entity's {@code tick()}.
+     *
+     * <p>We check the producing block entities (outlets and direct-boiler controllers), not every
+     * {@code boilers} entry: an outlet's Create fluid tank can keep ticking while the outlet itself
+     * does not, yet it is the outlet's {@code tick()} that makes and buffers steam.</p>
+     */
+    private static boolean networkProducerTicking(Level level, Network network) {
+        for (BoilerOutletBlockEntity outlet : network.outlets) {
+            if (level.shouldTickBlocksAt(outlet.getBlockPos())) {
+                return true;
+            }
+        }
+        for (BlockPos boilerPos : network.directBoilers.keySet()) {
+            if (level.shouldTickBlocksAt(boilerPos)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static void stepAndApply(
             Level level,
             Network network,
@@ -657,6 +681,16 @@ public final class SteamNetworkManager {
             Map<BlockPos, ValveTickState> reliefValveStates
     ) {
         if (network.outlets.isEmpty() && network.directPorts.isEmpty() && network.directBoilers.isEmpty()) {
+            return;
+        }
+        // Freeze the whole network model while its producer is paused. Once the player walks past the
+        // simulation distance the boiler/outlet block entities stop ticking (so they stop making and
+        // buffering steam) even though their chunks stay loaded and rendered. This handler runs on the
+        // global level tick for any loaded chunk, so without this guard it would keep venting, feeding
+        // engines, and easing pressure toward the shrinking stored-steam target — bleeding a buffer
+        // that is no longer being refilled. Skipping leaves stored steam and the shown pressure
+        // untouched until the producer comes back into ticking range.
+        if (!networkProducerTicking(level, network)) {
             return;
         }
         // Pipes and inlets add a little buffering volume so a long run of pipe holds pressure steadier.
