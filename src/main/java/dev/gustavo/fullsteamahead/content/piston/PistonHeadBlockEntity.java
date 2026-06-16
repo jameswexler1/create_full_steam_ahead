@@ -468,7 +468,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
     private SteamOutput calculateBestSteamOutput(boolean executePiped) {
         SteamInletBlockEntity inlet = getInlet();
-        if (inlet != null && inlet.isInletAssembled()) {
+        if (inlet != null && inlet.isActiveInlet()) {
             SteamOutput piped = calculatePipedSteamOutput(inlet, executePiped);
             if (piped.canRun() || boilerPos == null || getStrokeDirection() == Direction.DOWN) {
                 return piped;

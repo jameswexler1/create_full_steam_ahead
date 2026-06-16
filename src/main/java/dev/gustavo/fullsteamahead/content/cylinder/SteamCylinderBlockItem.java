@@ -104,7 +104,7 @@ public class SteamCylinderBlockItem extends BlockItem {
         if (targetLayer == null) {
             return null;
         }
-        if (referenceLayer.inletCount() + targetLayer.inletCount() > 1) {
+        if (referenceLayer.inletCount() + targetLayer.inletCount() > CylinderConnectivity.MAX_INLETS_PER_RING) {
             return null;
         }
 

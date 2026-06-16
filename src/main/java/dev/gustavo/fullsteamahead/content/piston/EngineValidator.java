@@ -1,6 +1,7 @@
 package dev.gustavo.fullsteamahead.content.piston;
 
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
+import dev.gustavo.fullsteamahead.content.cylinder.CylinderConnectivity;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlock;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlockEntity;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
@@ -63,7 +64,7 @@ public final class EngineValidator {
         BlockPos ringOrigin = ringOriginFor(pistonHeadPos, strokeDirection);
         List<BlockPos> ringPositions = ringPositions(ringOrigin);
         List<BlockPos> cylinderPositions = new ArrayList<>(16);
-        BlockPos inletPos = null;
+        List<BlockPos> inletPositions = new ArrayList<>(CylinderConnectivity.MAX_INLETS_PER_RING);
         for (BlockPos pos : ringPositions) {
             if (!level.isLoaded(pos)) {
                 return Result.invalid("Cylinder ring is unloaded");
@@ -79,19 +80,20 @@ public final class EngineValidator {
             }
 
             if (state.is(ModBlocks.STEAM_INLET.get())) {
-                if (inletPos != null) {
+                if (inletPositions.size() >= CylinderConnectivity.MAX_INLETS_PER_RING) {
                     return Result.invalid("Too many steam inlets");
                 }
                 if (!isAssembled(state, SteamInletBlock.ASSEMBLED)) {
                     return Result.invalid("Steam inlet is not assembled");
                 }
-                inletPos = pos;
+                inletPositions.add(pos);
                 continue;
             }
 
             return Result.invalid("Missing steam cylinder ring");
         }
 
+        BlockPos inletPos = CylinderConnectivity.selectActiveInlet(level, ringOrigin, ringPositions).orElse(null);
         if (strokeDirection == Direction.DOWN && inletPos == null) {
             return Result.invalid("Upside-down engines need a steam inlet");
         }
@@ -446,13 +448,13 @@ public final class EngineValidator {
 
             if (state.is(ModBlocks.STEAM_INLET.get())
                     && isAssembled(state, SteamInletBlock.ASSEMBLED)
-                    && ++inlets <= 1) {
+                    && ++inlets <= CylinderConnectivity.MAX_INLETS_PER_RING) {
                 continue;
             }
 
             return false;
         }
-        return strokeDirection == Direction.UP || inlets == 1;
+        return strokeDirection == Direction.UP || inlets >= 1;
     }
 
     private static List<BlockPos> boilerShellPositions(BlockPos ringOrigin) {

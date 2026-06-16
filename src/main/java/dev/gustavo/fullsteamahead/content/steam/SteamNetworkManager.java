@@ -483,9 +483,11 @@ public final class SteamNetworkManager {
             addDirectPort(level, directPort, network, visitedDirectPorts, queue, visitedPipes);
             return;
         }
-        if (be instanceof SteamInletBlockEntity inlet && inlet.isInletAssembled()) {
-            network.inlets.add(inlet);
-            network.addStoredAtBaseTemp(inlet.getStoredSteamMb());
+        if (be instanceof SteamInletBlockEntity inlet) {
+            if (inlet.isActiveInlet()) {
+                network.inlets.add(inlet);
+                network.addStoredAtBaseTemp(inlet.getStoredSteamMb());
+            }
             return;
         }
         if (be instanceof FullSteamAeronauticsSteamVent vent && vent.fullSteamAhead$isPipeFedSteamVent()) {
@@ -523,6 +525,9 @@ public final class SteamNetworkManager {
     }
 
     private static boolean hasWorkingEngine(Level level, SteamInletBlockEntity inlet) {
+        if (!inlet.isActiveInlet()) {
+            return false;
+        }
         BlockPos enginePos = inlet.getEnginePos();
         return enginePos != null
                 && level.isLoaded(enginePos)

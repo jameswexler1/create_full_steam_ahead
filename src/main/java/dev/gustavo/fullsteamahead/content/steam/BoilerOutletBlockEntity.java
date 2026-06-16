@@ -704,7 +704,7 @@ public class BoilerOutletBlockEntity extends SmartBlockEntity implements IHaveGo
                 }
 
                 boolean steamInlet = level.getBlockEntity(next) instanceof SteamInletBlockEntity inlet
-                        && inlet.isInletAssembled();
+                        && inlet.isActiveInlet();
                 int maxFillPerTick = steamInlet ? FullSteamConfig.maxPipedSteamPerTick() : Integer.MAX_VALUE;
                 targets.add(new FillTarget(next, direction.getOpposite(), steamInlet, maxFillPerTick));
             }

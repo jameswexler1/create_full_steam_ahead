@@ -83,7 +83,7 @@ The old inert `flywheel` and `governor` placeholders have been removed from regi
 
 ### Engine orientation: vertical upright or inverted in v1
 
-The cylinder, piston column, and shaft link remain vertical in v1. Upright engines support both direct compact boiler mode and pipe-fed mode. Upside-down engines are pipe-fed only and require one assembled `steam_inlet`.
+The cylinder, piston column, and shaft link remain vertical in v1. Upright engines support both direct compact boiler mode and pipe-fed mode. Upside-down engines are pipe-fed only and require one active assembled `steam_inlet`.
 
 - Steam Cylinder frame
 - Piston column running vertically through the cylinder
@@ -103,7 +103,7 @@ Horizontal orientations are deferred to a future version.
 | `powered_shaft` | `PoweredShaftBlock + FullSteamPoweredShaftBlockEntity` | Hidden internal replacement for a player-placed Create shaft. Provides kinetic output while cloning/dropping as a normal shaft. |
 | `boiler_outlet` | `Block + SmartBlockEntity` | Optional explicit port attached to a Create Fluid Tank boiler. Generates `steam` and provides pressure into pipes while sharing budget with any direct boiler pipe ports. |
 | `steam_relief_valve` | `Block + SmartBlockEntity` | Top/side-mounted boiler safety valve. Auto-vents near burst pressure or vents on redstone command. |
-| `steam_inlet` | `Block + SmartBlockEntity` | Phase 6 block. Replaces one cylinder shell block in the 3×3×2 ring and accepts `steam` from pipes. |
+| `steam_inlet` | `Block + SmartBlockEntity` | Phase 6 block. Replaces a cylinder shell block in the 3×3×2 ring. One inlet is active and accepts `steam`; one optional second inlet can be passive for visual symmetry. |
 | `engine_telegraph` | `HorizontalDirectionalBlock` | Inert decorative/control block for ship bridge theming. No engine control mechanics yet. |
 | `stepped_lever` | `FaceAttachedHorizontalDirectionalBlock + IBE<SteppedLeverBlockEntity>` | Create-style stepped analog redstone lever for ship controls and future bridge panels. |
 
@@ -143,7 +143,7 @@ A minimal working engine (vertical, default orientation):
 
 Block counts for a minimal engine:
 - Direct compact mode: 16 × `steam_cylinder` (8 per layer × 2 layers)
-- Pipe-fed mode: 15 × `steam_cylinder` + 1 × `steam_inlet` occupying any cylinder shell slot
+- Pipe-fed mode: 14-15 × `steam_cylinder` + 1 active `steam_inlet`, plus up to 1 passive `steam_inlet` for visual symmetry
 - 1 × `piston_head` in the lower cylinder bore center
 - 1-3 × `piston` above it, with the highest piston body carrying the rod connection
 - 1-3 × empty stroke blocks above the highest piston body
@@ -186,7 +186,7 @@ Create Fluid Tank boiler goggles may show Full Steam Ahead pressure, stored stea
 
 ### Layer 2 — The Cylinder Ring (our auto-assembly)
 
-The 3×3×2 ring self-assembles when all 16 shell positions are filled correctly. In direct compact mode all 16 positions are `steam_cylinder`. In pipe-fed mode exactly one shell position may be `steam_inlet`, with the other 15 positions being `steam_cylinder`. The inlet can occupy any of the 16 shell slots. The moment the 16th shell block is placed and the ring is complete:
+The 3×3×2 ring self-assembles when all 16 shell positions are filled correctly. In direct compact mode all 16 positions may be `steam_cylinder`. In pipe-fed mode one shell position is the active `steam_inlet`, with an optional second passive `steam_inlet` for symmetry and the remaining shell positions being `steam_cylinder`. Inlets can occupy any non-shared shell slot. The moment the 16th shell block is placed and the ring is complete:
 
 - All 16 shell blocks flip `ASSEMBLED = true`
 - Connected textures activate (inner bore faces appear, top ring shows cylinder head cap)
@@ -196,7 +196,7 @@ The 3×3×2 ring self-assembles when all 16 shell positions are filled correctly
 
 The cylinder ring also disassembles visually if any of the 16 shell blocks is removed, even if it has a valid boiler or inlet.
 
-**Shape constraint**: The ring must be exactly 3×3 in cross-section with the centre 1×1 column hollow. No other shape is accepted in v1. Multiple inlets in one ring are invalid for v1.
+**Shape constraint**: The ring must be exactly 3×3 in cross-section with the centre 1×1 column hollow. No other shape is accepted in v1. More than two inlets in one ring are invalid. Inlets cannot occupy shared-wall positions.
 
 **Boiler detection**: The bottom ring layer checks positions (0,−1,0) through (2,−1,2) relative to its south-west corner for `FluidTankBlockEntity`. It needs at least the 8 positions directly below the ring blocks (positions matching the cylinder shell footprint) to be valid fluid tanks. The boiler does not need to be assembled in any Create-specific sense; it just needs to be fluid tanks with Blaze Burners below.
 
@@ -208,7 +208,7 @@ When the `piston_head` block entity revalidates, it scans upward along its Y axi
 2. Expects one to three empty stroke blocks above the highest piston body
 3. Expects a horizontal regular Create shaft or hidden Full Steam Ahead powered shaft above the empty stroke space stack
 4. Expects a valid assembled `SteamCylinder` ring around the lower piston head and upper piston body
-5. Checks for either a valid Create fluid tank layer directly below the ring's bottom layer, or one assembled `steam_inlet` occupying a cylinder shell slot, but a missing steam source does not block mechanical assembly
+5. Checks for either a valid Create fluid tank layer directly below the ring's bottom layer, or one active assembled `steam_inlet` occupying a cylinder shell slot, but a missing steam source does not block mechanical assembly
 
 By default, the shaft gap matches the piston body count: one piston body uses one empty stroke space, two bodies use two, and three bodies use three. Manually placed shafts are also accepted at any one-to-three-block stroke gap after the final piston body. The connecting rod and crank visual tier follow the actual shaft gap, while the piston body count only controls how many piston body blocks render.
 
@@ -223,7 +223,7 @@ If any mechanical check fails: the piston head clears assembly, restores the hid
 - Piston head block entity loads from disk or lazy-ticks after the player places the shaft
 - Looking at the completed piston body with a Create shaft in hand uses Create's placement-helper preview to show the default shaft ghost at the top-link position, then places the shaft into that position on right-click
 
-Pipe-fed mode accepts either the direct boiler below the ring or a valid steam inlet occupying one assembled cylinder shell slot. Direct compact mode must remain working during the transition.
+Pipe-fed mode accepts either the direct boiler below the ring or a valid active steam inlet occupying one assembled cylinder shell slot. Direct compact mode must remain working during the transition.
 
 ---
 
@@ -290,7 +290,7 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 - Pipe-fed steam is generic stored steam in v1: one engine consumes at most 9 units or 90 mB/t and produces at most 147,456 SU. Blaze Cakes increase total steam-stream capacity; they do not make one pipe-fed engine exceed normal full output without a future superheated-steam design.
 - Multiple steam ports attached to one boiler split the same total steam unit budget in a stable position order; they must not duplicate steam. Steam ports are `boiler_outlet` blocks plus eligible direct boiler pipe faces. With no ports, the full budget enters the sealed boiler vessel and raises pressure there.
 - Direct boiler pipe ports are valid only on the `UP` face or horizontal faces of top-layer Create Fluid Tank boiler blocks. They expose steam through a wrapped Fluid Tank capability, reject steam insertion, and keep ordinary water fill delegated to Create's own boiler handler.
-- Connected pipe networks split active boiler steam evenly across reachable assembled `steam_inlet` blocks, capped at 90 mB/t per inlet from all sources combined, before sending surplus to passive storage. Multiple boilers on the same pipe network contribute additive budgets; no single boiler or steam port may duplicate steam.
+- Connected pipe networks split active boiler steam evenly across reachable active `steam_inlet` blocks, capped at 90 mB/t per active inlet from all sources combined, before sending surplus to passive storage. Passive decorative inlets are closed visual endpoints and do not add demand, storage, or pressure volume. Multiple boilers on the same pipe network contribute additive budgets; no single boiler or steam port may duplicate steam.
 - Network pressure is computed from stored steam mass, weighted steam temperature, and network volume. Active boiler tank controllers expose pressure/status to goggles and Display Links whether sealed, connected by direct pipes, or connected through `boiler_outlet` blocks.
 - Boiler outlet pressure traversal respects Create pipe blockers such as closed fluid valves by consulting each pipe behaviour's flow permission before crossing a side. A closed valve blocks steam; it is not treated as an open vent.
 - Exposes an output-only `IFluidHandler` for `steam`.
@@ -316,13 +316,13 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid steam i
 
 - Block entity: `SteamInletBlockEntity extends SmartBlockEntity`
 - Occupies one shell slot in the assembled cylinder ring, replacing one `steam_cylinder` block. It can be placed in any of the 16 shell positions.
-- A v1 ring accepts either 0 inlets (direct compact mode) or exactly 1 inlet (pipe-fed mode). Multiple inlets are invalid.
+- A v1 ring accepts 0, 1, or 2 inlets. At most one inlet is active; the optional second inlet is passive for visual symmetry.
 - Blockstate properties:
   - `ASSEMBLED: BooleanProperty` (default false)
-- Accepts only `steam` through an input-only `IFluidHandler`.
-- Stores a small local steam buffer. The buffer is not a pressure source and cannot be drained by external blocks.
-- When the ring assembles, the inlet caches the ring origin and cylinder root. When the ring disassembles, it clears that link and stops accepting steam.
-- The piston head prefers consuming steam from the linked inlet. If no usable inlet steam exists and a direct boiler is present, direct compact mode remains the fallback.
+- The active inlet accepts only `steam` through an input-only `IFluidHandler`. A passive inlet exposes an inert no-fill handler so pipes can connect visually without becoming a second consumer.
+- The active inlet stores a small local steam buffer. The buffer is not a pressure source and cannot be drained by external blocks.
+- When the ring assembles, all inlets cache the ring origin and cylinder root; deterministic selection marks one inlet active and any second inlet passive. When the ring disassembles, each inlet clears that link and stops accepting steam.
+- The piston head prefers consuming steam from the active linked inlet. If no usable inlet steam exists and a direct boiler is present, direct compact mode remains the fallback.
 - Pipe-fed balance maps network pressure and consumed steam rate to output:
   - 10 mB/t consumed steam = 1 steam unit = 16,384 SU at rated pressure, with partial mB/t contributing proportional SU
   - Maximum consumed steam for one pipe-fed engine = 90 mB/t = 9 heat units = 147,456 SU
@@ -589,7 +589,7 @@ Implementation notes:
 **Goal**: Let cylinders consume piped `steam` and generate rotation remotely from the boiler room, while preserving direct compact mode as a fallback.
 
 - [x] Add `steam_inlet` block, item, block entity, blockstate/model/item model/loot/lang/tags/creative entry
-- [x] Allow a valid cylinder ring to be either 16 `steam_cylinder` blocks or 15 `steam_cylinder` blocks plus exactly 1 `steam_inlet` occupying any shell slot
+- [x] Allow a valid cylinder ring to be 16 `steam_cylinder` blocks, or 14-15 `steam_cylinder` blocks plus 1 active `steam_inlet` and up to 1 passive visual `steam_inlet`
 - [x] `SteamInletBlockEntity` accepts only `steam` through an input-only `IFluidHandler` while assembled
 - [x] Inlet caches assembled ring origin and cylinder root, and clears its link on disassembly
 - [x] Piston head detects the linked steam inlet from the assembled ring
@@ -670,7 +670,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Apply the `_v2` hand-authored assembled cylinder ring texture PNG revision
 - [x] Use a hidden assembled cylinder ring item model as the creative tab icon and tune its display scale to match neighboring tab icons
 - [x] Reuse the 16 assembled cylinder subunit models for progressive `Cylinder Wall` construction visuals
-- [x] Infer partial cylinder-wall section visuals from connected wall groups, including at most one inlet, without enabling engine mechanics
+- [x] Infer partial cylinder-wall section visuals from connected wall groups, including up to two inlets, without enabling duplicate engine mechanics
 - [x] Apply the exposed-parts fix: v3 assembled cylinder atlas plus generated cut faces for all 16 section models
 - [x] Replace the standalone `Cylinder Wall` block with the v1 textured wall model and matching hitbox
 - [x] Refresh adjacent Create pipe connections when `steam_inlet` fluid capability changes during cylinder ring disassembly/reassembly
@@ -697,7 +697,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Add vertical `facing=up/down` state to piston head, piston body, cylinder wall, and steam inlet blocks
 - [x] Piston head and piston placement use stair-like vertical placement: underside/upper-half side placement faces down; otherwise faces up
 - [x] Refactor engine validation around stroke direction so upright engines use head → piston → empty → shaft upward and inverted engines use the same sequence downward
-- [x] Keep inverted engines pipe-fed only; inverted validation requires one assembled `steam_inlet` and never direct-reads a compact boiler
+- [x] Keep inverted engines pipe-fed only; inverted validation requires one active assembled `steam_inlet` and never direct-reads a compact boiler
 - [x] Keep upright direct compact mode and upright pipe-fed mode unchanged
 - [x] Make shaft placement helper, hidden powered shaft survival, movement checks, lighting, particles, and piston/linkage rendering direction-aware
 - [x] Make the shaft placement helper derive the desired horizontal shaft axis from the clicked/player-facing side instead of the piston body's stale stored axis
@@ -784,7 +784,7 @@ changing engine balance.
 - [x] Network temperature is weighted by contributed steam, not copied from the hottest boiler; passive tanks and inlet buffers contribute at base steam temperature.
 - [x] Pipe-fed engine output is capped per engine: full output is `90 mB/t`, `147,456 SU`, and `64 RPM`.
 - [x] Engine output factor is `min(pressureFactor, flowFactor)`, so weak pressure or insufficient fair-flow share both reduce output.
-- [x] Pipe networks distribute usable steam fairly across reachable assembled `steam_inlet` blocks. A short network gives every engine a proportional share instead of powering all-or-nothing.
+- [x] Pipe networks distribute usable steam fairly across reachable active `steam_inlet` blocks. A short network gives every engine a proportional share instead of powering all-or-nothing.
 - [x] Multiple boilers can feed one pipe network; multiple steam ports on one physical boiler split one shared boiler budget and cannot duplicate steam.
 - [x] Create fluid valves are pressure blockers. Closed valves split networks instead of being bypassed by outlet pressure traversal.
 - [x] Direct compact mode is retained as an upright-only compatibility shortcut. It derives a rated-pressure factor from local boiler production, but does not store steam, burst, or overdrive one engine.

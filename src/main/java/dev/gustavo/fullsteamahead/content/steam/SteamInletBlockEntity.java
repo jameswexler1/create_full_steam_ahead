@@ -30,6 +30,7 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
     private static final String ROOT_POS_KEY = "RootPos";
     private static final String RING_ORIGIN_KEY = "RingOrigin";
     private static final String BOILER_POS_KEY = "BoilerPos";
+    private static final String ACTIVE_KEY = "Active";
     private static final String BUFFER_KEY = "SteamBuffer";
     private static final String ACCEPTED_LAST_TICK_KEY = "AcceptedLastTick";
     private static final String CONSUMED_LAST_TICK_KEY = "ConsumedLastTick";
@@ -41,8 +42,10 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
     };
     private final IFluidHandler inputHandler = new InputOnlySteamHandler();
+    private final IFluidHandler passiveHandler = new PassiveSteamHandler();
 
     private boolean assembled;
+    private boolean active;
     private BlockPos rootPos;
     private BlockPos ringOrigin;
     private BlockPos boilerPos;
@@ -93,16 +96,22 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         consumedThisTick = 0;
     }
 
-    public void applyRingState(BlockPos ringOrigin, BlockPos rootPos, BlockPos boilerPos) {
+    public void applyRingState(BlockPos ringOrigin, BlockPos rootPos, BlockPos boilerPos, boolean active) {
         boolean changed = !assembled
+                || this.active != active
                 || !Objects.equals(this.rootPos, rootPos)
                 || !Objects.equals(this.ringOrigin, ringOrigin)
                 || !Objects.equals(this.boilerPos, boilerPos);
 
         assembled = true;
+        this.active = active;
         this.rootPos = rootPos;
         this.ringOrigin = ringOrigin;
         this.boilerPos = boilerPos;
+
+        if (!active) {
+            clearPassiveSteamState();
+        }
 
         if (changed) {
             invalidateFluidCapability();
@@ -116,15 +125,23 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
 
         assembled = false;
+        active = false;
         rootPos = null;
         ringOrigin = null;
         boilerPos = null;
+        networkPressurePn = 0.0D;
+        networkDrawCap = 0;
+        networkGameTime = Long.MIN_VALUE;
         invalidateFluidCapability();
         notifyUpdate();
     }
 
     public boolean isInletAssembled() {
         return assembled;
+    }
+
+    public boolean isActiveInlet() {
+        return assembled && active;
     }
 
     public BlockPos getRootPos() {
@@ -147,20 +164,20 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     public int getSteamAmount() {
-        return steamBuffer.getFluidAmount();
+        return active ? steamBuffer.getFluidAmount() : 0;
     }
 
     public int getStoredSteamMb() {
-        return steamBuffer.getFluidAmount();
+        return active ? steamBuffer.getFluidAmount() : 0;
     }
 
     public int getDisplayConsumedSteamMb() {
-        return Math.max(consumedThisTick, consumedLastTick);
+        return active ? Math.max(consumedThisTick, consumedLastTick) : 0;
     }
 
     /** Drains up to {@code amount} mB from this inlet's buffer (network venting; not counted as consumed). */
     public int drainSteam(int amount) {
-        if (amount <= 0) {
+        if (!active || amount <= 0) {
             return 0;
         }
         return steamBuffer.drain(amount, IFluidHandler.FluidAction.EXECUTE).getAmount();
@@ -196,6 +213,9 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     public FluidStack consumeSteam(int maxAmount, boolean execute) {
+        if (!active) {
+            return FluidStack.EMPTY;
+        }
         FluidStack drained = steamBuffer.drain(maxAmount,
                 execute ? IFluidHandler.FluidAction.EXECUTE : IFluidHandler.FluidAction.SIMULATE);
         if (execute && !drained.isEmpty()) {
@@ -206,7 +226,25 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     public IFluidHandler getFluidHandler(Direction side) {
-        return assembled ? inputHandler : null;
+        if (!assembled) {
+            return null;
+        }
+        return active ? inputHandler : passiveHandler;
+    }
+
+    private void clearPassiveSteamState() {
+        int stored = steamBuffer.getFluidAmount();
+        if (stored > 0) {
+            steamBuffer.drain(stored, IFluidHandler.FluidAction.EXECUTE);
+        }
+        acceptedThisTick = 0;
+        consumedThisTick = 0;
+        acceptedLastTick = 0;
+        consumedLastTick = 0;
+        acceptedThisGameTick = 0;
+        networkPressurePn = 0.0D;
+        networkDrawCap = 0;
+        networkGameTime = Long.MIN_VALUE;
     }
 
     private void invalidateFluidCapability() {
@@ -243,21 +281,26 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
 
         if (!assembled) {
             CreateLang.text("Not part of assembled cylinder").style(ChatFormatting.RED).forGoggles(tooltip, 1);
+        } else if (!active) {
+            CreateLang.text("Passive decorative inlet").style(ChatFormatting.YELLOW).forGoggles(tooltip, 1);
         } else {
-            CreateLang.text("Cylinder ring linked").style(ChatFormatting.GREEN).forGoggles(tooltip, 1);
+            CreateLang.text("Active steam inlet").style(ChatFormatting.GREEN).forGoggles(tooltip, 1);
         }
 
         CreateLang.text("Network pressure: " + SteamPressure.format(getNetworkPressurePn()))
                 .style(getNetworkPressurePn() > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
                 .forGoggles(tooltip, 1);
-        CreateLang.text("Steam: " + steamBuffer.getFluidAmount() + "/" + steamBuffer.getCapacity() + " mB")
-                .style(steamBuffer.getFluidAmount() > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
+        int storedSteam = getSteamAmount();
+        CreateLang.text("Steam: " + storedSteam + "/" + steamBuffer.getCapacity() + " mB")
+                .style(storedSteam > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
                 .forGoggles(tooltip, 1);
-        CreateLang.text("Accepted: " + acceptedLastTick + " mB/t  Consumed: " + consumedLastTick + " mB/t")
-                .style(consumedLastTick > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
+        int displayedAccepted = active ? acceptedLastTick : 0;
+        int displayedConsumed = active ? consumedLastTick : 0;
+        CreateLang.text("Accepted: " + displayedAccepted + " mB/t  Consumed: " + displayedConsumed + " mB/t")
+                .style(displayedConsumed > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
                 .forGoggles(tooltip, 1);
 
-        BlockPos enginePos = getEnginePos();
+        BlockPos enginePos = active ? getEnginePos() : null;
         CreateLang.text(enginePos == null ? "No engine link" : "Engine linked")
                 .style(enginePos == null ? ChatFormatting.YELLOW : ChatFormatting.DARK_GRAY)
                 .forGoggles(tooltip, 1);
@@ -271,6 +314,7 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         writePos(tag, ROOT_POS_KEY, rootPos);
         writePos(tag, RING_ORIGIN_KEY, ringOrigin);
         writePos(tag, BOILER_POS_KEY, boilerPos);
+        tag.putBoolean(ACTIVE_KEY, active);
         tag.put(BUFFER_KEY, steamBuffer.writeToNBT(registries, new CompoundTag()));
         tag.putInt(ACCEPTED_LAST_TICK_KEY, acceptedLastTick);
         tag.putInt(CONSUMED_LAST_TICK_KEY, consumedLastTick);
@@ -280,6 +324,7 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
         assembled = tag.getBoolean(ASSEMBLED_KEY);
+        active = assembled && (!tag.contains(ACTIVE_KEY) || tag.getBoolean(ACTIVE_KEY));
         rootPos = readPos(tag, ROOT_POS_KEY);
         ringOrigin = readPos(tag, RING_ORIGIN_KEY);
         boilerPos = readPos(tag, BOILER_POS_KEY);
@@ -290,6 +335,9 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
         acceptedLastTick = tag.getInt(ACCEPTED_LAST_TICK_KEY);
         consumedLastTick = tag.getInt(CONSUMED_LAST_TICK_KEY);
+        if (assembled && !active) {
+            clearPassiveSteamState();
+        }
     }
 
     private static void writePos(CompoundTag tag, String key, BlockPos pos) {
@@ -327,7 +375,7 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
 
         @Override
         public int fill(FluidStack resource, FluidAction action) {
-            if (!assembled || !resource.is(ModFluids.STEAM.get())) {
+            if (!assembled || !active || !resource.is(ModFluids.STEAM.get())) {
                 return 0;
             }
 
@@ -358,6 +406,9 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         private int acceptedSteamAllowance() {
             // The network manager governs how much this engine may draw; cap intake to that fair share
             // (falling back to the full-engine flow before the manager has reported).
+            if (!active) {
+                return 0;
+            }
             int cap = networkFresh() ? networkDrawCap : FullSteamConfig.maxPipedSteamPerTick();
             int maxPerTick = Math.max(0, cap);
             if (level == null) {
@@ -370,6 +421,43 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
                 acceptedThisGameTick = 0;
             }
             return Math.max(0, maxPerTick - acceptedThisGameTick);
+        }
+    }
+
+    private class PassiveSteamHandler implements IFluidHandler {
+        @Override
+        public int getTanks() {
+            return 1;
+        }
+
+        @Override
+        public FluidStack getFluidInTank(int tank) {
+            return FluidStack.EMPTY;
+        }
+
+        @Override
+        public int getTankCapacity(int tank) {
+            return BUFFER_CAPACITY;
+        }
+
+        @Override
+        public boolean isFluidValid(int tank, FluidStack stack) {
+            return stack.is(ModFluids.STEAM.get());
+        }
+
+        @Override
+        public int fill(FluidStack resource, FluidAction action) {
+            return 0;
+        }
+
+        @Override
+        public FluidStack drain(FluidStack resource, FluidAction action) {
+            return FluidStack.EMPTY;
+        }
+
+        @Override
+        public FluidStack drain(int maxDrain, FluidAction action) {
+            return FluidStack.EMPTY;
         }
     }
 }

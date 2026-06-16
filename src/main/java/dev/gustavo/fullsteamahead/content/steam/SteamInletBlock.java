@@ -119,8 +119,12 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
     }
 
     private boolean shouldRefreshFromNeighbor(Level level, BlockPos pos, BlockPos neighborPos) {
+        BlockState state = level.getBlockState(pos);
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof SteamInletBlockEntity inlet && inlet.isInletAssembled()) {
+            if (neighborPos.equals(pos.relative(portFacing(state)))) {
+                return true;
+            }
             BlockPos ringOrigin = inlet.getRingOrigin();
             return ringOrigin != null && isInsideTrackedStructure(ringOrigin, neighborPos);
         }
@@ -171,6 +175,13 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
                 ? state.getValue(HORIZONTAL_FACING)
                 : facingForSection(section);
         return shapeForFacing(facing);
+    }
+
+    private Direction portFacing(BlockState state) {
+        CylinderSection section = state.getValue(SECTION);
+        return section == CylinderSection.NONE
+                ? state.getValue(HORIZONTAL_FACING)
+                : facingForSection(section);
     }
 
     @Override

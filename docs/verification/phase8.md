@@ -173,7 +173,7 @@ Completed cylinder placement quality-of-life slice:
 Completed steam inlet partial-visual reliability slice:
 
 - [x] Diagnosed side-by-side `steam_inlet` blocks entering partial ring-section visuals through the generic cylinder-wall visual inference path.
-- [x] Kept complete rings valid with exactly one inlet, but blocked partial section and straight-wall visual inference for connected components containing multiple inlets.
+- [x] Kept complete rings valid with up to two inlets, while still blocking shared-wall ownership for inlet blocks.
 
 Completed experimental Ponder scene adjustment:
 
@@ -312,7 +312,7 @@ Manual runtime checklist:
 - [ ] Breaking one shared wall disassembles both affected engines; breaking one outer wall disassembles only that engine.
 - [ ] Completing one standalone hollow 3x3x1 cylinder layer, then placing one cylinder on the second layer, fills the remaining second-layer shell positions.
 - [ ] Cylinder layer autocomplete consumes the required extra cylinders in survival, does not consume in creative, and does nothing while sneaking or with too few cylinders.
-- [ ] Cylinder layer autocomplete preserves one existing `steam_inlet`, never fills the center bore, and rejects ambiguous shared-wall bank shapes.
+- [ ] Cylinder layer autocomplete preserves up to two existing `steam_inlet` blocks, never fills the center bore, and rejects ambiguous shared-wall bank shapes.
 - [ ] A complete assembled cylinder casing stays assembled when a wrong block, `piston_head`, or `piston` is placed in either bore position.
 - [ ] An incomplete partial cylinder frame keeps its current partial visuals when a wrong `steam_cylinder`, `steam_inlet`, `piston_head`, or `piston` is placed in the intended bore.
 - [ ] After the lower layer of an adjacent shared-wall cylinder is complete, placing one upper non-shared shell block fills the missing upper shell without duplicating the shared strip.

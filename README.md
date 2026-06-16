@@ -27,7 +27,7 @@ Use a Java 21 runtime. The first build downloads and prepares the NeoForge Minec
 - Required runtime mod: Create
 - Optional runtime compatibility targets: Sable and Create Aeronautics
 - v1 engine shape: vertical `3x3x2` hollow cylinder ring, piston head, one to three piston bodies, one to three empty stroke spaces, and a horizontal Create shaft
-- Engine orientation: upright engines support direct compact boiler and pipe-fed modes; upside-down engines are pipe-fed only and require a `steam_inlet`
+- Engine orientation: upright engines support direct compact boiler and pipe-fed modes; upside-down engines are pipe-fed only and require an active `steam_inlet`
 - Inline engine banks: adjacent same-orientation cylinder rings may share ordinary `steam_cylinder` wall blocks; shared walls are a blockstate/visual form, not a separate block
 - Cylinder construction visuals: straight-only wall runs stay fence-like; once a local corner implies a ring, the existing assembled partial section models are assigned from that stable corner origin
 - Visual direction: close to base Create's copper, andesite, brass, shafts, gauges, and steam engine style
@@ -50,7 +50,7 @@ total steam units = min(active burner units, water supply heat level) * boiler h
 
 Normal Blaze Burners contribute `1` burner unit each. Blaze Cake burners contribute `2` each. Boiler height multiplies the burner footprint, so a `3x3x6` boiler with 9 normal active burners produces `54` steam units, enough for six full normal engines. With 9 Blaze Cake burners it produces `108` units, enough for twelve full pipe-fed engines.
 
-A sealed active boiler still stores generated steam and builds pressure even when no outlet or pipe is attached. Pipe networks distribute usable steam evenly across reachable assembled `steam_inlet` blocks, capped at `90 mB/t` per inlet from all sources combined, before filling passive storage tanks. If supply is short, every reachable engine receives the same share as closely as whole mB/t allows; SU scales from exact consumed mB/t.
+A sealed active boiler still stores generated steam and builds pressure even when no outlet or pipe is attached. Pipe networks distribute usable steam evenly across reachable active `steam_inlet` blocks, capped at `90 mB/t` per active inlet from all sources combined, before filling passive storage tanks. If supply is short, every reachable engine receives the same share as closely as whole mB/t allows; SU scales from exact consumed mB/t. A cylinder ring may include one optional passive `steam_inlet` for visual symmetry; passive inlets connect visually but never request or consume steam.
 
 A boiler can expose stored steam in two ways. A `boiler_outlet` is still the explicit Create-style port block. Active Create Fluid Tank boilers can also feed steam directly into Create Fluid Pipes attached to any top-layer tank face except the bottom face: the top face and all horizontal side faces are valid. Direct boiler ports and `boiler_outlet` blocks share the same boiler budget, so adding more ports splits output instead of multiplying it. Ordinary tanks that merely store `steam` do not gain this pressure source.
 

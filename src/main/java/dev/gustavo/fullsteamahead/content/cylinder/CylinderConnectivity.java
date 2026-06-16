@@ -1,6 +1,7 @@
 package dev.gustavo.fullsteamahead.content.cylinder;
 
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
+import com.simibubi.create.content.fluids.FluidPropagator;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlock;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
 import dev.gustavo.fullsteamahead.content.piston.SteamPistonBlock;
@@ -26,6 +27,8 @@ import java.util.Optional;
 import java.util.Set;
 
 public final class CylinderConnectivity {
+    public static final int MAX_INLETS_PER_RING = 2;
+
     private static final Comparator<BlockPos> ROOT_ORDER = Comparator
             .comparingInt((BlockPos pos) -> pos.getY())
             .thenComparingInt(pos -> pos.getX())
@@ -245,7 +248,7 @@ public final class CylinderConnectivity {
             List<BlockPos> positions = ringPositions(origin);
             Direction facing = ringFacing(level, origin);
             BlockPos boilerPos = facing == Direction.UP ? findBoiler(level, origin).orElse(null) : null;
-            BlockPos inletPos = findInlet(level, positions).orElse(null);
+            BlockPos inletPos = selectActiveInlet(level, origin, positions).orElse(null);
             rings.put(origin, new RingData(origin, positions, facing, boilerPos, inletPos));
         }
         return rings;
@@ -355,7 +358,7 @@ public final class CylinderConnectivity {
                     if (member == RingMember.NONE) {
                         return false;
                     }
-                    if (member == RingMember.INLET && ++inlets > 1) {
+                    if (member == RingMember.INLET && ++inlets > MAX_INLETS_PER_RING) {
                         return false;
                     }
                 }
@@ -443,8 +446,9 @@ public final class CylinderConnectivity {
             BlockState state = level.getBlockState(pos);
             CylinderSection section = sectionFor(primary.origin(), pos);
             if (state.is(ModBlocks.STEAM_INLET.get())) {
+                boolean active = pos.equals(primary.inletPos());
                 withInletBlockEntity(level, pos,
-                        be -> be.applyRingState(primary.origin(), roots.get(primary.origin()), primary.boilerPos()));
+                        be -> be.applyRingState(primary.origin(), roots.get(primary.origin()), primary.boilerPos(), active));
                 setRingState(
                         level,
                         pos,
@@ -792,10 +796,41 @@ public final class CylinderConnectivity {
         }
     }
 
-    private static Optional<BlockPos> findInlet(Level level, List<BlockPos> positions) {
+    public static Optional<BlockPos> selectActiveInlet(Level level, BlockPos origin, List<BlockPos> positions) {
+        List<BlockPos> inlets = findInlets(level, positions);
+        if (inlets.isEmpty()) {
+            return Optional.empty();
+        }
+        return inlets.stream()
+                .filter(pos -> hasPipeOnInletPort(level, origin, pos))
+                .findFirst()
+                .or(() -> Optional.of(inlets.getFirst()));
+    }
+
+    private static List<BlockPos> findInlets(Level level, List<BlockPos> positions) {
         return positions.stream()
+                .filter(pos -> level.isLoaded(pos))
                 .filter(pos -> level.getBlockState(pos).is(ModBlocks.STEAM_INLET.get()))
-                .findFirst();
+                .toList();
+    }
+
+    private static boolean hasPipeOnInletPort(Level level, BlockPos origin, BlockPos inletPos) {
+        CylinderSection section = sectionFor(origin, inletPos);
+        if (section == CylinderSection.NONE) {
+            return false;
+        }
+        BlockPos pipePos = inletPos.relative(inletPortFacing(section));
+        return level.isLoaded(pipePos) && FluidPropagator.getPipe(level, pipePos) != null;
+    }
+
+    private static Direction inletPortFacing(CylinderSection section) {
+        if (section.zOffset() == 0) {
+            return Direction.NORTH;
+        }
+        if (section.zOffset() == 2) {
+            return Direction.SOUTH;
+        }
+        return section.xOffset() == 0 ? Direction.WEST : Direction.EAST;
     }
 
     private static Optional<BlockPos> findBoiler(Level level, BlockPos origin) {
@@ -997,7 +1032,7 @@ public final class CylinderConnectivity {
     private static boolean hasTooManyInlets(Level level, List<BlockPos> positions) {
         int inlets = 0;
         for (BlockPos pos : positions) {
-            if (level.getBlockState(pos).is(ModBlocks.STEAM_INLET.get()) && ++inlets > 1) {
+            if (level.getBlockState(pos).is(ModBlocks.STEAM_INLET.get()) && ++inlets > MAX_INLETS_PER_RING) {
                 return true;
             }
         }

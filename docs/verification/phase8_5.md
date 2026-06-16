@@ -7,7 +7,7 @@ Implemented:
 - Added vertical `facing=up/down` state to piston head, piston, steam cylinder, and steam inlet blocks.
 - Added stair-like vertical placement for piston head and piston body.
 - Refactored engine validation around stroke direction while preserving upright direct compact and pipe-fed behavior.
-- Added upside-down pipe-fed-only validation requiring one assembled `steam_inlet`.
+- Added upside-down pipe-fed-only validation requiring one active assembled `steam_inlet`.
 - Updated shaft placement helper, powered shaft survival, movement checks, cylinder hitboxes, and piston/linkage rendering for vertical inversion.
 - Reused mirrored existing cylinder section models for upside-down assembled ring visuals.
 - Follow-up fix: cylinder assembly now corrects stale piston head/body facing from the actual center position, validation retries the opposite stroke direction when placement state is stale, and animated partial models are explicitly flipped for inverted engines.
