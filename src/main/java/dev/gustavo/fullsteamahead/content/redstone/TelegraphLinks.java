@@ -94,4 +94,37 @@ public final class TelegraphLinks {
         }
         return result;
     }
+
+    /**
+     * Positions of every loaded telegraph on {@code linkId} (including any at {@code self}). Used by
+     * the client outliner to highlight a whole channel while the matching item is held.
+     */
+    public static List<BlockPos> loadedPositions(Level level, UUID linkId) {
+        List<BlockPos> result = new ArrayList<>();
+        if (linkId == null) {
+            return result;
+        }
+        Map<UUID, Set<BlockPos>> byId = NETWORKS.get(level);
+        if (byId == null) {
+            return result;
+        }
+        Set<BlockPos> positions = byId.get(linkId);
+        if (positions == null) {
+            return result;
+        }
+        Iterator<BlockPos> it = positions.iterator();
+        while (it.hasNext()) {
+            BlockPos pos = it.next();
+            if (!level.isLoaded(pos)) {
+                continue;
+            }
+            if (level.getBlockEntity(pos) instanceof SteppedLeverBlockEntity lever
+                    && linkId.equals(lever.getLinkId())) {
+                result.add(pos);
+            } else {
+                it.remove();
+            }
+        }
+        return result;
+    }
 }

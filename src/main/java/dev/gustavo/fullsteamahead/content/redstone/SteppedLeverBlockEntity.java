@@ -22,6 +22,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Engine Order Telegraph. Telegraphs sharing a {@link #linkId} channel stay <b>synchronized</b>:
+ * moving one handle sets every linked unit to the same position and rings the telegraph bell on each.
+ */
 public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation {
     /**
      * Flip to {@code true} to ring Create's confirm "ding" instead of the custom telegraph bell —
@@ -32,25 +36,15 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
     private static final String STATE_KEY = "State";
     private static final String CHANGE_TIMER_KEY = "ChangeTimer";
     private static final String LINK_ID_KEY = "LinkId";
-    private static final String ORDER_KEY = "Order";
-    private static final String RINGING_KEY = "Ringing";
     private static final int UPDATE_DELAY_TICKS = 15;
-    /** Cadence of the reminder bell while an order sits unanswered (3s). */
-    private static final int BELL_REMINDER_TICKS = 60;
 
     private int state;
     private int lastChange;
-    /** Shared channel id pairing this telegraph with its partner(s); null when unlinked. */
+    /** Shared channel id keeping this telegraph synchronized with its partner(s); null when unlinked. */
     private UUID linkId;
-    /** The partner's commanded position shown as the "order" needle; -1 when no order is present. */
-    private int orderState = -1;
-    /** True while a received order differs from this unit's handle (bell rings until answered). */
-    private boolean ringing;
-    private int ringTimer;
     private boolean registered;
 
     private final LerpedFloat clientState = LerpedFloat.linear();
-    private final LerpedFloat clientOrder = LerpedFloat.linear();
 
     public SteppedLeverBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STEPPED_LEVER.get(), pos, state);
@@ -64,11 +58,8 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
     protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         state = compound.getInt(STATE_KEY);
         lastChange = compound.getInt(CHANGE_TIMER_KEY);
-        orderState = compound.contains(ORDER_KEY) ? compound.getInt(ORDER_KEY) : -1;
-        ringing = compound.getBoolean(RINGING_KEY);
         linkId = compound.hasUUID(LINK_ID_KEY) ? compound.getUUID(LINK_ID_KEY) : null;
         clientState.chase(state, 0.2F, LerpedFloat.Chaser.EXP);
-        clientOrder.chase(orderState < 0 ? state : orderState, 0.2F, LerpedFloat.Chaser.EXP);
         super.read(compound, registries, clientPacket);
     }
 
@@ -76,10 +67,8 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
     protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         compound.putInt(STATE_KEY, state);
         compound.putInt(CHANGE_TIMER_KEY, lastChange);
-        compound.putInt(ORDER_KEY, orderState);
-        compound.putBoolean(RINGING_KEY, ringing);
-        // The link id is only needed by the server-side registry; no reason to ship it to clients.
-        if (linkId != null && !clientPacket) {
+        // Synced to clients too so the channel outliner can match telegraphs while the item is held.
+        if (linkId != null) {
             compound.putUUID(LINK_ID_KEY, linkId);
         }
         super.write(compound, registries, clientPacket);
@@ -92,33 +81,21 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
             return;
         }
 
-        if (level.isClientSide) {
-            clientState.tickChaser();
-            clientOrder.tickChaser();
-            return;
-        }
-
-        // Re-join the link registry after a world/chunk load (the id was read from NBT).
+        // Join the link registry (both sides) after a world/chunk load; the client copy feeds the outliner.
         if (!registered && linkId != null) {
             TelegraphLinks.add(level, linkId, worldPosition);
             registered = true;
-            refreshFromPartners();
+        }
+
+        if (level.isClientSide) {
+            clientState.tickChaser();
+            return;
         }
 
         if (lastChange > 0) {
             lastChange--;
             if (lastChange == 0) {
                 SteppedLeverBlock.updateNeighbors(getBlockState(), level, worldPosition);
-            }
-        }
-
-        if (ringing) {
-            if (ringTimer > 0) {
-                ringTimer--;
-            }
-            if (ringTimer <= 0) {
-                playBell();
-                ringTimer = BELL_REMINDER_TICKS;
             }
         }
     }
@@ -131,37 +108,41 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
     public void invalidate() {
         // setRemoved() is final in SmartBlockEntity and routes here; the link-registry lookup also
         // self-heals stale positions, so this is the cleanup path for break/unload.
-        if (level != null && !level.isClientSide && linkId != null) {
+        if (level != null && linkId != null) {
             TelegraphLinks.remove(level, linkId, worldPosition);
         }
         registered = false;
         super.invalidate();
     }
 
-    /** Player moved this handle: pushes the new order to partners and answers any pending bell. */
+    /** Player moved this handle: synchronizes every linked partner to the new position and rings. */
     public void changeState(boolean decrease) {
         int previousState = state;
         state = Mth.clamp(state + (decrease ? -1 : 1), 0, 15);
-        if (previousState != state) {
-            lastChange = UPDATE_DELAY_TICKS;
-            if (level != null && !level.isClientSide && linkId != null) {
-                for (SteppedLeverBlockEntity partner : TelegraphLinks.partners(level, linkId, worldPosition)) {
-                    partner.receiveOrder(state);
-                }
+        if (previousState == state) {
+            return;
+        }
+        markChanged();
+        if (level != null && !level.isClientSide && linkId != null) {
+            for (SteppedLeverBlockEntity partner : TelegraphLinks.partners(level, linkId, worldPosition)) {
+                partner.syncTo(state);
             }
-            updateRinging();
-            setChanged();
-            sendData();
+            playBell();
         }
     }
 
-    /** A partner's handle moved: record it as our order and (re)start the bell if it differs. */
-    public void receiveOrder(int order) {
-        if (level == null || level.isClientSide || orderState == order) {
+    /** Adopt a synchronized position pushed by a partner (no re-propagation), ringing the bell. */
+    private void syncTo(int newState) {
+        if (level == null || level.isClientSide || state == newState) {
             return;
         }
-        orderState = order;
-        updateRinging();
+        state = newState;
+        markChanged();
+        playBell();
+    }
+
+    private void markChanged() {
+        lastChange = UPDATE_DELAY_TICKS;
         setChanged();
         sendData();
     }
@@ -170,7 +151,7 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
         return linkId;
     }
 
-    /** Binds (or clears, when {@code null}) this telegraph's channel and syncs with partners. */
+    /** Binds (or clears, when {@code null}) this telegraph's channel; a newcomer adopts the channel's position. */
     public void setLinkId(UUID id) {
         if (level == null || level.isClientSide || Objects.equals(linkId, id)) {
             return;
@@ -183,37 +164,13 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
         if (linkId != null) {
             TelegraphLinks.add(level, linkId, worldPosition);
             registered = true;
-            refreshFromPartners();
-        } else {
-            orderState = -1;
-            updateRinging();
-            setChanged();
-            sendData();
+            // Match the rest of the channel quietly so a freshly linked unit lines up immediately.
+            for (SteppedLeverBlockEntity partner : TelegraphLinks.partners(level, linkId, worldPosition)) {
+                state = partner.getState();
+                break;
+            }
         }
-    }
-
-    /** Pulls the partner's position into our order needle and pushes ours onto theirs. */
-    private void refreshFromPartners() {
-        if (level == null || level.isClientSide || linkId == null) {
-            return;
-        }
-        int newOrder = -1;
-        for (SteppedLeverBlockEntity partner : TelegraphLinks.partners(level, linkId, worldPosition)) {
-            newOrder = partner.getState();
-            partner.receiveOrder(state);
-        }
-        orderState = newOrder;
-        updateRinging();
-        setChanged();
-        sendData();
-    }
-
-    private void updateRinging() {
-        boolean shouldRing = linkId != null && orderState >= 0 && orderState != state;
-        if (shouldRing && !ringing) {
-            ringTimer = 0; // ring on the next tick when a fresh order arrives
-        }
-        ringing = shouldRing;
+        markChanged();
     }
 
     private void playBell() {
@@ -231,11 +188,8 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         CreateLang.translate("tooltip.analogStrength", state).forGoggles(tooltip);
-        if (orderState >= 0) {
-            CreateLang.translate("tooltip.full_steam_ahead.telegraph_order", orderState).forGoggles(tooltip);
-            if (ringing) {
-                CreateLang.translate("tooltip.full_steam_ahead.telegraph_awaiting").forGoggles(tooltip);
-            }
+        if (linkId != null) {
+            CreateLang.translate("tooltip.full_steam_ahead.telegraph_linked").forGoggles(tooltip);
         }
         return true;
     }
@@ -244,19 +198,7 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
         return state;
     }
 
-    public boolean isLinked() {
-        return orderState >= 0;
-    }
-
-    public boolean isRinging() {
-        return ringing;
-    }
-
     public float getRenderedState(float partialTicks) {
         return clientState.getValue(partialTicks);
-    }
-
-    public float getRenderedOrder(float partialTicks) {
-        return clientOrder.getValue(partialTicks);
     }
 }

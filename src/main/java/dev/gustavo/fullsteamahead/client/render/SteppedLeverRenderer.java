@@ -8,7 +8,6 @@ import dev.gustavo.fullsteamahead.content.redstone.SteppedLeverBlockEntity;
 import net.createmod.catnip.math.AngleHelper;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -30,38 +29,15 @@ public class SteppedLeverRenderer extends SafeBlockEntityRenderer<SteppedLeverBl
             int overlay
     ) {
         BlockState state = lever.getBlockState();
-        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.cutoutMipped());
-
-        // The partner's commanded position ("order") is drawn first as a red needle sharing the
-        // pivot; while the bell is unanswered it glows full-bright. The player's own handle (brass)
-        // is drawn on top, so a matched order reads as the brass handle covering the red one.
-        if (lever.isLinked()) {
-            int orderLight = lever.isRinging() ? LightTexture.FULL_BRIGHT : light;
-            renderHandle(lever.getRenderedOrder(partialTicks), state, poseStack, vertexConsumer,
-                    orderLight, overlay, 255, 60, 55);
-        }
-        renderHandle(lever.getRenderedState(partialTicks), state, poseStack, vertexConsumer,
-                light, overlay, 255, 255, 255);
-    }
-
-    private static void renderHandle(
-            float signal,
-            BlockState state,
-            PoseStack poseStack,
-            VertexConsumer vertexConsumer,
-            int light,
-            int overlay,
-            int red,
-            int green,
-            int blue
-    ) {
+        float signal = lever.getRenderedState(partialTicks);
         float angle = (((signal / 15.0F * 135.0F) - 22.5F) / 180.0F) * (float) Math.PI;
+
+        VertexConsumer vertexConsumer = bufferSource.getBuffer(RenderType.cutoutMipped());
         SuperByteBuffer handle = CachedBuffers.partial(FullSteamPartialModels.steppedLeverHandle(), state);
         transform(handle, state)
                 .translate(0.5F, 0.25F, 0.5F)
                 .rotate(Direction.EAST.getAxis(), angle)
                 .translate(-0.5F, -0.25F, -0.5F)
-                .color(red, green, blue, 255)
                 .light(light)
                 .overlay(overlay)
                 .renderInto(poseStack, vertexConsumer);
