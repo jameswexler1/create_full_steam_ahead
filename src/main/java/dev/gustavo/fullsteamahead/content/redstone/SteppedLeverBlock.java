@@ -5,15 +5,18 @@ import com.simibubi.create.content.equipment.wrench.WrenchItem;
 import com.simibubi.create.foundation.block.IBE;
 import dev.gustavo.fullsteamahead.content.common.FullSteamWrenchable;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
+import dev.gustavo.fullsteamahead.registry.ModDataComponents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -114,7 +117,47 @@ public class SteppedLeverBlock extends FaceAttachedHorizontalDirectionalBlock
         if (stack.getItem() instanceof WrenchItem) {
             return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
         }
+        // Right-clicking a placed telegraph with another telegraph item links the two (Stock-Link
+        // style): clicking a linked unit copies its channel onto the held item; clicking an unlinked
+        // unit enrolls it in the held item's channel (or starts a fresh one).
+        if (stack.is(asItem())) {
+            if (!level.isClientSide) {
+                getBlockEntityOptional(level, pos).ifPresent(lever -> linkWith(lever, stack, player));
+            }
+            return level.isClientSide
+                    ? ItemInteractionResult.SUCCESS
+                    : ItemInteractionResult.CONSUME;
+        }
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    private void linkWith(SteppedLeverBlockEntity lever, ItemStack stack, Player player) {
+        String message;
+        if (lever.getLinkId() != null) {
+            stack.set(ModDataComponents.TELEGRAPH_LINK.get(), lever.getLinkId());
+            message = "message.full_steam_ahead.telegraph_copied";
+        } else if (stack.has(ModDataComponents.TELEGRAPH_LINK.get())) {
+            lever.setLinkId(stack.get(ModDataComponents.TELEGRAPH_LINK.get()));
+            message = "message.full_steam_ahead.telegraph_bound";
+        } else {
+            java.util.UUID id = java.util.UUID.randomUUID();
+            lever.setLinkId(id);
+            stack.set(ModDataComponents.TELEGRAPH_LINK.get(), id);
+            message = "message.full_steam_ahead.telegraph_started";
+        }
+        player.displayClientMessage(Component.translatable(message), true);
+    }
+
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        if (level.isClientSide) {
+            return;
+        }
+        java.util.UUID id = stack.get(ModDataComponents.TELEGRAPH_LINK.get());
+        if (id != null) {
+            getBlockEntityOptional(level, pos).ifPresent(lever -> lever.setLinkId(id));
+        }
     }
 
     @Override

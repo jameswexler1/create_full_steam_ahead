@@ -1,0 +1,11 @@
+{
+  "telegraph.bell": {
+    "subtitle": "subtitle.full_steam_ahead.telegraph_bell",
+    "sounds": [
+      {
+        "name": "full_steam_ahead:telegraph/telegraph_bell",
+        "stream": false
+      }
+    ]
+  }
+}
