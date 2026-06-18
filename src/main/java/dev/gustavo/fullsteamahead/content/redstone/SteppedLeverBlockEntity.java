@@ -6,14 +6,12 @@ import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
-import dev.gustavo.fullsteamahead.registry.ModSoundEvents;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,22 +25,21 @@ import java.util.UUID;
  * moving one handle sets every linked unit to the same position and rings the telegraph bell on each.
  */
 public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation {
-    /**
-     * Flip to {@code true} to ring Create's confirm "ding" instead of the custom telegraph bell —
-     * useful before {@code sounds/telegraph/telegraph_bell.ogg} has been added to the resources.
-     */
-    public static final boolean USE_CONFIRM_FALLBACK = false;
-
     private static final String STATE_KEY = "State";
     private static final String CHANGE_TIMER_KEY = "ChangeTimer";
     private static final String LINK_ID_KEY = "LinkId";
     private static final int UPDATE_DELAY_TICKS = 15;
+    /** Each level change rings Create's confirm bell as a short repeated burst (telegraph "ding-ding"). */
+    private static final int BELL_RING_COUNT = 3;
+    private static final int BELL_RING_GAP_TICKS = 4;
 
     private int state;
     private int lastChange;
     /** Shared channel id keeping this telegraph synchronized with its partner(s); null when unlinked. */
     private UUID linkId;
     private boolean registered;
+    private int pendingRings;
+    private int ringGap;
 
     private final LerpedFloat clientState = LerpedFloat.linear();
 
@@ -98,6 +95,16 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
                 SteppedLeverBlock.updateNeighbors(getBlockState(), level, worldPosition);
             }
         }
+
+        if (pendingRings > 0) {
+            if (ringGap > 0) {
+                ringGap--;
+            } else {
+                ringOnce();
+                pendingRings--;
+                ringGap = BELL_RING_GAP_TICKS;
+            }
+        }
     }
 
     @Override
@@ -127,7 +134,7 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
             for (SteppedLeverBlockEntity partner : TelegraphLinks.partners(level, linkId, worldPosition)) {
                 partner.syncTo(state);
             }
-            playBell();
+            startBell();
         }
     }
 
@@ -138,7 +145,7 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
         }
         state = newState;
         markChanged();
-        playBell();
+        startBell();
     }
 
     private void markChanged() {
@@ -173,16 +180,16 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
         markChanged();
     }
 
-    private void playBell() {
-        if (!(level instanceof ServerLevel serverLevel)) {
-            return;
-        }
-        if (USE_CONFIRM_FALLBACK) {
+    /** Queue the repeated telegraph ding; the burst plays out over the next ticks in {@link #tick()}. */
+    private void startBell() {
+        pendingRings = BELL_RING_COUNT;
+        ringGap = 0;
+    }
+
+    private void ringOnce() {
+        if (level instanceof ServerLevel serverLevel) {
             AllSoundEvents.CONFIRM.playOnServer(serverLevel, worldPosition, 1.2F, 1.0F);
-            return;
         }
-        serverLevel.playSound(null, worldPosition, ModSoundEvents.TELEGRAPH_BELL.get(),
-                SoundSource.BLOCKS, 1.2F, 1.0F);
     }
 
     @Override

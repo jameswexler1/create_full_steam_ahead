@@ -21,7 +21,6 @@
   "message.full_steam_ahead.telegraph_bound": "Linked to telegraph channel",
   "message.full_steam_ahead.telegraph_started": "Started a new telegraph channel",
   "message.full_steam_ahead.telegraph_unlinked": "Cleared telegraph channel",
-  "subtitle.full_steam_ahead.telegraph_bell": "Telegraph bell rings",
   "full_steam_ahead.display_source.steam_network": "Steam Network",
   "full_steam_ahead.display_source.steam_network.display": "Displayed Info",
   "full_steam_ahead.display_source.steam_network.full_monitor": "Summary",
