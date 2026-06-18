@@ -104,7 +104,6 @@ Horizontal orientations are deferred to a future version.
 | `boiler_outlet` | `Block + SmartBlockEntity` | Optional explicit port attached to a Create Fluid Tank boiler. Generates `steam` and provides pressure into pipes while sharing budget with any direct boiler pipe ports. |
 | `steam_relief_valve` | `Block + SmartBlockEntity` | Top/side-mounted boiler safety valve. Auto-vents near burst pressure or vents on redstone command. |
 | `steam_inlet` | `Block + SmartBlockEntity` | Phase 6 block. Replaces a cylinder shell block in the 3×3×2 ring. One inlet is active and accepts `steam`; one optional second inlet can be passive for visual symmetry. |
-| `engine_telegraph` | `HorizontalDirectionalBlock` | Inert decorative/control block for ship bridge theming. No engine control mechanics yet. |
 | `stepped_lever` | `FaceAttachedHorizontalDirectionalBlock + IBE<SteppedLeverBlockEntity>` | Create-style stepped analog redstone lever for ship controls and future bridge panels. |
 
 Removed from the old plan (do not re-add without discussion):
@@ -370,8 +369,6 @@ src/main/java/dev/gustavo/fullsteamahead/
       SteamReliefValveBlockEntity.java
       SteamInletBlock.java
       SteamInletBlockEntity.java
-    telegraph/
-      EngineTelegraphBlock.java        ← inert directional ship control block
   compat/
     create/
       FullSteamBoilerIntegration.java
@@ -660,8 +657,7 @@ Phase 8 is visual/presentation only. It must not change steam generation, output
 - [x] Add running steam puffs from the cylinder top, timed to crank phase and scaled by RPM/source mode
 - [x] Add rhythmic steam sound using Create's normal `STEAM` sound event, slightly louder than the vanilla Create steam engine
 - [x] Offset adjacent engine piston animation phases by ordered powered-shaft bank index so engines sharing one shaft alternate one-up/one-down for both separated and shared-wall spacing
-- [x] Add inert `engine_telegraph` block scaffold, model, textures, loot, lang, creative entry, mining tags, and directional placement
-- [x] Polish `engine_telegraph` contraption rendering with cutout/AO model settings and a detailed model-derived hitbox
+- [x] Remove stale inert `engine_telegraph` / Telegraph Stand block now that `stepped_lever` is the Engine Order Telegraph
 - [x] Add `stepped_lever` scaffold with analog redstone state, goggle tooltip, block entity renderer, model assets, loot, recipe, tags, lang, and creative entry
 - [x] Apply the first custom Blockbench `steam_cylinder` texture/model prototype to both unassembled and assembled cylinder shell models
 - [x] Split `Assembled_cylinder_ring_prototype.bbmodel` into section-aware assembled `steam_cylinder` models and matching slim assembled hitboxes

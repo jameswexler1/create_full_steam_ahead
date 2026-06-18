@@ -30,7 +30,6 @@ Per block:
 | `SteamPistonBlock` | flip `FACING` up↔down | flip stair-like facing, ignore auto-connect |
 | `SteamInletBlock` | flip `FACING` up↔down | new stair-like placement + flip |
 | `BoilerOutletBlock` | rotate 6-way around clicked-face axis | opposite of clicked face |
-| `EngineTelegraphBlock` | rotate horizontal (Y, clockwise) | face away instead of toward player |
 | `SteppedLeverBlock` | rotate horizontal (Y, clockwise) | new face-attached placement + flip |
 
 Engine parts override `onAfterWrench` to call `PistonHeadBlockEntity.revalidateNearbyEngines`

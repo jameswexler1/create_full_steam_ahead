@@ -12,7 +12,6 @@ import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamReliefValveBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
-import dev.gustavo.fullsteamahead.content.telegraph.EngineTelegraphBlock;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -52,14 +51,6 @@ public final class ModBlocks {
             registerBlock("steam_relief_valve", SteamReliefValveBlock::new, copperProperties().noOcclusion());
     public static final DeferredBlock<SteamInletBlock> STEAM_INLET =
             registerBlock("steam_inlet", SteamInletBlock::new, copperProperties().noOcclusion());
-    public static final DeferredBlock<EngineTelegraphBlock> ENGINE_TELEGRAPH =
-            registerBlock("engine_telegraph", EngineTelegraphBlock::new,
-                    BlockBehaviour.Properties.of()
-                            .strength(3.0f, 6.0f)
-                            .sound(SoundType.METAL)
-                            .requiresCorrectToolForDrops()
-                            .noOcclusion()
-            );
     public static final DeferredBlock<SteppedLeverBlock> STEPPED_LEVER =
             registerBlock("stepped_lever", SteppedLeverBlock::new,
                     BlockBehaviour.Properties.of()
