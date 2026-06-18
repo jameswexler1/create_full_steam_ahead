@@ -606,6 +606,7 @@ Implementation notes:
 
 - [x] Keep Aeronautics, Simulated, and Sable optional at runtime; no hard compile dependency
 - [x] Add optional `simulated` dependency metadata alongside the existing optional Aeronautics/Sable entries
+- [x] Widen optional dependency metadata for current Aeronautics/Simulated `1.3.x` and Sable `2.x` packs while keeping the integrations guarded
 - [x] Add `create:safe_nbt` entries for Full Steam Ahead block entities that need saved boiler, inlet, steam, or kinetic state preserved through contraption movement
 - [x] Register Create `BlockMovementChecks` for all Full Steam Ahead engine blocks
 - [x] Movement rules: engine blocks are movable, not brittle, supportive, and attached to adjacent Full Steam Ahead engine blocks
