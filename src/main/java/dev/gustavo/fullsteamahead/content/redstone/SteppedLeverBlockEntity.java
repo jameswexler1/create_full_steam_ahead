@@ -29,7 +29,7 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
     private static final String CHANGE_TIMER_KEY = "ChangeTimer";
     private static final String LINK_ID_KEY = "LinkId";
     private static final int UPDATE_DELAY_TICKS = 15;
-    /** Each level change rings Create's confirm bell as a short repeated burst (telegraph "ding-ding"). */
+    /** Each level change rings Create's desk bell as a short repeated burst (telegraph "ding-ding"). */
     private static final int BELL_RING_COUNT = 3;
     private static final int BELL_RING_GAP_TICKS = 4;
 
@@ -188,7 +188,7 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
 
     private void ringOnce() {
         if (level instanceof ServerLevel serverLevel) {
-            AllSoundEvents.CONFIRM.playOnServer(serverLevel, worldPosition, 1.2F, 1.0F);
+            AllSoundEvents.DESK_BELL_USE.playOnServer(serverLevel, worldPosition, 1.2F, 1.0F);
         }
     }
 
