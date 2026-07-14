@@ -2,7 +2,7 @@
 
 Create: Full Steam Ahead is a NeoForge 1.21.1 Create addon centered on large Create-style reciprocating steam engines for ships, aircraft, and industrial power plants.
 
-The addon keeps Create's own Fluid Tank boiler as the boiler. Full Steam Ahead adds cylinder walls, pistons, piston heads, boiler outlets, relief valves, steam inlets, storable steam, and a hidden powered shaft that lets the assembled engine drive a normal Create shaft network.
+The addon keeps Create's own Fluid Tank boiler as the boiler. Full Steam Ahead adds cylinder walls, pistons, piston heads, boiler outlets, relief valves, steam inlets, pressure gauges, storable steam, and a hidden powered shaft that lets the assembled engine drive a normal Create shaft network.
 
 ## Locked Targets
 
@@ -90,6 +90,12 @@ The valve must be directly beside exactly one active `steam_inlet`, with the inl
 ## Display Link Readout
 
 Create Display Links can read steam network data from `boiler_outlet` blocks and active Create Fluid Tank boiler controllers through the `Steam Network` source. The source supports Summary, Pressure, Safety, Flow, and Network modes from the normal Display Link configuration screen. Each mode writes one row, so multiple Display Links can target different rows on the same Display Board without overwriting each other.
+
+## Steam Pressure Gauge
+
+The `steam_pressure_gauge` is a passive analogue instrument for boiler rooms and ship bridges. Hold the gauge item and sneak-right-click any tank block in an active Create Fluid Tank boiler, then place the gauge elsewhere in the same dimension. The item keeps the selected source so multiple gauges can be placed from one selection; sneak-use the item in the air to clear it.
+
+The gauge reads the boiler controller's authoritative Full Steam Ahead pressure without consuming steam. Its needle maps zero pressure to the low stop and the configured burst pressure to the high stop. The exact clicked tank remains the anchor when Create changes the multiblock controller, while a relative, orientation-aware link lets the gauge and boiler rotate together on Sable/Aeronautics simulated contraptions. Unloaded or missing sources are not force-loaded; the needle returns smoothly to zero and goggles report the unavailable source.
 
 ## Planned Polish
 

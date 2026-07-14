@@ -902,6 +902,24 @@ changing engine balance.
 
 ---
 
+### Phase 19: Linked Steam Pressure Gauge — Implemented (manual verification pending)
+
+**Goal**: provide a readable Victorian-style analogue pressure instrument for remote boiler monitoring on ships and aircraft without requiring an admission valve or consuming steam.
+
+- [x] Register `steam_pressure_gauge` as a horizontally directional brass instrument block with a custom item, block entity, recipe, loot table, tags, language, creative-tab entry, and model-derived hitbox.
+- [x] Let a held gauge item sneak-right-click any tank block in an active Create Fluid Tank boiler to capture that exact tank as its source; keep the selection on the stack for placing multiple gauges and allow sneak-use in air to clear it.
+- [x] Store the item source as a dimension-aware `GlobalPos`, then convert it to a relative block offset when placed so the gauge has no global registry and never force-loads source chunks.
+- [x] Resolve the selected tank's current Create controller at read time, so tank resizing or controller changes do not invalidate a surviving selected tank block.
+- [x] Preserve links through Sable/Aeronautics assembly rotation by rotating the relative source offset from its stored link-facing to the gauge's transformed facing; manual wrench rotation rebases facing without moving the world-space source.
+- [x] Read `SteamNetworkReadout.getNetworkPressurePn()` from the boiler controller, matching boiler goggles and Display Links without adding a second pressure calculation or consuming steam.
+- [x] Synchronize pressure, source availability, and the configured burst threshold to clients on a bounded cadence, then smooth needle motion client-side between readings.
+- [x] Map zero pressure to the low needle stop and configured burst pressure to the high stop; clamp overpressure at the end stop.
+- [x] Render the approved Blockbench housing and fixed hub as the baked model and its separate needle/counterweight group as an animated partial model using the authored UVs and 16-pixel texture density.
+- [x] Show linked/unlinked/unavailable state and live pressure in Create goggles; missing or unloaded sources ease the needle to zero instead of loading chunks.
+- [ ] Manual test source selection, repeated placement, clearing, tank-controller changes, cooling to zero, missing/unloaded sources, all four rotations, save/reload, and simulated-contraption assembly/disassembly.
+
+---
+
 ### Optional Phase: Volumetric Steam Clouds
 
 **Goal**: upgrade current leak/exhaust particles from instant local effects into a sparse gas simulation for enclosed spaces.
