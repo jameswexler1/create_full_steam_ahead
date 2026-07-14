@@ -20,6 +20,8 @@ public final class FullSteamPartialModels {
     private static final ResourceLocation STEPPED_LEVER_HANDLE_LOCATION = location("stepped_lever_handle");
     private static final ResourceLocation STEAM_RELIEF_VALVE_CAP_LOCATION = location("steam_relief_valve_cap");
     private static final ResourceLocation STEAM_RELIEF_VALVE_HANDWHEEL_LOCATION = location("steam_relief_valve_handwheel");
+    private static final ResourceLocation STEAM_ADMISSION_VALVE_ACTUATOR_LOCATION =
+            location("steam_admission_valve_actuator");
 
     public static void registerAdditional(ModelEvent.RegisterAdditional event) {
         event.register(ModelResourceLocation.standalone(PISTON_BODY_LOCATION));
@@ -35,6 +37,7 @@ public final class FullSteamPartialModels {
         event.register(ModelResourceLocation.standalone(STEPPED_LEVER_HANDLE_LOCATION));
         event.register(ModelResourceLocation.standalone(STEAM_RELIEF_VALVE_CAP_LOCATION));
         event.register(ModelResourceLocation.standalone(STEAM_RELIEF_VALVE_HANDWHEEL_LOCATION));
+        event.register(ModelResourceLocation.standalone(STEAM_ADMISSION_VALVE_ACTUATOR_LOCATION));
     }
 
     public static PartialModel pistonBody() {
@@ -87,6 +90,10 @@ public final class FullSteamPartialModels {
 
     public static PartialModel steamReliefValveHandwheel() {
         return PartialModel.of(STEAM_RELIEF_VALVE_HANDWHEEL_LOCATION);
+    }
+
+    public static PartialModel steamAdmissionValveActuator() {
+        return PartialModel.of(STEAM_ADMISSION_VALVE_ACTUATOR_LOCATION);
     }
 
     private static ResourceLocation location(String path) {

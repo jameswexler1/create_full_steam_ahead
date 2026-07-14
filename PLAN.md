@@ -858,7 +858,7 @@ changing engine balance.
 
 ---
 
-### Phase 17: Steam Admission Valve — Visual Prototype Implemented
+### Phase 17: Steam Admission Valve — Implemented (manual verification pending)
 
 **Goal**: add a pipe-shaped, remotely controlled admission throttle between a shared steam main and one engine `steam_inlet`, while allowing valves in a cylinder bank to remain part of a continuous pipe run.
 
@@ -870,11 +870,11 @@ changing engine balance.
 - [x] Point the future controlled branch toward exactly one adjacent `steam_inlet` while deriving every visible connection from the actual four-direction horizontal pipe state.
 - [x] Prevent vertical valve orientation, clear up/down properties after placement and neighbour updates, and reject one-sided vertical connections initiated by adjacent Create pipes.
 - [x] Match selection and collision shapes to the raised controls, horizontal pipe arms, brass collars, and endpoint rims.
-- [x] Preserve normal Create fluid transport at full flow for the visual prototype so pipe connection and steam rendering can be evaluated in-world.
-- [ ] Add two built-in Redstone Link frequency slots and receive an analogue `0..15` admission command without a separate Redstone Link block.
-- [ ] Throttle only the branch feeding the adjacent `steam_inlet`; a through-branch main must remain open to downstream engines.
-- [ ] Animate the actuator from delivered admission, add Create-style sound/goggle feedback, and preserve state through simulated contraptions.
-- [ ] Add a survival recipe only after the control behavior is functional, so the prototype is not presented as a finished throttle.
+- [x] Preserve normal Create fluid transport at full flow through non-controlled branches so the valve remains part of a shared steam main.
+- [x] Add two built-in Redstone Link frequency slots and receive an analogue `0..15` admission command without a separate Redstone Link block; an empty frequency pair is a full-open bypass.
+- [x] Throttle only the uniquely linked active `steam_inlet`; a through-branch main remains open to downstream engines and network shortages preserve throttle ratios.
+- [x] Animate the command actuator, add Create-style adjustment sound and live goggle feedback, and persist receiver state through normal block-entity NBT.
+- [x] Add a survival recipe using a Create Fluid Pipe, Redstone Link, and brass plate.
 - [ ] Manual test isolated, straight, elbow, tee, and cross layouts; rejection of vertical orientation/connections; rotation toward each inlet direction; steam passthrough; collision; inventory rendering; and contraption assembly.
 
 ---

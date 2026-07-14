@@ -1,6 +1,7 @@
 package dev.gustavo.fullsteamahead.content.steam;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.redstone.link.LinkBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
@@ -17,6 +18,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,6 +37,7 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
     private int allocatedSteamMb;
     private int deliveredSteamMb;
     private long networkGameTime = Long.MIN_VALUE;
+    private int lastAudibleAdmission = -1;
 
     public SteamAdmissionValveBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STEAM_ADMISSION_VALVE.get(), pos, state);
@@ -58,6 +61,13 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
         if (level != null && level.isClientSide()) {
             clientAdmission.chase(getAdmissionFraction(), 0.25F, LerpedFloat.Chaser.EXP);
             clientAdmission.tickChaser();
+        } else if (level instanceof ServerLevel serverLevel) {
+            int admission = getAdmissionStrength();
+            if (lastAudibleAdmission >= 0 && lastAudibleAdmission != admission) {
+                float pitch = 0.85F + admission / 15.0F * 0.3F;
+                AllSoundEvents.WRENCH_ROTATE.playOnServer(serverLevel, worldPosition, 0.35F, pitch);
+            }
+            lastAudibleAdmission = admission;
         }
     }
 
@@ -125,7 +135,7 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
     private boolean isNetworkFresh() {
         return level != null
                 && networkGameTime != Long.MIN_VALUE
-                && level.getGameTime() - networkGameTime <= 3L;
+                && level.getGameTime() - networkGameTime <= 10L;
     }
 
     public boolean isFrequencyBypass() {

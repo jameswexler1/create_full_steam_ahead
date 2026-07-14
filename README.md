@@ -80,6 +80,12 @@ pressure pN/m^2 = gasConstant * storedSteamMb * temperatureK / networkVolumeM3
 
 Steam remains visible in Create tanks and pipes through a high-visibility tinted vanilla water render path. Unconnected boiler outlets, open pipe ends, running cylinder exhaust, and boiler bursts emit custom translucent steam particles, and leak clouds can scald entities.
 
+## Steam Admission Control
+
+The horizontal `steam_admission_valve` throttles one active engine inlet without restricting the shared pipe main. Its two built-in frequency slots use Create's Redstone Link network and accept an analogue `0..15` command. An empty frequency pair is a safe full-open bypass; once frequencies are configured, no received signal means closed.
+
+The valve must be directly beside exactly one active `steam_inlet`, with the inlet nozzle facing the valve. Its requested engine flow is the normal pressure-dependent request multiplied by `signal / 15`. If the network cannot satisfy every consumer, the normal proportional allocator preserves the requested throttle ratios. Delivered flow scales SU continuously, while engine speed keeps the existing `16`, `32`, `48`, and `64` RPM tiers. Other valve pipe branches remain normal bidirectional steam paths.
+
 ## Display Link Readout
 
 Create Display Links can read steam network data from `boiler_outlet` blocks and active Create Fluid Tank boiler controllers through the `Steam Network` source. The source supports Summary, Pressure, Safety, Flow, and Network modes from the normal Display Link configuration screen. Each mode writes one row, so multiple Display Links can target different rows on the same Display Board without overwriting each other.

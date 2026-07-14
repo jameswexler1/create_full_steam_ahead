@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "create:fluid_pipe" },
+    { "item": "create:redstone_link" },
+    { "tag": "c:plates/brass" }
+  ],
+  "result": {
+    "count": 1,
+    "id": "full_steam_ahead:steam_admission_valve"
+  }
+}

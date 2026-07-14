@@ -1,0 +1,33 @@
+{
+  "textures": {
+    "brass": "create:block/brass_block",
+    "iron": "create:block/industrial_iron_block",
+    "particle": "create:block/brass_block"
+  },
+  "elements": [
+    {
+      "name": "Actuator spindle",
+      "from": [7.625, 14.51, 7.625],
+      "to": [8.375, 15.5, 8.375],
+      "faces": {
+        "north": {"uv": [0, 0, 0.75, 0.99], "texture": "#iron"},
+        "east": {"uv": [0, 0, 0.75, 0.99], "texture": "#iron"},
+        "south": {"uv": [0, 0, 0.75, 0.99], "texture": "#iron"},
+        "west": {"uv": [0, 0, 0.75, 0.99], "texture": "#iron"},
+        "up": {"uv": [0, 0, 0.75, 0.75], "texture": "#iron"}
+      }
+    },
+    {
+      "name": "Actuator cap",
+      "from": [7.5, 15.25, 7.5],
+      "to": [8.5, 15.75, 8.5],
+      "faces": {
+        "north": {"uv": [0, 0, 1, 0.5], "texture": "#brass"},
+        "east": {"uv": [0, 0, 1, 0.5], "texture": "#brass"},
+        "south": {"uv": [0, 0, 1, 0.5], "texture": "#brass"},
+        "west": {"uv": [0, 0, 1, 0.5], "texture": "#brass"},
+        "up": {"uv": [0, 0, 1, 1], "texture": "#brass"}
+      }
+    }
+  ]
+}

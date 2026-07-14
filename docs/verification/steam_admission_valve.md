@@ -7,9 +7,7 @@
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`
 - [x] Static face-plane audit reports zero coplanar overlaps in both the item model and a four-port runtime composition.
 
-Verified on 2026-07-14. The valve is currently a visual prototype with unrestricted Create fluid-pipe transport. Wireless admission control is not implemented yet.
-
-The horizontal visual rebuild passed `compileJava`, JSON validation, and `build`. A `runClient` smoke launch reached Full Steam Ahead initialization without load errors, but the slow development client was stopped before resource/model baking completed. The current models still require the in-world checks below.
+Verified on 2026-07-14. The valve uses Create's native Redstone Link receiver behaviour, applies its analogue command only to the uniquely linked active Steam Inlet, and leaves the shared pipe main unrestricted. Automated checks cover compilation and resources; gameplay and simulated-contraption behaviour still require the in-world checks below.
 
 ## Manual In-World Checks
 
@@ -26,6 +24,20 @@ The horizontal visual rebuild passed `compileJava`, JSON validation, and `build`
 - [ ] Brass collars use a consistent metal texture without a bright casing-border streak across their upper face.
 - [ ] The raised iron platform and brass border remain unchanged as pipe neighbours are added or removed.
 - [ ] The two frequency positions match Create Redstone Link pads in texture and pixel density.
-- [ ] Create Fluid Pipes connect visually, steam remains visible, and steam passes through the prototype.
+- [ ] Right-click both frequency pads with items; confirm the items render in the correct pads in north/south and east/west orientations.
+- [ ] With both frequencies empty, confirm the valve reports `Bypass (100%)` and a linked engine receives normal full admission.
+- [ ] Configure both frequencies without a matching transmitter; confirm the valve closes and only its linked engine loses admission.
+- [ ] Transmit analogue strengths `5`, `10`, and `15`; confirm the valve reports approximately `33%`, `67%`, and `100%` and requested flow scales accordingly.
+- [ ] Confirm delivered SU scales continuously with admitted steam while RPM remains on the existing `16`, `32`, `48`, and `64` tiers.
+- [ ] Starve two differently commanded valves on one network; confirm both keep the same proportional allocation ratio instead of one engine taking priority.
+- [ ] Confirm a through-branch main remains open and continues powering downstream engines when the local valve command is `0`.
+- [ ] Place two active inlets beside one valve, or turn the inlet nozzle away; confirm the valve reports no uniquely linked active inlet and controls neither.
+- [ ] Confirm an optional passive symmetry inlet is ignored when selecting the controlled active inlet.
+- [ ] Confirm Create Fluid Pipes connect visually, steam remains visible, and steam passes through every non-controlled branch.
+- [ ] Change the received signal and confirm the central actuator moves smoothly and plays one restrained Create-style adjustment sound.
+- [ ] Inspect with goggles and confirm linked state, command, percentage, state, pressure, requested flow, and delivered flow update live.
+- [ ] Save/reload and break/replace neighbouring pipes; confirm frequencies and command recover without a stale inlet association.
+- [ ] Assemble and disassemble a simulated contraption; confirm both frequencies, receiver operation, displayed command, and inlet association survive.
+- [ ] Confirm direct compact engines and pipe-fed engines without an admission valve retain their existing output.
 - [ ] Selection and collision outlines follow the raised controls, brass collars, live pipe arms, and visible endpoint rims in every horizontal rotation.
 - [ ] Breaking the valve drops itself and does not leave a stale pipe connection.
