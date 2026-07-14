@@ -10,6 +10,9 @@
     "FluidPipeConnectionMixin",
     "FluidPipeWrenchMixin"
   ],
+  "client": [
+    "client.KineticBlockEntityPhaseMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

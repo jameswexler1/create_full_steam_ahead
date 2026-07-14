@@ -16,6 +16,8 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
     // Ticks after placement/load during which we re-assert the generated rotation if the
     // kinetic network has not picked it up yet. See tick().
     private static final int INITIAL_SYNC_TICKS = 5;
+    private static final float MIN_SPEED_UPDATE_RPM = 0.01F;
+    private static final float MIN_CAPACITY_UPDATE_SU = 1.0F;
 
     private BlockPos enginePos;
     private float generatedSpeed;
@@ -47,16 +49,29 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
 
     public void update(BlockPos engineWorldPos, float speed, float capacitySu) {
         BlockPos relativeEnginePos = worldPosition.subtract(engineWorldPos);
-        boolean changed = !relativeEnginePos.equals(enginePos)
-                || !Mth.equal(generatedSpeed, speed)
-                || !Mth.equal(generatedCapacitySu, capacitySu);
-        enginePos = relativeEnginePos;
-        generatedSpeed = speed;
-        generatedCapacitySu = capacitySu;
-        if (changed) {
-            updateGeneratedRotation();
-            notifyUpdate();
+        boolean ownerChanged = !relativeEnginePos.equals(enginePos);
+        boolean speedChanged = ownerChanged
+                || meaningfullyChanged(generatedSpeed, speed, MIN_SPEED_UPDATE_RPM);
+        boolean capacityChanged = ownerChanged
+                || meaningfullyChanged(generatedCapacitySu, capacitySu, MIN_CAPACITY_UPDATE_SU);
+        if (!speedChanged && !capacityChanged) {
+            return;
         }
+
+        enginePos = relativeEnginePos;
+        if (speedChanged) {
+            generatedSpeed = speed;
+            generatedCapacitySu = capacitySu;
+            updateGeneratedRotation();
+        } else {
+            // Capacity can vary while the 1 RPM floor keeps speed fixed. Refresh stress without
+            // asking Create to detach and re-propagate an otherwise unchanged kinetic source.
+            generatedCapacitySu = capacitySu;
+            if (hasNetwork() && getGeneratedSpeed() != 0.0F) {
+                notifyStressCapacityChange(calculateAddedStressCapacity());
+            }
+        }
+        notifyUpdate();
     }
 
     public void remove(BlockPos engineWorldPos) {
@@ -75,6 +90,19 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
 
     public boolean isPoweredBy(BlockPos engineWorldPos) {
         return enginePos != null && worldPosition.subtract(engineWorldPos).equals(enginePos);
+    }
+
+    private static boolean meaningfullyChanged(float previous, float next, float minimumDelta) {
+        if (Mth.equal(previous, next)) {
+            return false;
+        }
+        if (!Float.isFinite(previous) || !Float.isFinite(next)) {
+            return true;
+        }
+        if (previous == 0.0F || next == 0.0F || Math.signum(previous) != Math.signum(next)) {
+            return true;
+        }
+        return Math.abs(previous - next) >= minimumDelta;
     }
 
     public BlockPos getEngineWorldPos() {

@@ -890,9 +890,14 @@ changing engine balance.
 - [x] Keep SU unchanged as `fullEngineSu * outputFactor`, so pressure and delivered flow remain the only engine-output inputs.
 - [x] Remove the obsolete tier helper and tier-specific config wording.
 - [x] Use configured maximum RPM for legacy power migration and particle/sound intensity instead of a hard-coded `64`.
+- [x] Preserve client animation phase when an FSA-powered kinetic network changes RPM by compensating Create's absolute-time rotation formula through the shared `getRotationAngleOffset` hook used by both Flywheel and fallback rendering.
+- [x] Avoid detaching and rebuilding the kinetic source for capacity-only changes, and ignore sub-`0.01 RPM` source jitter until it accumulates into a visible speed update.
+- [x] Hold the last linkage pose across Create's brief zero-speed propagation frame so piston, connecting rod, and crank visuals do not flash to their resting pose during a live RPM ramp.
 - [ ] Manual test direct and pipe-fed engines at low, quarter, half, three-quarter, and full output; confirm RPM changes progressively while SU remains proportional.
 - [ ] Manual test an admission valve at signals `0`, `5`, `10`, and `15`; expect approximately `64`, `42.7`, `21.3`, and `0 RPM` at rated pressure.
 - [ ] Manual test adjacent engines on one shaft at equal and unequal admission settings; confirm stable kinetic-network behavior and passive linkage animation.
+- [ ] Manual test slow and abrupt acceleration/deceleration with Flywheel enabled and disabled; piston/linkage and every attached shaft, gear, belt, and gauge must preserve phase without flicker or backward jumps.
+- [ ] Manual test world reload, chunk reload, and Sable simulated-contraption assembly while an engine is running; the first rendered frame may adopt the loaded phase, but subsequent RPM changes must remain continuous.
 
 ---
 
@@ -921,7 +926,7 @@ changing engine balance.
 | Pipe-fed mode loses burner-count metadata | Store network steam mass, weighted temperature, and volume; piston derives RPM/SU from pressure and fair delivered flow (`SteamPhysics`) |
 | Linear generators on one shaft request different speeds | Use matching admission commands for normal engine banks and explicitly verify mixed-command kinetic behavior before treating it as supported control practice |
 | Cylinder ring scan too expensive | Run only on placement/removal, not every tick; cache result |
-| Piston animation desync | Drive animation entirely from linked shaft rotation angle on client |
+| Piston animation desync | Drive animation from linked shaft rotation and compensate Create's absolute-time angle offset whenever an FSA-driven kinetic speed changes; cover both Flywheel and fallback rendering |
 | Sable assembly splits engine parts | Register Create and Simulated movement checks early |
 
 ---

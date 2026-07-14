@@ -1,6 +1,5 @@
 package dev.gustavo.fullsteamahead.client.render;
 
-import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import dev.gustavo.fullsteamahead.content.piston.EngineValidator;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlockEntity;
@@ -32,8 +31,8 @@ public final class PistonHeadAnimation {
         boolean visible = engine.isEngineAssembled();
         FullSteamPoweredShaftBlockEntity shaft = engine.getShaft();
         Direction.Axis shaftAxis = engine.getShaftAxis();
-        float angle = engine.isLinkageMoving() && shaft != null
-                ? KineticBlockEntityRenderer.getAngleForBe(shaft, shaft.getBlockPos(), shaftAxis)
+        float angle = shaft != null
+                ? KineticPhaseContinuity.linkageAngle(engine, shaft, shaftAxis)
                 : 0;
         angle += engine.getAnimationPhaseOffset();
         return state(
