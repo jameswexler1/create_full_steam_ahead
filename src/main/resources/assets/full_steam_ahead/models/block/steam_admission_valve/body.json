@@ -23,7 +23,7 @@
     },
     {
       "name": "Raised control platform",
-      "from": [2, 13, 4],
+      "from": [2, 13.01, 4],
       "to": [14, 14, 12],
       "faces": {
         "north": { "uv": [0, 0, 12, 1], "texture": "#iron" },
@@ -63,9 +63,7 @@
       "from": [2, 14, 5],
       "to": [3, 14.5, 11],
       "faces": {
-        "north": { "uv": [0, 0, 1, 0.5], "texture": "#brass" },
         "east": { "uv": [0, 0, 6, 0.5], "texture": "#brass" },
-        "south": { "uv": [0, 0, 1, 0.5], "texture": "#brass" },
         "west": { "uv": [0, 0, 6, 0.5], "texture": "#brass" },
         "up": { "uv": [0, 0, 1, 6], "texture": "#brass" }
       }
@@ -75,9 +73,7 @@
       "from": [13, 14, 5],
       "to": [14, 14.5, 11],
       "faces": {
-        "north": { "uv": [0, 0, 1, 0.5], "texture": "#brass" },
         "east": { "uv": [0, 0, 6, 0.5], "texture": "#brass" },
-        "south": { "uv": [0, 0, 1, 0.5], "texture": "#brass" },
         "west": { "uv": [0, 0, 6, 0.5], "texture": "#brass" },
         "up": { "uv": [0, 0, 1, 6], "texture": "#brass" }
       }

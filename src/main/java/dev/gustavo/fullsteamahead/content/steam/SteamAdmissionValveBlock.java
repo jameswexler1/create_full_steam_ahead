@@ -285,10 +285,10 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
 
     private static Map<Direction, VoxelShape> buildCollarShapes() {
         Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
-        shapes.put(Direction.NORTH, Block.box(3, 3, 2, 13, 13, 4));
-        shapes.put(Direction.SOUTH, Block.box(3, 3, 12, 13, 13, 14));
-        shapes.put(Direction.EAST, Block.box(12, 3, 3, 14, 13, 13));
-        shapes.put(Direction.WEST, Block.box(2, 3, 3, 4, 13, 13));
+        shapes.put(Direction.NORTH, Block.box(3, 3, 2, 13, 13, 3));
+        shapes.put(Direction.SOUTH, Block.box(3, 3, 13, 13, 13, 14));
+        shapes.put(Direction.EAST, Block.box(13, 3, 3, 14, 13, 13));
+        shapes.put(Direction.WEST, Block.box(2, 3, 3, 3, 13, 13));
         return shapes;
     }
 

@@ -5,6 +5,7 @@
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`
+- [x] Static face-plane audit reports zero coplanar overlaps in both the item model and a four-port runtime composition.
 
 Verified on 2026-07-14. The valve is currently a visual prototype with unrestricted Create fluid-pipe transport. Wireless admission control is not implemented yet.
 
@@ -21,6 +22,7 @@ The horizontal visual rebuild passed `compileJava`, JSON validation, and `build`
 - [ ] The valve never assumes a vertical axis; pipes above or below do not create a vertical valve arm or carry steam through that face.
 - [ ] Endpoint rims appear only at open/non-pipe endpoints and disappear cleanly between compatible pipes.
 - [ ] Every live horizontal arm has a clean brass collar with no gap against the copper pipe body.
+- [ ] One-, two-, three-, and four-port layouts show every outer and lateral collar face without transparent sections.
 - [ ] Brass collars use a consistent metal texture without a bright casing-border streak across their upper face.
 - [ ] The raised iron platform and brass border remain unchanged as pipe neighbours are added or removed.
 - [ ] The two frequency positions match Create Redstone Link pads in texture and pixel density.
