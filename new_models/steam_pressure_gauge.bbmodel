@@ -11,14 +11,14 @@
     1,
     0
   ],
-  "variable_placeholders": "Single shallow Victorian brass pressure gauge authored facing south (+Z). Case depth follows Create's boiler gauge proportion at approximately 3 units for a 14-unit face. All textures and UVs use one pixel per model unit. steam_pressure_gauge.png contains the brass front bezel at x=0..15 and plain finished rear casing at x=16..31. steam_pressure_gauge_dial.png is the separate inset dial plate. steam_pressure_gauge_needle.png is dedicated to the animated needle, counterweight, and fixed hub. Rotate the needle group around local Z at [8,9,9.03], from -135 degrees at zero pressure to +135 degrees at burst pressure. The included animation is preview-only. No frequency controls are designed into this art source.",
+  "variable_placeholders": "Shallow Victorian brass pressure gauge authored facing south (+Z). The rear cap, main case, dial backing, and bezel overlap into one closed housing with no suspended texture planes. The bezel front uses one globally aligned Create brass texture at one pixel per model unit. The rear is a plain finished maintenance cover, and the inset dial and animated needle use dedicated textures. Rotate the needle group around local Z at [8,9,9.08], from -135 degrees at zero pressure to +135 degrees at burst pressure. The included animation is preview-only.",
   "resolution": {
     "width": 16,
     "height": 16
   },
   "elements": [
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000001",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000001",
       "from": [
         5,
         15,
@@ -27,443 +27,10 @@
       "to": [
         11,
         16,
-        8.25
+        6.65
       ],
       "faces": {
         "north": {
-          "uv": [
-            21,
-            0,
-            27,
-            1
-          ],
-          "texture": 0
-        },
-        "east": {
-          "uv": [
-            0,
-            0,
-            2,
-            1
-          ],
-          "texture": 3
-        },
-        "south": {
-          "uv": [
-            0,
-            0,
-            6,
-            1
-          ],
-          "texture": 3
-        },
-        "west": {
-          "uv": [
-            0,
-            0,
-            2,
-            1
-          ],
-          "texture": 3
-        },
-        "up": {
-          "uv": [
-            0,
-            0,
-            6,
-            2
-          ],
-          "texture": 3
-        },
-        "down": {
-          "uv": [
-            0,
-            0,
-            6,
-            2
-          ],
-          "texture": 3
-        }
-      },
-      "name": "Case top",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "origin": [
-        8,
-        9,
-        8
-      ],
-      "type": "cube"
-    },
-    {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000002",
-      "from": [
-        3,
-        14,
-        6.25
-      ],
-      "to": [
-        13,
-        15,
-        8.25
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            19,
-            1,
-            29,
-            2
-          ],
-          "texture": 0
-        },
-        "east": {
-          "uv": [
-            0,
-            0,
-            2,
-            1
-          ],
-          "texture": 3
-        },
-        "south": {
-          "uv": [
-            0,
-            0,
-            10,
-            1
-          ],
-          "texture": 3
-        },
-        "west": {
-          "uv": [
-            0,
-            0,
-            2,
-            1
-          ],
-          "texture": 3
-        },
-        "up": {
-          "uv": [
-            0,
-            0,
-            10,
-            2
-          ],
-          "texture": 3
-        },
-        "down": {
-          "uv": [
-            0,
-            0,
-            10,
-            2
-          ],
-          "texture": 3
-        }
-      },
-      "name": "Case upper",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "origin": [
-        8,
-        9,
-        8
-      ],
-      "type": "cube"
-    },
-    {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000003",
-      "from": [
-        1,
-        4,
-        6.25
-      ],
-      "to": [
-        15,
-        14,
-        8.25
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            17,
-            2,
-            31,
-            12
-          ],
-          "texture": 0
-        },
-        "east": {
-          "uv": [
-            0,
-            0,
-            2,
-            10
-          ],
-          "texture": 3
-        },
-        "south": {
-          "uv": [
-            0,
-            0,
-            14,
-            10
-          ],
-          "texture": 3
-        },
-        "west": {
-          "uv": [
-            0,
-            0,
-            2,
-            10
-          ],
-          "texture": 3
-        },
-        "up": {
-          "uv": [
-            0,
-            0,
-            14,
-            2
-          ],
-          "texture": 3
-        },
-        "down": {
-          "uv": [
-            0,
-            0,
-            14,
-            2
-          ],
-          "texture": 3
-        }
-      },
-      "name": "Case centre",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "origin": [
-        8,
-        9,
-        8
-      ],
-      "type": "cube"
-    },
-    {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000004",
-      "from": [
-        3,
-        3,
-        6.25
-      ],
-      "to": [
-        13,
-        4,
-        8.25
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            19,
-            12,
-            29,
-            13
-          ],
-          "texture": 0
-        },
-        "east": {
-          "uv": [
-            0,
-            0,
-            2,
-            1
-          ],
-          "texture": 3
-        },
-        "south": {
-          "uv": [
-            0,
-            0,
-            10,
-            1
-          ],
-          "texture": 3
-        },
-        "west": {
-          "uv": [
-            0,
-            0,
-            2,
-            1
-          ],
-          "texture": 3
-        },
-        "up": {
-          "uv": [
-            0,
-            0,
-            10,
-            2
-          ],
-          "texture": 3
-        },
-        "down": {
-          "uv": [
-            0,
-            0,
-            10,
-            2
-          ],
-          "texture": 3
-        }
-      },
-      "name": "Case lower",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "origin": [
-        8,
-        9,
-        8
-      ],
-      "type": "cube"
-    },
-    {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000005",
-      "from": [
-        5,
-        2,
-        6.25
-      ],
-      "to": [
-        11,
-        3,
-        8.25
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            21,
-            13,
-            27,
-            14
-          ],
-          "texture": 0
-        },
-        "east": {
-          "uv": [
-            0,
-            0,
-            2,
-            1
-          ],
-          "texture": 3
-        },
-        "south": {
-          "uv": [
-            0,
-            0,
-            6,
-            1
-          ],
-          "texture": 3
-        },
-        "west": {
-          "uv": [
-            0,
-            0,
-            2,
-            1
-          ],
-          "texture": 3
-        },
-        "up": {
-          "uv": [
-            0,
-            0,
-            6,
-            2
-          ],
-          "texture": 3
-        },
-        "down": {
-          "uv": [
-            0,
-            0,
-            6,
-            2
-          ],
-          "texture": 3
-        }
-      },
-      "name": "Case bottom",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "origin": [
-        8,
-        9,
-        8
-      ],
-      "type": "cube"
-    },
-    {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000006",
-      "from": [
-        5,
-        15,
-        8.25
-      ],
-      "to": [
-        11,
-        16,
-        8.75
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            0,
-            6,
-            1
-          ],
-          "texture": 3
-        },
-        "east": {
-          "uv": [
-            0,
-            0,
-            0.5,
-            1
-          ],
-          "texture": 3
-        },
-        "south": {
           "uv": [
             5,
             0,
@@ -472,11 +39,29 @@
           ],
           "texture": 0
         },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.40000000000000036,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": 3
+        },
         "west": {
           "uv": [
             0,
             0,
-            0.5,
+            0.40000000000000036,
             1
           ],
           "texture": 3
@@ -486,7 +71,7 @@
             0,
             0,
             6,
-            0.5
+            0.40000000000000036
           ],
           "texture": 3
         },
@@ -495,12 +80,12 @@
             0,
             0,
             6,
-            0.5
+            0.40000000000000036
           ],
           "texture": 3
         }
       },
-      "name": "Bezel top",
+      "name": "Rear cap top",
       "box_uv": false,
       "render_order": "default",
       "rescale": false,
@@ -516,37 +101,19 @@
       "type": "cube"
     },
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000007",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000002",
       "from": [
         3,
         14,
-        8.25
+        6.25
       ],
       "to": [
         13,
         15,
-        8.75
+        6.65
       ],
       "faces": {
         "north": {
-          "uv": [
-            0,
-            0,
-            10,
-            1
-          ],
-          "texture": 3
-        },
-        "east": {
-          "uv": [
-            0,
-            0,
-            0.5,
-            1
-          ],
-          "texture": 3
-        },
-        "south": {
           "uv": [
             3,
             1,
@@ -555,11 +122,29 @@
           ],
           "texture": 0
         },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.40000000000000036,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ],
+          "texture": 3
+        },
         "west": {
           "uv": [
             0,
             0,
-            0.5,
+            0.40000000000000036,
             1
           ],
           "texture": 3
@@ -569,7 +154,7 @@
             0,
             0,
             10,
-            0.5
+            0.40000000000000036
           ],
           "texture": 3
         },
@@ -578,12 +163,12 @@
             0,
             0,
             10,
-            0.5
+            0.40000000000000036
           ],
           "texture": 3
         }
       },
-      "name": "Bezel upper",
+      "name": "Rear cap upper",
       "box_uv": false,
       "render_order": "default",
       "rescale": false,
@@ -599,37 +184,19 @@
       "type": "cube"
     },
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000008",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000003",
       "from": [
         1,
         4,
-        8.25
+        6.25
       ],
       "to": [
         15,
         14,
-        8.75
+        6.65
       ],
       "faces": {
         "north": {
-          "uv": [
-            0,
-            0,
-            14,
-            10
-          ],
-          "texture": 3
-        },
-        "east": {
-          "uv": [
-            0,
-            0,
-            0.5,
-            10
-          ],
-          "texture": 3
-        },
-        "south": {
           "uv": [
             1,
             2,
@@ -638,11 +205,29 @@
           ],
           "texture": 0
         },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.40000000000000036,
+            10
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            14,
+            10
+          ],
+          "texture": 3
+        },
         "west": {
           "uv": [
             0,
             0,
-            0.5,
+            0.40000000000000036,
             10
           ],
           "texture": 3
@@ -652,7 +237,7 @@
             0,
             0,
             14,
-            0.5
+            0.40000000000000036
           ],
           "texture": 3
         },
@@ -661,12 +246,12 @@
             0,
             0,
             14,
-            0.5
+            0.40000000000000036
           ],
           "texture": 3
         }
       },
-      "name": "Bezel centre",
+      "name": "Rear cap centre",
       "box_uv": false,
       "render_order": "default",
       "rescale": false,
@@ -682,37 +267,19 @@
       "type": "cube"
     },
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000009",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000004",
       "from": [
         3,
         3,
-        8.25
+        6.25
       ],
       "to": [
         13,
         4,
-        8.75
+        6.65
       ],
       "faces": {
         "north": {
-          "uv": [
-            0,
-            0,
-            10,
-            1
-          ],
-          "texture": 3
-        },
-        "east": {
-          "uv": [
-            0,
-            0,
-            0.5,
-            1
-          ],
-          "texture": 3
-        },
-        "south": {
           "uv": [
             3,
             12,
@@ -721,11 +288,29 @@
           ],
           "texture": 0
         },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.40000000000000036,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ],
+          "texture": 3
+        },
         "west": {
           "uv": [
             0,
             0,
-            0.5,
+            0.40000000000000036,
             1
           ],
           "texture": 3
@@ -735,7 +320,7 @@
             0,
             0,
             10,
-            0.5
+            0.40000000000000036
           ],
           "texture": 3
         },
@@ -744,12 +329,12 @@
             0,
             0,
             10,
-            0.5
+            0.40000000000000036
           ],
           "texture": 3
         }
       },
-      "name": "Bezel lower",
+      "name": "Rear cap lower",
       "box_uv": false,
       "render_order": "default",
       "rescale": false,
@@ -765,37 +350,19 @@
       "type": "cube"
     },
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000010",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000005",
       "from": [
         5,
         2,
-        8.25
+        6.25
       ],
       "to": [
         11,
         3,
-        8.75
+        6.65
       ],
       "faces": {
         "north": {
-          "uv": [
-            0,
-            0,
-            6,
-            1
-          ],
-          "texture": 3
-        },
-        "east": {
-          "uv": [
-            0,
-            0,
-            0.5,
-            1
-          ],
-          "texture": 3
-        },
-        "south": {
           "uv": [
             5,
             13,
@@ -804,11 +371,29 @@
           ],
           "texture": 0
         },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.40000000000000036,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": 3
+        },
         "west": {
           "uv": [
             0,
             0,
-            0.5,
+            0.40000000000000036,
             1
           ],
           "texture": 3
@@ -818,7 +403,7 @@
             0,
             0,
             6,
-            0.5
+            0.40000000000000036
           ],
           "texture": 3
         },
@@ -827,12 +412,12 @@
             0,
             0,
             6,
-            0.5
+            0.40000000000000036
           ],
           "texture": 3
         }
       },
-      "name": "Bezel bottom",
+      "name": "Rear cap bottom",
       "box_uv": false,
       "render_order": "default",
       "rescale": false,
@@ -848,16 +433,16 @@
       "type": "cube"
     },
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000011",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000006",
       "from": [
         5,
-        14,
-        8.78
+        15,
+        6.6
       ],
       "to": [
         11,
-        15,
-        8.93
+        16,
+        8.65
       ],
       "faces": {
         "north": {
@@ -873,7 +458,422 @@
           "uv": [
             0,
             0,
-            0.15000000000000036,
+            2.0500000000000007,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2.0500000000000007,
+            1
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            6,
+            2.0500000000000007
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            6,
+            2.0500000000000007
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Case body top",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000007",
+      "from": [
+        3,
+        14,
+        6.6
+      ],
+      "to": [
+        13,
+        15,
+        8.65
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2.0500000000000007,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2.0500000000000007,
+            1
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            10,
+            2.0500000000000007
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            10,
+            2.0500000000000007
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Case body upper",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000008",
+      "from": [
+        1,
+        4,
+        6.6
+      ],
+      "to": [
+        15,
+        14,
+        8.65
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            14,
+            10
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2.0500000000000007,
+            10
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            14,
+            10
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2.0500000000000007,
+            10
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            14,
+            2.0500000000000007
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            14,
+            2.0500000000000007
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Case body centre",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000009",
+      "from": [
+        3,
+        3,
+        6.6
+      ],
+      "to": [
+        13,
+        4,
+        8.65
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2.0500000000000007,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2.0500000000000007,
+            1
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            10,
+            2.0500000000000007
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            10,
+            2.0500000000000007
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Case body lower",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000010",
+      "from": [
+        5,
+        2,
+        6.6
+      ],
+      "to": [
+        11,
+        3,
+        8.65
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2.0500000000000007,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2.0500000000000007,
+            1
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            6,
+            2.0500000000000007
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            6,
+            2.0500000000000007
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Case body bottom",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000011",
+      "from": [
+        5,
+        14,
+        8.6
+      ],
+      "to": [
+        11,
+        15,
+        8.9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.3000000000000007,
             1
           ],
           "texture": 3
@@ -891,7 +891,7 @@
           "uv": [
             0,
             0,
-            0.15000000000000036,
+            0.3000000000000007,
             1
           ],
           "texture": 3
@@ -901,7 +901,7 @@
             0,
             0,
             6,
-            0.15000000000000036
+            0.3000000000000007
           ],
           "texture": 3
         },
@@ -910,12 +910,12 @@
             0,
             0,
             6,
-            0.15000000000000036
+            0.3000000000000007
           ],
           "texture": 3
         }
       },
-      "name": "Dial top",
+      "name": "Dial backing top",
       "box_uv": false,
       "render_order": "default",
       "rescale": false,
@@ -931,16 +931,16 @@
       "type": "cube"
     },
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000012",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000012",
       "from": [
         3,
         13,
-        8.78
+        8.6
       ],
       "to": [
         13,
         14,
-        8.93
+        8.9
       ],
       "faces": {
         "north": {
@@ -956,7 +956,7 @@
           "uv": [
             0,
             0,
-            0.15000000000000036,
+            0.3000000000000007,
             1
           ],
           "texture": 3
@@ -974,7 +974,7 @@
           "uv": [
             0,
             0,
-            0.15000000000000036,
+            0.3000000000000007,
             1
           ],
           "texture": 3
@@ -984,7 +984,7 @@
             0,
             0,
             10,
-            0.15000000000000036
+            0.3000000000000007
           ],
           "texture": 3
         },
@@ -993,12 +993,12 @@
             0,
             0,
             10,
-            0.15000000000000036
+            0.3000000000000007
           ],
           "texture": 3
         }
       },
-      "name": "Dial upper",
+      "name": "Dial backing upper",
       "box_uv": false,
       "render_order": "default",
       "rescale": false,
@@ -1014,16 +1014,16 @@
       "type": "cube"
     },
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000013",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000013",
       "from": [
         2,
         5,
-        8.78
+        8.6
       ],
       "to": [
         14,
         13,
-        8.93
+        8.9
       ],
       "faces": {
         "north": {
@@ -1039,7 +1039,7 @@
           "uv": [
             0,
             0,
-            0.15000000000000036,
+            0.3000000000000007,
             8
           ],
           "texture": 3
@@ -1057,7 +1057,7 @@
           "uv": [
             0,
             0,
-            0.15000000000000036,
+            0.3000000000000007,
             8
           ],
           "texture": 3
@@ -1067,7 +1067,7 @@
             0,
             0,
             12,
-            0.15000000000000036
+            0.3000000000000007
           ],
           "texture": 3
         },
@@ -1076,12 +1076,12 @@
             0,
             0,
             12,
-            0.15000000000000036
+            0.3000000000000007
           ],
           "texture": 3
         }
       },
-      "name": "Dial centre",
+      "name": "Dial backing centre",
       "box_uv": false,
       "render_order": "default",
       "rescale": false,
@@ -1097,16 +1097,16 @@
       "type": "cube"
     },
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000014",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000014",
       "from": [
         3,
         4,
-        8.78
+        8.6
       ],
       "to": [
         13,
         5,
-        8.93
+        8.9
       ],
       "faces": {
         "north": {
@@ -1122,7 +1122,7 @@
           "uv": [
             0,
             0,
-            0.15000000000000036,
+            0.3000000000000007,
             1
           ],
           "texture": 3
@@ -1140,7 +1140,7 @@
           "uv": [
             0,
             0,
-            0.15000000000000036,
+            0.3000000000000007,
             1
           ],
           "texture": 3
@@ -1150,7 +1150,7 @@
             0,
             0,
             10,
-            0.15000000000000036
+            0.3000000000000007
           ],
           "texture": 3
         },
@@ -1159,12 +1159,12 @@
             0,
             0,
             10,
-            0.15000000000000036
+            0.3000000000000007
           ],
           "texture": 3
         }
       },
-      "name": "Dial lower",
+      "name": "Dial backing lower",
       "box_uv": false,
       "render_order": "default",
       "rescale": false,
@@ -1180,16 +1180,16 @@
       "type": "cube"
     },
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000015",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000015",
       "from": [
         5,
         3,
-        8.78
+        8.6
       ],
       "to": [
         11,
         4,
-        8.93
+        8.9
       ],
       "faces": {
         "north": {
@@ -1205,7 +1205,7 @@
           "uv": [
             0,
             0,
-            0.15000000000000036,
+            0.3000000000000007,
             1
           ],
           "texture": 3
@@ -1223,7 +1223,7 @@
           "uv": [
             0,
             0,
-            0.15000000000000036,
+            0.3000000000000007,
             1
           ],
           "texture": 3
@@ -1233,7 +1233,7 @@
             0,
             0,
             6,
-            0.15000000000000036
+            0.3000000000000007
           ],
           "texture": 3
         },
@@ -1242,12 +1242,12 @@
             0,
             0,
             6,
-            0.15000000000000036
+            0.3000000000000007
           ],
           "texture": 3
         }
       },
-      "name": "Dial bottom",
+      "name": "Dial backing bottom",
       "box_uv": false,
       "render_order": "default",
       "rescale": false,
@@ -1263,7 +1263,1003 @@
       "type": "cube"
     },
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000016",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000016",
+      "from": [
+        5,
+        15,
+        8.55
+      ],
+      "to": [
+        11,
+        16,
+        9.05
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            5,
+            0,
+            11,
+            1
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.5
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.5
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Continuous brass bezel top",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000017",
+      "from": [
+        3,
+        14,
+        8.55
+      ],
+      "to": [
+        5,
+        15,
+        9.05
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            3,
+            1,
+            5,
+            2
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2,
+            0.5
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            2,
+            0.5
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Continuous brass bezel upper left",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000018",
+      "from": [
+        11,
+        14,
+        8.55
+      ],
+      "to": [
+        13,
+        15,
+        9.05
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            11,
+            1,
+            13,
+            2
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2,
+            0.5
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            2,
+            0.5
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Continuous brass bezel upper right",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000019",
+      "from": [
+        1,
+        13,
+        8.55
+      ],
+      "to": [
+        3,
+        14,
+        9.05
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            1,
+            2,
+            3,
+            3
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2,
+            0.5
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            2,
+            0.5
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Continuous brass bezel high left",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000020",
+      "from": [
+        13,
+        13,
+        8.55
+      ],
+      "to": [
+        15,
+        14,
+        9.05
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            13,
+            2,
+            15,
+            3
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2,
+            0.5
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            2,
+            0.5
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Continuous brass bezel high right",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000021",
+      "from": [
+        1,
+        5,
+        8.55
+      ],
+      "to": [
+        2,
+        13,
+        9.05
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            1,
+            8
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            8
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            1,
+            3,
+            2,
+            11
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            8
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            1,
+            0.5
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            1,
+            0.5
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Continuous brass bezel left",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000022",
+      "from": [
+        14,
+        5,
+        8.55
+      ],
+      "to": [
+        15,
+        13,
+        9.05
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            1,
+            8
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            8
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            14,
+            3,
+            15,
+            11
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            8
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            1,
+            0.5
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            1,
+            0.5
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Continuous brass bezel right",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000023",
+      "from": [
+        1,
+        4,
+        8.55
+      ],
+      "to": [
+        3,
+        5,
+        9.05
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            1,
+            11,
+            3,
+            12
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2,
+            0.5
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            2,
+            0.5
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Continuous brass bezel low left",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000024",
+      "from": [
+        13,
+        4,
+        8.55
+      ],
+      "to": [
+        15,
+        5,
+        9.05
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            13,
+            11,
+            15,
+            12
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2,
+            0.5
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            2,
+            0.5
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Continuous brass bezel low right",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000025",
+      "from": [
+        3,
+        3,
+        8.55
+      ],
+      "to": [
+        5,
+        4,
+        9.05
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            3,
+            12,
+            5,
+            13
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2,
+            0.5
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            2,
+            0.5
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Continuous brass bezel lower left",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000026",
+      "from": [
+        11,
+        3,
+        8.55
+      ],
+      "to": [
+        13,
+        4,
+        9.05
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            11,
+            12,
+            13,
+            13
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2,
+            0.5
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            2,
+            0.5
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Continuous brass bezel lower right",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000027",
+      "from": [
+        5,
+        2,
+        8.55
+      ],
+      "to": [
+        11,
+        3,
+        9.05
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            5,
+            13,
+            11,
+            14
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            1
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.5
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.5
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Continuous brass bezel bottom",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000028",
       "from": [
         7,
         1.75,
@@ -1346,7 +2342,7 @@
       "type": "cube"
     },
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000017",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000029",
       "from": [
         6.5,
         0.75,
@@ -1429,7 +2425,7 @@
       "type": "cube"
     },
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000018",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000030",
       "from": [
         7,
         0.75,
@@ -1512,7 +2508,7 @@
       "type": "cube"
     },
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000019",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000031",
       "from": [
         7,
         0.75,
@@ -1595,7 +2591,7 @@
       "type": "cube"
     },
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000020",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000032",
       "from": [
         7,
         0,
@@ -1678,16 +2674,16 @@
       "type": "cube"
     },
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000021",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000033",
       "from": [
         7.5,
         9,
-        8.96
+        9.07
       ],
       "to": [
         8.5,
         14,
-        9.1
+        9.17
       ],
       "faces": {
         "north": {
@@ -1720,21 +2716,21 @@
       "origin": [
         8,
         9,
-        9.03
+        9.08
       ],
       "type": "cube"
     },
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000022",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000034",
       "from": [
         7,
         7,
-        8.96
+        9.07
       ],
       "to": [
         9,
         9,
-        9.1
+        9.17
       ],
       "faces": {
         "north": {
@@ -1767,16 +2763,16 @@
       "origin": [
         8,
         9,
-        9.03
+        9.08
       ],
       "type": "cube"
     },
     {
-      "uuid": "c9e10000-7d20-4f95-8f20-000000000023",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000000035",
       "from": [
         7,
         8,
-        9.13
+        9.2
       ],
       "to": [
         9,
@@ -1814,7 +2810,7 @@
       "origin": [
         8,
         9,
-        9.03
+        9.08
       ],
       "type": "cube"
     }
@@ -1828,30 +2824,42 @@
         8
       ],
       "color": 0,
-      "uuid": "c9e10000-7d20-4f95-8f20-000000001000",
+      "uuid": "d4e10000-7d20-4f95-8f20-000000001000",
       "isOpen": true,
       "children": [
-        "c9e10000-7d20-4f95-8f20-000000000001",
-        "c9e10000-7d20-4f95-8f20-000000000002",
-        "c9e10000-7d20-4f95-8f20-000000000003",
-        "c9e10000-7d20-4f95-8f20-000000000004",
-        "c9e10000-7d20-4f95-8f20-000000000005",
-        "c9e10000-7d20-4f95-8f20-000000000006",
-        "c9e10000-7d20-4f95-8f20-000000000007",
-        "c9e10000-7d20-4f95-8f20-000000000008",
-        "c9e10000-7d20-4f95-8f20-000000000009",
-        "c9e10000-7d20-4f95-8f20-000000000010",
-        "c9e10000-7d20-4f95-8f20-000000000011",
-        "c9e10000-7d20-4f95-8f20-000000000012",
-        "c9e10000-7d20-4f95-8f20-000000000013",
-        "c9e10000-7d20-4f95-8f20-000000000014",
-        "c9e10000-7d20-4f95-8f20-000000000015",
-        "c9e10000-7d20-4f95-8f20-000000000016",
-        "c9e10000-7d20-4f95-8f20-000000000017",
-        "c9e10000-7d20-4f95-8f20-000000000018",
-        "c9e10000-7d20-4f95-8f20-000000000019",
-        "c9e10000-7d20-4f95-8f20-000000000020",
-        "c9e10000-7d20-4f95-8f20-000000000023"
+        "d4e10000-7d20-4f95-8f20-000000000001",
+        "d4e10000-7d20-4f95-8f20-000000000002",
+        "d4e10000-7d20-4f95-8f20-000000000003",
+        "d4e10000-7d20-4f95-8f20-000000000004",
+        "d4e10000-7d20-4f95-8f20-000000000005",
+        "d4e10000-7d20-4f95-8f20-000000000006",
+        "d4e10000-7d20-4f95-8f20-000000000007",
+        "d4e10000-7d20-4f95-8f20-000000000008",
+        "d4e10000-7d20-4f95-8f20-000000000009",
+        "d4e10000-7d20-4f95-8f20-000000000010",
+        "d4e10000-7d20-4f95-8f20-000000000011",
+        "d4e10000-7d20-4f95-8f20-000000000012",
+        "d4e10000-7d20-4f95-8f20-000000000013",
+        "d4e10000-7d20-4f95-8f20-000000000014",
+        "d4e10000-7d20-4f95-8f20-000000000015",
+        "d4e10000-7d20-4f95-8f20-000000000016",
+        "d4e10000-7d20-4f95-8f20-000000000017",
+        "d4e10000-7d20-4f95-8f20-000000000018",
+        "d4e10000-7d20-4f95-8f20-000000000019",
+        "d4e10000-7d20-4f95-8f20-000000000020",
+        "d4e10000-7d20-4f95-8f20-000000000021",
+        "d4e10000-7d20-4f95-8f20-000000000022",
+        "d4e10000-7d20-4f95-8f20-000000000023",
+        "d4e10000-7d20-4f95-8f20-000000000024",
+        "d4e10000-7d20-4f95-8f20-000000000025",
+        "d4e10000-7d20-4f95-8f20-000000000026",
+        "d4e10000-7d20-4f95-8f20-000000000027",
+        "d4e10000-7d20-4f95-8f20-000000000028",
+        "d4e10000-7d20-4f95-8f20-000000000029",
+        "d4e10000-7d20-4f95-8f20-000000000030",
+        "d4e10000-7d20-4f95-8f20-000000000031",
+        "d4e10000-7d20-4f95-8f20-000000000032",
+        "d4e10000-7d20-4f95-8f20-000000000035"
       ]
     },
     {
@@ -1859,14 +2867,14 @@
       "origin": [
         8,
         9,
-        9.03
+        9.08
       ],
       "color": 2,
-      "uuid": "c9e30000-7d20-4f95-8f20-000000003000",
+      "uuid": "d4e30000-7d20-4f95-8f20-000000003000",
       "isOpen": true,
       "children": [
-        "c9e10000-7d20-4f95-8f20-000000000021",
-        "c9e10000-7d20-4f95-8f20-000000000022"
+        "d4e10000-7d20-4f95-8f20-000000000033",
+        "d4e10000-7d20-4f95-8f20-000000000034"
       ]
     }
   ],
@@ -1879,15 +2887,15 @@
       "id": "0",
       "group": "",
       "scope": 0,
-      "width": 32,
+      "width": 16,
       "height": 16,
-      "uv_width": 32,
+      "uv_width": 16,
       "uv_height": 16,
       "particle": true,
       "use_as_default": true,
       "layers_enabled": false,
       "sync_to_project": "",
-      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAQBAMAAACFLmBqAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAhUExURQAAAP/rjOS3YzokEa95T55pR9eqXnJHMc6gWr+OVf///8ExKwkAAAABdFJOUwBA5thmAAAAAWJLR0QKaND0VgAAAAd0SU1FB+oHDhAjOzpwBFIAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjYtMDctMTRUMTY6MzU6NTkrMDA6MDD4neikAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI2LTA3LTE0VDE2OjM1OjU5KzAwOjAwicBQGAAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNi0wNy0xNFQxNjozNTo1OSswMDowMN7VcccAAACGSURBVBjTY2BgYBQUFGAAAiYlJQUQzShsbGziAOKHhoYGAPlKZmlpyS4OTKFgEMDA6JwGBCYFTB0g0FnAwGgGEkguYGqcCQSiSAKdIIGp+ATKwQCLChaoACtcAGot63SQQClQwAXssAJWiMMKGBhYio2NzYFOZwWZGQDyDAvIbAawCJgmBAB7/kVK6l/tewAAAABJRU5ErkJggg==",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAbUExURQAAAPPSdqlvSNejW8mUVXJHMbmATY5YO////+hfKZoAAAABdFJOUwBA5thmAAAAAWJLR0QIht6VegAAAAd0SU1FB+oHDhAxOayKFa0AAAAldEVYdGRhdGU6Y3JlYXRlADIwMjYtMDctMTRUMTY6NDk6NTcrMDA6MDCbpWb0AAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI2LTA3LTE0VDE2OjQ5OjU3KzAwOjAw6vjeSAAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNi0wNy0xNFQxNjo0OTo1NyswMDowML3t/5cAAABNSURBVAjXY2BgYBQUFGBgANFKSkoKQNrYSAnMYnQBgwAGRsc0IBAHMtxAjHRkRjkYIIkwwRmpIEY4kKEEBgEMDEyhQKAAsgzICmDAAgCYWBmu1HU+iAAAAABJRU5ErkJggg==",
       "file_format": "png",
       "render_mode": "default",
       "render_sides": "auto",
@@ -1901,7 +2909,7 @@
       "visible": true,
       "internal": true,
       "saved": false,
-      "uuid": "c9e40000-7d20-4f95-8f20-000000000000"
+      "uuid": "d4e40000-7d20-4f95-8f20-000000000000"
     },
     {
       "name": "steam_pressure_gauge_dial.png",
@@ -1933,7 +2941,7 @@
       "visible": true,
       "internal": true,
       "saved": false,
-      "uuid": "c9e40000-7d20-4f95-8f20-000000000001"
+      "uuid": "d4e40000-7d20-4f95-8f20-000000000001"
     },
     {
       "name": "steam_pressure_gauge_needle.png",
@@ -1965,7 +2973,7 @@
       "visible": true,
       "internal": true,
       "saved": false,
-      "uuid": "c9e40000-7d20-4f95-8f20-000000000002"
+      "uuid": "d4e40000-7d20-4f95-8f20-000000000002"
     },
     {
       "name": "create_brass_block.png",
@@ -1997,12 +3005,12 @@
       "visible": true,
       "internal": true,
       "saved": false,
-      "uuid": "c9e40000-7d20-4f95-8f20-000000000003"
+      "uuid": "d4e40000-7d20-4f95-8f20-000000000003"
     }
   ],
   "animations": [
     {
-      "uuid": "c9e50000-7d20-4f95-8f20-000000005000",
+      "uuid": "d4e50000-7d20-4f95-8f20-000000005000",
       "name": "needle_sweep_preview",
       "loop": "loop",
       "override": false,
@@ -2010,7 +3018,7 @@
       "snapping": 20,
       "selected": false,
       "animators": {
-        "c9e30000-7d20-4f95-8f20-000000003000": {
+        "d4e30000-7d20-4f95-8f20-000000003000": {
           "name": "needle",
           "type": "bone",
           "keyframes": [
@@ -2023,7 +3031,7 @@
                   "z": -135
                 }
               ],
-              "uuid": "c9e51001-7d20-4f95-8f20-000000005101",
+              "uuid": "d4e51001-7d20-4f95-8f20-000000005101",
               "time": 0,
               "color": -1,
               "interpolation": "linear"
@@ -2037,7 +3045,7 @@
                   "z": 135
                 }
               ],
-              "uuid": "c9e51002-7d20-4f95-8f20-000000005102",
+              "uuid": "d4e51002-7d20-4f95-8f20-000000005102",
               "time": 2,
               "color": -1,
               "interpolation": "linear"
@@ -2051,7 +3059,7 @@
                   "z": -135
                 }
               ],
-              "uuid": "c9e51003-7d20-4f95-8f20-000000005103",
+              "uuid": "d4e51003-7d20-4f95-8f20-000000005103",
               "time": 4,
               "color": -1,
               "interpolation": "linear"
