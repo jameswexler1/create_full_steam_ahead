@@ -866,6 +866,7 @@ changing engine balance.
 - [x] Render the valve with Create's native context-sensitive Fluid Pipe core models and `PipeAttachmentModel` arms/rims, including isolated straight pipes and gap-free multi-side horizontal connections.
 - [x] Keep the controls on a topology-independent raised industrial-iron platform with brass trim and two pads using Create's exact Redstone Link geometry, texture, and normalized UV density.
 - [x] Add a separate brass collar around every live horizontal port, with no coplanar faces against Create's dynamic copper connectors.
+- [x] Align the platform and its contained pedestal to the detected straight/main pipe axis whenever no unique Steam Inlet controls its facing.
 - [x] Point the future controlled branch toward exactly one adjacent `steam_inlet` while deriving every visible connection from the actual four-direction horizontal pipe state.
 - [x] Prevent vertical valve orientation, clear up/down properties after placement and neighbour updates, and reject one-sided vertical connections initiated by adjacent Create pipes.
 - [x] Match selection and collision shapes to the raised controls, horizontal pipe arms, brass collars, and endpoint rims.

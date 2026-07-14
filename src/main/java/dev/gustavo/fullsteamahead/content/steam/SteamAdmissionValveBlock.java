@@ -44,8 +44,7 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
 
     private static final Box[] BODY_BOXES = new Box[] {
             new Box(4, 4, 4, 12, 12, 12),
-            new Box(3, 12, 6, 4, 13, 10),
-            new Box(12, 12, 6, 13, 13, 10),
+            new Box(4, 12, 5, 12, 13, 11),
             new Box(2, 13, 4, 14, 14, 12),
             new Box(2, 14, 4, 14, 14.5, 5),
             new Box(2, 14, 11, 14, 14.5, 12),
@@ -53,7 +52,6 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
             new Box(13, 14, 5, 14, 14.5, 11),
             new Box(3.5, 13.5, 6, 7.5, 14.5, 10),
             new Box(8.5, 13.5, 6, 12.5, 14.5, 10),
-            new Box(6, 11, 3, 10, 13, 4),
     };
     private static final Map<Direction, VoxelShape> BODY_SHAPES = buildBodyShapes();
     private static final Map<Direction, VoxelShape> CONNECTION_SHAPES = buildConnectionShapes();
@@ -185,7 +183,7 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
         }
 
         if (inletCount != 1) {
-            return state.setValue(MODE, SteamAdmissionValveMode.UNLINKED);
+            return alignFacingToPipeAxis(state).setValue(MODE, SteamAdmissionValveMode.UNLINKED);
         }
 
         Direction facing = inletDirection;
@@ -208,6 +206,37 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
         }
 
         return state.setValue(FACING, facing).setValue(MODE, mode);
+    }
+
+    private static BlockState alignFacingToPipeAxis(BlockState state) {
+        boolean north = state.getValue(PROPERTY_BY_DIRECTION.get(Direction.NORTH));
+        boolean south = state.getValue(PROPERTY_BY_DIRECTION.get(Direction.SOUTH));
+        boolean east = state.getValue(PROPERTY_BY_DIRECTION.get(Direction.EAST));
+        boolean west = state.getValue(PROPERTY_BY_DIRECTION.get(Direction.WEST));
+        boolean northSouthStraight = north && south;
+        boolean eastWestStraight = east && west;
+
+        Direction.Axis axis;
+        if (northSouthStraight != eastWestStraight) {
+            axis = northSouthStraight ? Direction.Axis.Z : Direction.Axis.X;
+        } else {
+            boolean hasNorthSouth = north || south;
+            boolean hasEastWest = east || west;
+            if (hasNorthSouth == hasEastWest) {
+                return state;
+            }
+            axis = hasNorthSouth ? Direction.Axis.Z : Direction.Axis.X;
+        }
+
+        Direction currentFacing = state.getValue(FACING);
+        if (currentFacing.getAxis() == axis) {
+            return state;
+        }
+
+        Direction alignedFacing = axis == Direction.Axis.Z
+                ? (north && !south ? Direction.NORTH : Direction.SOUTH)
+                : (east && !west ? Direction.EAST : Direction.WEST);
+        return state.setValue(FACING, alignedFacing);
     }
 
     private static boolean hasPipe(BlockGetter level, BlockPos pos, Direction direction) {

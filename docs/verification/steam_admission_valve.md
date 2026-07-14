@@ -17,9 +17,11 @@ The horizontal visual rebuild passed `compileJava`, JSON validation, and `build`
 - [ ] With no neighbours, the valve renders as a horizontal straight Create Fluid Pipe with endpoint rims.
 - [ ] Straight, elbow, tee, and four-way horizontal layouts render every real connection without holes or detached arms.
 - [ ] No face flickers or changes texture while the camera moves around a straight, tee, or four-way valve.
+- [ ] North/south and east/west straight valves rotate the complete platform by 90 degrees with no support or actuator cubes protruding beneath it.
 - [ ] The valve never assumes a vertical axis; pipes above or below do not create a vertical valve arm or carry steam through that face.
 - [ ] Endpoint rims appear only at open/non-pipe endpoints and disappear cleanly between compatible pipes.
 - [ ] Every live horizontal arm has a clean brass collar with no gap against the copper pipe body.
+- [ ] Brass collars use a consistent metal texture without a bright casing-border streak across their upper face.
 - [ ] The raised iron platform and brass border remain unchanged as pipe neighbours are added or removed.
 - [ ] The two frequency positions match Create Redstone Link pads in texture and pixel density.
 - [ ] Create Fluid Pipes connect visually, steam remains visible, and steam passes through the prototype.

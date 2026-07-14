@@ -10,27 +10,15 @@
   },
   "elements": [
     {
-      "name": "Left platform support",
-      "from": [3, 12, 6],
-      "to": [4, 13, 10],
+      "name": "Control platform pedestal",
+      "from": [4, 12, 5],
+      "to": [12, 13, 11],
       "faces": {
-        "north": { "uv": [0, 0, 1, 1], "texture": "#iron" },
-        "east": { "uv": [0, 0, 4, 1], "texture": "#iron" },
-        "south": { "uv": [0, 0, 1, 1], "texture": "#iron" },
-        "west": { "uv": [0, 0, 4, 1], "texture": "#iron" },
-        "up": { "uv": [0, 0, 1, 4], "texture": "#iron" }
-      }
-    },
-    {
-      "name": "Right platform support",
-      "from": [12, 12, 6],
-      "to": [13, 13, 10],
-      "faces": {
-        "north": { "uv": [0, 0, 1, 1], "texture": "#iron" },
-        "east": { "uv": [0, 0, 4, 1], "texture": "#iron" },
-        "south": { "uv": [0, 0, 1, 1], "texture": "#iron" },
-        "west": { "uv": [0, 0, 4, 1], "texture": "#iron" },
-        "up": { "uv": [0, 0, 1, 4], "texture": "#iron" }
+        "north": { "uv": [0, 0, 8, 1], "texture": "#iron" },
+        "east": { "uv": [0, 0, 6, 1], "texture": "#iron" },
+        "south": { "uv": [0, 0, 8, 1], "texture": "#iron" },
+        "west": { "uv": [0, 0, 6, 1], "texture": "#iron" },
+        "up": { "uv": [4, 5, 12, 11], "texture": "#iron" }
       }
     },
     {
@@ -116,19 +104,6 @@
         "south": { "uv": [11, 2, 13, 2.5], "texture": "#link" },
         "west": { "uv": [11, 2, 13, 2.5], "texture": "#link" },
         "up": { "uv": [13, 0, 15, 2], "texture": "#link" }
-      }
-    },
-    {
-      "name": "Admission actuator housing",
-      "from": [6, 11, 3],
-      "to": [10, 13, 4],
-      "faces": {
-        "north": { "uv": [0, 0, 4, 2], "texture": "#brass" },
-        "east": { "uv": [0, 0, 1, 2], "texture": "#iron" },
-        "south": { "uv": [0, 0, 4, 2], "texture": "#iron" },
-        "west": { "uv": [0, 0, 1, 2], "texture": "#iron" },
-        "up": { "uv": [0, 0, 4, 1], "texture": "#brass" },
-        "down": { "uv": [0, 0, 4, 1], "texture": "#iron" }
       }
     }
   ]
