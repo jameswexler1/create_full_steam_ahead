@@ -9,6 +9,7 @@
   "block.full_steam_ahead.boiler_outlet": "Boiler Outlet",
   "block.full_steam_ahead.steam_relief_valve": "Steam Relief Valve",
   "block.full_steam_ahead.steam_inlet": "Steam Inlet",
+  "block.full_steam_ahead.steam_admission_valve": "Steam Admission Valve",
   "item.full_steam_ahead.assembled_cylinder_ring_icon": "Assembled Cylinder Ring",
   "fluid_type.full_steam_ahead.steam": "Steam",
   "fluid.full_steam_ahead.steam": "Steam",

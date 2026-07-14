@@ -10,6 +10,7 @@ import dev.gustavo.fullsteamahead.content.redstone.SteppedLeverItem;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredGirderEncasedShaftBlock;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
+import dev.gustavo.fullsteamahead.content.steam.SteamAdmissionValveBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamReliefValveBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
 import net.minecraft.world.item.BlockItem;
@@ -51,6 +52,8 @@ public final class ModBlocks {
             registerBlock("steam_relief_valve", SteamReliefValveBlock::new, copperProperties().noOcclusion());
     public static final DeferredBlock<SteamInletBlock> STEAM_INLET =
             registerBlock("steam_inlet", SteamInletBlock::new, copperProperties().noOcclusion());
+    public static final DeferredBlock<SteamAdmissionValveBlock> STEAM_ADMISSION_VALVE =
+            registerBlock("steam_admission_valve", SteamAdmissionValveBlock::new, copperProperties().noOcclusion());
     public static final DeferredBlock<SteppedLeverBlock> STEPPED_LEVER =
             registerBlock("stepped_lever", SteppedLeverBlock::new,
                     BlockBehaviour.Properties.of()
@@ -87,7 +90,7 @@ public final class ModBlocks {
         return BLOCKS.registerBlock(name, factory, properties);
     }
 
-    // Cylinder wall, inlet, outlet, and telegraph break like a copper block: hardness 3.0 and a
+    // Cylinder wall, steam fittings, and telegraph break like a copper block: hardness 3.0 and a
     // stone-or-better pickaxe to drop (minecraft:mineable/pickaxe + minecraft:needs_stone_tool).
     private static BlockBehaviour.Properties cylinderProperties() {
         return copperProperties();

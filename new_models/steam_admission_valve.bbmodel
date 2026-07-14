@@ -1,0 +1,2745 @@
+{
+  "meta": {
+    "format_version": "5.0",
+    "model_format": "java_block",
+    "box_uv": false
+  },
+  "name": "steam_admission_valve",
+  "model_identifier": "full_steam_ahead:steam_admission_valve",
+  "visible_box": [
+    1,
+    1,
+    0
+  ],
+  "variable_placeholders": "MODE: show exactly one MODE group. Default is through_branch. Actuator opens by translating +Y from 0 to 1.5 pixels.",
+  "resolution": {
+    "width": 32,
+    "height": 32
+  },
+  "elements": [
+    {
+      "name": "Brass chamber center",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        4,
+        3,
+        4
+      ],
+      "to": [
+        12,
+        13,
+        12
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            16,
+            0,
+            24,
+            8
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            24,
+            0,
+            32,
+            8
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "21c0c05e-49b5-4220-8c05-328f2e91166d"
+    },
+    {
+      "name": "Brass chamber west cheek",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        3,
+        4,
+        4
+      ],
+      "to": [
+        4,
+        12,
+        12
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            16,
+            0,
+            24,
+            8
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            24,
+            0,
+            32,
+            8
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "e85adffc-c5cc-4a92-815e-dd91fc7f08a1"
+    },
+    {
+      "name": "Brass chamber east cheek",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        12,
+        4,
+        4
+      ],
+      "to": [
+        13,
+        12,
+        12
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            16,
+            0,
+            24,
+            8
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            24,
+            0,
+            32,
+            8
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "fcc59483-1df4-4e54-834b-e9a378b3dae8"
+    },
+    {
+      "name": "Brass chamber north cheek",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        4,
+        4,
+        3
+      ],
+      "to": [
+        12,
+        12,
+        4
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            16,
+            0,
+            24,
+            8
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            24,
+            0,
+            32,
+            8
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "e927a5d6-cc7a-4ed3-81a7-ac49a2b06603"
+    },
+    {
+      "name": "Brass chamber south cheek",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        4,
+        4,
+        12
+      ],
+      "to": [
+        12,
+        12,
+        13
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            16,
+            0,
+            24,
+            8
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            24,
+            0,
+            32,
+            8
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "b7e623d9-4338-4c80-8b68-51f8ee9ff781"
+    },
+    {
+      "name": "Steam-inlet branch 8x8 pipe arm - north",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        4,
+        4,
+        0
+      ],
+      "to": [
+        12,
+        12,
+        3
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            0,
+            0,
+            3,
+            2
+          ],
+          "texture": 0,
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            0,
+            2,
+            3,
+            0
+          ],
+          "texture": 0,
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            0,
+            2,
+            3,
+            0
+          ],
+          "texture": 0,
+          "rotation": 180
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            3,
+            2
+          ],
+          "texture": 0,
+          "rotation": 180
+        }
+      },
+      "type": "cube",
+      "uuid": "b30c21c1-7866-41b7-8c53-0b74d72153da"
+    },
+    {
+      "name": "Steam-inlet branch 10x10 coupling rim - north",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        3,
+        3,
+        0
+      ],
+      "to": [
+        13,
+        13,
+        2
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            8,
+            10,
+            18
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            8,
+            10,
+            18
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "0aa70001-e9e9-4c5b-82fe-ce9222024523"
+    },
+    {
+      "name": "Controlled branch brass collar",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        3.5,
+        3.5,
+        2
+      ],
+      "to": [
+        12.5,
+        12.5,
+        3
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            20,
+            16,
+            28
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            8,
+            20,
+            16,
+            28
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            8,
+            20,
+            16,
+            28
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            8,
+            20,
+            16,
+            28
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            8,
+            20,
+            16,
+            28
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            8,
+            20,
+            16,
+            28
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "5f563e3f-781e-49ac-8677-35cb3770e835"
+    },
+    {
+      "name": "Actuator fixed guide",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        6.5,
+        11,
+        1.5
+      ],
+      "to": [
+        9.5,
+        13,
+        3.5
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            20,
+            8,
+            28
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            20,
+            8,
+            28
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            20,
+            8,
+            28
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            20,
+            8,
+            28
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            20,
+            8,
+            28
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            20,
+            8,
+            28
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "f8774918-ce39-4ec4-89f5-26fdf171157f"
+    },
+    {
+      "name": "Admission mark top west",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        3.25,
+        12.5,
+        2.2
+      ],
+      "to": [
+        6.5,
+        12.75,
+        2.8
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "35c4f140-afa6-40b4-8d0f-c1f104759fd7"
+    },
+    {
+      "name": "Admission mark top east",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        9.5,
+        12.5,
+        2.2
+      ],
+      "to": [
+        12.75,
+        12.75,
+        2.8
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "2578be1f-3df6-49bb-82d9-3e4aadfc2524"
+    },
+    {
+      "name": "Admission mark bottom",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        3.25,
+        3.25,
+        2.2
+      ],
+      "to": [
+        12.75,
+        3.5,
+        2.8
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "6c3e0d88-83b8-4c27-87ee-414cd9b7175f"
+    },
+    {
+      "name": "Admission mark west",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        3.25,
+        3.5,
+        2.2
+      ],
+      "to": [
+        3.5,
+        12.5,
+        2.8
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "47a510c8-077a-4001-8dc4-98182c7e0124"
+    },
+    {
+      "name": "Admission mark east",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        12.5,
+        3.5,
+        2.2
+      ],
+      "to": [
+        12.75,
+        12.5,
+        2.8
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "62be2cba-9b16-4d31-8dc1-83ac03c819f4"
+    },
+    {
+      "name": "Panel pedestal",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        4.5,
+        13,
+        5
+      ],
+      "to": [
+        11.5,
+        14,
+        11
+      ],
+      "origin": [
+        8,
+        14,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "985cfea3-6b22-447d-8c45-42ff17299953"
+    },
+    {
+      "name": "Frequency control plate",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        3,
+        14,
+        4
+      ],
+      "to": [
+        13,
+        15,
+        12
+      ],
+      "origin": [
+        8,
+        14,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            24,
+            8,
+            32,
+            16
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            24,
+            8,
+            32,
+            16
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            24,
+            8,
+            32,
+            16
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            24,
+            8,
+            32,
+            16
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            14,
+            8,
+            24,
+            16
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "1538cff7-9248-4004-8e24-057784564ab4"
+    },
+    {
+      "name": "Frequency slot A recess",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        3.75,
+        15,
+        5
+      ],
+      "to": [
+        7.25,
+        15.25,
+        9
+      ],
+      "origin": [
+        8,
+        14,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            20,
+            20,
+            24,
+            24
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            20,
+            20,
+            24,
+            24
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            20,
+            20,
+            24,
+            24
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            20,
+            20,
+            24,
+            24
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            20,
+            20,
+            24,
+            24
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            20,
+            20,
+            24,
+            24
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "c7ab5bdd-28cf-45d3-883f-29126b79623d"
+    },
+    {
+      "name": "Frequency slot B recess",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        8.75,
+        15,
+        5
+      ],
+      "to": [
+        12.25,
+        15.25,
+        9
+      ],
+      "origin": [
+        8,
+        14,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            20,
+            20,
+            24,
+            24
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            20,
+            20,
+            24,
+            24
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            20,
+            20,
+            24,
+            24
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            20,
+            20,
+            24,
+            24
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            20,
+            20,
+            24,
+            24
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            20,
+            20,
+            24,
+            24
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "54f7744a-d8a8-414b-8682-b6f3a2a926d2"
+    },
+    {
+      "name": "Frequency A red index",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        4.75,
+        15.25,
+        9.25
+      ],
+      "to": [
+        6.25,
+        15.5,
+        9.5
+      ],
+      "origin": [
+        8,
+        14,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "32349bdf-32b3-440d-83a6-ee5e94925f3d"
+    },
+    {
+      "name": "Frequency B blue index",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        9.75,
+        15.25,
+        9.25
+      ],
+      "to": [
+        11.25,
+        15.5,
+        9.5
+      ],
+      "origin": [
+        8,
+        14,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            20,
+            24,
+            24,
+            28
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            20,
+            24,
+            24,
+            28
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            20,
+            24,
+            24,
+            28
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            20,
+            24,
+            24,
+            28
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            20,
+            24,
+            24,
+            28
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            20,
+            24,
+            24,
+            28
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "ac59320f-57cc-4060-8ece-aee1e1a6d533"
+    },
+    {
+      "name": "Remote actuator spindle",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        7,
+        12,
+        1
+      ],
+      "to": [
+        9,
+        14,
+        3
+      ],
+      "origin": [
+        8,
+        12,
+        2
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            20,
+            16,
+            28
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            8,
+            20,
+            16,
+            28
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            8,
+            20,
+            16,
+            28
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            8,
+            20,
+            16,
+            28
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            8,
+            20,
+            16,
+            28
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            8,
+            20,
+            16,
+            28
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "c9d48336-3e1f-4927-8195-46bd8c21ab70"
+    },
+    {
+      "name": "Remote actuator cap",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        6.5,
+        13.5,
+        0.75
+      ],
+      "to": [
+        9.5,
+        14.5,
+        3.25
+      ],
+      "origin": [
+        8,
+        12,
+        2
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            20,
+            8,
+            28
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            20,
+            8,
+            28
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            20,
+            8,
+            28
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            20,
+            8,
+            28
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            20,
+            8,
+            28
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            20,
+            8,
+            28
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "4f11d393-4950-4443-86c9-e3358bf25d81"
+    },
+    {
+      "name": "Remote position red flag",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        7.25,
+        12.5,
+        0.75
+      ],
+      "to": [
+        8.75,
+        13.5,
+        1
+      ],
+      "origin": [
+        8,
+        12,
+        2
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            16,
+            20,
+            20,
+            24
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "84a903b8-6b61-4093-8aa4-c9751f23d300"
+    },
+    {
+      "name": "Terminal straight 8x8 pipe arm - south",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        4,
+        4,
+        13
+      ],
+      "to": [
+        12,
+        12,
+        16
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            0,
+            6,
+            3,
+            8
+          ],
+          "texture": 0,
+          "rotation": 90
+        },
+        "west": {
+          "uv": [
+            0,
+            8,
+            3,
+            6
+          ],
+          "texture": 0,
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            0,
+            8,
+            3,
+            6
+          ],
+          "texture": 0,
+          "rotation": 180
+        },
+        "down": {
+          "uv": [
+            0,
+            6,
+            3,
+            8
+          ],
+          "texture": 0,
+          "rotation": 180
+        }
+      },
+      "type": "cube",
+      "uuid": "6977b875-3760-4fa4-8502-b88b6c4d3b1c"
+    },
+    {
+      "name": "Terminal straight 10x10 coupling rim - south",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        3,
+        3,
+        14
+      ],
+      "to": [
+        13,
+        13,
+        16
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            8,
+            10,
+            18
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            8,
+            10,
+            18
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "4ef7cf17-da39-4c22-8693-7b4c29e5bdaa"
+    },
+    {
+      "name": "Terminal elbow 8x8 pipe arm - east",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        13,
+        4,
+        4
+      ],
+      "to": [
+        16,
+        12,
+        12
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            3,
+            2
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            2,
+            3,
+            0
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            3,
+            2
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            0,
+            2,
+            3,
+            0
+          ],
+          "texture": 0
+        }
+      },
+      "type": "cube",
+      "uuid": "cb32b65d-a9e4-4b88-863d-c8d6143d63d9"
+    },
+    {
+      "name": "Terminal elbow 10x10 coupling rim - east",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        14,
+        3,
+        3
+      ],
+      "to": [
+        16,
+        13,
+        13
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            8,
+            10,
+            18
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            8,
+            10,
+            18
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "78438915-b18c-4633-854a-cdb381b06014"
+    },
+    {
+      "name": "Through trunk 8x8 pipe arm - east",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        13,
+        4,
+        4
+      ],
+      "to": [
+        16,
+        12,
+        12
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            3,
+            2
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            2,
+            3,
+            0
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            3,
+            2
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            0,
+            2,
+            3,
+            0
+          ],
+          "texture": 0
+        }
+      },
+      "type": "cube",
+      "uuid": "74d8eee8-8bdb-4242-8965-3f0607ddac97"
+    },
+    {
+      "name": "Through trunk 10x10 coupling rim - east",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        14,
+        3,
+        3
+      ],
+      "to": [
+        16,
+        13,
+        13
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            8,
+            10,
+            18
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            8,
+            10,
+            18
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "9ca1966d-f94d-474d-89bc-d661ffb39175"
+    },
+    {
+      "name": "Through trunk 8x8 pipe arm - west",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        0,
+        4,
+        4
+      ],
+      "to": [
+        3,
+        12,
+        12
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            2,
+            3,
+            0
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            3,
+            2
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            2,
+            3,
+            0
+          ],
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            3,
+            2
+          ],
+          "texture": 0
+        }
+      },
+      "type": "cube",
+      "uuid": "87aeb563-a31b-4b3e-830c-feb0ad27a7b1"
+    },
+    {
+      "name": "Through trunk 10x10 coupling rim - west",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        0,
+        3,
+        3
+      ],
+      "to": [
+        2,
+        13,
+        13
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            8,
+            10,
+            18
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "south": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            8,
+            10,
+            18
+          ],
+          "texture": 1,
+          "rotation": 90
+        },
+        "up": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            10,
+            8,
+            14,
+            18
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "c7ca3f22-051c-42d8-87ec-5ba7903a079a"
+    }
+  ],
+  "outliner": [
+    {
+      "uuid": "3a7ebd32-378b-4522-83ee-94add305feeb",
+      "isOpen": true,
+      "children": [
+        "21c0c05e-49b5-4220-8c05-328f2e91166d",
+        "e85adffc-c5cc-4a92-815e-dd91fc7f08a1",
+        "fcc59483-1df4-4e54-834b-e9a378b3dae8",
+        "e927a5d6-cc7a-4ed3-81a7-ac49a2b06603",
+        "b7e623d9-4338-4c80-8b68-51f8ee9ff781",
+        "b30c21c1-7866-41b7-8c53-0b74d72153da",
+        "0aa70001-e9e9-4c5b-82fe-ce9222024523",
+        "5f563e3f-781e-49ac-8677-35cb3770e835",
+        "f8774918-ce39-4ec4-89f5-26fdf171157f",
+        "35c4f140-afa6-40b4-8d0f-c1f104759fd7",
+        "2578be1f-3df6-49bb-82d9-3e4aadfc2524",
+        "6c3e0d88-83b8-4c27-87ee-414cd9b7175f",
+        "47a510c8-077a-4001-8dc4-98182c7e0124",
+        "62be2cba-9b16-4d31-8dc1-83ac03c819f4"
+      ]
+    },
+    {
+      "uuid": "f1e9df1d-f89b-499b-8858-efbd7e1b1cad",
+      "isOpen": true,
+      "children": [
+        "985cfea3-6b22-447d-8c45-42ff17299953",
+        "1538cff7-9248-4004-8e24-057784564ab4",
+        "c7ab5bdd-28cf-45d3-883f-29126b79623d",
+        "54f7744a-d8a8-414b-8682-b6f3a2a926d2",
+        "32349bdf-32b3-440d-83a6-ee5e94925f3d",
+        "ac59320f-57cc-4060-8ece-aee1e1a6d533"
+      ]
+    },
+    {
+      "uuid": "860cd590-1f87-43b3-8dfe-b8b430904305",
+      "isOpen": true,
+      "children": [
+        "c9d48336-3e1f-4927-8195-46bd8c21ab70",
+        "4f11d393-4950-4443-86c9-e3358bf25d81",
+        "84a903b8-6b61-4093-8aa4-c9751f23d300"
+      ]
+    },
+    {
+      "uuid": "f724b30a-fc22-4f6f-8f10-185f36fd7b14",
+      "isOpen": true,
+      "children": [
+        "6977b875-3760-4fa4-8502-b88b6c4d3b1c",
+        "4ef7cf17-da39-4c22-8693-7b4c29e5bdaa"
+      ]
+    },
+    {
+      "uuid": "ee09fa9b-573c-4e0b-856a-882d4cc15a66",
+      "isOpen": true,
+      "children": [
+        "cb32b65d-a9e4-4b88-863d-c8d6143d63d9",
+        "78438915-b18c-4633-854a-cdb381b06014"
+      ]
+    },
+    {
+      "uuid": "4383ab75-8c07-4813-8076-f83426550f13",
+      "isOpen": true,
+      "children": [
+        "74d8eee8-8bdb-4242-8965-3f0607ddac97",
+        "9ca1966d-f94d-474d-89bc-d661ffb39175",
+        "87aeb563-a31b-4b3e-830c-feb0ad27a7b1",
+        "c7ca3f22-051c-42d8-87ec-5ba7903a079a"
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "name": "create_pipes.png",
+      "path": "",
+      "folder": "block",
+      "namespace": "create",
+      "id": "0",
+      "width": 32,
+      "height": 32,
+      "uv_width": 32,
+      "uv_height": 32,
+      "particle": false,
+      "file_format": "png",
+      "visible": true,
+      "internal": true,
+      "saved": false,
+      "uuid": "f4e47086-b8c9-4fe6-a8ae-1e3966fdb594",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QAQAA7ADCvV9nrAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AwUAREL6YGOKQAAAv9JREFUWMO9V89rE0EU/lKymey222zTEKmBkNYW4g9EQwsKRXpSelGvKl78n7x48Kh3EcSbhx4Epb20UKjaUkiVkjZrtpnd2T3EQ9zN7Owmu2E3fcd58+Obee9935vM++cbvcrcDEpaASqZg8HaAICW/hfN9gUAYDpPUC4WMEskdJgD26TQTQddi+HZuy8ZJLCsOMCDAAAXnOtTCWCQNkpaH2RSywJATlaGTtj+1YRCWlCVPICmN25QC5SxdADw5t5eNx0AQGOp4oVHnNd/gZ1kAAxqwTYpQAqBEBjUwj61UAcAzb/wx+8W/pwnD8HUMIcmSwjLD/clwvypAegwZ+SiKP9YIegnVzAHAED0xfGP/QIGtQKDs0TyciDKnxiAeAs+21Uljyj/xJJwFDfE8Y/NAx3mQCVRiTeIv23SdAGI5h7A64S/TpEuAC+xuCwPUjEmT8WiGLlUzCcgr5iJqXhUnQNAs30B3XRQLhYAtANynNQymLC9uL7cqxYJNu8s+nLJFbPspAEcn9k4PrPxcqOArb2f3jhlDA8bN4bzQFpWnc9hfUX1br7ZWMX6zWvRZZi2GawNyhianVMfh1xaCJ7c7yvo170DH7llLyME1SLB4ckplhbKXh+hmw4OT04HAD68etTTZAk5WfFIiUfqlt7jt59DK+fN03s9AKhXSnjw+mOG348nOreX0ED9IdBkCYtXatg5OsChUN/r9VvYOT+I7IJUJe+RliZL2G+2hrKlQgjqldIAQE5WsLW/C4NauL1c9fRANx182v4OACj/Hx9m03niU0vKGL4dGTg+swNhWav150yJWiAe3rWYpwNiaEJfQRAt8XB+bJZI4TwgUi1/s7gWB2ygIXFbdPFwTZZSUb5YHZH7H+QPdz8p41jcznmKX7DZWMV0nqBrMd/hd2srWFoox9pUVNPqfC6UGwJEZJsUWye7oY1G12IwqBVZhrw82yaFQgjWasBaLbwMbZMOAOimg8rcDHJXyyOJaOTtqeX9mHXTQb1SGkpE7n7/AETWkb9mJr/tAAAAAElFTkSuQmCC"
+    },
+    {
+      "name": "steam_admission_valve.png",
+      "path": "steam_admission_valve.png",
+      "folder": "",
+      "namespace": "full_steam_ahead",
+      "id": "1",
+      "width": 32,
+      "height": 32,
+      "uv_width": 32,
+      "uv_height": 32,
+      "particle": true,
+      "file_format": "png",
+      "visible": true,
+      "internal": true,
+      "saved": true,
+      "uuid": "cdc5bcbd-c14f-4d2d-801a-b36bcab27de2",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABpklEQVR42u2WsUrEQBCG8xQpg3CenNpYKChBFLTUyi5XaXnNnYig+ASCvSDYCYKFj3FgL1dZ+gI+wcq/MOtkMrvZ86IBvYX/bpNsdr6dnZlsMthfMm0qwc/H24V5Hw9Kwj0a9HJ7UBGfBGOlrovcPUdf6nCt8wUAg9IAnwDXGMMn0AB876NfbPZKUgEmz30rOcHT2Y4qDhBaQDRAyAPShdIDvwogA0lz/1QAWpBohnyqex/GNDmAVtOwv7xoYvVY7Fqhv5FvNSILgBiYXPVV4RkB4PoyX3UAdw/35jXL7D/X0enYro6M+OqIA8DEvlWTQQ1godtxomDm9whAFjlSBWA7zSpqAsCXxirAT3jg7wLAoC+9aI8h35iZARpLQ7gEE2vCMw0gaap9txAl89ZU6670TEh1H5ObNC2JpyFUt60WQNZyCBFKAKEzH4zie8ABTo4LVycoeKVcMBMAXuKSALyG82KieYBSjANQAJMqAKPzUUkSwHfgiNmCKIA6D/gAZEyt7w0NVysAOA9MBeArkwQQOvPFeMBXZR3ALGkYAxBMw3n79+0TK3EGxeckALgAAAAASUVORK5CYII="
+    }
+  ],
+  "groups": [
+    {
+      "name": "core_static - chamber + north inlet branch",
+      "uuid": "3a7ebd32-378b-4522-83ee-94add305feeb",
+      "export": true,
+      "locked": false,
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "color": 0,
+      "visibility": true,
+      "isOpen": true
+    },
+    {
+      "name": "control_panel - two frequency item slots",
+      "uuid": "f1e9df1d-f89b-499b-8858-efbd7e1b1cad",
+      "export": true,
+      "locked": false,
+      "origin": [
+        8,
+        14,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "color": 1,
+      "visibility": true,
+      "isOpen": true
+    },
+    {
+      "name": "actuator - translate +Y up to 1.5px",
+      "uuid": "860cd590-1f87-43b3-8dfe-b8b430904305",
+      "export": true,
+      "locked": false,
+      "origin": [
+        8,
+        12,
+        2
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "color": 2,
+      "visibility": true,
+      "isOpen": true
+    },
+    {
+      "name": "MODE terminal_straight - south pipe to north inlet",
+      "uuid": "f724b30a-fc22-4f6f-8f10-185f36fd7b14",
+      "export": true,
+      "locked": false,
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "color": 3,
+      "visibility": false,
+      "isOpen": true
+    },
+    {
+      "name": "MODE terminal_elbow - east pipe to north inlet",
+      "uuid": "ee09fa9b-573c-4e0b-856a-882d4cc15a66",
+      "export": true,
+      "locked": false,
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "color": 4,
+      "visibility": false,
+      "isOpen": true
+    },
+    {
+      "name": "MODE through_branch - east/west trunk + north inlet",
+      "uuid": "4383ab75-8c07-4813-8076-f83426550f13",
+      "export": true,
+      "locked": false,
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "color": 5,
+      "visibility": true,
+      "isOpen": true
+    }
+  ],
+  "credit": "Original Full Steam Ahead source model for the planned Steam Admission Valve. Nominal north is the controlled steam-inlet branch; east/west are the through trunk; south is the straight terminal supply. The embedded Create pipe texture is local modelling reference only. The custom admission-valve texture and geometry are original FSA work.",
+  "ambientocclusion": true,
+  "front_gui_light": true,
+  "java_block_version": "1.21"
+}

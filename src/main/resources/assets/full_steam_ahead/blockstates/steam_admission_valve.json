@@ -1,0 +1,199 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north",
+        "mode": "unlinked"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/unlinked"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "mode": "unlinked"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/unlinked",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "mode": "unlinked"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/unlinked",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "mode": "unlinked"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/unlinked",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "mode": "terminal_straight"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/terminal_straight"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "mode": "terminal_straight"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/terminal_straight",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "mode": "terminal_straight"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/terminal_straight",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "mode": "terminal_straight"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/terminal_straight",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "mode": "terminal_clockwise"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/terminal_clockwise"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "mode": "terminal_clockwise"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/terminal_clockwise",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "mode": "terminal_clockwise"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/terminal_clockwise",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "mode": "terminal_clockwise"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/terminal_clockwise",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "mode": "terminal_counterclockwise"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/terminal_counterclockwise"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "mode": "terminal_counterclockwise"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/terminal_counterclockwise",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "mode": "terminal_counterclockwise"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/terminal_counterclockwise",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "mode": "terminal_counterclockwise"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/terminal_counterclockwise",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "facing": "north",
+        "mode": "through_branch"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/through_branch"
+      }
+    },
+    {
+      "when": {
+        "facing": "east",
+        "mode": "through_branch"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/through_branch",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south",
+        "mode": "through_branch"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/through_branch",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west",
+        "mode": "through_branch"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/through_branch",
+        "y": 270
+      }
+    }
+  ]
+}
