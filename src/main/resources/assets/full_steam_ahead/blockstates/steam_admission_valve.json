@@ -36,6 +36,41 @@
       }
     },
     {
+      "when": {
+        "north": "true"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/lining"
+      }
+    },
+    {
+      "when": {
+        "east": "true"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/lining",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "true"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/lining",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": "true"
+      },
+      "apply": {
+        "model": "full_steam_ahead:block/steam_admission_valve/lining",
+        "y": 270
+      }
+    },
+    {
       "apply": {
         "model": "create:block/fluid_pipe/lu_x"
       },

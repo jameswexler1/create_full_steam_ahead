@@ -44,14 +44,20 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
 
     private static final Box[] BODY_BOXES = new Box[] {
             new Box(4, 4, 4, 12, 12, 12),
-            new Box(3, 12, 5, 13, 13, 11),
-            new Box(3.5, 13, 6, 7.5, 14, 10),
-            new Box(8.5, 13, 6, 12.5, 14, 10),
+            new Box(3, 12, 6, 4, 13, 10),
+            new Box(12, 12, 6, 13, 13, 10),
+            new Box(2, 13, 4, 14, 14, 12),
+            new Box(2, 14, 4, 14, 14.5, 5),
+            new Box(2, 14, 11, 14, 14.5, 12),
+            new Box(2, 14, 5, 3, 14.5, 11),
+            new Box(13, 14, 5, 14, 14.5, 11),
+            new Box(3.5, 13.5, 6, 7.5, 14.5, 10),
+            new Box(8.5, 13.5, 6, 12.5, 14.5, 10),
             new Box(6, 11, 3, 10, 13, 4),
-            new Box(6.5, 12, 2.9, 9.5, 13, 3)
     };
     private static final Map<Direction, VoxelShape> BODY_SHAPES = buildBodyShapes();
     private static final Map<Direction, VoxelShape> CONNECTION_SHAPES = buildConnectionShapes();
+    private static final Map<Direction, VoxelShape> COLLAR_SHAPES = buildCollarShapes();
     private static final Map<Direction, VoxelShape> RIM_SHAPES = buildRimShapes();
 
     public SteamAdmissionValveBlock(Properties properties) {
@@ -73,7 +79,9 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
             return null;
         }
 
-        state = state.setValue(FACING, context.getHorizontalDirection().getOpposite());
+        Direction facing = context.getHorizontalDirection().getOpposite();
+        state = state.setValue(FACING, facing);
+        state = enforceHorizontalConnections(state, facing.getAxis());
         return resolveTopology(context.getLevel(), context.getClickedPos(), state);
     }
 
@@ -86,7 +94,9 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
             BlockPos pos,
             BlockPos neighborPos
     ) {
-        return resolveTopology(level, pos, super.updateShape(state, direction, neighborState, level, pos, neighborPos));
+        BlockState updated = super.updateShape(state, direction, neighborState, level, pos, neighborPos);
+        updated = enforceHorizontalConnections(updated, state.getValue(FACING).getAxis());
+        return resolveTopology(level, pos, updated);
     }
 
     @Override
@@ -206,12 +216,13 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
 
     private static VoxelShape getValveShape(BlockState state, BlockGetter level, BlockPos pos) {
         VoxelShape shape = BODY_SHAPES.get(state.getValue(FACING));
-        for (Direction direction : Direction.values()) {
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
             if (!state.getValue(PROPERTY_BY_DIRECTION.get(direction))) {
                 continue;
             }
 
             shape = Shapes.or(shape, CONNECTION_SHAPES.get(direction));
+            shape = Shapes.or(shape, COLLAR_SHAPES.get(direction));
             if (level instanceof BlockAndTintGetter tintGetter
                     && FluidPipeBlock.shouldDrawRim(tintGetter, pos, state, direction)) {
                 shape = Shapes.or(shape, RIM_SHAPES.get(direction));
@@ -243,6 +254,15 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
         return shapes;
     }
 
+    private static Map<Direction, VoxelShape> buildCollarShapes() {
+        Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
+        shapes.put(Direction.NORTH, Block.box(3, 3, 2, 13, 13, 4));
+        shapes.put(Direction.SOUTH, Block.box(3, 3, 12, 13, 13, 14));
+        shapes.put(Direction.EAST, Block.box(12, 3, 3, 14, 13, 13));
+        shapes.put(Direction.WEST, Block.box(2, 3, 3, 4, 13, 13));
+        return shapes;
+    }
+
     private static Map<Direction, VoxelShape> buildRimShapes() {
         Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
         shapes.put(Direction.NORTH, Block.box(3, 3, 0, 13, 13, 2));
@@ -264,6 +284,28 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
                     box.maxZ, box.maxY, 16 - box.minX);
             default -> box;
         };
+    }
+
+    private static BlockState enforceHorizontalConnections(BlockState state, Direction.Axis fallbackAxis) {
+        state = state
+                .setValue(PROPERTY_BY_DIRECTION.get(Direction.UP), false)
+                .setValue(PROPERTY_BY_DIRECTION.get(Direction.DOWN), false);
+
+        boolean hasHorizontalConnection = false;
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            hasHorizontalConnection |= state.getValue(PROPERTY_BY_DIRECTION.get(direction));
+        }
+        if (hasHorizontalConnection) {
+            return state;
+        }
+
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            state = state.setValue(
+                    PROPERTY_BY_DIRECTION.get(direction),
+                    direction.getAxis() == fallbackAxis
+            );
+        }
+        return state;
     }
 
     private record Box(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {

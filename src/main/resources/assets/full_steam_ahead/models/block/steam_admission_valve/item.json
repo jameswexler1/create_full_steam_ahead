@@ -1,15 +1,12 @@
 {
   "credit": "Create: Full Steam Ahead",
   "parent": "block/block",
-  "texture_size": [
-    32,
-    32
-  ],
   "render_type": "minecraft:cutout_mipped",
   "textures": {
     "pipe": "create:block/pipes",
     "link": "create:block/redstone_bridge",
-    "valve": "full_steam_ahead:block/steam_admission_valve",
+    "iron": "create:block/industrial_iron_block",
+    "brass": "create:block/brass_casing",
     "particle": "create:block/pipes"
   },
   "elements": [
@@ -36,9 +33,9 @@
       "faces": {
         "east": {
           "uv": [
+            4,
             8,
-            16,
-            16,
+            8,
             0
           ],
           "rotation": 90,
@@ -46,34 +43,35 @@
         },
         "west": {
           "uv": [
-            8,
+            4,
             0,
-            16,
-            16
+            8,
+            8
           ],
           "rotation": 90,
           "texture": "#pipe"
         },
         "up": {
           "uv": [
+            4,
             8,
-            16,
-            16,
+            8,
             0
           ],
           "texture": "#pipe"
         },
         "down": {
           "uv": [
+            4,
             8,
-            16,
-            16,
+            8,
             0
           ],
           "rotation": 180,
           "texture": "#pipe"
         }
-      }
+      },
+      "name": "Copper pipe shaft"
     },
     {
       "from": [
@@ -98,61 +96,62 @@
       "faces": {
         "north": {
           "uv": [
-            22,
-            22,
-            32,
-            32
+            11,
+            11,
+            16,
+            16
           ],
           "texture": "#pipe"
         },
         "east": {
           "uv": [
-            21,
-            32,
-            19,
-            22
+            10.5,
+            16,
+            9.5,
+            11
           ],
           "texture": "#pipe"
         },
         "south": {
           "uv": [
-            22,
-            22,
-            32,
-            32
+            11,
+            11,
+            16,
+            16
           ],
           "texture": "#pipe"
         },
         "west": {
           "uv": [
-            19,
-            32,
-            21,
-            22
+            9.5,
+            16,
+            10.5,
+            11
           ],
           "texture": "#pipe"
         },
         "up": {
           "uv": [
-            19,
-            22,
-            21,
-            32
+            9.5,
+            11,
+            10.5,
+            16
           ],
           "rotation": 90,
           "texture": "#pipe"
         },
         "down": {
           "uv": [
-            21,
-            22,
-            19,
-            32
+            10.5,
+            11,
+            9.5,
+            16
           ],
           "rotation": 90,
           "texture": "#pipe"
         }
-      }
+      },
+      "name": "North copper connector"
     },
     {
       "from": [
@@ -177,257 +176,954 @@
       "faces": {
         "north": {
           "uv": [
-            22,
-            22,
-            32,
-            32
+            11,
+            11,
+            16,
+            16
           ],
           "rotation": 180,
           "texture": "#pipe"
         },
         "east": {
           "uv": [
-            21,
-            32,
-            19,
-            22
+            10.5,
+            16,
+            9.5,
+            11
           ],
           "rotation": 180,
           "texture": "#pipe"
         },
         "south": {
           "uv": [
-            22,
-            22,
-            32,
-            32
+            11,
+            11,
+            16,
+            16
           ],
           "rotation": 180,
           "texture": "#pipe"
         },
         "west": {
           "uv": [
-            19,
-            32,
-            21,
-            22
+            9.5,
+            16,
+            10.5,
+            11
           ],
           "rotation": 180,
           "texture": "#pipe"
         },
         "up": {
           "uv": [
-            21,
-            22,
-            19,
-            32
+            10.5,
+            11,
+            9.5,
+            16
           ],
           "rotation": 90,
           "texture": "#pipe"
         },
         "down": {
           "uv": [
-            19,
-            22,
-            21,
-            32
+            9.5,
+            11,
+            10.5,
+            16
           ],
           "rotation": 90,
           "texture": "#pipe"
         }
-      }
+      },
+      "name": "South copper connector"
     },
     {
-      "name": "Brass control saddle",
+      "name": "Upper collar rail",
       "from": [
         3,
         12,
-        5
+        2
       ],
       "to": [
         13,
         13,
+        4
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": "#brass"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ],
+          "texture": "#brass"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": "#brass"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            10,
+            2
+          ],
+          "texture": "#brass"
+        }
+      }
+    },
+    {
+      "name": "Lower collar rail",
+      "from": [
+        3,
+        3,
+        2
+      ],
+      "to": [
+        13,
+        4,
+        4
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": "#brass"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ],
+          "texture": "#brass"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": "#brass"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            10,
+            2
+          ],
+          "texture": "#brass"
+        }
+      }
+    },
+    {
+      "name": "West collar rail",
+      "from": [
+        3,
+        4,
+        2
+      ],
+      "to": [
+        4,
+        12,
+        4
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            0,
+            0,
+            1,
+            8
+          ],
+          "texture": "#brass"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2,
+            8
+          ],
+          "texture": "#brass"
+        }
+      }
+    },
+    {
+      "name": "East collar rail",
+      "from": [
+        12,
+        4,
+        2
+      ],
+      "to": [
+        13,
+        12,
+        4
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            0,
+            0,
+            2,
+            8
+          ],
+          "texture": "#brass"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            1,
+            8
+          ],
+          "texture": "#brass"
+        }
+      }
+    },
+    {
+      "name": "South Upper collar rail",
+      "from": [
+        3,
+        12,
+        12
+      ],
+      "to": [
+        13,
+        13,
+        14
+      ],
+      "faces": {
+        "west": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": "#brass"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ],
+          "texture": "#brass"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": "#brass"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            10,
+            2
+          ],
+          "texture": "#brass"
+        }
+      }
+    },
+    {
+      "name": "South Lower collar rail",
+      "from": [
+        3,
+        3,
+        12
+      ],
+      "to": [
+        13,
+        4,
+        14
+      ],
+      "faces": {
+        "west": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": "#brass"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ],
+          "texture": "#brass"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2,
+            1
+          ],
+          "texture": "#brass"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            10,
+            2
+          ],
+          "texture": "#brass"
+        }
+      }
+    },
+    {
+      "name": "South West collar rail",
+      "from": [
+        3,
+        4,
+        12
+      ],
+      "to": [
+        13,
+        12,
+        14
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            1,
+            8
+          ],
+          "texture": "#brass"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2,
+            8
+          ],
+          "texture": "#brass"
+        }
+      }
+    },
+    {
+      "name": "South East collar rail",
+      "from": [
+        3,
+        4,
+        12
+      ],
+      "to": [
+        13,
+        12,
+        14
+      ],
+      "faces": {
+        "west": {
+          "uv": [
+            0,
+            0,
+            2,
+            8
+          ],
+          "texture": "#brass"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            1,
+            8
+          ],
+          "texture": "#brass"
+        }
+      }
+    },
+    {
+      "name": "Left platform support",
+      "from": [
+        3,
+        12,
+        6
+      ],
+      "to": [
+        4,
+        13,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            1,
+            1
+          ],
+          "texture": "#iron"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ],
+          "texture": "#iron"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            1,
+            1
+          ],
+          "texture": "#iron"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ],
+          "texture": "#iron"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            1,
+            4
+          ],
+          "texture": "#iron"
+        }
+      }
+    },
+    {
+      "name": "Right platform support",
+      "from": [
+        12,
+        12,
+        6
+      ],
+      "to": [
+        13,
+        13,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            1,
+            1
+          ],
+          "texture": "#iron"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ],
+          "texture": "#iron"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            1,
+            1
+          ],
+          "texture": "#iron"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ],
+          "texture": "#iron"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            1,
+            4
+          ],
+          "texture": "#iron"
+        }
+      }
+    },
+    {
+      "name": "Raised control platform",
+      "from": [
+        2,
+        13,
+        4
+      ],
+      "to": [
+        14,
+        14,
+        12
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            12,
+            1
+          ],
+          "texture": "#iron"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            8,
+            1
+          ],
+          "texture": "#iron"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            12,
+            1
+          ],
+          "texture": "#iron"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            8,
+            1
+          ],
+          "texture": "#iron"
+        },
+        "up": {
+          "uv": [
+            2,
+            4,
+            14,
+            12
+          ],
+          "texture": "#iron"
+        },
+        "down": {
+          "uv": [
+            2,
+            4,
+            14,
+            12
+          ],
+          "texture": "#iron"
+        }
+      }
+    },
+    {
+      "name": "North brass platform trim",
+      "from": [
+        2,
+        14,
+        4
+      ],
+      "to": [
+        14,
+        14.5,
+        5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            12,
+            0.5
+          ],
+          "texture": "#brass"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#brass"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            12,
+            0.5
+          ],
+          "texture": "#brass"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#brass"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            12,
+            1
+          ],
+          "texture": "#brass"
+        }
+      }
+    },
+    {
+      "name": "South brass platform trim",
+      "from": [
+        2,
+        14,
+        11
+      ],
+      "to": [
+        14,
+        14.5,
+        12
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            12,
+            0.5
+          ],
+          "texture": "#brass"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#brass"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            12,
+            0.5
+          ],
+          "texture": "#brass"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#brass"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            12,
+            1
+          ],
+          "texture": "#brass"
+        }
+      }
+    },
+    {
+      "name": "West brass platform trim",
+      "from": [
+        2,
+        14,
+        5
+      ],
+      "to": [
+        3,
+        14.5,
         11
       ],
       "faces": {
         "north": {
           "uv": [
             0,
-            7,
-            10,
-            8
+            0,
+            1,
+            0.5
           ],
-          "texture": "#valve"
+          "texture": "#brass"
         },
         "east": {
           "uv": [
             0,
-            8,
+            0,
             6,
-            9
+            0.5
           ],
-          "texture": "#valve"
+          "texture": "#brass"
         },
         "south": {
           "uv": [
             0,
-            7,
-            10,
-            8
+            0,
+            1,
+            0.5
           ],
-          "texture": "#valve"
+          "texture": "#brass"
         },
         "west": {
           "uv": [
             0,
-            8,
+            0,
             6,
-            9
+            0.5
           ],
-          "texture": "#valve"
+          "texture": "#brass"
         },
         "up": {
           "uv": [
             0,
             0,
-            10,
+            1,
             6
           ],
-          "texture": "#valve"
-        },
-        "down": {
-          "uv": [
-            0,
-            10,
-            10,
-            16
-          ],
-          "texture": "#valve"
+          "texture": "#brass"
         }
       }
     },
     {
-      "name": "Frequency pad A",
+      "name": "East brass platform trim",
+      "from": [
+        13,
+        14,
+        5
+      ],
+      "to": [
+        14,
+        14.5,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#brass"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.5
+          ],
+          "texture": "#brass"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            1,
+            0.5
+          ],
+          "texture": "#brass"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.5
+          ],
+          "texture": "#brass"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            1,
+            6
+          ],
+          "texture": "#brass"
+        }
+      }
+    },
+    {
+      "name": "Frequency slot A",
       "from": [
         3.5,
-        13,
+        13.5,
         6
       ],
       "to": [
         7.5,
-        14,
+        14.5,
         10
       ],
       "faces": {
         "north": {
           "uv": [
-            22,
-            4,
-            26,
-            5
+            11,
+            2,
+            13,
+            2.5
           ],
           "texture": "#link"
         },
         "east": {
           "uv": [
-            22,
-            4,
-            26,
-            5
+            11,
+            2,
+            13,
+            2.5
           ],
           "texture": "#link"
         },
         "south": {
           "uv": [
-            22,
-            4,
-            26,
-            5
+            11,
+            2,
+            13,
+            2.5
           ],
           "texture": "#link"
         },
         "west": {
           "uv": [
-            22,
-            4,
-            26,
-            5
+            11,
+            2,
+            13,
+            2.5
           ],
           "texture": "#link"
         },
         "up": {
           "uv": [
-            22,
+            11,
             0,
-            26,
-            4
+            13,
+            2
           ],
           "texture": "#link"
         }
       }
     },
     {
-      "name": "Frequency pad B",
+      "name": "Frequency slot B",
       "from": [
         8.5,
-        13,
+        13.5,
         6
       ],
       "to": [
         12.5,
-        14,
+        14.5,
         10
       ],
       "faces": {
         "north": {
           "uv": [
-            22,
-            4,
-            26,
-            5
+            11,
+            2,
+            13,
+            2.5
           ],
           "texture": "#link"
         },
         "east": {
           "uv": [
-            22,
-            4,
-            26,
-            5
+            11,
+            2,
+            13,
+            2.5
           ],
           "texture": "#link"
         },
         "south": {
           "uv": [
-            22,
-            4,
-            26,
-            5
+            11,
+            2,
+            13,
+            2.5
           ],
           "texture": "#link"
         },
         "west": {
           "uv": [
-            22,
-            4,
-            26,
-            5
+            11,
+            2,
+            13,
+            2.5
           ],
           "texture": "#link"
         },
         "up": {
           "uv": [
-            26,
+            13,
             0,
-            30,
-            4
+            15,
+            2
           ],
           "texture": "#link"
         }
       }
     },
     {
-      "name": "Admission actuator",
+      "name": "Admission actuator housing",
       "from": [
         6,
         11,
@@ -441,81 +1137,57 @@
       "faces": {
         "north": {
           "uv": [
-            12,
             0,
-            16,
+            0,
+            4,
             2
           ],
-          "texture": "#valve"
+          "texture": "#brass"
         },
         "east": {
           "uv": [
-            17,
             0,
-            18,
+            0,
+            1,
             2
           ],
-          "texture": "#valve"
+          "texture": "#iron"
         },
         "south": {
           "uv": [
-            12,
             0,
-            16,
+            0,
+            4,
             2
           ],
-          "texture": "#valve"
+          "texture": "#iron"
         },
         "west": {
           "uv": [
-            17,
             0,
-            18,
+            0,
+            1,
             2
           ],
-          "texture": "#valve"
+          "texture": "#iron"
         },
         "up": {
           "uv": [
-            12,
-            3,
-            16,
-            4
+            0,
+            0,
+            4,
+            1
           ],
-          "texture": "#valve"
+          "texture": "#brass"
         },
         "down": {
           "uv": [
-            12,
-            3,
-            16,
-            4
+            0,
+            0,
+            4,
+            1
           ],
-          "texture": "#valve"
-        }
-      }
-    },
-    {
-      "name": "Admission indicator",
-      "from": [
-        6.5,
-        12,
-        2.9
-      ],
-      "to": [
-        9.5,
-        13,
-        3
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            12,
-            5,
-            15,
-            6
-          ],
-          "texture": "#valve"
+          "texture": "#iron"
         }
       }
     }

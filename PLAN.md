@@ -863,16 +863,18 @@ changing engine balance.
 **Goal**: add a pipe-shaped, remotely controlled admission throttle between a shared steam main and one engine `steam_inlet`, while allowing valves in a cylinder bank to remain part of a continuous pipe run.
 
 - [x] Register `steam_admission_valve` as a Create-compatible fluid pipe block with its own pipe block entity, item, loot, tags, language entry, and creative-tab entry.
-- [x] Render the valve with Create's native context-sensitive Fluid Pipe core models and `PipeAttachmentModel` arms/rims, including isolated straight pipes and gap-free multi-side connections.
-- [x] Keep only a compact custom brass control saddle on the pipe, with two raised Create-style frequency pads and strict one-texture-pixel-per-model-unit density.
-- [x] Point the future controlled branch toward exactly one adjacent `steam_inlet` while deriving every visible pipe connection from the actual six-direction pipe state.
-- [x] Match selection and collision shapes to the compact rotated controls, live pipe arms, and endpoint rims.
+- [x] Render the valve with Create's native context-sensitive Fluid Pipe core models and `PipeAttachmentModel` arms/rims, including isolated straight pipes and gap-free multi-side horizontal connections.
+- [x] Keep the controls on a topology-independent raised industrial-iron platform with brass trim and two pads using Create's exact Redstone Link geometry, texture, and normalized UV density.
+- [x] Add a separate brass collar around every live horizontal port, with no coplanar faces against Create's dynamic copper connectors.
+- [x] Point the future controlled branch toward exactly one adjacent `steam_inlet` while deriving every visible connection from the actual four-direction horizontal pipe state.
+- [x] Prevent vertical valve orientation, clear up/down properties after placement and neighbour updates, and reject one-sided vertical connections initiated by adjacent Create pipes.
+- [x] Match selection and collision shapes to the raised controls, horizontal pipe arms, brass collars, and endpoint rims.
 - [x] Preserve normal Create fluid transport at full flow for the visual prototype so pipe connection and steam rendering can be evaluated in-world.
 - [ ] Add two built-in Redstone Link frequency slots and receive an analogue `0..15` admission command without a separate Redstone Link block.
 - [ ] Throttle only the branch feeding the adjacent `steam_inlet`; a through-branch main must remain open to downstream engines.
 - [ ] Animate the actuator from delivered admission, add Create-style sound/goggle feedback, and preserve state through simulated contraptions.
 - [ ] Add a survival recipe only after the control behavior is functional, so the prototype is not presented as a finished throttle.
-- [ ] Manual test isolated, straight, elbow, tee, cross, and vertical layouts; rotation toward each inlet direction; steam passthrough; collision; inventory rendering; and contraption assembly.
+- [ ] Manual test isolated, straight, elbow, tee, and cross layouts; rejection of vertical orientation/connections; rotation toward each inlet direction; steam passthrough; collision; inventory rendering; and contraption assembly.
 
 ---
 

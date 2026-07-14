@@ -1,0 +1,50 @@
+{
+  "credit": "Create: Full Steam Ahead",
+  "parent": "block/block",
+  "textures": {
+    "brass": "create:block/brass_casing",
+    "particle": "create:block/pipes"
+  },
+  "elements": [
+    {
+      "name": "Upper collar rail",
+      "from": [3, 12, 2],
+      "to": [13, 13, 4],
+      "faces": {
+        "east": { "uv": [0, 0, 2, 1], "texture": "#brass" },
+        "south": { "uv": [0, 0, 10, 1], "texture": "#brass" },
+        "west": { "uv": [0, 0, 2, 1], "texture": "#brass" },
+        "up": { "uv": [0, 0, 10, 2], "texture": "#brass" }
+      }
+    },
+    {
+      "name": "Lower collar rail",
+      "from": [3, 3, 2],
+      "to": [13, 4, 4],
+      "faces": {
+        "east": { "uv": [0, 0, 2, 1], "texture": "#brass" },
+        "south": { "uv": [0, 0, 10, 1], "texture": "#brass" },
+        "west": { "uv": [0, 0, 2, 1], "texture": "#brass" },
+        "down": { "uv": [0, 0, 10, 2], "texture": "#brass" }
+      }
+    },
+    {
+      "name": "West collar rail",
+      "from": [3, 4, 2],
+      "to": [4, 12, 4],
+      "faces": {
+        "south": { "uv": [0, 0, 1, 8], "texture": "#brass" },
+        "west": { "uv": [0, 0, 2, 8], "texture": "#brass" }
+      }
+    },
+    {
+      "name": "East collar rail",
+      "from": [12, 4, 2],
+      "to": [13, 12, 4],
+      "faces": {
+        "east": { "uv": [0, 0, 2, 8], "texture": "#brass" },
+        "south": { "uv": [0, 0, 1, 8], "texture": "#brass" }
+      }
+    }
+  ]
+}

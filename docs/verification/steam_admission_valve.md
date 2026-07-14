@@ -8,18 +8,20 @@
 
 Verified on 2026-07-14. The valve is currently a visual prototype with unrestricted Create fluid-pipe transport. Wireless admission control is not implemented yet.
 
-The native-pipe visual rebuild passed `compileJava`, JSON validation, and `build`. `runClient` completed resource/model baking and reached the title screen with no Full Steam Ahead missing-model or missing-texture warnings; it was then stopped intentionally.
+The horizontal visual rebuild passed `compileJava`, JSON validation, and `build`. A `runClient` smoke launch reached Full Steam Ahead initialization without load errors, but the slow development client was stopped before resource/model baking completed. The current models still require the in-world checks below.
 
 ## Manual In-World Checks
 
 - [ ] The Steam Admission Valve appears in the Full Steam Ahead creative tab and has a correctly scaled inventory model.
 - [ ] With exactly one adjacent Steam Inlet, the brass controlled branch points toward that inlet.
-- [ ] With no neighbours, the valve renders as a normal straight Create Fluid Pipe with endpoint rims.
+- [ ] With no neighbours, the valve renders as a horizontal straight Create Fluid Pipe with endpoint rims.
 - [ ] Straight, elbow, tee, and four-way horizontal layouts render every real connection without holes or detached arms.
-- [ ] Up/down pipe neighbours render matching vertical arms without changing or suppressing horizontal connections.
+- [ ] No face flickers or changes texture while the camera moves around a straight, tee, or four-way valve.
+- [ ] The valve never assumes a vertical axis; pipes above or below do not create a vertical valve arm or carry steam through that face.
 - [ ] Endpoint rims appear only at open/non-pipe endpoints and disappear cleanly between compatible pipes.
-- [ ] The brass saddle remains compact and its texture density matches nearby Create blocks.
-- [ ] The two frequency positions look like raised Create Redstone Link pads rather than deep sockets.
+- [ ] Every live horizontal arm has a clean brass collar with no gap against the copper pipe body.
+- [ ] The raised iron platform and brass border remain unchanged as pipe neighbours are added or removed.
+- [ ] The two frequency positions match Create Redstone Link pads in texture and pixel density.
 - [ ] Create Fluid Pipes connect visually, steam remains visible, and steam passes through the prototype.
-- [ ] Selection and collision outlines follow the compact controls, live pipe arms, and visible endpoint rims in every horizontal rotation.
+- [ ] Selection and collision outlines follow the raised controls, brass collars, live pipe arms, and visible endpoint rims in every horizontal rotation.
 - [ ] Breaking the valve drops itself and does not leave a stale pipe connection.
