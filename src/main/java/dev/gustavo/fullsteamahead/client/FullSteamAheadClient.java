@@ -1,6 +1,7 @@
 package dev.gustavo.fullsteamahead.client;
 
 import com.simibubi.create.content.fluids.PipeAttachmentModel;
+import com.simibubi.create.foundation.blockEntity.renderer.SmartBlockEntityRenderer;
 import dev.engine_room.flywheel.api.visualization.VisualizerRegistry;
 import dev.engine_room.flywheel.lib.visualization.SimpleBlockEntityVisualizer;
 import dev.gustavo.fullsteamahead.FullSteamAhead;
@@ -72,6 +73,7 @@ public final class FullSteamAheadClient {
         event.registerBlockEntityRenderer(ModBlockEntities.POWERED_SHAFT.get(), PoweredShaftRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.STEPPED_LEVER.get(), SteppedLeverRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.STEAM_RELIEF_VALVE.get(), SteamReliefValveRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.STEAM_ADMISSION_VALVE.get(), SmartBlockEntityRenderer::new);
     }
 
     @SubscribeEvent
