@@ -1,6 +1,7 @@
 package dev.gustavo.fullsteamahead.registry;
 
 import dev.gustavo.fullsteamahead.FullSteamAhead;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -19,6 +20,13 @@ public final class ModDataComponents {
             DATA_COMPONENTS.register("telegraph_link", () -> DataComponentType.<UUID>builder()
                     .persistent(UUIDUtil.CODEC)
                     .networkSynchronized(UUIDUtil.STREAM_CODEC)
+                    .build());
+
+    /** Exact tank block selected by a pressure-gauge item before placement. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<GlobalPos>> STEAM_GAUGE_SOURCE =
+            DATA_COMPONENTS.register("steam_gauge_source", () -> DataComponentType.<GlobalPos>builder()
+                    .persistent(GlobalPos.CODEC)
+                    .networkSynchronized(GlobalPos.STREAM_CODEC)
                     .build());
 
     public static void register(IEventBus modEventBus) {

@@ -15,6 +15,7 @@ import dev.gustavo.fullsteamahead.client.render.PoweredShaftRenderer;
 import dev.gustavo.fullsteamahead.client.render.PoweredShaftVisual;
 import dev.gustavo.fullsteamahead.client.render.SteppedLeverRenderer;
 import dev.gustavo.fullsteamahead.client.render.SteamReliefValveRenderer;
+import dev.gustavo.fullsteamahead.client.render.SteamPressureGaugeRenderer;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModParticleTypes;
 import net.createmod.ponder.foundation.PonderIndex;
@@ -73,6 +74,7 @@ public final class FullSteamAheadClient {
         event.registerBlockEntityRenderer(ModBlockEntities.POWERED_SHAFT.get(), PoweredShaftRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.STEPPED_LEVER.get(), SteppedLeverRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.STEAM_RELIEF_VALVE.get(), SteamReliefValveRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.STEAM_PRESSURE_GAUGE.get(), SteamPressureGaugeRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.STEAM_ADMISSION_VALVE.get(), SmartBlockEntityRenderer::new);
     }
 

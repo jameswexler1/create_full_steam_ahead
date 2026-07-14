@@ -13,6 +13,8 @@ import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamAdmissionValveBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamReliefValveBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
+import dev.gustavo.fullsteamahead.content.steam.SteamPressureGaugeBlock;
+import dev.gustavo.fullsteamahead.content.steam.SteamPressureGaugeItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -54,6 +56,13 @@ public final class ModBlocks {
             registerBlock("steam_inlet", SteamInletBlock::new, copperProperties().noOcclusion());
     public static final DeferredBlock<SteamAdmissionValveBlock> STEAM_ADMISSION_VALVE =
             registerBlock("steam_admission_valve", SteamAdmissionValveBlock::new, copperProperties().noOcclusion());
+    public static final DeferredBlock<SteamPressureGaugeBlock> STEAM_PRESSURE_GAUGE =
+            registerBlock(
+                    "steam_pressure_gauge",
+                    SteamPressureGaugeBlock::new,
+                    copperProperties().noOcclusion(),
+                    SteamPressureGaugeItem::new
+            );
     public static final DeferredBlock<SteppedLeverBlock> STEPPED_LEVER =
             registerBlock("stepped_lever", SteppedLeverBlock::new,
                     BlockBehaviour.Properties.of()

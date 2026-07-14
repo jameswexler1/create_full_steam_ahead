@@ -8,6 +8,7 @@ import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlockEntity
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.SteamAdmissionValveBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlockEntity;
+import dev.gustavo.fullsteamahead.content.steam.SteamPressureGaugeBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.SteamReliefValveBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -60,6 +61,13 @@ public final class ModBlockEntities {
                     () -> BlockEntityType.Builder.of(
                             SteamInletBlockEntity::new,
                             ModBlocks.STEAM_INLET.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SteamPressureGaugeBlockEntity>>
+            STEAM_PRESSURE_GAUGE = BLOCK_ENTITY_TYPES.register("steam_pressure_gauge",
+                    () -> BlockEntityType.Builder.of(
+                            SteamPressureGaugeBlockEntity::new,
+                            ModBlocks.STEAM_PRESSURE_GAUGE.get()
                     ).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<SteamAdmissionValveBlockEntity>>

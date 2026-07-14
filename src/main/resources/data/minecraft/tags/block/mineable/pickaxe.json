@@ -10,6 +10,7 @@
     "full_steam_ahead:steam_relief_valve",
     "full_steam_ahead:steam_inlet",
     "full_steam_ahead:steam_admission_valve",
-    "full_steam_ahead:stepped_lever"
+    "full_steam_ahead:stepped_lever",
+    "full_steam_ahead:steam_pressure_gauge"
   ]
 }

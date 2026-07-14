@@ -1,0 +1,83 @@
+{
+  "credit": "Compiled from new_models/steam_pressure_gauge.bbmodel",
+  "ambientocclusion": true,
+  "texture_size": [
+    16,
+    16
+  ],
+  "textures": {
+    "0": "full_steam_ahead:block/steam_pressure_gauge",
+    "1": "full_steam_ahead:block/steam_pressure_gauge_dial",
+    "2": "full_steam_ahead:block/steam_pressure_gauge_needle",
+    "3": "create:block/brass_block",
+    "particle": "full_steam_ahead:block/steam_pressure_gauge"
+  },
+  "elements": [
+    {
+      "name": "Animated textured needle",
+      "from": [
+        7.5,
+        9,
+        9.07
+      ],
+      "to": [
+        8.5,
+        14,
+        9.17
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            1,
+            5
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            1,
+            5
+          ],
+          "texture": "#2"
+        }
+      }
+    },
+    {
+      "name": "Animated textured counterweight",
+      "from": [
+        7,
+        7,
+        9.07
+      ],
+      "to": [
+        9,
+        9,
+        9.17
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            0,
+            4,
+            2
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            2,
+            0,
+            4,
+            2
+          ],
+          "texture": "#2"
+        }
+      }
+    }
+  ]
+}
