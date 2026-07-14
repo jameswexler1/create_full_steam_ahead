@@ -82,9 +82,9 @@ Steam remains visible in Create tanks and pipes through a high-visibility tinted
 
 ## Steam Admission Control
 
-The horizontal `steam_admission_valve` throttles one active engine inlet without restricting the shared pipe main. Its two built-in frequency slots use Create's Redstone Link network and accept an analogue `0..15` command. An empty frequency pair is a safe full-open bypass; once frequencies are configured, no received signal means closed.
+The horizontal `steam_admission_valve` throttles one active engine inlet without restricting the shared pipe main. Its two built-in frequency slots use Create's Redstone Link network and accept an analogue `0..15` command. Signal `0` is fully open and signal `15` is fully closed, matching a fail-open admission control. An empty frequency pair is also a safe full-open bypass.
 
-The valve must be directly beside exactly one active `steam_inlet`, with the inlet nozzle facing the valve. Its requested engine flow is the normal pressure-dependent request multiplied by `signal / 15`. If the network cannot satisfy every consumer, the normal proportional allocator preserves the requested throttle ratios. Delivered flow scales SU continuously, while engine speed keeps the existing `16`, `32`, `48`, and `64` RPM tiers. Other valve pipe branches remain normal bidirectional steam paths.
+The valve must be directly beside exactly one active `steam_inlet`, with the inlet nozzle facing the valve. Its requested engine flow is the normal pressure-dependent request multiplied by `(15 - signal) / 15`. If the network cannot satisfy every consumer, the normal proportional allocator preserves the requested throttle ratios. Delivered flow scales SU continuously, while engine speed keeps the existing `16`, `32`, `48`, and `64` RPM tiers. Other valve pipe branches remain normal bidirectional steam paths.
 
 ## Display Link Readout
 

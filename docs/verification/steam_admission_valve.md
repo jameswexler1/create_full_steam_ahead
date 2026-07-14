@@ -26,11 +26,11 @@ Verified on 2026-07-14. The valve uses Create's native Redstone Link receiver be
 - [ ] The two frequency positions match Create Redstone Link pads in texture and pixel density.
 - [ ] Right-click both frequency pads with items; confirm the items render in the correct pads in north/south and east/west orientations.
 - [ ] With both frequencies empty, confirm the valve reports `Bypass (100%)` and a linked engine receives normal full admission.
-- [ ] Configure both frequencies without a matching transmitter; confirm the valve closes and only its linked engine loses admission.
-- [ ] Transmit analogue strengths `5`, `10`, and `15`; confirm the valve reports approximately `33%`, `67%`, and `100%` and requested flow scales accordingly.
+- [ ] Configure both frequencies without a matching transmitter; confirm the resulting signal `0` leaves the valve fully open.
+- [ ] Transmit analogue strengths `0`, `5`, `10`, and `15`; confirm the valve reports approximately `100%`, `67%`, `33%`, and `0%` admission and requested flow scales accordingly.
 - [ ] Confirm delivered SU scales continuously with admitted steam while RPM remains on the existing `16`, `32`, `48`, and `64` tiers.
 - [ ] Starve two differently commanded valves on one network; confirm both keep the same proportional allocation ratio instead of one engine taking priority.
-- [ ] Confirm a through-branch main remains open and continues powering downstream engines when the local valve command is `0`.
+- [ ] Confirm a through-branch main remains open and continues powering downstream engines when the local valve receives signal `15` and fully closes its engine branch.
 - [ ] Place two active inlets beside one valve, or turn the inlet nozzle away; confirm the valve reports no uniquely linked active inlet and controls neither.
 - [ ] Confirm an optional passive symmetry inlet is ignored when selecting the controlled active inlet.
 - [ ] Confirm Create Fluid Pipes connect visually, steam remains visible, and steam passes through every non-controlled branch.

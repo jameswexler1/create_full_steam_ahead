@@ -3,14 +3,13 @@ package dev.gustavo.fullsteamahead.content.steam;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
+import com.simibubi.create.content.fluids.pipes.FluidPipeBlockEntity;
 import com.simibubi.create.content.redstone.link.LinkBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
 import com.simibubi.create.foundation.utility.CreateLang;
 import dev.engine_room.flywheel.lib.transform.TransformStack;
-import com.simibubi.create.content.fluids.pipes.FluidPipeBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
-import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Couple;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -31,7 +30,6 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
 
     private LinkBehaviour link;
     private int receivedSignal;
-    private final LerpedFloat clientAdmission = LerpedFloat.linear();
     private double networkPressurePn;
     private int requestedSteamMb;
     private int allocatedSteamMb;
@@ -41,7 +39,6 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
 
     public SteamAdmissionValveBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STEAM_ADMISSION_VALVE.get(), pos, state);
-        clientAdmission.setValue(1.0F);
     }
 
     @Override
@@ -58,10 +55,7 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
     @Override
     public void tick() {
         super.tick();
-        if (level != null && level.isClientSide()) {
-            clientAdmission.chase(getAdmissionFraction(), 0.25F, LerpedFloat.Chaser.EXP);
-            clientAdmission.tickChaser();
-        } else if (level instanceof ServerLevel serverLevel) {
+        if (level instanceof ServerLevel serverLevel) {
             int admission = getAdmissionStrength();
             if (lastAudibleAdmission >= 0 && lastAudibleAdmission != admission) {
                 float pitch = 0.85F + admission / 15.0F * 0.3F;
@@ -76,15 +70,11 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
     }
 
     public int getAdmissionStrength() {
-        return isFrequencyBypass() ? 15 : receivedSignal;
+        return isFrequencyBypass() ? 15 : 15 - receivedSignal;
     }
 
     public float getAdmissionFraction() {
         return getAdmissionStrength() / 15.0F;
-    }
-
-    public float getRenderedAdmission(float partialTicks) {
-        return clientAdmission.getValue(partialTicks);
     }
 
     public SteamInletBlockEntity getControlledInlet() {
@@ -169,7 +159,9 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
         } else {
             int strength = getAdmissionStrength();
             int percent = Math.round(getAdmissionFraction() * 100.0F);
-            CreateLang.text("Command: " + strength + "/15 (" + percent + "%)")
+            CreateLang.text("Signal: " + receivedSignal + "/15")
+                    .forGoggles(tooltip, 1);
+            CreateLang.text("Admission: " + strength + "/15 (" + percent + "%)")
                     .forGoggles(tooltip, 1);
         }
         String state = isFrequencyBypass()
@@ -213,9 +205,6 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
             allocatedSteamMb = Math.max(0, tag.getInt("AllocatedSteam"));
             deliveredSteamMb = Math.max(0, tag.getInt("DeliveredSteam"));
             networkGameTime = tag.getLong("NetworkGameTime");
-            clientAdmission.chase(getAdmissionFraction(), 0.25F, LerpedFloat.Chaser.EXP);
-        } else {
-            clientAdmission.setValue(getAdmissionFraction());
         }
     }
 
