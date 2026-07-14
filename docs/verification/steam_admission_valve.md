@@ -34,7 +34,7 @@ Verified on 2026-07-14. The valve uses Create's native Redstone Link receiver be
 - [ ] Place two active inlets beside one valve, or turn the inlet nozzle away; confirm the valve reports no uniquely linked active inlet and controls neither.
 - [ ] Confirm an optional passive symmetry inlet is ignored when selecting the controlled active inlet.
 - [ ] Confirm Create Fluid Pipes connect visually, steam remains visible, and steam passes through every non-controlled branch.
-- [ ] Change the received signal and confirm the central actuator moves smoothly and plays one restrained Create-style adjustment sound.
+- [ ] Change the received signal and confirm it plays one restrained Create-style adjustment sound without rendering any detached geometry above the platform.
 - [ ] Inspect with goggles and confirm linked state, command, percentage, state, pressure, requested flow, and delivered flow update live.
 - [ ] Save/reload and break/replace neighbouring pipes; confirm frequencies and command recover without a stale inlet association.
 - [ ] Assemble and disassemble a simulated contraption; confirm both frequencies, receiver operation, displayed command, and inlet association survive.

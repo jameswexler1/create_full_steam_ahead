@@ -240,7 +240,7 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
 
         @Override
         public float getScale() {
-            return 0.4975F;
+            return 0.44F;
         }
 
         private static Vec3 rotateForFacing(Vec3 offset, Direction facing) {

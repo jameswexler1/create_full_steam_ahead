@@ -873,7 +873,7 @@ changing engine balance.
 - [x] Preserve normal Create fluid transport at full flow through non-controlled branches so the valve remains part of a shared steam main.
 - [x] Add two built-in Redstone Link frequency slots and receive an analogue `0..15` admission command without a separate Redstone Link block; an empty frequency pair is a full-open bypass.
 - [x] Throttle only the uniquely linked active `steam_inlet`; a through-branch main remains open to downstream engines and network shortages preserve throttle ratios.
-- [x] Animate the command actuator, add Create-style adjustment sound and live goggle feedback, and persist receiver state through normal block-entity NBT.
+- [x] Add Create-style adjustment sound and live goggle feedback, and persist receiver state through normal block-entity NBT without adding detached actuator geometry above the control platform.
 - [x] Add a survival recipe using a Create Fluid Pipe, Redstone Link, and brass plate.
 - [ ] Manual test isolated, straight, elbow, tee, and cross layouts; rejection of vertical orientation/connections; rotation toward each inlet direction; steam passthrough; collision; inventory rendering; and contraption assembly.
 
