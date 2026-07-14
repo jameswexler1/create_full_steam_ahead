@@ -16,6 +16,7 @@ Verified on 2026-07-14. Compilation reports only the pre-existing deprecated Sab
 - [x] Update generated rotation only for owner changes, starts/stops, reversals, or accumulated speed changes of at least `0.01 RPM`.
 - [x] Refresh stress capacity without rebuilding the rotational network when only generated SU changes.
 - [x] Hold the piston linkage's last moving angle across a transient zero-speed propagation frame; genuine shutdown still returns to the existing rest pose.
+- [x] User validation on 2026-07-14: normal-gameplay RPM transitions remained visually continuous with no piston, linkage, or shaft restart/flicker.
 
 ## Expected Mapping
 

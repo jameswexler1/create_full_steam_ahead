@@ -893,6 +893,7 @@ changing engine balance.
 - [x] Preserve client animation phase when an FSA-powered kinetic network changes RPM by compensating Create's absolute-time rotation formula through the shared `getRotationAngleOffset` hook used by both Flywheel and fallback rendering.
 - [x] Avoid detaching and rebuilding the kinetic source for capacity-only changes, and ignore sub-`0.01 RPM` source jitter until it accumulates into a visible speed update.
 - [x] Hold the last linkage pose across Create's brief zero-speed propagation frame so piston, connecting rod, and crank visuals do not flash to their resting pose during a live RPM ramp.
+- [x] User validation (2026-07-14): normal-gameplay RPM transitions preserve piston, linkage, and shaft phase without restarting, flickering, or jumping.
 - [ ] Manual test direct and pipe-fed engines at low, quarter, half, three-quarter, and full output; confirm RPM changes progressively while SU remains proportional.
 - [ ] Manual test an admission valve at signals `0`, `5`, `10`, and `15`; expect approximately `64`, `42.7`, `21.3`, and `0 RPM` at rated pressure.
 - [ ] Manual test adjacent engines on one shaft at equal and unequal admission settings; confirm stable kinetic-network behavior and passive linkage animation.
