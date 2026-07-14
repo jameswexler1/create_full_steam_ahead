@@ -1,0 +1,2470 @@
+{
+  "meta": {
+    "format_version": "5.0",
+    "model_format": "java_block",
+    "box_uv": false
+  },
+  "name": "steam_pressure_gauge",
+  "model_identifier": "full_steam_ahead:steam_pressure_gauge",
+  "visible_box": [
+    1,
+    1,
+    0
+  ],
+  "variable_placeholders": "Victorian brass pressure gauge authored facing south (+Z), with its wall contact at z=0. The static group contains the mounting rose, terminal manifold, stepped brass case, bezel, dial, and fixed hub. Rotate the needle group around local Z at origin [8,9,5.3]. Suggested runtime sweep: -135 degrees at zero pressure to +135 degrees at burst pressure. frequency_slots contains the two future Redstone Link frequency item surfaces. The included animation is preview-only.",
+  "resolution": {
+    "width": 16,
+    "height": 16
+  },
+  "elements": [
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000001",
+      "from": [
+        6,
+        14,
+        0
+      ],
+      "to": [
+        10,
+        15,
+        1.25
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ],
+          "texture": 2
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            1.25,
+            1
+          ],
+          "texture": 2
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ],
+          "texture": 2
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            1.25,
+            1
+          ],
+          "texture": 2
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            4,
+            1.25
+          ],
+          "texture": 2
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            4,
+            1.25
+          ],
+          "texture": 2
+        }
+      },
+      "name": "Brass wall rose top",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000002",
+      "from": [
+        4,
+        13,
+        0
+      ],
+      "to": [
+        12,
+        14,
+        1.25
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            8,
+            1
+          ],
+          "texture": 2
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            1.25,
+            1
+          ],
+          "texture": 2
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            8,
+            1
+          ],
+          "texture": 2
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            1.25,
+            1
+          ],
+          "texture": 2
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            1.25
+          ],
+          "texture": 2
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            8,
+            1.25
+          ],
+          "texture": 2
+        }
+      },
+      "name": "Brass wall rose upper shoulder",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000003",
+      "from": [
+        3,
+        5,
+        0
+      ],
+      "to": [
+        13,
+        13,
+        1.25
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            10,
+            8
+          ],
+          "texture": 2
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            1.25,
+            8
+          ],
+          "texture": 2
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            10,
+            8
+          ],
+          "texture": 2
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            1.25,
+            8
+          ],
+          "texture": 2
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            10,
+            1.25
+          ],
+          "texture": 2
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            10,
+            1.25
+          ],
+          "texture": 2
+        }
+      },
+      "name": "Brass wall rose centre",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000004",
+      "from": [
+        4,
+        4,
+        0
+      ],
+      "to": [
+        12,
+        5,
+        1.25
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            8,
+            1
+          ],
+          "texture": 2
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            1.25,
+            1
+          ],
+          "texture": 2
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            8,
+            1
+          ],
+          "texture": 2
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            1.25,
+            1
+          ],
+          "texture": 2
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            1.25
+          ],
+          "texture": 2
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            8,
+            1.25
+          ],
+          "texture": 2
+        }
+      },
+      "name": "Brass wall rose lower shoulder",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000005",
+      "from": [
+        6,
+        3,
+        0
+      ],
+      "to": [
+        10,
+        4,
+        1.25
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ],
+          "texture": 2
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            1.25,
+            1
+          ],
+          "texture": 2
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            4,
+            1
+          ],
+          "texture": 2
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            1.25,
+            1
+          ],
+          "texture": 2
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            4,
+            1.25
+          ],
+          "texture": 2
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            4,
+            1.25
+          ],
+          "texture": 2
+        }
+      },
+      "name": "Brass wall rose bottom",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000006",
+      "from": [
+        3.5,
+        0.25,
+        0.75
+      ],
+      "to": [
+        12.5,
+        3.25,
+        4.25
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            9,
+            3
+          ],
+          "texture": 2
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            3.5,
+            3
+          ],
+          "texture": 2
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            9,
+            3
+          ],
+          "texture": 2
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            3.5,
+            3
+          ],
+          "texture": 2
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            9,
+            3.5
+          ],
+          "texture": 2
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            9,
+            3.5
+          ],
+          "texture": 2
+        }
+      },
+      "name": "Brass terminal manifold",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000007",
+      "from": [
+        4,
+        2.75,
+        4.25
+      ],
+      "to": [
+        12,
+        3.5,
+        4.75
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            8,
+            0.75
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            0.75
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            8,
+            0.75
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            0.75
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            0.5
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            8,
+            0.5
+          ],
+          "texture": 1
+        }
+      },
+      "name": "Polished manifold brow",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000008",
+      "from": [
+        6.75,
+        2.5,
+        1.25
+      ],
+      "to": [
+        9.25,
+        4.5,
+        4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2.5,
+            2
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2.75,
+            2
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            2.5,
+            2
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2.75,
+            2
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2.5,
+            2.75
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            2.5,
+            2.75
+          ],
+          "texture": 1
+        }
+      },
+      "name": "Pressure connection neck",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000009",
+      "from": [
+        5.5,
+        15,
+        1.25
+      ],
+      "to": [
+        10.5,
+        16,
+        4.4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            5,
+            1
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            3.1500000000000004,
+            1
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            5,
+            1
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            3.1500000000000004,
+            1
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            5,
+            3.1500000000000004
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            5,
+            3.1500000000000004
+          ],
+          "texture": 1
+        }
+      },
+      "name": "Brass case top",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000010",
+      "from": [
+        3.5,
+        14,
+        1.25
+      ],
+      "to": [
+        12.5,
+        15,
+        4.4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            9,
+            1
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            3.1500000000000004,
+            1
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            9,
+            1
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            3.1500000000000004,
+            1
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            9,
+            3.1500000000000004
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            9,
+            3.1500000000000004
+          ],
+          "texture": 1
+        }
+      },
+      "name": "Brass case upper shoulder",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000011",
+      "from": [
+        1.5,
+        4,
+        1.25
+      ],
+      "to": [
+        14.5,
+        14,
+        4.4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            13,
+            10
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            3.1500000000000004,
+            10
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            13,
+            10
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            3.1500000000000004,
+            10
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            13,
+            3.1500000000000004
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            13,
+            3.1500000000000004
+          ],
+          "texture": 1
+        }
+      },
+      "name": "Brass case centre",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000012",
+      "from": [
+        3.5,
+        3,
+        1.25
+      ],
+      "to": [
+        12.5,
+        4,
+        4.4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            9,
+            1
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            3.1500000000000004,
+            1
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            9,
+            1
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            3.1500000000000004,
+            1
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            9,
+            3.1500000000000004
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            9,
+            3.1500000000000004
+          ],
+          "texture": 1
+        }
+      },
+      "name": "Brass case lower shoulder",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000013",
+      "from": [
+        5.5,
+        2,
+        1.25
+      ],
+      "to": [
+        10.5,
+        3,
+        4.4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            5,
+            1
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            3.1500000000000004,
+            1
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            5,
+            1
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            3.1500000000000004,
+            1
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            5,
+            3.1500000000000004
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            5,
+            3.1500000000000004
+          ],
+          "texture": 1
+        }
+      },
+      "name": "Brass case bottom",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000014",
+      "from": [
+        5,
+        15,
+        4.4
+      ],
+      "to": [
+        11,
+        16,
+        5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5999999999999996,
+            1
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5999999999999996,
+            1
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.5999999999999996
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.5999999999999996
+          ],
+          "texture": 1
+        }
+      },
+      "name": "Bezel shoulder top",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000015",
+      "from": [
+        3,
+        14,
+        4.4
+      ],
+      "to": [
+        13,
+        15,
+        5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5999999999999996,
+            1
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5999999999999996,
+            1
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            10,
+            0.5999999999999996
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            10,
+            0.5999999999999996
+          ],
+          "texture": 1
+        }
+      },
+      "name": "Bezel shoulder upper",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000016",
+      "from": [
+        1,
+        4,
+        4.4
+      ],
+      "to": [
+        15,
+        14,
+        5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            14,
+            10
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5999999999999996,
+            10
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            14,
+            10
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5999999999999996,
+            10
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            14,
+            0.5999999999999996
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            14,
+            0.5999999999999996
+          ],
+          "texture": 1
+        }
+      },
+      "name": "Bezel shoulder centre",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000017",
+      "from": [
+        3,
+        3,
+        4.4
+      ],
+      "to": [
+        13,
+        4,
+        5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5999999999999996,
+            1
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5999999999999996,
+            1
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            10,
+            0.5999999999999996
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            10,
+            0.5999999999999996
+          ],
+          "texture": 1
+        }
+      },
+      "name": "Bezel shoulder lower",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000018",
+      "from": [
+        5,
+        2,
+        4.4
+      ],
+      "to": [
+        11,
+        3,
+        5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5999999999999996,
+            1
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5999999999999996,
+            1
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.5999999999999996
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.5999999999999996
+          ],
+          "texture": 1
+        }
+      },
+      "name": "Bezel shoulder bottom",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000019",
+      "from": [
+        5,
+        15,
+        5
+      ],
+      "to": [
+        11,
+        16,
+        5.15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.15000000000000036,
+            1
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            5,
+            1,
+            11,
+            2
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.15000000000000036,
+            1
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.15000000000000036
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.15000000000000036
+          ],
+          "texture": 1
+        }
+      },
+      "name": "Dial face top",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": false,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000020",
+      "from": [
+        3,
+        14,
+        5
+      ],
+      "to": [
+        13,
+        15,
+        5.15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.15000000000000036,
+            1
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            3,
+            2,
+            13,
+            3
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.15000000000000036,
+            1
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            10,
+            0.15000000000000036
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            10,
+            0.15000000000000036
+          ],
+          "texture": 1
+        }
+      },
+      "name": "Dial face upper",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": false,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000021",
+      "from": [
+        1,
+        4,
+        5
+      ],
+      "to": [
+        15,
+        14,
+        5.15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            14,
+            10
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.15000000000000036,
+            10
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            1,
+            3,
+            15,
+            13
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.15000000000000036,
+            10
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            14,
+            0.15000000000000036
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            14,
+            0.15000000000000036
+          ],
+          "texture": 1
+        }
+      },
+      "name": "Dial face centre",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": false,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000022",
+      "from": [
+        3,
+        3,
+        5
+      ],
+      "to": [
+        13,
+        4,
+        5.15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            10,
+            1
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.15000000000000036,
+            1
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            3,
+            13,
+            13,
+            14
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.15000000000000036,
+            1
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            10,
+            0.15000000000000036
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            10,
+            0.15000000000000036
+          ],
+          "texture": 1
+        }
+      },
+      "name": "Dial face lower",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": false,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000023",
+      "from": [
+        5,
+        2,
+        5
+      ],
+      "to": [
+        11,
+        3,
+        5.15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            1
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.15000000000000036,
+            1
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            5,
+            14,
+            11,
+            15
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.15000000000000036,
+            1
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.15000000000000036
+          ],
+          "texture": 1
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            6,
+            0.15000000000000036
+          ],
+          "texture": 1
+        }
+      },
+      "name": "Dial face bottom",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": false,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000024",
+      "from": [
+        4.25,
+        0.5,
+        4.25
+      ],
+      "to": [
+        7.25,
+        2.75,
+        4.6
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            11,
+            0,
+            13,
+            2
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Frequency terminal A",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000025",
+      "from": [
+        8.75,
+        0.5,
+        4.25
+      ],
+      "to": [
+        11.75,
+        2.75,
+        4.6
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": 3
+        },
+        "east": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": 3
+        },
+        "south": {
+          "uv": [
+            13,
+            0,
+            15,
+            2
+          ],
+          "texture": 3
+        },
+        "west": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": 3
+        },
+        "up": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": 3
+        },
+        "down": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": 3
+        }
+      },
+      "name": "Frequency terminal B",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000026",
+      "from": [
+        7.75,
+        9,
+        5.18
+      ],
+      "to": [
+        8.25,
+        14.25,
+        5.36
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            5.25
+          ],
+          "texture": 0
+        }
+      },
+      "name": "Animated needle pointer",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": false,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        5.3
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000027",
+      "from": [
+        7.25,
+        7.5,
+        5.18
+      ],
+      "to": [
+        8.75,
+        9,
+        5.36
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            0,
+            14.5,
+            1.5,
+            16
+          ],
+          "texture": 0
+        }
+      },
+      "name": "Animated ornate counterweight",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": false,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        5.3
+      ],
+      "type": "cube"
+    },
+    {
+      "uuid": "a7c10000-7d20-4f95-8f20-000000000028",
+      "from": [
+        7.25,
+        8.25,
+        5.38
+      ],
+      "to": [
+        8.75,
+        9.75,
+        5.7
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            13,
+            0,
+            14.5,
+            1.5
+          ],
+          "texture": 0
+        }
+      },
+      "name": "Polished needle hub",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": false,
+      "light_emission": 0,
+      "export": true,
+      "origin": [
+        8,
+        9,
+        5.3
+      ],
+      "type": "cube"
+    }
+  ],
+  "outliner": [
+    {
+      "name": "static",
+      "origin": [
+        8,
+        9,
+        8
+      ],
+      "color": 0,
+      "uuid": "a7c10000-7d20-4f95-8f20-000000001000",
+      "isOpen": true,
+      "children": [
+        "a7c10000-7d20-4f95-8f20-000000000001",
+        "a7c10000-7d20-4f95-8f20-000000000002",
+        "a7c10000-7d20-4f95-8f20-000000000003",
+        "a7c10000-7d20-4f95-8f20-000000000004",
+        "a7c10000-7d20-4f95-8f20-000000000005",
+        "a7c10000-7d20-4f95-8f20-000000000006",
+        "a7c10000-7d20-4f95-8f20-000000000007",
+        "a7c10000-7d20-4f95-8f20-000000000008",
+        "a7c10000-7d20-4f95-8f20-000000000009",
+        "a7c10000-7d20-4f95-8f20-000000000010",
+        "a7c10000-7d20-4f95-8f20-000000000011",
+        "a7c10000-7d20-4f95-8f20-000000000012",
+        "a7c10000-7d20-4f95-8f20-000000000013",
+        "a7c10000-7d20-4f95-8f20-000000000014",
+        "a7c10000-7d20-4f95-8f20-000000000015",
+        "a7c10000-7d20-4f95-8f20-000000000016",
+        "a7c10000-7d20-4f95-8f20-000000000017",
+        "a7c10000-7d20-4f95-8f20-000000000018",
+        "a7c10000-7d20-4f95-8f20-000000000019",
+        "a7c10000-7d20-4f95-8f20-000000000020",
+        "a7c10000-7d20-4f95-8f20-000000000021",
+        "a7c10000-7d20-4f95-8f20-000000000022",
+        "a7c10000-7d20-4f95-8f20-000000000023",
+        "a7c10000-7d20-4f95-8f20-000000000028"
+      ]
+    },
+    {
+      "name": "frequency_slots",
+      "origin": [
+        8,
+        1.625,
+        4.425
+      ],
+      "color": 1,
+      "uuid": "a7c20000-7d20-4f95-8f20-000000002000",
+      "isOpen": true,
+      "children": [
+        "a7c10000-7d20-4f95-8f20-000000000024",
+        "a7c10000-7d20-4f95-8f20-000000000025"
+      ]
+    },
+    {
+      "name": "needle",
+      "origin": [
+        8,
+        9,
+        5.3
+      ],
+      "color": 2,
+      "uuid": "a7c30000-7d20-4f95-8f20-000000003000",
+      "isOpen": true,
+      "children": [
+        "a7c10000-7d20-4f95-8f20-000000000026",
+        "a7c10000-7d20-4f95-8f20-000000000027"
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "name": "steam_pressure_gauge.png",
+      "path": "new_models/steam_pressure_gauge.png",
+      "folder": "block",
+      "namespace": "full_steam_ahead",
+      "id": "0",
+      "group": "",
+      "scope": 0,
+      "width": 32,
+      "height": 32,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": true,
+      "use_as_default": true,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAA2UExURQAAAKg/THJHMffLbDoeIOS3Y/vcfTAeDlkkJDokEc6gWvTu0jowKN7Yvf///8S5mmZaSI40PpCOcfUAAAABdFJOUwBA5thmAAAAAWJLR0QOb70wTwAAAAd0SU1FB+oHDhAAKu5pU8EAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjYtMDctMTRUMTY6MDA6NDIrMDA6MDBJ+xGFAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI2LTA3LTE0VDE2OjAwOjQyKzAwOjAwOKapOQAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNi0wNy0xNFQxNjowMDo0MiswMDowMG+ziOYAAADuSURBVDjLldKBFoIgDAVQXVAqW9j//2yPKRui1emlnk7vuigZxuFjSK+fAd1UBPsgNmkmBKvvntgMCrWmR5NpImoBanrcmkBMBohi7HpSQToFAIvSfrZQFQq0X0qfEE5JXGzgbj3vRxHLvo4Cav9kRouLie0nAizzLPxEJ3hxEobogGC0oNYTxxlI0lo2cgWO+QvEAhipZXl/Aj8n1MWVjNcgs98/5hOYM2eRVdYVA9A3AI96UQEAgeR8+KvJxZ6xfVgKOmG9g134htl6cqDCUvu6cW0dFp/voNv2x775KmQ61qEH3d3hFYbv+dG/AUnWFvfNxpKTAAAAAElFTkSuQmCC",
+      "file_format": "png",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "wrap_mode": "limited",
+      "pbr_channel": "color",
+      "fps": 7,
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": true,
+      "saved": false,
+      "uuid": "a7c40000-7d20-4f95-8f20-000000000000"
+    },
+    {
+      "name": "create_brass_block.png",
+      "path": "",
+      "folder": "block",
+      "namespace": "create",
+      "id": "1",
+      "group": "",
+      "scope": 0,
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": false,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAJ1BMVEX/64z73H33y2zuwWjkt2PXql7OoFrHl1i/jlWveU+eaUdyRzFZJCTelan+AAAAh0lEQVR42mPYtQoM1jAsU2QQZGRiymZYNCM1raMtVJthYZtJaFqoqzbDgmTT8NRgN2+GBSGh5aHGEUCp1PDSENMMbyAjPdQlLAwo1ZYa4prqChRpCzUJBytuDTYtNQ7TZliUahwWDFK8AKjCJSwDKBKa0ZaW0anNsEzJycVFRSmb4fRuMNgDAA/eMsr9PlRLAAAAAElFTkSuQmCC",
+      "file_format": "png",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "wrap_mode": "limited",
+      "pbr_channel": "color",
+      "fps": 7,
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": true,
+      "saved": false,
+      "uuid": "a7c40000-7d20-4f95-8f20-000000000001"
+    },
+    {
+      "name": "create_brass_casing.png",
+      "path": "",
+      "folder": "block",
+      "namespace": "create",
+      "id": "2",
+      "group": "",
+      "scope": 0,
+      "width": 16,
+      "height": 16,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": false,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAM1BMVEX/64z3y2zkt2POoFqeaUdyRzFaPh5TOBpPMhhPMRhJLxdZJCRJLhZEKxU6JBEwHg4pGgxrh7CpAAAAe0lEQVR42l2OQQ7EIAgAQbRQLLD/f+0i9tB2ojGZMEQY/cWETgg3CEgDOkZ4eJJPQAoIYT6Ok/k8A5dwUVE1M1Uv8UxaTWTBvDLxnegKtJK2hWlhdgsRsbwq4rTE77MUXXJfHd0TYdlfZnpJfL9eghAbtkaNkj5gjhfzDxUvB+Sfnve3AAAAAElFTkSuQmCC",
+      "file_format": "png",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "wrap_mode": "limited",
+      "pbr_channel": "color",
+      "fps": 7,
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": true,
+      "saved": false,
+      "uuid": "a7c40000-7d20-4f95-8f20-000000000002"
+    },
+    {
+      "name": "create_redstone_bridge.png",
+      "path": "",
+      "folder": "block",
+      "namespace": "create",
+      "id": "3",
+      "group": "",
+      "scope": 0,
+      "width": 32,
+      "height": 32,
+      "uv_width": 16,
+      "uv_height": 16,
+      "particle": false,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "source": "data:image/png;base64,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EjeNEetmjfQu9d6ghPA6au1dbVlM/DSd5ax5b7PY1hLwA3dTFMwNCv22rScOxQexT3lNhd9jAX2Vp9UjPuwgb4v9tdkn//ZA6a9c7d3GXFjYPiI/NrBDUlZClBSVOTht0515rSQtp5wUzqyH3ZTcXm7PZWCHA2ywDn6Ynmfq6bE17L4ZCTN3P0Dc2mv/UDN9+WML0T5ittz7WCqquuTt44nI/h9QzKWavzZyqu0Au4ldbiuS7lkHvjFR8xpM4QysKgq6bEMhuw3hWrEUfaJOGC1+RvFg4v/+6P7XB//ZQOEctX96/xdIpk+f9vdkSwAADXZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+Cjx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IlhNUCBDb3JlIDQuNC4wLUV4aXYyIj4KIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIgogICAgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIKICAgIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIKICAgIHhtbG5zOkdJTVA9Imh0dHA6Ly93d3cuZ2ltcC5vcmcveG1wLyIKICAgIHhtbG5zOnRpZmY9Imh0dHA6Ly9ucy5hZG9iZS5jb20vdGlmZi8xLjAvIgogICAgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIgogICB4bXBNTTpEb2N1bWVudElEPSJnaW1wOmRvY2lkOmdpbXA6ZWU3ZmIzODEtNDQyNS00OTFkLThjNWEtMDc1NDdlODQ0YmQ0IgogICB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjEzM2UwOWIxLWE2ODUtNGFlNy1iYzg2LWIxYmQ2ZmViNTNkOCIKICAgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ4bXAuZGlkOjdiZmQxZmQ0LWVjOTUtNGI2Yy1iZjg2LWZjYmI2OWE1MzQ3ZCIKICAgZGM6Rm9ybWF0PSJpbWFnZS9wbmciCiAgIEdJTVA6QVBJPSIyLjAiCiAgIEdJTVA6UGxhdGZvcm09IldpbmRvd3MiCiAgIEdJTVA6VGltZVN0YW1wPSIxNzM1OTE3NjY3MTU4NDE5IgogICBHSU1QOlZlcnNpb249IjIuMTAuMzYiCiAgIHRpZmY6T3JpZW50YXRpb249IjEiCiAgIHhtcDpDcmVhdG9yVG9vbD0iR0lNUCAyLjEwIgogICB4bXA6TWV0YWRhdGFEYXRlPSIyMDI1OjAxOjAzVDE1OjIxOjA3KzAwOjAwIgogICB4bXA6TW9kaWZ5RGF0ZT0iMjAyNTowMTowM1QxNToyMTowNyswMDowMCI+CiAgIDx4bXBNTTpIaXN0b3J5PgogICAgPHJkZjpTZXE+CiAgICAgPHJkZjpsaQogICAgICBzdEV2dDphY3Rpb249InNhdmVkIgogICAgICBzdEV2dDpjaGFuZ2VkPSIvIgogICAgICBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjY0N2UxMzRjLTEwNTItNDg2MS04Mjk0LTdmYjNjN2RkNTk0NiIKICAgICAgc3RFdnQ6c29mdHdhcmVBZ2VudD0iR2ltcCAyLjEwIChXaW5kb3dzKSIKICAgICAgc3RFdnQ6d2hlbj0iMjAyNS0wMS0wM1QxNToyMTowNyIvPgogICAgPC9yZGY6U2VxPgogICA8L3htcE1NOkhpc3Rvcnk+CiAgPC9yZGY6RGVzY3JpcHRpb24+CiA8L3JkZjpSREY+CjwveDp4bXBtZXRhPgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg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",
+      "file_format": "png",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "wrap_mode": "limited",
+      "pbr_channel": "color",
+      "fps": 7,
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": true,
+      "saved": false,
+      "uuid": "a7c40000-7d20-4f95-8f20-000000000003"
+    }
+  ],
+  "animations": [
+    {
+      "uuid": "a7c50000-7d20-4f95-8f20-000000005000",
+      "name": "needle_sweep_preview",
+      "loop": "loop",
+      "override": false,
+      "length": 4,
+      "snapping": 20,
+      "selected": false,
+      "animators": {
+        "a7c30000-7d20-4f95-8f20-000000003000": {
+          "name": "needle",
+          "type": "bone",
+          "keyframes": [
+            {
+              "channel": "rotation",
+              "data_points": [
+                {
+                  "x": 0,
+                  "y": 0,
+                  "z": -135
+                }
+              ],
+              "uuid": "a7c51001-7d20-4f95-8f20-000000005101",
+              "time": 0,
+              "color": -1,
+              "interpolation": "linear"
+            },
+            {
+              "channel": "rotation",
+              "data_points": [
+                {
+                  "x": 0,
+                  "y": 0,
+                  "z": 135
+                }
+              ],
+              "uuid": "a7c51002-7d20-4f95-8f20-000000005102",
+              "time": 2,
+              "color": -1,
+              "interpolation": "linear"
+            },
+            {
+              "channel": "rotation",
+              "data_points": [
+                {
+                  "x": 0,
+                  "y": 0,
+                  "z": -135
+                }
+              ],
+              "uuid": "a7c51003-7d20-4f95-8f20-000000005103",
+              "time": 4,
+              "color": -1,
+              "interpolation": "linear"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
