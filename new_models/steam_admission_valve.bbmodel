@@ -11,429 +11,14 @@
     1,
     0
   ],
-  "variable_placeholders": "MODE: show exactly one MODE group. Default is through_branch. Actuator opens by translating +Y from 0 to 1.5 pixels.",
+  "variable_placeholders": "In game, Create renders the pipe core, arms, rims, and fluid dynamically. The north/south straight preview is visible by default; toggle optional branch groups to inspect tee, cross, or vertical layouts.",
   "resolution": {
     "width": 32,
     "height": 32
   },
   "elements": [
     {
-      "name": "Brass chamber center",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        4,
-        3,
-        4
-      ],
-      "to": [
-        12,
-        13,
-        12
-      ],
-      "origin": [
-        8,
-        8,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            0,
-            8,
-            8
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            8,
-            0,
-            16,
-            8
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            0,
-            0,
-            8,
-            8
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            8,
-            0,
-            16,
-            8
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            16,
-            0,
-            24,
-            8
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            24,
-            0,
-            32,
-            8
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "21c0c05e-49b5-4220-8c05-328f2e91166d"
-    },
-    {
-      "name": "Brass chamber west cheek",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        3,
-        4,
-        4
-      ],
-      "to": [
-        4,
-        12,
-        12
-      ],
-      "origin": [
-        8,
-        8,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            0,
-            8,
-            8
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            8,
-            0,
-            16,
-            8
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            0,
-            0,
-            8,
-            8
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            8,
-            0,
-            16,
-            8
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            16,
-            0,
-            24,
-            8
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            24,
-            0,
-            32,
-            8
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "e85adffc-c5cc-4a92-815e-dd91fc7f08a1"
-    },
-    {
-      "name": "Brass chamber east cheek",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        12,
-        4,
-        4
-      ],
-      "to": [
-        13,
-        12,
-        12
-      ],
-      "origin": [
-        8,
-        8,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            0,
-            8,
-            8
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            8,
-            0,
-            16,
-            8
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            0,
-            0,
-            8,
-            8
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            8,
-            0,
-            16,
-            8
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            16,
-            0,
-            24,
-            8
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            24,
-            0,
-            32,
-            8
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "fcc59483-1df4-4e54-834b-e9a378b3dae8"
-    },
-    {
-      "name": "Brass chamber north cheek",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        4,
-        4,
-        3
-      ],
-      "to": [
-        12,
-        12,
-        4
-      ],
-      "origin": [
-        8,
-        8,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            0,
-            8,
-            8
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            8,
-            0,
-            16,
-            8
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            0,
-            0,
-            8,
-            8
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            8,
-            0,
-            16,
-            8
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            16,
-            0,
-            24,
-            8
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            24,
-            0,
-            32,
-            8
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "e927a5d6-cc7a-4ed3-81a7-ac49a2b06603"
-    },
-    {
-      "name": "Brass chamber south cheek",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        4,
-        4,
-        12
-      ],
-      "to": [
-        12,
-        12,
-        13
-      ],
-      "origin": [
-        8,
-        8,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            0,
-            8,
-            8
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            8,
-            0,
-            16,
-            8
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            0,
-            0,
-            8,
-            8
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            8,
-            0,
-            16,
-            8
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            16,
-            0,
-            24,
-            8
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            24,
-            0,
-            32,
-            8
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "b7e623d9-4338-4c80-8b68-51f8ee9ff781"
-    },
-    {
-      "name": "Steam-inlet branch 8x8 pipe arm - north",
+      "name": "Pipe shaft - isolated preview",
       "box_uv": false,
       "render_order": "default",
       "rescale": false,
@@ -445,1486 +30,6 @@
         4,
         4,
         0
-      ],
-      "to": [
-        12,
-        12,
-        3
-      ],
-      "origin": [
-        8,
-        8,
-        8
-      ],
-      "faces": {
-        "east": {
-          "uv": [
-            0,
-            0,
-            3,
-            2
-          ],
-          "texture": 0,
-          "rotation": 90
-        },
-        "west": {
-          "uv": [
-            0,
-            2,
-            3,
-            0
-          ],
-          "texture": 0,
-          "rotation": 90
-        },
-        "up": {
-          "uv": [
-            0,
-            2,
-            3,
-            0
-          ],
-          "texture": 0,
-          "rotation": 180
-        },
-        "down": {
-          "uv": [
-            0,
-            0,
-            3,
-            2
-          ],
-          "texture": 0,
-          "rotation": 180
-        }
-      },
-      "type": "cube",
-      "uuid": "b30c21c1-7866-41b7-8c53-0b74d72153da"
-    },
-    {
-      "name": "Steam-inlet branch 10x10 coupling rim - north",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        3,
-        3,
-        0
-      ],
-      "to": [
-        13,
-        13,
-        2
-      ],
-      "origin": [
-        8,
-        8,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            8,
-            10,
-            18
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            10,
-            8,
-            14,
-            18
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            0,
-            8,
-            10,
-            18
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            10,
-            8,
-            14,
-            18
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            10,
-            8,
-            14,
-            18
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            10,
-            8,
-            14,
-            18
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "0aa70001-e9e9-4c5b-82fe-ce9222024523"
-    },
-    {
-      "name": "Controlled branch brass collar",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        3.5,
-        3.5,
-        2
-      ],
-      "to": [
-        12.5,
-        12.5,
-        3
-      ],
-      "origin": [
-        8,
-        8,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            8,
-            20,
-            16,
-            28
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            8,
-            20,
-            16,
-            28
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            8,
-            20,
-            16,
-            28
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            8,
-            20,
-            16,
-            28
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            8,
-            20,
-            16,
-            28
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            8,
-            20,
-            16,
-            28
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "5f563e3f-781e-49ac-8677-35cb3770e835"
-    },
-    {
-      "name": "Actuator fixed guide",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        6.5,
-        11,
-        1.5
-      ],
-      "to": [
-        9.5,
-        13,
-        3.5
-      ],
-      "origin": [
-        8,
-        8,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            20,
-            8,
-            28
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            0,
-            20,
-            8,
-            28
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            0,
-            20,
-            8,
-            28
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            0,
-            20,
-            8,
-            28
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            0,
-            20,
-            8,
-            28
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            0,
-            20,
-            8,
-            28
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "f8774918-ce39-4ec4-89f5-26fdf171157f"
-    },
-    {
-      "name": "Admission mark top west",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        3.25,
-        12.5,
-        2.2
-      ],
-      "to": [
-        6.5,
-        12.75,
-        2.8
-      ],
-      "origin": [
-        8,
-        8,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "35c4f140-afa6-40b4-8d0f-c1f104759fd7"
-    },
-    {
-      "name": "Admission mark top east",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        9.5,
-        12.5,
-        2.2
-      ],
-      "to": [
-        12.75,
-        12.75,
-        2.8
-      ],
-      "origin": [
-        8,
-        8,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "2578be1f-3df6-49bb-82d9-3e4aadfc2524"
-    },
-    {
-      "name": "Admission mark bottom",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        3.25,
-        3.25,
-        2.2
-      ],
-      "to": [
-        12.75,
-        3.5,
-        2.8
-      ],
-      "origin": [
-        8,
-        8,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "6c3e0d88-83b8-4c27-87ee-414cd9b7175f"
-    },
-    {
-      "name": "Admission mark west",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        3.25,
-        3.5,
-        2.2
-      ],
-      "to": [
-        3.5,
-        12.5,
-        2.8
-      ],
-      "origin": [
-        8,
-        8,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "47a510c8-077a-4001-8dc4-98182c7e0124"
-    },
-    {
-      "name": "Admission mark east",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        12.5,
-        3.5,
-        2.2
-      ],
-      "to": [
-        12.75,
-        12.5,
-        2.8
-      ],
-      "origin": [
-        8,
-        8,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "62be2cba-9b16-4d31-8dc1-83ac03c819f4"
-    },
-    {
-      "name": "Panel pedestal",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        4.5,
-        13,
-        5
-      ],
-      "to": [
-        11.5,
-        14,
-        11
-      ],
-      "origin": [
-        8,
-        14,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            8,
-            0,
-            16,
-            8
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            8,
-            0,
-            16,
-            8
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            8,
-            0,
-            16,
-            8
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            8,
-            0,
-            16,
-            8
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            8,
-            0,
-            16,
-            8
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            8,
-            0,
-            16,
-            8
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "985cfea3-6b22-447d-8c45-42ff17299953"
-    },
-    {
-      "name": "Frequency control plate",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        3,
-        14,
-        4
-      ],
-      "to": [
-        13,
-        15,
-        12
-      ],
-      "origin": [
-        8,
-        14,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            24,
-            8,
-            32,
-            16
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            24,
-            8,
-            32,
-            16
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            24,
-            8,
-            32,
-            16
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            24,
-            8,
-            32,
-            16
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            14,
-            8,
-            24,
-            16
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            8,
-            0,
-            16,
-            8
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "1538cff7-9248-4004-8e24-057784564ab4"
-    },
-    {
-      "name": "Frequency slot A recess",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        3.75,
-        15,
-        5
-      ],
-      "to": [
-        7.25,
-        15.25,
-        9
-      ],
-      "origin": [
-        8,
-        14,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            20,
-            20,
-            24,
-            24
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            20,
-            20,
-            24,
-            24
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            20,
-            20,
-            24,
-            24
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            20,
-            20,
-            24,
-            24
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            20,
-            20,
-            24,
-            24
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            20,
-            20,
-            24,
-            24
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "c7ab5bdd-28cf-45d3-883f-29126b79623d"
-    },
-    {
-      "name": "Frequency slot B recess",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        8.75,
-        15,
-        5
-      ],
-      "to": [
-        12.25,
-        15.25,
-        9
-      ],
-      "origin": [
-        8,
-        14,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            20,
-            20,
-            24,
-            24
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            20,
-            20,
-            24,
-            24
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            20,
-            20,
-            24,
-            24
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            20,
-            20,
-            24,
-            24
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            20,
-            20,
-            24,
-            24
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            20,
-            20,
-            24,
-            24
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "54f7744a-d8a8-414b-8682-b6f3a2a926d2"
-    },
-    {
-      "name": "Frequency A red index",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        4.75,
-        15.25,
-        9.25
-      ],
-      "to": [
-        6.25,
-        15.5,
-        9.5
-      ],
-      "origin": [
-        8,
-        14,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "32349bdf-32b3-440d-83a6-ee5e94925f3d"
-    },
-    {
-      "name": "Frequency B blue index",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        9.75,
-        15.25,
-        9.25
-      ],
-      "to": [
-        11.25,
-        15.5,
-        9.5
-      ],
-      "origin": [
-        8,
-        14,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            20,
-            24,
-            24,
-            28
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            20,
-            24,
-            24,
-            28
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            20,
-            24,
-            24,
-            28
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            20,
-            24,
-            24,
-            28
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            20,
-            24,
-            24,
-            28
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            20,
-            24,
-            24,
-            28
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "ac59320f-57cc-4060-8ece-aee1e1a6d533"
-    },
-    {
-      "name": "Remote actuator spindle",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        7,
-        12,
-        1
-      ],
-      "to": [
-        9,
-        14,
-        3
-      ],
-      "origin": [
-        8,
-        12,
-        2
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            8,
-            20,
-            16,
-            28
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            8,
-            20,
-            16,
-            28
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            8,
-            20,
-            16,
-            28
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            8,
-            20,
-            16,
-            28
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            8,
-            20,
-            16,
-            28
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            8,
-            20,
-            16,
-            28
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "c9d48336-3e1f-4927-8195-46bd8c21ab70"
-    },
-    {
-      "name": "Remote actuator cap",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        6.5,
-        13.5,
-        0.75
-      ],
-      "to": [
-        9.5,
-        14.5,
-        3.25
-      ],
-      "origin": [
-        8,
-        12,
-        2
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            20,
-            8,
-            28
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            0,
-            20,
-            8,
-            28
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            0,
-            20,
-            8,
-            28
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            0,
-            20,
-            8,
-            28
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            0,
-            20,
-            8,
-            28
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            0,
-            20,
-            8,
-            28
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "4f11d393-4950-4443-86c9-e3358bf25d81"
-    },
-    {
-      "name": "Remote position red flag",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        7.25,
-        12.5,
-        0.75
-      ],
-      "to": [
-        8.75,
-        13.5,
-        1
-      ],
-      "origin": [
-        8,
-        12,
-        2
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "south": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "up": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            16,
-            20,
-            20,
-            24
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "84a903b8-6b61-4093-8aa4-c9751f23d300"
-    },
-    {
-      "name": "Terminal straight 8x8 pipe arm - south",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        4,
-        4,
-        13
       ],
       "to": [
         12,
@@ -1939,50 +44,134 @@
       "faces": {
         "east": {
           "uv": [
-            0,
-            6,
-            3,
-            8
+            8,
+            16,
+            16,
+            0
           ],
-          "texture": 0,
-          "rotation": 90
+          "rotation": 90,
+          "texture": 0
         },
         "west": {
           "uv": [
-            0,
             8,
-            3,
-            6
+            0,
+            16,
+            16
           ],
-          "texture": 0,
-          "rotation": 90
+          "rotation": 90,
+          "texture": 0
         },
         "up": {
           "uv": [
-            0,
             8,
-            3,
-            6
+            16,
+            16,
+            0
           ],
-          "texture": 0,
-          "rotation": 180
+          "texture": 0
         },
         "down": {
           "uv": [
-            0,
-            6,
-            3,
-            8
+            8,
+            16,
+            16,
+            0
           ],
-          "texture": 0,
-          "rotation": 180
+          "rotation": 180,
+          "texture": 0
         }
       },
       "type": "cube",
-      "uuid": "6977b875-3760-4fa4-8502-b88b6c4d3b1c"
+      "uuid": "d23afde3-1f22-5f03-b7b8-17f541e9df02"
     },
     {
-      "name": "Terminal straight 10x10 coupling rim - south",
+      "name": "North endpoint rim",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        3,
+        3,
+        0
+      ],
+      "to": [
+        13,
+        13,
+        2
+      ],
+      "origin": [
+        8,
+        28,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            22,
+            22,
+            32,
+            32
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            21,
+            32,
+            19,
+            22
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            22,
+            22,
+            32,
+            32
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            19,
+            32,
+            21,
+            22
+          ],
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            19,
+            22,
+            21,
+            32
+          ],
+          "rotation": 90,
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            21,
+            22,
+            19,
+            32
+          ],
+          "rotation": 90,
+          "texture": 0
+        }
+      },
+      "type": "cube",
+      "uuid": "95c454d6-207a-5828-8452-7722e1561586"
+    },
+    {
+      "name": "South endpoint rim",
       "box_uv": false,
       "render_order": "default",
       "rescale": false,
@@ -2003,69 +192,75 @@
       "origin": [
         8,
         8,
-        8
+        15
       ],
       "faces": {
         "north": {
           "uv": [
-            0,
-            8,
-            10,
-            18
+            22,
+            22,
+            32,
+            32
           ],
-          "texture": 1
+          "rotation": 180,
+          "texture": 0
         },
         "east": {
           "uv": [
-            10,
-            8,
-            14,
-            18
+            21,
+            32,
+            19,
+            22
           ],
-          "texture": 1
+          "rotation": 180,
+          "texture": 0
         },
         "south": {
           "uv": [
-            0,
-            8,
-            10,
-            18
+            22,
+            22,
+            32,
+            32
           ],
-          "texture": 1
+          "rotation": 180,
+          "texture": 0
         },
         "west": {
           "uv": [
-            10,
-            8,
-            14,
-            18
+            19,
+            32,
+            21,
+            22
           ],
-          "texture": 1
+          "rotation": 180,
+          "texture": 0
         },
         "up": {
           "uv": [
-            10,
-            8,
-            14,
-            18
+            21,
+            22,
+            19,
+            32
           ],
-          "texture": 1
+          "rotation": 90,
+          "texture": 0
         },
         "down": {
           "uv": [
-            10,
-            8,
-            14,
-            18
+            19,
+            22,
+            21,
+            32
           ],
-          "texture": 1
+          "rotation": 90,
+          "texture": 0
         }
       },
       "type": "cube",
-      "uuid": "4ef7cf17-da39-4c22-8693-7b4c29e5bdaa"
+      "uuid": "0060831a-4d28-526f-9ae2-b64c798cd015"
     },
     {
-      "name": "Terminal elbow 8x8 pipe arm - east",
+      "name": "Brass control saddle",
       "box_uv": false,
       "render_order": "default",
       "rescale": false,
@@ -2074,14 +269,14 @@
       "light_emission": 0,
       "export": true,
       "from": [
-        13,
-        4,
-        4
+        3,
+        12,
+        5
       ],
       "to": [
-        16,
-        12,
-        12
+        13,
+        13,
+        11
       ],
       "origin": [
         8,
@@ -2092,45 +287,401 @@
         "north": {
           "uv": [
             0,
-            0,
-            3,
-            2
+            7,
+            10,
+            8
           ],
-          "texture": 0
+          "texture": 2
+        },
+        "east": {
+          "uv": [
+            0,
+            8,
+            6,
+            9
+          ],
+          "texture": 2
         },
         "south": {
           "uv": [
             0,
-            2,
-            3,
-            0
+            7,
+            10,
+            8
           ],
-          "texture": 0
+          "texture": 2
+        },
+        "west": {
+          "uv": [
+            0,
+            8,
+            6,
+            9
+          ],
+          "texture": 2
         },
         "up": {
           "uv": [
             0,
             0,
-            3,
+            10,
+            6
+          ],
+          "texture": 2
+        },
+        "down": {
+          "uv": [
+            0,
+            10,
+            10,
+            16
+          ],
+          "texture": 2
+        }
+      },
+      "type": "cube",
+      "uuid": "2c07ff06-a096-5d1e-8d21-4b84f02d95e7"
+    },
+    {
+      "name": "Frequency pad A",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        3.5,
+        13,
+        6
+      ],
+      "to": [
+        7.5,
+        14,
+        10
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            22,
+            4,
+            26,
+            5
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            22,
+            4,
+            26,
+            5
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            22,
+            4,
+            26,
+            5
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            22,
+            4,
+            26,
+            5
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            22,
+            0,
+            26,
+            4
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "634d579b-34ca-505d-9d69-d4abf172890d"
+    },
+    {
+      "name": "Frequency pad B",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        8.5,
+        13,
+        6
+      ],
+      "to": [
+        12.5,
+        14,
+        10
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            22,
+            4,
+            26,
+            5
+          ],
+          "texture": 1
+        },
+        "east": {
+          "uv": [
+            22,
+            4,
+            26,
+            5
+          ],
+          "texture": 1
+        },
+        "south": {
+          "uv": [
+            22,
+            4,
+            26,
+            5
+          ],
+          "texture": 1
+        },
+        "west": {
+          "uv": [
+            22,
+            4,
+            26,
+            5
+          ],
+          "texture": 1
+        },
+        "up": {
+          "uv": [
+            26,
+            0,
+            30,
+            4
+          ],
+          "texture": 1
+        }
+      },
+      "type": "cube",
+      "uuid": "e2ddbcfe-752d-5555-a3a9-7466a7626b96"
+    },
+    {
+      "name": "Admission actuator",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        6,
+        11,
+        3
+      ],
+      "to": [
+        10,
+        13,
+        4
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            0,
+            16,
             2
           ],
+          "texture": 2
+        },
+        "east": {
+          "uv": [
+            17,
+            0,
+            18,
+            2
+          ],
+          "texture": 2
+        },
+        "south": {
+          "uv": [
+            12,
+            0,
+            16,
+            2
+          ],
+          "texture": 2
+        },
+        "west": {
+          "uv": [
+            17,
+            0,
+            18,
+            2
+          ],
+          "texture": 2
+        },
+        "up": {
+          "uv": [
+            12,
+            3,
+            16,
+            4
+          ],
+          "texture": 2
+        },
+        "down": {
+          "uv": [
+            12,
+            3,
+            16,
+            4
+          ],
+          "texture": 2
+        }
+      },
+      "type": "cube",
+      "uuid": "48bafdb8-3cf4-578f-bdeb-4fff1363732d"
+    },
+    {
+      "name": "Admission indicator",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        6.5,
+        12,
+        2.9
+      ],
+      "to": [
+        9.5,
+        13,
+        3
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            5,
+            15,
+            6
+          ],
+          "texture": 2
+        }
+      },
+      "type": "cube",
+      "uuid": "64a75e1c-b12a-59e5-9919-9ab346010d52"
+    },
+    {
+      "name": "Optional east arm",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        12,
+        4,
+        4
+      ],
+      "to": [
+        16,
+        12,
+        12
+      ],
+      "origin": [
+        16,
+        0,
+        -16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            6,
+            4,
+            8
+          ],
+          "rotation": 90,
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            0,
+            8,
+            4,
+            6
+          ],
+          "rotation": 90,
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            0,
+            8,
+            4,
+            6
+          ],
+          "rotation": 90,
           "texture": 0
         },
         "down": {
           "uv": [
             0,
-            2,
-            3,
-            0
+            6,
+            4,
+            8
           ],
+          "rotation": 270,
           "texture": 0
         }
       },
       "type": "cube",
-      "uuid": "cb32b65d-a9e4-4b88-863d-c8d6143d63d9"
+      "uuid": "23327ac8-6235-5f09-9375-84af7b19b495"
     },
     {
-      "name": "Terminal elbow 10x10 coupling rim - east",
+      "name": "Optional east rim",
       "box_uv": false,
       "render_order": "default",
       "rescale": false,
@@ -2156,216 +707,66 @@
       "faces": {
         "north": {
           "uv": [
-            10,
-            8,
-            14,
-            18
+            9.5,
+            16,
+            10.5,
+            11
           ],
-          "texture": 1
+          "texture": 0
         },
         "east": {
           "uv": [
-            0,
-            8,
-            10,
-            18
+            11,
+            11,
+            16,
+            16
           ],
-          "texture": 1,
-          "rotation": 90
+          "texture": 0,
+          "cullface": "east"
         },
         "south": {
           "uv": [
-            10,
-            8,
-            14,
-            18
+            10.5,
+            11,
+            9.5,
+            16
           ],
-          "texture": 1
+          "texture": 0
         },
         "west": {
           "uv": [
-            0,
-            8,
-            10,
-            18
-          ],
-          "texture": 1,
-          "rotation": 90
-        },
-        "up": {
-          "uv": [
-            10,
-            8,
-            14,
-            18
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            10,
-            8,
-            14,
-            18
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "78438915-b18c-4633-854a-cdb381b06014"
-    },
-    {
-      "name": "Through trunk 8x8 pipe arm - east",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        13,
-        4,
-        4
-      ],
-      "to": [
-        16,
-        12,
-        12
-      ],
-      "origin": [
-        8,
-        8,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            0,
-            3,
-            2
-          ],
-          "texture": 0
-        },
-        "south": {
-          "uv": [
-            0,
-            2,
-            3,
-            0
+            11,
+            11,
+            16,
+            16
           ],
           "texture": 0
         },
         "up": {
           "uv": [
-            0,
-            0,
-            3,
-            2
+            9.5,
+            16,
+            10.5,
+            11
           ],
+          "rotation": 180,
           "texture": 0
         },
         "down": {
           "uv": [
-            0,
-            2,
-            3,
-            0
+            10.5,
+            11,
+            9.5,
+            16
           ],
           "texture": 0
         }
       },
       "type": "cube",
-      "uuid": "74d8eee8-8bdb-4242-8965-3f0607ddac97"
+      "uuid": "dfa16049-c1bd-58a0-8262-b30539559848"
     },
     {
-      "name": "Through trunk 10x10 coupling rim - east",
-      "box_uv": false,
-      "render_order": "default",
-      "rescale": false,
-      "locked": false,
-      "shade": true,
-      "light_emission": 0,
-      "export": true,
-      "from": [
-        14,
-        3,
-        3
-      ],
-      "to": [
-        16,
-        13,
-        13
-      ],
-      "origin": [
-        8,
-        8,
-        8
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            10,
-            8,
-            14,
-            18
-          ],
-          "texture": 1
-        },
-        "east": {
-          "uv": [
-            0,
-            8,
-            10,
-            18
-          ],
-          "texture": 1,
-          "rotation": 90
-        },
-        "south": {
-          "uv": [
-            10,
-            8,
-            14,
-            18
-          ],
-          "texture": 1
-        },
-        "west": {
-          "uv": [
-            0,
-            8,
-            10,
-            18
-          ],
-          "texture": 1,
-          "rotation": 90
-        },
-        "up": {
-          "uv": [
-            10,
-            8,
-            14,
-            18
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            10,
-            8,
-            14,
-            18
-          ],
-          "texture": 1
-        }
-      },
-      "type": "cube",
-      "uuid": "9ca1966d-f94d-474d-89bc-d661ffb39175"
-    },
-    {
-      "name": "Through trunk 8x8 pipe arm - west",
+      "name": "Optional west arm",
       "box_uv": false,
       "render_order": "default",
       "rescale": false,
@@ -2379,58 +780,62 @@
         4
       ],
       "to": [
-        3,
+        4,
         12,
         12
       ],
       "origin": [
-        8,
-        8,
-        8
+        16,
+        0,
+        -16
       ],
       "faces": {
         "north": {
           "uv": [
             0,
-            2,
-            3,
-            0
+            0,
+            4,
+            2
           ],
+          "rotation": 90,
           "texture": 0
         },
         "south": {
           "uv": [
             0,
-            0,
-            3,
-            2
+            2,
+            4,
+            0
           ],
+          "rotation": 90,
           "texture": 0
         },
         "up": {
           "uv": [
             0,
             2,
-            3,
+            4,
             0
           ],
+          "rotation": 90,
           "texture": 0
         },
         "down": {
           "uv": [
             0,
             0,
-            3,
+            4,
             2
           ],
+          "rotation": 270,
           "texture": 0
         }
       },
       "type": "cube",
-      "uuid": "87aeb563-a31b-4b3e-830c-feb0ad27a7b1"
+      "uuid": "4341edea-3a2f-5907-9728-c2df83e2c2e1"
     },
     {
-      "name": "Through trunk 10x10 coupling rim - west",
+      "name": "Optional west rim",
       "box_uv": false,
       "render_order": "default",
       "rescale": false,
@@ -2456,131 +861,432 @@
       "faces": {
         "north": {
           "uv": [
-            10,
-            8,
-            14,
-            18
+            10.5,
+            11,
+            9.5,
+            16
           ],
-          "texture": 1
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            11,
+            11,
+            16,
+            16
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            9.5,
+            16,
+            10.5,
+            11
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            11,
+            11,
+            16,
+            16
+          ],
+          "texture": 0,
+          "cullface": "west"
+        },
+        "up": {
+          "uv": [
+            10.5,
+            11,
+            9.5,
+            16
+          ],
+          "rotation": 180,
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            9.5,
+            16,
+            10.5,
+            11
+          ],
+          "texture": 0
+        }
+      },
+      "type": "cube",
+      "uuid": "477ea764-2715-5f3d-83ba-0ceac071b529"
+    },
+    {
+      "name": "Optional up arm",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        4,
+        12,
+        4
+      ],
+      "to": [
+        12,
+        16,
+        12
+      ],
+      "origin": [
+        16,
+        0,
+        -16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            4,
+            2
+          ],
+          "texture": 0
         },
         "east": {
           "uv": [
             0,
-            8,
-            10,
-            18
+            0,
+            4,
+            2
           ],
-          "texture": 1,
-          "rotation": 90
+          "texture": 0
         },
         "south": {
           "uv": [
-            10,
-            8,
-            14,
-            18
+            4,
+            0,
+            0,
+            2
           ],
-          "texture": 1
+          "texture": 0
         },
         "west": {
           "uv": [
+            4,
             0,
-            8,
-            10,
-            18
+            0,
+            2
           ],
-          "texture": 1,
-          "rotation": 90
-        },
-        "up": {
-          "uv": [
-            10,
-            8,
-            14,
-            18
-          ],
-          "texture": 1
-        },
-        "down": {
-          "uv": [
-            10,
-            8,
-            14,
-            18
-          ],
-          "texture": 1
+          "texture": 0
         }
       },
       "type": "cube",
-      "uuid": "c7ca3f22-051c-42d8-87ec-5ba7903a079a"
+      "uuid": "0b57152e-1ef8-5698-b1e7-9fc61e15d0b3"
+    },
+    {
+      "name": "Optional up rim",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        3,
+        14,
+        3
+      ],
+      "to": [
+        13,
+        16,
+        13
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9.5,
+            16,
+            10.5,
+            11
+          ],
+          "rotation": 90,
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            9.5,
+            16,
+            10.5,
+            11
+          ],
+          "rotation": 90,
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            9.5,
+            16,
+            10.5,
+            11
+          ],
+          "rotation": 90,
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            9.5,
+            16,
+            10.5,
+            11
+          ],
+          "rotation": 90,
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            11,
+            11,
+            16,
+            16
+          ],
+          "rotation": 90,
+          "texture": 0,
+          "cullface": "up"
+        },
+        "down": {
+          "uv": [
+            11,
+            11,
+            16,
+            16
+          ],
+          "rotation": 270,
+          "texture": 0
+        }
+      },
+      "type": "cube",
+      "uuid": "bc8b25cf-9e1d-54d2-a0b3-83596a1cc0cf"
+    },
+    {
+      "name": "Optional down arm",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        4,
+        0,
+        4
+      ],
+      "to": [
+        12,
+        4,
+        12
+      ],
+      "origin": [
+        16,
+        0,
+        -16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            6,
+            4,
+            8
+          ],
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            0,
+            6,
+            4,
+            8
+          ],
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            4,
+            6,
+            0,
+            8
+          ],
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            4,
+            6,
+            0,
+            8
+          ],
+          "texture": 0
+        }
+      },
+      "type": "cube",
+      "uuid": "e75586fc-88dd-5fd6-a620-c370a0da3d9d"
+    },
+    {
+      "name": "Optional down rim",
+      "box_uv": false,
+      "render_order": "default",
+      "rescale": false,
+      "locked": false,
+      "shade": true,
+      "light_emission": 0,
+      "export": true,
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        2,
+        13
+      ],
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            10.5,
+            11,
+            9.5,
+            16
+          ],
+          "rotation": 90,
+          "texture": 0
+        },
+        "east": {
+          "uv": [
+            10.5,
+            11,
+            9.5,
+            16
+          ],
+          "rotation": 90,
+          "texture": 0
+        },
+        "south": {
+          "uv": [
+            10.5,
+            11,
+            9.5,
+            16
+          ],
+          "rotation": 90,
+          "texture": 0
+        },
+        "west": {
+          "uv": [
+            10.5,
+            11,
+            9.5,
+            16
+          ],
+          "rotation": 90,
+          "texture": 0
+        },
+        "up": {
+          "uv": [
+            11,
+            11,
+            16,
+            16
+          ],
+          "rotation": 90,
+          "texture": 0
+        },
+        "down": {
+          "uv": [
+            11,
+            11,
+            16,
+            16
+          ],
+          "rotation": 270,
+          "texture": 0,
+          "cullface": "down"
+        }
+      },
+      "type": "cube",
+      "uuid": "705f8125-4a29-5717-b2bc-55f041dc5e9d"
     }
   ],
   "outliner": [
     {
-      "uuid": "3a7ebd32-378b-4522-83ee-94add305feeb",
+      "uuid": "096a0aa5-d97f-51d3-8dc7-7bf366095694",
       "isOpen": true,
       "children": [
-        "21c0c05e-49b5-4220-8c05-328f2e91166d",
-        "e85adffc-c5cc-4a92-815e-dd91fc7f08a1",
-        "fcc59483-1df4-4e54-834b-e9a378b3dae8",
-        "e927a5d6-cc7a-4ed3-81a7-ac49a2b06603",
-        "b7e623d9-4338-4c80-8b68-51f8ee9ff781",
-        "b30c21c1-7866-41b7-8c53-0b74d72153da",
-        "0aa70001-e9e9-4c5b-82fe-ce9222024523",
-        "5f563e3f-781e-49ac-8677-35cb3770e835",
-        "f8774918-ce39-4ec4-89f5-26fdf171157f",
-        "35c4f140-afa6-40b4-8d0f-c1f104759fd7",
-        "2578be1f-3df6-49bb-82d9-3e4aadfc2524",
-        "6c3e0d88-83b8-4c27-87ee-414cd9b7175f",
-        "47a510c8-077a-4001-8dc4-98182c7e0124",
-        "62be2cba-9b16-4d31-8dc1-83ac03c819f4"
+        "d23afde3-1f22-5f03-b7b8-17f541e9df02",
+        "95c454d6-207a-5828-8452-7722e1561586",
+        "0060831a-4d28-526f-9ae2-b64c798cd015"
       ]
     },
     {
-      "uuid": "f1e9df1d-f89b-499b-8858-efbd7e1b1cad",
+      "uuid": "3254c497-23bd-515d-959d-6edc7e833e29",
       "isOpen": true,
       "children": [
-        "985cfea3-6b22-447d-8c45-42ff17299953",
-        "1538cff7-9248-4004-8e24-057784564ab4",
-        "c7ab5bdd-28cf-45d3-883f-29126b79623d",
-        "54f7744a-d8a8-414b-8682-b6f3a2a926d2",
-        "32349bdf-32b3-440d-83a6-ee5e94925f3d",
-        "ac59320f-57cc-4060-8ece-aee1e1a6d533"
+        "2c07ff06-a096-5d1e-8d21-4b84f02d95e7",
+        "634d579b-34ca-505d-9d69-d4abf172890d",
+        "e2ddbcfe-752d-5555-a3a9-7466a7626b96"
       ]
     },
     {
-      "uuid": "860cd590-1f87-43b3-8dfe-b8b430904305",
+      "uuid": "b2a56858-0972-57b6-9a34-01c3503f2839",
       "isOpen": true,
       "children": [
-        "c9d48336-3e1f-4927-8195-46bd8c21ab70",
-        "4f11d393-4950-4443-86c9-e3358bf25d81",
-        "84a903b8-6b61-4093-8aa4-c9751f23d300"
+        "48bafdb8-3cf4-578f-bdeb-4fff1363732d",
+        "64a75e1c-b12a-59e5-9919-9ab346010d52"
       ]
     },
     {
-      "uuid": "f724b30a-fc22-4f6f-8f10-185f36fd7b14",
+      "uuid": "06ffe9c5-5973-554d-94ed-7e52116404e3",
       "isOpen": true,
       "children": [
-        "6977b875-3760-4fa4-8502-b88b6c4d3b1c",
-        "4ef7cf17-da39-4c22-8693-7b4c29e5bdaa"
+        "23327ac8-6235-5f09-9375-84af7b19b495",
+        "dfa16049-c1bd-58a0-8262-b30539559848"
       ]
     },
     {
-      "uuid": "ee09fa9b-573c-4e0b-856a-882d4cc15a66",
+      "uuid": "008a00dd-6bf7-5462-8ea3-5db054036c35",
       "isOpen": true,
       "children": [
-        "cb32b65d-a9e4-4b88-863d-c8d6143d63d9",
-        "78438915-b18c-4633-854a-cdb381b06014"
+        "4341edea-3a2f-5907-9728-c2df83e2c2e1",
+        "477ea764-2715-5f3d-83ba-0ceac071b529"
       ]
     },
     {
-      "uuid": "4383ab75-8c07-4813-8076-f83426550f13",
+      "uuid": "4af6762f-d13d-5ac9-b896-2e496d7db230",
       "isOpen": true,
       "children": [
-        "74d8eee8-8bdb-4242-8965-3f0607ddac97",
-        "9ca1966d-f94d-474d-89bc-d661ffb39175",
-        "87aeb563-a31b-4b3e-830c-feb0ad27a7b1",
-        "c7ca3f22-051c-42d8-87ec-5ba7903a079a"
+        "0b57152e-1ef8-5698-b1e7-9fc61e15d0b3",
+        "bc8b25cf-9e1d-54d2-a0b3-83596a1cc0cf"
+      ]
+    },
+    {
+      "uuid": "c184c03b-ab84-5f19-b11d-1e767f64b20b",
+      "isOpen": true,
+      "children": [
+        "e75586fc-88dd-5fd6-a620-c370a0da3d9d",
+        "705f8125-4a29-5717-b2bc-55f041dc5e9d"
       ]
     }
   ],
@@ -2591,41 +1297,101 @@
       "folder": "block",
       "namespace": "create",
       "id": "0",
-      "width": 32,
-      "height": 32,
-      "uv_width": 32,
-      "uv_height": 32,
-      "particle": false,
-      "file_format": "png",
-      "visible": true,
-      "internal": true,
-      "saved": false,
-      "uuid": "f4e47086-b8c9-4fe6-a8ae-1e3966fdb594",
-      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QAQAA7ADCvV9nrAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AwUAREL6YGOKQAAAv9JREFUWMO9V89rE0EU/lKymey222zTEKmBkNYW4g9EQwsKRXpSelGvKl78n7x48Kh3EcSbhx4Epb20UKjaUkiVkjZrtpnd2T3EQ9zN7Owmu2E3fcd58+Obee9935vM++cbvcrcDEpaASqZg8HaAICW/hfN9gUAYDpPUC4WMEskdJgD26TQTQddi+HZuy8ZJLCsOMCDAAAXnOtTCWCQNkpaH2RSywJATlaGTtj+1YRCWlCVPICmN25QC5SxdADw5t5eNx0AQGOp4oVHnNd/gZ1kAAxqwTYpQAqBEBjUwj61UAcAzb/wx+8W/pwnD8HUMIcmSwjLD/clwvypAegwZ+SiKP9YIegnVzAHAED0xfGP/QIGtQKDs0TyciDKnxiAeAs+21Uljyj/xJJwFDfE8Y/NAx3mQCVRiTeIv23SdAGI5h7A64S/TpEuAC+xuCwPUjEmT8WiGLlUzCcgr5iJqXhUnQNAs30B3XRQLhYAtANynNQymLC9uL7cqxYJNu8s+nLJFbPspAEcn9k4PrPxcqOArb2f3jhlDA8bN4bzQFpWnc9hfUX1br7ZWMX6zWvRZZi2GawNyhianVMfh1xaCJ7c7yvo170DH7llLyME1SLB4ckplhbKXh+hmw4OT04HAD68etTTZAk5WfFIiUfqlt7jt59DK+fN03s9AKhXSnjw+mOG348nOreX0ED9IdBkCYtXatg5OsChUN/r9VvYOT+I7IJUJe+RliZL2G+2hrKlQgjqldIAQE5WsLW/C4NauL1c9fRANx182v4OACj/Hx9m03niU0vKGL4dGTg+swNhWav150yJWiAe3rWYpwNiaEJfQRAt8XB+bJZI4TwgUi1/s7gWB2ygIXFbdPFwTZZSUb5YHZH7H+QPdz8p41jcznmKX7DZWMV0nqBrMd/hd2srWFoox9pUVNPqfC6UGwJEZJsUWye7oY1G12IwqBVZhrw82yaFQgjWasBaLbwMbZMOAOimg8rcDHJXyyOJaOTtqeX9mHXTQb1SGkpE7n7/AETWkb9mJr/tAAAAAElFTkSuQmCC"
-    },
-    {
-      "name": "steam_admission_valve.png",
-      "path": "steam_admission_valve.png",
-      "folder": "",
-      "namespace": "full_steam_ahead",
-      "id": "1",
+      "group": "",
+      "scope": 0,
       "width": 32,
       "height": 32,
       "uv_width": 32,
       "uv_height": 32,
       "particle": true,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
       "file_format": "png",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "wrap_mode": "limited",
+      "pbr_channel": "color",
+      "fps": 7,
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
       "visible": true,
       "internal": true,
-      "saved": true,
-      "uuid": "cdc5bcbd-c14f-4d2d-801a-b36bcab27de2",
-      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABpklEQVR42u2WsUrEQBCG8xQpg3CenNpYKChBFLTUyi5XaXnNnYig+ASCvSDYCYKFj3FgL1dZ+gI+wcq/MOtkMrvZ86IBvYX/bpNsdr6dnZlsMthfMm0qwc/H24V5Hw9Kwj0a9HJ7UBGfBGOlrovcPUdf6nCt8wUAg9IAnwDXGMMn0AB876NfbPZKUgEmz30rOcHT2Y4qDhBaQDRAyAPShdIDvwogA0lz/1QAWpBohnyqex/GNDmAVtOwv7xoYvVY7Fqhv5FvNSILgBiYXPVV4RkB4PoyX3UAdw/35jXL7D/X0enYro6M+OqIA8DEvlWTQQ1godtxomDm9whAFjlSBWA7zSpqAsCXxirAT3jg7wLAoC+9aI8h35iZARpLQ7gEE2vCMw0gaap9txAl89ZU6670TEh1H5ObNC2JpyFUt60WQNZyCBFKAKEzH4zie8ABTo4LVycoeKVcMBMAXuKSALyG82KieYBSjANQAJMqAKPzUUkSwHfgiNmCKIA6D/gAZEyt7w0NVysAOA9MBeArkwQQOvPFeMBXZR3ALGkYAxBMw3n79+0TK3EGxeckALgAAAAASUVORK5CYII="
+      "saved": false,
+      "uuid": "548f1d3b-8ff1-5310-860b-d218f64c208c",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QAQAA7ADCvV9nrAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH6AwUAREL6YGOKQAAAv9JREFUWMO9V89rE0EU/lKymey222zTEKmBkNYW4g9EQwsKRXpSelGvKl78n7x48Kh3EcSbhx4Epb20UKjaUkiVkjZrtpnd2T3EQ9zN7Owmu2E3fcd58+Obee9935vM++cbvcrcDEpaASqZg8HaAICW/hfN9gUAYDpPUC4WMEskdJgD26TQTQddi+HZuy8ZJLCsOMCDAAAXnOtTCWCQNkpaH2RSywJATlaGTtj+1YRCWlCVPICmN25QC5SxdADw5t5eNx0AQGOp4oVHnNd/gZ1kAAxqwTYpQAqBEBjUwj61UAcAzb/wx+8W/pwnD8HUMIcmSwjLD/clwvypAegwZ+SiKP9YIegnVzAHAED0xfGP/QIGtQKDs0TyciDKnxiAeAs+21Uljyj/xJJwFDfE8Y/NAx3mQCVRiTeIv23SdAGI5h7A64S/TpEuAC+xuCwPUjEmT8WiGLlUzCcgr5iJqXhUnQNAs30B3XRQLhYAtANynNQymLC9uL7cqxYJNu8s+nLJFbPspAEcn9k4PrPxcqOArb2f3jhlDA8bN4bzQFpWnc9hfUX1br7ZWMX6zWvRZZi2GawNyhianVMfh1xaCJ7c7yvo170DH7llLyME1SLB4ckplhbKXh+hmw4OT04HAD68etTTZAk5WfFIiUfqlt7jt59DK+fN03s9AKhXSnjw+mOG348nOreX0ED9IdBkCYtXatg5OsChUN/r9VvYOT+I7IJUJe+RliZL2G+2hrKlQgjqldIAQE5WsLW/C4NauL1c9fRANx182v4OACj/Hx9m03niU0vKGL4dGTg+swNhWav150yJWiAe3rWYpwNiaEJfQRAt8XB+bJZI4TwgUi1/s7gWB2ygIXFbdPFwTZZSUb5YHZH7H+QPdz8p41jcznmKX7DZWMV0nqBrMd/hd2srWFoox9pUVNPqfC6UGwJEZJsUWye7oY1G12IwqBVZhrw82yaFQgjWasBaLbwMbZMOAOimg8rcDHJXyyOJaOTtqeX9mHXTQb1SGkpE7n7/AETWkb9mJr/tAAAAAElFTkSuQmCC"
+    },
+    {
+      "name": "create_redstone_bridge.png",
+      "path": "",
+      "folder": "block",
+      "namespace": "create",
+      "id": "1",
+      "group": "",
+      "scope": 0,
+      "width": 32,
+      "height": 32,
+      "uv_width": 32,
+      "uv_height": 32,
+      "particle": false,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "file_format": "png",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "wrap_mode": "limited",
+      "pbr_channel": "color",
+      "fps": 7,
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": true,
+      "saved": false,
+      "uuid": "259b6a15-5759-5f3e-9eb9-12d2d69d7809",
+      "source": "data:image/png;base64,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EjeNEetmjfQu9d6ghPA6au1dbVlM/DSd5ax5b7PY1hLwA3dTFMwNCv22rScOxQexT3lNhd9jAX2Vp9UjPuwgb4v9tdkn//ZA6a9c7d3GXFjYPiI/NrBDUlZClBSVOTht0515rSQtp5wUzqyH3ZTcXm7PZWCHA2ywDn6Ynmfq6bE17L4ZCTN3P0Dc2mv/UDN9+WML0T5ittz7WCqquuTt44nI/h9QzKWavzZyqu0Au4ldbiuS7lkHvjFR8xpM4QysKgq6bEMhuw3hWrEUfaJOGC1+RvFg4v/+6P7XB//ZQOEctX96/xdIpk+f9vdkSwAADXZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+Cjx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IlhNUCBDb3JlIDQuNC4wLUV4aXYyIj4KIDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+CiAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIgogICAgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIKICAgIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIKICAgIHhtbG5zOkdJTVA9Imh0dHA6Ly93d3cuZ2ltcC5vcmcveG1wLyIKICAgIHhtbG5zOnRpZmY9Imh0dHA6Ly9ucy5hZG9iZS5jb20vdGlmZi8xLjAvIgogICAgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIgogICB4bXBNTTpEb2N1bWVudElEPSJnaW1wOmRvY2lkOmdpbXA6ZWU3ZmIzODEtNDQyNS00OTFkLThjNWEtMDc1NDdlODQ0YmQ0IgogICB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjEzM2UwOWIxLWE2ODUtNGFlNy1iYzg2LWIxYmQ2ZmViNTNkOCIKICAgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ4bXAuZGlkOjdiZmQxZmQ0LWVjOTUtNGI2Yy1iZjg2LWZjYmI2OWE1MzQ3ZCIKICAgZGM6Rm9ybWF0PSJpbWFnZS9wbmciCiAgIEdJTVA6QVBJPSIyLjAiCiAgIEdJTVA6UGxhdGZvcm09IldpbmRvd3MiCiAgIEdJTVA6VGltZVN0YW1wPSIxNzM1OTE3NjY3MTU4NDE5IgogICBHSU1QOlZlcnNpb249IjIuMTAuMzYiCiAgIHRpZmY6T3JpZW50YXRpb249IjEiCiAgIHhtcDpDcmVhdG9yVG9vbD0iR0lNUCAyLjEwIgogICB4bXA6TWV0YWRhdGFEYXRlPSIyMDI1OjAxOjAzVDE1OjIxOjA3KzAwOjAwIgogICB4bXA6TW9kaWZ5RGF0ZT0iMjAyNTowMTowM1QxNToyMTowNyswMDowMCI+CiAgIDx4bXBNTTpIaXN0b3J5PgogICAgPHJkZjpTZXE+CiAgICAgPHJkZjpsaQogICAgICBzdEV2dDphY3Rpb249InNhdmVkIgogICAgICBzdEV2dDpjaGFuZ2VkPSIvIgogICAgICBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjY0N2UxMzRjLTEwNTItNDg2MS04Mjk0LTdmYjNjN2RkNTk0NiIKICAgICAgc3RFdnQ6c29mdHdhcmVBZ2VudD0iR2ltcCAyLjEwIChXaW5kb3dzKSIKICAgICAgc3RFdnQ6d2hlbj0iMjAyNS0wMS0wM1QxNToyMTowNyIvPgogICAgPC9yZGY6U2VxPgogICA8L3htcE1NOkhpc3Rvcnk+CiAgPC9yZGY6RGVzY3JpcHRpb24+CiA8L3JkZjpSREY+CjwveDp4bXBtZXRhPgogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg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"
+    },
+    {
+      "name": "steam_admission_valve.png",
+      "path": "steam_admission_valve.png",
+      "folder": "block",
+      "namespace": "full_steam_ahead",
+      "id": "2",
+      "group": "",
+      "scope": 0,
+      "width": 32,
+      "height": 32,
+      "uv_width": 32,
+      "uv_height": 32,
+      "particle": false,
+      "use_as_default": false,
+      "layers_enabled": false,
+      "sync_to_project": "",
+      "file_format": "png",
+      "render_mode": "default",
+      "render_sides": "auto",
+      "wrap_mode": "limited",
+      "pbr_channel": "color",
+      "fps": 7,
+      "frame_time": 1,
+      "frame_order_type": "loop",
+      "frame_order": "",
+      "frame_interpolate": false,
+      "visible": true,
+      "internal": true,
+      "saved": false,
+      "uuid": "8be2d4bd-0fda-5fe3-bae7-a009d0e85341",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABBUlEQVR4nGP8eKfiPwMBcGP3FQbzzC2MDAwMDM01xSjqa1t6GZtriv/XtvQyEjIHG2D5/OoTw6cXH/EqenjnM5x9/+lzDPkd+4+RYzfEATAGnwQ/hkM+v/zIwCvOjyI2b/4yDJ8ePXqcLN+jOABbKKBbzsCAGgX3nz7H6iCyHIDNt1eOPmHQsZZBESM3rnE64Njaqwz3n/+Bct9jKLi/5gGqo+Tk4CGg8+gRVR0zIICxM8r6v4OtIF5FBw6/ZyhfdpQmvmVRlGTBEHx45zNDWO/BoR+8xADGk9N9CJaENI0CBgbUko7egGnAbB51ABSwMDAwIJWEo2AUjIJRMApGwSgYBfQHAJEwXIiFEYc0AAAAAElFTkSuQmCC"
     }
   ],
   "groups": [
     {
-      "name": "core_static - chamber + north inlet branch",
-      "uuid": "3a7ebd32-378b-4522-83ee-94add305feeb",
+      "name": "pipe - isolated straight preview",
+      "uuid": "096a0aa5-d97f-51d3-8dc7-7bf366095694",
       "export": true,
       "locked": false,
       "origin": [
@@ -2643,46 +1409,8 @@
       "isOpen": true
     },
     {
-      "name": "control_panel - two frequency item slots",
-      "uuid": "f1e9df1d-f89b-499b-8858-efbd7e1b1cad",
-      "export": true,
-      "locked": false,
-      "origin": [
-        8,
-        14,
-        8
-      ],
-      "rotation": [
-        0,
-        0,
-        0
-      ],
-      "color": 1,
-      "visibility": true,
-      "isOpen": true
-    },
-    {
-      "name": "actuator - translate +Y up to 1.5px",
-      "uuid": "860cd590-1f87-43b3-8dfe-b8b430904305",
-      "export": true,
-      "locked": false,
-      "origin": [
-        8,
-        12,
-        2
-      ],
-      "rotation": [
-        0,
-        0,
-        0
-      ],
-      "color": 2,
-      "visibility": true,
-      "isOpen": true
-    },
-    {
-      "name": "MODE terminal_straight - south pipe to north inlet",
-      "uuid": "f724b30a-fc22-4f6f-8f10-185f36fd7b14",
+      "name": "control saddle - Create-style frequency pads",
+      "uuid": "3254c497-23bd-515d-959d-6edc7e833e29",
       "export": true,
       "locked": false,
       "origin": [
@@ -2695,13 +1423,51 @@
         0,
         0
       ],
-      "color": 3,
+      "color": 0,
+      "visibility": true,
+      "isOpen": true
+    },
+    {
+      "name": "actuator - future functional animation",
+      "uuid": "b2a56858-0972-57b6-9a34-01c3503f2839",
+      "export": true,
+      "locked": false,
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "color": 0,
+      "visibility": true,
+      "isOpen": true
+    },
+    {
+      "name": "optional east connection preview",
+      "uuid": "06ffe9c5-5973-554d-94ed-7e52116404e3",
+      "export": true,
+      "locked": false,
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "color": 0,
       "visibility": false,
       "isOpen": true
     },
     {
-      "name": "MODE terminal_elbow - east pipe to north inlet",
-      "uuid": "ee09fa9b-573c-4e0b-856a-882d4cc15a66",
+      "name": "optional west connection preview",
+      "uuid": "008a00dd-6bf7-5462-8ea3-5db054036c35",
       "export": true,
       "locked": false,
       "origin": [
@@ -2714,13 +1480,13 @@
         0,
         0
       ],
-      "color": 4,
+      "color": 0,
       "visibility": false,
       "isOpen": true
     },
     {
-      "name": "MODE through_branch - east/west trunk + north inlet",
-      "uuid": "4383ab75-8c07-4813-8076-f83426550f13",
+      "name": "optional up connection preview",
+      "uuid": "4af6762f-d13d-5ac9-b896-2e496d7db230",
       "export": true,
       "locked": false,
       "origin": [
@@ -2733,12 +1499,31 @@
         0,
         0
       ],
-      "color": 5,
-      "visibility": true,
+      "color": 0,
+      "visibility": false,
+      "isOpen": true
+    },
+    {
+      "name": "optional down connection preview",
+      "uuid": "c184c03b-ab84-5f19-b11d-1e767f64b20b",
+      "export": true,
+      "locked": false,
+      "origin": [
+        8,
+        8,
+        8
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "color": 0,
+      "visibility": false,
       "isOpen": true
     }
   ],
-  "credit": "Original Full Steam Ahead source model for the planned Steam Admission Valve. Nominal north is the controlled steam-inlet branch; east/west are the through trunk; south is the straight terminal supply. The embedded Create pipe texture is local modelling reference only. The custom admission-valve texture and geometry are original FSA work.",
+  "credit": "Full Steam Ahead Steam Admission Valve design source. The visible straight pipe and hidden branch previews reconstruct Create 6.0.10's native Fluid Pipe geometry and texture density. The compact brass saddle, actuator, and valve texture are original FSA work.",
   "ambientocclusion": true,
   "front_gui_light": true,
   "java_block_version": "1.21"

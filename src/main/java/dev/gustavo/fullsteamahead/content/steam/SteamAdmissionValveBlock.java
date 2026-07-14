@@ -14,6 +14,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -41,50 +42,17 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
     public static final EnumProperty<SteamAdmissionValveMode> MODE =
             EnumProperty.create("mode", SteamAdmissionValveMode.class);
 
-    private static final Box[] BASE_BOXES = new Box[] {
-            new Box(4, 3, 4, 12, 13, 12),
-            new Box(3, 4, 4, 4, 12, 12),
-            new Box(12, 4, 4, 13, 12, 12),
-            new Box(4, 4, 3, 12, 12, 4),
-            new Box(4, 4, 12, 12, 12, 13),
-            new Box(4, 4, 0, 12, 12, 3),
-            new Box(3, 3, 0, 13, 13, 2),
-            new Box(3.5, 3.5, 2, 12.5, 12.5, 3),
-            new Box(6.5, 11, 1.5, 9.5, 13, 3.5),
-            new Box(3.25, 12.5, 2.2, 6.5, 12.75, 2.8),
-            new Box(9.5, 12.5, 2.2, 12.75, 12.75, 2.8),
-            new Box(3.25, 3.25, 2.2, 12.75, 3.5, 2.8),
-            new Box(3.25, 3.5, 2.2, 3.5, 12.5, 2.8),
-            new Box(12.5, 3.5, 2.2, 12.75, 12.5, 2.8),
-            new Box(4.5, 13, 5, 11.5, 14, 11),
-            new Box(3, 14, 4, 13, 15, 12),
-            new Box(3.75, 15, 5, 7.25, 15.25, 9),
-            new Box(8.75, 15, 5, 12.25, 15.25, 9),
-            new Box(4.75, 15.25, 9.25, 6.25, 15.5, 9.5),
-            new Box(9.75, 15.25, 9.25, 11.25, 15.5, 9.5),
-            new Box(7, 12, 1, 9, 14, 3),
-            new Box(6.5, 13.5, 0.75, 9.5, 14.5, 3.25),
-            new Box(7.25, 12.5, 0.75, 8.75, 13.5, 1)
+    private static final Box[] BODY_BOXES = new Box[] {
+            new Box(4, 4, 4, 12, 12, 12),
+            new Box(3, 12, 5, 13, 13, 11),
+            new Box(3.5, 13, 6, 7.5, 14, 10),
+            new Box(8.5, 13, 6, 12.5, 14, 10),
+            new Box(6, 11, 3, 10, 13, 4),
+            new Box(6.5, 12, 2.9, 9.5, 13, 3)
     };
-    private static final Box[] STRAIGHT_BOXES = new Box[] {
-            new Box(4, 4, 13, 12, 12, 16),
-            new Box(3, 3, 14, 13, 13, 16)
-    };
-    private static final Box[] CLOCKWISE_BOXES = new Box[] {
-            new Box(13, 4, 4, 16, 12, 12),
-            new Box(14, 3, 3, 16, 13, 13)
-    };
-    private static final Box[] COUNTERCLOCKWISE_BOXES = new Box[] {
-            new Box(0, 4, 4, 3, 12, 12),
-            new Box(0, 3, 3, 2, 13, 13)
-    };
-    private static final Box[] THROUGH_BOXES = new Box[] {
-            CLOCKWISE_BOXES[0],
-            CLOCKWISE_BOXES[1],
-            COUNTERCLOCKWISE_BOXES[0],
-            COUNTERCLOCKWISE_BOXES[1]
-    };
-    private static final Map<SteamAdmissionValveMode, Map<Direction, VoxelShape>> SHAPES = buildShapes();
+    private static final Map<Direction, VoxelShape> BODY_SHAPES = buildBodyShapes();
+    private static final Map<Direction, VoxelShape> CONNECTION_SHAPES = buildConnectionShapes();
+    private static final Map<Direction, VoxelShape> RIM_SHAPES = buildRimShapes();
 
     public SteamAdmissionValveBlock(Properties properties) {
         super(properties);
@@ -161,7 +129,7 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
             BlockPos pos,
             CollisionContext context
     ) {
-        return getValveShape(state);
+        return getValveShape(state, level, pos);
     }
 
     @Override
@@ -171,7 +139,7 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
             BlockPos pos,
             CollisionContext context
     ) {
-        return getValveShape(state);
+        return getValveShape(state, level, pos);
     }
 
     @Override
@@ -236,38 +204,54 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
         return FluidPipeBlock.isPipe(level.getBlockState(pos.relative(direction)));
     }
 
-    private static VoxelShape getValveShape(BlockState state) {
-        return SHAPES.get(state.getValue(MODE)).get(state.getValue(FACING));
+    private static VoxelShape getValveShape(BlockState state, BlockGetter level, BlockPos pos) {
+        VoxelShape shape = BODY_SHAPES.get(state.getValue(FACING));
+        for (Direction direction : Direction.values()) {
+            if (!state.getValue(PROPERTY_BY_DIRECTION.get(direction))) {
+                continue;
+            }
+
+            shape = Shapes.or(shape, CONNECTION_SHAPES.get(direction));
+            if (level instanceof BlockAndTintGetter tintGetter
+                    && FluidPipeBlock.shouldDrawRim(tintGetter, pos, state, direction)) {
+                shape = Shapes.or(shape, RIM_SHAPES.get(direction));
+            }
+        }
+        return shape.optimize();
     }
 
-    private static Map<SteamAdmissionValveMode, Map<Direction, VoxelShape>> buildShapes() {
-        Map<SteamAdmissionValveMode, Map<Direction, VoxelShape>> shapes =
-                new EnumMap<>(SteamAdmissionValveMode.class);
-        for (SteamAdmissionValveMode mode : SteamAdmissionValveMode.values()) {
-            Map<Direction, VoxelShape> byDirection = new EnumMap<>(Direction.class);
-            for (Direction direction : Direction.Plane.HORIZONTAL) {
-                VoxelShape shape = Shapes.empty();
-                for (Box box : BASE_BOXES) {
-                    shape = Shapes.or(shape, rotate(box, direction).shape());
-                }
-                for (Box box : boxesFor(mode)) {
-                    shape = Shapes.or(shape, rotate(box, direction).shape());
-                }
-                byDirection.put(direction, shape.optimize());
+    private static Map<Direction, VoxelShape> buildBodyShapes() {
+        Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            VoxelShape shape = Shapes.empty();
+            for (Box box : BODY_BOXES) {
+                shape = Shapes.or(shape, rotate(box, direction).shape());
             }
-            shapes.put(mode, byDirection);
+            shapes.put(direction, shape.optimize());
         }
         return shapes;
     }
 
-    private static Box[] boxesFor(SteamAdmissionValveMode mode) {
-        return switch (mode) {
-            case TERMINAL_STRAIGHT -> STRAIGHT_BOXES;
-            case TERMINAL_CLOCKWISE -> CLOCKWISE_BOXES;
-            case TERMINAL_COUNTERCLOCKWISE -> COUNTERCLOCKWISE_BOXES;
-            case THROUGH_BRANCH -> THROUGH_BOXES;
-            case UNLINKED -> new Box[0];
-        };
+    private static Map<Direction, VoxelShape> buildConnectionShapes() {
+        Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
+        shapes.put(Direction.NORTH, Block.box(4, 4, 0, 12, 12, 4));
+        shapes.put(Direction.SOUTH, Block.box(4, 4, 12, 12, 12, 16));
+        shapes.put(Direction.EAST, Block.box(12, 4, 4, 16, 12, 12));
+        shapes.put(Direction.WEST, Block.box(0, 4, 4, 4, 12, 12));
+        shapes.put(Direction.UP, Block.box(4, 12, 4, 12, 16, 12));
+        shapes.put(Direction.DOWN, Block.box(4, 0, 4, 12, 4, 12));
+        return shapes;
+    }
+
+    private static Map<Direction, VoxelShape> buildRimShapes() {
+        Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
+        shapes.put(Direction.NORTH, Block.box(3, 3, 0, 13, 13, 2));
+        shapes.put(Direction.SOUTH, Block.box(3, 3, 14, 13, 13, 16));
+        shapes.put(Direction.EAST, Block.box(14, 3, 3, 16, 13, 13));
+        shapes.put(Direction.WEST, Block.box(0, 3, 3, 2, 13, 13));
+        shapes.put(Direction.UP, Block.box(3, 14, 3, 13, 16, 13));
+        shapes.put(Direction.DOWN, Block.box(3, 0, 3, 13, 2, 13));
+        return shapes;
     }
 
     private static Box rotate(Box box, Direction facing) {

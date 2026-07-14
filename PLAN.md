@@ -863,15 +863,16 @@ changing engine balance.
 **Goal**: add a pipe-shaped, remotely controlled admission throttle between a shared steam main and one engine `steam_inlet`, while allowing valves in a cylinder bank to remain part of a continuous pipe run.
 
 - [x] Register `steam_admission_valve` as a Create-compatible fluid pipe block with its own pipe block entity, item, loot, tags, language entry, and creative-tab entry.
-- [x] Convert the authored Blockbench model into neutral, terminal-straight, clockwise-elbow, counterclockwise-elbow, and through-branch runtime models.
-- [x] Point the controlled branch toward exactly one adjacent `steam_inlet` and derive the visible main-pipe topology from real neighbouring Create pipes. Ambiguous layouts use the neutral model.
-- [x] Match selection and collision shapes to each rotated model variant.
+- [x] Render the valve with Create's native context-sensitive Fluid Pipe core models and `PipeAttachmentModel` arms/rims, including isolated straight pipes and gap-free multi-side connections.
+- [x] Keep only a compact custom brass control saddle on the pipe, with two raised Create-style frequency pads and strict one-texture-pixel-per-model-unit density.
+- [x] Point the future controlled branch toward exactly one adjacent `steam_inlet` while deriving every visible pipe connection from the actual six-direction pipe state.
+- [x] Match selection and collision shapes to the compact rotated controls, live pipe arms, and endpoint rims.
 - [x] Preserve normal Create fluid transport at full flow for the visual prototype so pipe connection and steam rendering can be evaluated in-world.
 - [ ] Add two built-in Redstone Link frequency slots and receive an analogue `0..15` admission command without a separate Redstone Link block.
 - [ ] Throttle only the branch feeding the adjacent `steam_inlet`; a through-branch main must remain open to downstream engines.
 - [ ] Animate the actuator from delivered admission, add Create-style sound/goggle feedback, and preserve state through simulated contraptions.
 - [ ] Add a survival recipe only after the control behavior is functional, so the prototype is not presented as a finished throttle.
-- [ ] Manual test all four supported pipe layouts, rotation toward each inlet direction, steam passthrough, collision, inventory rendering, and contraption assembly.
+- [ ] Manual test isolated, straight, elbow, tee, cross, and vertical layouts; rotation toward each inlet direction; steam passthrough; collision; inventory rendering; and contraption assembly.
 
 ---
 

@@ -1,5 +1,6 @@
 package dev.gustavo.fullsteamahead.client;
 
+import com.simibubi.create.content.fluids.PipeAttachmentModel;
 import dev.engine_room.flywheel.api.visualization.VisualizerRegistry;
 import dev.engine_room.flywheel.lib.visualization.SimpleBlockEntityVisualizer;
 import dev.gustavo.fullsteamahead.FullSteamAhead;
@@ -16,6 +17,8 @@ import dev.gustavo.fullsteamahead.client.render.SteamReliefValveRenderer;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModParticleTypes;
 import net.createmod.ponder.foundation.PonderIndex;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
@@ -28,6 +31,9 @@ import net.neoforged.neoforge.common.NeoForge;
 @SuppressWarnings("removal")
 @EventBusSubscriber(modid = FullSteamAhead.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public final class FullSteamAheadClient {
+    private static final ResourceLocation STEAM_ADMISSION_VALVE_ID =
+            ResourceLocation.fromNamespaceAndPath(FullSteamAhead.MOD_ID, "steam_admission_valve");
+
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
         FullSteamAhead.LOGGER.info("Initializing Create: Full Steam Ahead client");
@@ -47,6 +53,17 @@ public final class FullSteamAheadClient {
     @SubscribeEvent
     public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
         FullSteamPartialModels.registerAdditional(event);
+    }
+
+    @SubscribeEvent
+    public static void wrapPipeModels(ModelEvent.ModifyBakingResult event) {
+        event.getModels().replaceAll((location, model) -> {
+            if (!location.id().equals(STEAM_ADMISSION_VALVE_ID)
+                    || location.getVariant().equals(ModelResourceLocation.INVENTORY_VARIANT)) {
+                return model;
+            }
+            return PipeAttachmentModel.withAO(model);
+        });
     }
 
     @SubscribeEvent
