@@ -122,7 +122,7 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
         BlockState state = level.getBlockState(pos);
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof SteamInletBlockEntity inlet && inlet.isInletAssembled()) {
-            if (neighborPos.equals(pos.relative(portFacing(state)))) {
+            if (neighborPos.equals(pos.relative(getPortFacing(state)))) {
                 return true;
             }
             BlockPos ringOrigin = inlet.getRingOrigin();
@@ -177,7 +177,7 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
         return shapeForFacing(facing);
     }
 
-    private Direction portFacing(BlockState state) {
+    public static Direction getPortFacing(BlockState state) {
         CylinderSection section = state.getValue(SECTION);
         return section == CylinderSection.NONE
                 ? state.getValue(HORIZONTAL_FACING)
@@ -208,7 +208,7 @@ public class SteamInletBlock extends Block implements IBE<SteamInletBlockEntity>
         };
     }
 
-    private Direction facingForSection(CylinderSection section) {
+    private static Direction facingForSection(CylinderSection section) {
         if (section == null || section == CylinderSection.NONE) {
             return Direction.NORTH;
         }

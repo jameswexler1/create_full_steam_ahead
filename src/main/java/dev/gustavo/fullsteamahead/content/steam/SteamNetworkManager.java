@@ -486,7 +486,18 @@ public final class SteamNetworkManager {
         if (be instanceof SteamInletBlockEntity inlet) {
             if (inlet.isActiveInlet()) {
                 network.inlets.add(inlet);
-                network.addStoredAtBaseTemp(inlet.getStoredSteamMb());
+                SteamAdmissionValveBlockEntity admissionValve = null;
+                if (level.getBlockEntity(fromPipe) instanceof SteamAdmissionValveBlockEntity valve
+                        && valve.controls(inlet)) {
+                    network.admissionValves.put(inlet, valve);
+                    admissionValve = valve;
+                }
+                // A fully closed admission valve isolates the inlet's small downstream buffer from
+                // the upstream pressure vessel. Keep tracking the inlet so it receives a zero cap.
+                if (admissionValve == null || admissionValve.getAdmissionStrength() > 0) {
+                    network.connectedInletCount++;
+                    network.addStoredAtBaseTemp(inlet.getStoredSteamMb());
+                }
             }
             return;
         }
@@ -773,11 +784,21 @@ public final class SteamNetworkManager {
             }
         }
 
-        // Fair allocation: every engine requests fullFlow * pressureFactor; if short, split evenly.
+        // Each engine starts with the pressure-dependent demand, then its admission valve applies a
+        // 0..15 cap. A shortage scales every request by the same ratio, preserving throttle ratios.
         int requestedEach = SteamPhysics.requestedFlowMb(effective);
         int engineCount = engines.size();
+        Map<SteamInletBlockEntity, Integer> engineRequests = new HashMap<>();
+        long totalEngineRequested = 0L;
+        for (SteamInletBlockEntity inlet : engines) {
+            SteamAdmissionValveBlockEntity valve = network.admissionValves.get(inlet);
+            int admissionStrength = valve == null ? 15 : valve.getAdmissionStrength();
+            int requested = Math.round(requestedEach * admissionStrength / 15.0F);
+            engineRequests.put(inlet, requested);
+            totalEngineRequested += requested;
+        }
         Map<FullSteamAeronauticsSteamVent, Integer> ventRequests = new HashMap<>();
-        int totalVentRequested = 0;
+        long totalVentRequested = 0L;
         for (FullSteamAeronauticsSteamVent vent : network.aeronauticsVents) {
             int requested = vent.fullSteamAhead$getRequestedSteamMb(effective);
             if (requested <= 0) {
@@ -787,13 +808,15 @@ public final class SteamNetworkManager {
             totalVentRequested += requested;
         }
 
-        int totalRequested = requestedEach * engineCount + totalVentRequested;
+        long totalRequested = totalEngineRequested + totalVentRequested;
         double drawScale = totalRequested > 0 && network.storedMb < totalRequested
                 ? network.storedMb / (double) totalRequested
                 : 1.0D;
-        int perEngineCap = requestedEach;
-        if (drawScale < 1.0D) {
-            perEngineCap = (int) Math.floor(requestedEach * drawScale);
+        Map<SteamInletBlockEntity, Integer> engineCaps = new HashMap<>();
+        for (SteamInletBlockEntity inlet : engines) {
+            int requested = engineRequests.getOrDefault(inlet, 0);
+            int cap = drawScale < 1.0D ? (int) Math.floor(requested * drawScale) : requested;
+            engineCaps.put(inlet, cap);
         }
         int consumedMb = 0;
         for (SteamInletBlockEntity inlet : engines) {
@@ -808,7 +831,13 @@ public final class SteamNetworkManager {
         boolean warn = effective >= FullSteamConfig.steamWarnPressure();
 
         for (SteamInletBlockEntity inlet : network.inlets) {
-            inlet.applyNetworkState(effective, engines.contains(inlet) ? perEngineCap : 0);
+            int requested = engineRequests.getOrDefault(inlet, 0);
+            int cap = engineCaps.getOrDefault(inlet, 0);
+            inlet.applyNetworkState(effective, cap);
+            SteamAdmissionValveBlockEntity valve = network.admissionValves.get(inlet);
+            if (valve != null) {
+                valve.applyNetworkState(effective, requested, cap, inlet.getDisplayConsumedSteamMb());
+            }
         }
         for (FullSteamAeronauticsSteamVent vent : network.aeronauticsVents) {
             int requested = ventRequests.getOrDefault(vent, 0);
@@ -1097,7 +1126,7 @@ public final class SteamNetworkManager {
     private static double networkVolume(Network network) {
         return Math.max(1.0D, network.volumeM3
                 + network.pipeCount * 0.5D
-                + network.inlets.size() * 0.5D
+                + network.connectedInletCount * 0.5D
                 + network.aeronauticsVents.size() * 0.5D);
     }
 
@@ -1325,6 +1354,7 @@ public final class SteamNetworkManager {
         private final Map<BlockPos, FullSteamDirectBoilerSource> directBoilers = new HashMap<>();
         private final Map<BlockPos, List<BoilerSteamPort>> portsByBoiler = new HashMap<>();
         private final List<SteamInletBlockEntity> inlets = new ArrayList<>();
+        private final Map<SteamInletBlockEntity, SteamAdmissionValveBlockEntity> admissionValves = new HashMap<>();
         private final List<FullSteamAeronauticsSteamVent> aeronauticsVents = new ArrayList<>();
         private final Set<BlockPos> boilers = new HashSet<>();
         private final Set<BlockPos> steamTanks = new HashSet<>();
@@ -1336,6 +1366,7 @@ public final class SteamNetworkManager {
         private double temperatureNumerator;
         private double temperatureWeight;
         private int pipeCount;
+        private int connectedInletCount;
 
         /** Passive steam (tanks, inlet buffers) counts toward pressure at base temperature. */
         private void addStoredAtBaseTemp(int amount) {

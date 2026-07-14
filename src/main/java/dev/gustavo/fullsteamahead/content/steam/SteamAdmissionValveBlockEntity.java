@@ -11,6 +11,7 @@ import com.simibubi.create.content.fluids.pipes.FluidPipeBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.createmod.catnip.data.Couple;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -29,6 +30,11 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
     private LinkBehaviour link;
     private int receivedSignal;
     private final LerpedFloat clientAdmission = LerpedFloat.linear();
+    private double networkPressurePn;
+    private int requestedSteamMb;
+    private int allocatedSteamMb;
+    private int deliveredSteamMb;
+    private long networkGameTime = Long.MIN_VALUE;
 
     public SteamAdmissionValveBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STEAM_ADMISSION_VALVE.get(), pos, state);
@@ -71,6 +77,57 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
         return clientAdmission.getValue(partialTicks);
     }
 
+    public SteamInletBlockEntity getControlledInlet() {
+        if (level == null) {
+            return null;
+        }
+
+        SteamInletBlockEntity candidate = null;
+        int candidates = 0;
+        BlockState valveState = getBlockState();
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            if (!valveState.getValue(SteamAdmissionValveBlock.PROPERTY_BY_DIRECTION.get(direction))) {
+                continue;
+            }
+            BlockPos inletPos = worldPosition.relative(direction);
+            BlockState inletState = level.getBlockState(inletPos);
+            if (!(level.getBlockEntity(inletPos) instanceof SteamInletBlockEntity inlet)
+                    || !inlet.isActiveInlet()
+                    || SteamInletBlock.getPortFacing(inletState) != direction.getOpposite()) {
+                continue;
+            }
+            candidate = inlet;
+            candidates++;
+        }
+        return candidates == 1 ? candidate : null;
+    }
+
+    public boolean controls(SteamInletBlockEntity inlet) {
+        return inlet != null && getControlledInlet() == inlet;
+    }
+
+    public void applyNetworkState(
+            double pressurePn,
+            int requestedSteamMb,
+            int allocatedSteamMb,
+            int deliveredSteamMb
+    ) {
+        this.networkPressurePn = SteamPressure.zeroIfNegligible(pressurePn);
+        this.requestedSteamMb = Math.max(0, requestedSteamMb);
+        this.allocatedSteamMb = Math.max(0, allocatedSteamMb);
+        this.deliveredSteamMb = Math.max(0, deliveredSteamMb);
+        this.networkGameTime = level == null ? 0L : level.getGameTime();
+        if (level != null && level.getGameTime() % 5L == 0L) {
+            notifyUpdate();
+        }
+    }
+
+    private boolean isNetworkFresh() {
+        return level != null
+                && networkGameTime != Long.MIN_VALUE
+                && level.getGameTime() - networkGameTime <= 3L;
+    }
+
     public boolean isFrequencyBypass() {
         if (link == null) {
             return true;
@@ -93,6 +150,10 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         CreateLang.text("Steam Admission Valve").forGoggles(tooltip);
+        SteamInletBlockEntity inlet = getControlledInlet();
+        CreateLang.text(inlet == null ? "No active inlet linked" : "Active inlet linked")
+                .style(inlet == null ? ChatFormatting.YELLOW : ChatFormatting.GREEN)
+                .forGoggles(tooltip, 1);
         if (isFrequencyBypass()) {
             CreateLang.text("Admission: Bypass (100%)").forGoggles(tooltip, 1);
         } else {
@@ -101,6 +162,21 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
             CreateLang.text("Command: " + strength + "/15 (" + percent + "%)")
                     .forGoggles(tooltip, 1);
         }
+        String state = isFrequencyBypass()
+                ? "Bypass"
+                : getAdmissionStrength() == 0
+                        ? "Closed"
+                        : getAdmissionStrength() == 15 ? "Open" : "Throttled";
+        CreateLang.text("State: " + state).style(ChatFormatting.GRAY).forGoggles(tooltip, 1);
+        double pressure = isNetworkFresh() ? networkPressurePn : 0.0D;
+        CreateLang.text("Supply pressure: " + SteamPressure.format(pressure))
+                .style(pressure > 0.0D ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
+                .forGoggles(tooltip, 1);
+        int requested = isNetworkFresh() ? requestedSteamMb : 0;
+        int delivered = isNetworkFresh() ? deliveredSteamMb : 0;
+        CreateLang.text("Requested: " + requested + " mB/t  Delivered: " + delivered + " mB/t")
+                .style(delivered > 0 ? ChatFormatting.AQUA : ChatFormatting.DARK_GRAY)
+                .forGoggles(tooltip, 1);
         return true;
     }
 
@@ -108,6 +184,13 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
         tag.putInt(RECEIVED_SIGNAL_KEY, receivedSignal);
+        if (clientPacket) {
+            tag.putDouble("NetworkPressure", networkPressurePn);
+            tag.putInt("RequestedSteam", requestedSteamMb);
+            tag.putInt("AllocatedSteam", allocatedSteamMb);
+            tag.putInt("DeliveredSteam", deliveredSteamMb);
+            tag.putLong("NetworkGameTime", networkGameTime);
+        }
     }
 
     @Override
@@ -115,6 +198,11 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
         super.read(tag, registries, clientPacket);
         receivedSignal = Mth.clamp(tag.getInt(RECEIVED_SIGNAL_KEY), 0, 15);
         if (clientPacket) {
+            networkPressurePn = SteamPressure.zeroIfNegligible(tag.getDouble("NetworkPressure"));
+            requestedSteamMb = Math.max(0, tag.getInt("RequestedSteam"));
+            allocatedSteamMb = Math.max(0, tag.getInt("AllocatedSteam"));
+            deliveredSteamMb = Math.max(0, tag.getInt("DeliveredSteam"));
+            networkGameTime = tag.getLong("NetworkGameTime");
             clientAdmission.chase(getAdmissionFraction(), 0.25F, LerpedFloat.Chaser.EXP);
         } else {
             clientAdmission.setValue(getAdmissionFraction());

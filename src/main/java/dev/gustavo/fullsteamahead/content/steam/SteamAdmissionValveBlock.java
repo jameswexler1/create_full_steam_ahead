@@ -176,7 +176,9 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
         Direction inletDirection = null;
         int inletCount = 0;
         for (Direction direction : Direction.Plane.HORIZONTAL) {
-            if (level.getBlockState(pos.relative(direction)).is(ModBlocks.STEAM_INLET.get())) {
+            BlockState inletState = level.getBlockState(pos.relative(direction));
+            if (inletState.is(ModBlocks.STEAM_INLET.get())
+                    && SteamInletBlock.getPortFacing(inletState) == direction.getOpposite()) {
                 inletDirection = direction;
                 inletCount++;
             }
