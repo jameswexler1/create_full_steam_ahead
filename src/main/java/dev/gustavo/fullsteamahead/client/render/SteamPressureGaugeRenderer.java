@@ -16,9 +16,10 @@ import net.minecraft.world.level.block.state.BlockState;
 public class SteamPressureGaugeRenderer extends SafeBlockEntityRenderer<SteamPressureGaugeBlockEntity> {
     private static final float NEEDLE_X = 8.0F / 16.0F;
     private static final float NEEDLE_Y = 9.0F / 16.0F;
-    private static final float NEEDLE_Z = 9.08F / 16.0F;
-    private static final float SWEEP_RADIANS = (float) Math.toRadians(270.0D);
-    private static final float START_RADIANS = (float) Math.toRadians(-135.0D);
+    private static final float NEEDLE_Z = 2.88F / 16.0F;
+    // Viewed from the dial front: lower-left, clockwise through the top, then lower-right.
+    private static final float SWEEP_RADIANS = (float) Math.toRadians(-270.0D);
+    private static final float START_RADIANS = (float) Math.toRadians(135.0D);
 
     public SteamPressureGaugeRenderer(BlockEntityRendererProvider.Context context) {
     }

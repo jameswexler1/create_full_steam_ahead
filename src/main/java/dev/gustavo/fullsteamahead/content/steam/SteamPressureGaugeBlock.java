@@ -34,15 +34,16 @@ import java.util.Map;
 public class SteamPressureGaugeBlock extends HorizontalDirectionalBlock
         implements IBE<SteamPressureGaugeBlockEntity>, FullSteamWrenchable {
     public static final MapCodec<SteamPressureGaugeBlock> CODEC = simpleCodec(SteamPressureGaugeBlock::new);
+    // The source model faces south; keep its rear visually flush with the opposite block face.
     private static final Box[] SOUTH_BOXES = new Box[] {
-            new Box(5, 15, 6.25, 11, 16, 9.4),
-            new Box(3, 14, 6.25, 13, 15, 9.4),
-            new Box(1, 4, 6.25, 15, 14, 9.4),
-            new Box(3, 3, 6.25, 13, 4, 9.4),
-            new Box(5, 2, 6.25, 11, 3, 9.4),
-            new Box(7, 1.75, 6.75, 9, 3.25, 8.25),
-            new Box(6.5, 0.75, 6.25, 9.5, 1.75, 8.75),
-            new Box(7, 0, 6.75, 9, 0.75, 8.25)
+            new Box(5, 15, 0.05, 11, 16, 3.2),
+            new Box(3, 14, 0.05, 13, 15, 3.2),
+            new Box(1, 4, 0.05, 15, 14, 3.2),
+            new Box(3, 3, 0.05, 13, 4, 3.2),
+            new Box(5, 2, 0.05, 11, 3, 3.2),
+            new Box(7, 1.75, 0.55, 9, 3.25, 2.05),
+            new Box(6.5, 0.75, 0.05, 9.5, 1.75, 2.55),
+            new Box(7, 0, 0.55, 9, 0.75, 2.05)
     };
     private static final Map<Direction, VoxelShape> SHAPES = buildShapes();
 
@@ -58,9 +59,16 @@ public class SteamPressureGaugeBlock extends HorizontalDirectionalBlock
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
+        Direction clickedFace = context.getClickedFace();
+        Direction facing = clickedFace.getAxis() == Direction.Axis.Y
+                ? FullSteamWrenchable.flipIfShifted(
+                        context,
+                        context.getHorizontalDirection().getOpposite()
+                )
+                : clickedFace;
         return defaultBlockState().setValue(
                 FACING,
-                FullSteamWrenchable.flipIfShifted(context, context.getHorizontalDirection().getOpposite())
+                facing
         );
     }
 

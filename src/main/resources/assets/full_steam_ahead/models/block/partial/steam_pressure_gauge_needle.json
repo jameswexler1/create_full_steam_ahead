@@ -1,5 +1,5 @@
 {
-  "credit": "Compiled from new_models/steam_pressure_gauge.bbmodel",
+  "credit": "Compiled from new_models/steam_pressure_gauge.bbmodel; world partial shifted 6.20px toward backing surface",
   "ambientocclusion": true,
   "texture_size": [
     16,
@@ -18,12 +18,12 @@
       "from": [
         7.5,
         9,
-        9.07
+        2.87
       ],
       "to": [
         8.5,
         14,
-        9.17
+        2.97
       ],
       "faces": {
         "north": {
@@ -51,12 +51,12 @@
       "from": [
         7,
         7,
-        9.07
+        2.87
       ],
       "to": [
         9,
         9,
-        9.17
+        2.97
       ],
       "faces": {
         "north": {

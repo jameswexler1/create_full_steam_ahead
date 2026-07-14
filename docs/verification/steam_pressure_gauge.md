@@ -18,7 +18,7 @@ Verified on 2026-07-14. Compilation, generated resources, JSON syntax, and the a
 - [x] Source chunks are never force-loaded; unavailable sources render toward zero.
 - [x] Client interpolation is independent of the server polling cadence.
 - [x] The needle's full 270-degree sweep represents zero through configured burst pressure.
-- [x] The static model, animated needle partial, item model, and three textures are compiled from `new_models/steam_pressure_gauge.bbmodel` without altering its geometry or UVs.
+- [x] The static model, animated needle partial, item model, and three textures are compiled from `new_models/steam_pressure_gauge.bbmodel`; world models are translated toward their backing surface with a sub-pixel anti-flicker gap while the centered item model and all UVs remain unchanged.
 
 ## Manual In-World Checks
 
@@ -28,12 +28,14 @@ Verified on 2026-07-14. Compilation, generated resources, JSON syntax, and the a
 - [ ] Confirm ordinary right-click still places the gauge and sneak-use in air clears the selected source.
 - [ ] Confirm an ordinary unheated/non-boiler Fluid Tank is rejected as a new source.
 - [ ] Raise and lower boiler pressure; compare the needle and goggle value with the boiler and a Display Link.
-- [ ] Confirm zero pressure is the low stop, burst pressure is the high stop, and overpressure does not rotate beyond the dial.
+- [ ] Confirm zero pressure starts at the lower-left stop, increasing pressure moves clockwise through the top, burst pressure ends at the lower-right stop, and overpressure does not rotate beyond the dial.
 - [ ] Cut heat and drain residual pressure; confirm the gauge remains linked and follows pressure smoothly to zero.
 - [ ] Resize the boiler or cause Create to choose another controller while preserving the clicked tank; confirm the gauge continues reading it.
 - [ ] Break the selected tank or unload its chunk; confirm the needle eases to zero and goggles report the source unavailable.
 - [ ] Restore the exact tank/source chunk; confirm the reading recovers without replacing the gauge.
-- [ ] Place gauges facing north, south, east, and west; confirm housing, needle, and model-derived hitbox stay aligned.
+- [ ] Place gauges against north, south, east, and west wall faces; confirm the rear housing is flush to the clicked wall and the dial faces away from it.
+- [ ] Place gauges on the floor while facing north, south, east, and west; confirm the dial faces the player and remains on the correct backing side of its block.
+- [ ] Confirm housing, animated needle, outline, and collision shape occupy the same thin wall-adjacent volume in every facing.
 - [ ] Wrench a linked gauge through all four directions; confirm it still reads the same stationary boiler.
 - [ ] Save/reload and unload/reload the gauge chunk; confirm its source and pressure recover.
 - [ ] Assemble a gauge and its boiler on one Sable/Aeronautics simulated contraption, rotate it, and confirm the relative link survives assembly and disassembly.
