@@ -61,7 +61,6 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private static final int MAX_ACTIVE_BURNERS = 9;
     private static final int MAX_HEAT_UNITS = 18;
     private static final int MAX_PIPED_HEAT_UNITS = 9;
-    private static final float MAX_RPM = 64.0F;
     private static final int MIN_STEAM_SOUND_INTERVAL_TICKS = 5;
     private static final int MAX_PHASE_SHAFT_SCAN = 128;
     private static final float HALF_TURN_RADIANS = (float) Math.PI;
@@ -884,8 +883,8 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         sourceMode = SourceMode.byName(tag.getString(SOURCE_MODE_KEY));
         steamConsumedRate = tag.getInt(STEAM_CONSUMED_KEY);
         if (generatedSpeed == 0 && generatedCapacitySu == 0 && tag.contains(LEGACY_STEAM_POWER_KEY)) {
-            float legacySteamPower = tag.getFloat(LEGACY_STEAM_POWER_KEY);
-            generatedSpeed = MAX_RPM * Math.min(legacySteamPower, 1.0F);
+            float legacySteamPower = Mth.clamp(tag.getFloat(LEGACY_STEAM_POWER_KEY), 0.0F, 1.0F);
+            generatedSpeed = SteamPhysics.rpm(legacySteamPower);
             generatedCapacitySu = FullSteamConfig.baseEngineCapacity() * legacySteamPower;
             sourceMode = SourceMode.DIRECT_BOILER;
         }
@@ -987,7 +986,8 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     private float getEffectIntensity() {
-        float speedFactor = Math.abs(getGeneratedSpeed()) / MAX_RPM;
+        float speedFactor = Math.abs(getGeneratedSpeed())
+                / Math.max(1.0F, (float) FullSteamConfig.steamMaxRpm());
         float heatFactor = heatUnits / (float) MAX_HEAT_UNITS;
         return Mth.clamp(Math.max(speedFactor, heatFactor), 0.25F, 1.0F);
     }

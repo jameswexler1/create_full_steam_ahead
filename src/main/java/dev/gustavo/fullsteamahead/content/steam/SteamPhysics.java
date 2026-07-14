@@ -57,9 +57,13 @@ public final class SteamPhysics {
         return Mth.clamp(outputFactor, 0.0F, 1.0F) * FullSteamConfig.steamFullEngineSu();
     }
 
-    /** Tiered RPM (0/16/32/48/64) from the output factor. */
+    /** Continuous engine speed from output factor, with a 1 RPM floor for positive output. */
     public static float rpm(float outputFactor) {
-        return SteamPressure.rpmTier(outputFactor);
+        if (!Float.isFinite(outputFactor) || outputFactor <= 0.0F) {
+            return 0.0F;
+        }
+        float factor = Mth.clamp(outputFactor, 0.0F, 1.0F);
+        return Math.max(1.0F, factor * (float) FullSteamConfig.steamMaxRpm());
     }
 
     /** Steam (mB/t) an open pipe end vents at a given pressure (relief, scales with pressure factor). */

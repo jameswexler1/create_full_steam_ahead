@@ -32,7 +32,7 @@ Use a Java 21 runtime. The first build downloads and prepares the NeoForge Minec
 - Inline engine banks: adjacent same-orientation cylinder rings may share ordinary `steam_cylinder` wall blocks; shared walls are a blockstate/visual form, not a separate block
 - Cylinder construction visuals: straight-only wall runs stay fence-like; once a local corner implies a ring, the existing assembled partial section models are assigned from that stable corner origin
 - Visual direction: close to base Create's copper, andesite, brass, shafts, gauges, and steam engine style
-- Engine RPM tiers: `16`, `32`, `48`, `64`
+- Engine speed: linear from `1` to `64 RPM` for positive output; `0 RPM` with no output
 
 ## Steam Power Model
 
@@ -42,6 +42,7 @@ Steam is a real fluid. Production still uses the readable Create-style unit scal
 - `1 steam unit consumed = 16,384 SU`
 - One pipe-fed engine consumes up to `9 steam units` or `90 mB/t`
 - A full normal engine output is `9 units = 90 mB/t = 147,456 SU` at `64 RPM`
+- Engine RPM and SU both use the same `min(pressure factor, delivered-flow factor)`; RPM scales continuously up to the configured maximum, with a 1 RPM floor whenever output is positive.
 
 Active Create Fluid Tank boilers produce steam internally from Create's boiler data:
 
@@ -84,7 +85,7 @@ Steam remains visible in Create tanks and pipes through a high-visibility tinted
 
 The horizontal `steam_admission_valve` throttles one active engine inlet without restricting the shared pipe main. Its two built-in frequency slots use Create's Redstone Link network and accept an analogue `0..15` command. Signal `0` is fully open and signal `15` is fully closed, matching a fail-open admission control. An empty frequency pair is also a safe full-open bypass.
 
-The valve must be directly beside exactly one active `steam_inlet`, with the inlet nozzle facing the valve. Its requested engine flow is the normal pressure-dependent request multiplied by `(15 - signal) / 15`. If the network cannot satisfy every consumer, the normal proportional allocator preserves the requested throttle ratios. Delivered flow scales SU continuously, while engine speed keeps the existing `16`, `32`, `48`, and `64` RPM tiers. Other valve pipe branches remain normal bidirectional steam paths.
+The valve must be directly beside exactly one active `steam_inlet`, with the inlet nozzle facing the valve. Its requested engine flow is the normal pressure-dependent request multiplied by `(15 - signal) / 15`. If the network cannot satisfy every consumer, the normal proportional allocator preserves the requested throttle ratios. Delivered flow scales both SU and RPM continuously through the global engine physics. Other valve pipe branches remain normal bidirectional steam paths.
 
 ## Display Link Readout
 

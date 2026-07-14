@@ -268,7 +268,7 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid active 
 - Block entity: `FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEntity`.
 - Axis: inherited from the player-placed Create shaft. Only the shaft's own axis transmits rotation.
 - Clones and drops as `create:shaft`, so players continue to interact with it like a normal shaft.
-- `getGeneratedSpeed()`: returns the active burner-count or steam-rate RPM tier when assembled and steam is available; 0 otherwise.
+- `getGeneratedSpeed()`: returns the global physics-derived linear RPM when assembled and steam is available; 0 otherwise.
 - `calculateAddedStressCapacity()`: returns capacity proportional to available direct boiler heat or consumed `steam`.
 - If the engine becomes invalid, the piston head clears shaft power and restores this block to a normal Create shaft.
 
@@ -326,7 +326,7 @@ Pipe-fed mode accepts either the direct boiler below the ring or a valid active 
   - 10 mB/t consumed steam = 1 steam unit = 16,384 SU at rated pressure, with partial mB/t contributing proportional SU
   - Maximum consumed steam for one pipe-fed engine = 90 mB/t = 9 heat units = 147,456 SU
   - Output factor is `min(pressureFactor, flowFactor)`
-  - RPM uses output-factor tiers: 16, 32, 48, or 64 RPM
+  - RPM scales linearly from a 1 RPM positive-output floor to the configured 64 RPM maximum
 - Goggle overlay: ring link status, steam buffer, accepted steam rate, engine link.
 
 ### Removed placeholders
@@ -398,7 +398,7 @@ Boiler reference: vanilla Create steam engine baseline.
 
 | Parameter | Value |
 |---|---|
-| RPM tiers | 16, 32, 48, 64 |
+| RPM range | 1-64 for positive output; 0 with no output |
 | Default/max RPM | 64 |
 | Active burner count | 0-9 fired Blaze Burners under the 3x3 boiler footprint |
 | Heat units | 1 per normal fired burner, 2 per Blaze Cake burner |
@@ -421,7 +421,7 @@ pressure_factor   = clamp(production_mbpt / full_engine_flow_mb, 0, 1)
 flow_factor       = clamp(consumed_mbpt / full_engine_flow_mb, 0, 1)
 output_factor     = min(pressure_factor, flow_factor)
 capacity_su       = full_engine_su * output_factor
-output_speed_rpm  = tier_by_output_factor(output_factor)
+output_speed_rpm  = output_factor == 0 ? 0 : max(1, max_rpm * output_factor)
 ```
 
 Direct compact mode is a simplified compatibility mode for upright engines sitting on a boiler. It does not store pressure, burst, or let Blaze Cakes overdrive one engine past the normal full-engine rating. Blaze Cake surplus belongs to pipe-fed networks, where it can feed additional engines or build pressure if trapped.
@@ -446,20 +446,21 @@ consumed_mbpt     = min(requested_flow, fair_flow_cap, inlet_buffer)
 flow_factor       = clamp(consumed_mbpt / full_engine_flow_mb, 0, 1)
 output_factor     = min(pressure_factor, flow_factor)
 capacity_su       = full_engine_su * output_factor
-output_speed_rpm  = tier_by_output_factor(output_factor)
+output_speed_rpm  = output_factor == 0 ? 0 : max(1, max_rpm * output_factor)
 ```
 
 Important balance distinction: stored steam does not remember which burner produced it. The pipe network stores steam mass, network volume, and weighted temperature. Multiple boilers can feed one network, but one boiler's production is split across all steam ports attached to that boiler and cannot be duplicated.
 
-RPM tiers:
+Linear RPM reference with the default `max_rpm = 64`:
 
 | Output factor | RPM |
 |---:|---:|
 | 0 | 0 |
-| >0-0.25 | 16 |
-| >0.25-0.50 | 32 |
-| >0.50-0.75 | 48 |
-| >0.75-1.00 | 64 |
+| >0-0.015625 | 1 |
+| 0.25 | 16 |
+| 0.50 | 32 |
+| 0.75 | 48 |
+| 1.00 | 64 |
 
 Unfired Blaze Burners only provide passive heat in Create and must produce `0` output for this engine. Blaze Cakes count as 2 heat units, increasing steam production and temperature; they do not let a single engine exceed the configured full-engine rating. Water supply remains required for output.
 
@@ -522,7 +523,7 @@ Tasks:
 - [x] Refactored output ownership to `PistonHeadBlockEntity` plus hidden `FullSteamPoweredShaftBlockEntity`, matching Create's vanilla shaft-grab pattern
 - [x] Upward scan from piston head: one to three piston bodies → one to three empty stroke spaces → horizontal Create shaft; ring and boiler/inlet are validated around/below the piston head
 - [x] If valid: store cylinder root, inlet, boiler, and shaft refs; power the hidden shaft block entity
-- [x] Initial Phase 4 `getGeneratedSpeed()` followed exact active-burner RPM tiers: 1-2 = 16 RPM, 3-4 = 32 RPM, 5-8 = 48 RPM, 9 = 64 RPM. Phase 12 later superseded runtime output with pressure/flow output factors.
+- [x] Initial Phase 4 `getGeneratedSpeed()` followed exact active-burner RPM tiers: 1-2 = 16 RPM, 3-4 = 32 RPM, 5-8 = 48 RPM, 9 = 64 RPM. Phase 12 superseded burner-count output with pressure/flow factors, and Phase 18 replaced the remaining RPM tiers with one linear mapping.
 - [x] Initial Phase 4 `calculateAddedStressCapacity()` followed exact burner SU output, including Blaze Cake doubling. Phase 12 later capped one engine at the configured full-engine rating and moved surplus heat into pipe-fed production/pressure.
 - [x] Read `BoilerData` from the `FluidTankBlockEntity` at boiler position each server tick
 - [x] Make Create's own `BoilerData.evaluate()` count assembled Full Steam Ahead engines
@@ -533,7 +534,7 @@ Tasks:
 - [x] Add visible placeholder models for assembled piston section states
 - [x] Add revalidation on neighbour changes
 - [x] Add goggle overlay: assembly status, active burners, heat units, water supply, RPM, SU
-- [x] Verify exact output tiers: no passive output, 1-9 normal fired burners match SU/RPM table, and Blaze Cake burners double SU individually
+- [x] Historical Phase 4 verification: no passive output, 1-9 normal fired burners matched the original SU/RPM table, and Blaze Cake burners doubled SU individually
 - [ ] Optional hardening verify: break piston → shaft stops; break boiler → shaft stops; restore/reload → state recovers
 
 Implementation note: Phase 4 uses a small Create compatibility mixin so `BoilerData.evaluate()` recognizes valid Full Steam Ahead piston-head engines as attached steam engines. This lets Create's own Fluid Tank switch to active boiler visuals/capabilities and lets the compact 3x3x1 boiler footprint behave as the intended v1 boiler size.
@@ -875,7 +876,23 @@ changing engine balance.
 - [x] Throttle only the uniquely linked active `steam_inlet`; a through-branch main remains open to downstream engines and network shortages preserve throttle ratios.
 - [x] Add Create-style adjustment sound and live goggle feedback, and persist receiver state through normal block-entity NBT without adding detached actuator geometry above the control platform.
 - [x] Add a survival recipe using a Create Fluid Pipe, Redstone Link, and brass plate.
-- [ ] Manual test isolated, straight, elbow, tee, and cross layouts; rejection of vertical orientation/connections; rotation toward each inlet direction; steam passthrough; collision; inventory rendering; and contraption assembly.
+- [x] Manual static-world test: isolated, straight, elbow, tee, and cross layouts; vertical rejection; inlet-facing rotation; steam passthrough; collision; inventory rendering; frequency sizing; inverse signal control; and live goggle feedback.
+- [ ] Manual simulated-contraption test: frequencies, received signal, inlet association, and throttle output survive assembly and disassembly.
+
+---
+
+### Phase 18: Linear Steam Engine RPM — Implemented (manual verification pending)
+
+**Goal**: replace the four RPM plateaus with one global speed response driven by the same pressure-and-flow output factor as SU, regardless of how the engine receives steam.
+
+- [x] Implement RPM once in `SteamPhysics.rpm(outputFactor)` so direct compact, ordinary pipe-fed, admission-controlled, shortage-limited, and leak-limited engines share the same mapping.
+- [x] Return `0 RPM` at zero output and `max(1, maxRpm * outputFactor)` for positive output, preserving the configured `64 RPM` full-output default.
+- [x] Keep SU unchanged as `fullEngineSu * outputFactor`, so pressure and delivered flow remain the only engine-output inputs.
+- [x] Remove the obsolete tier helper and tier-specific config wording.
+- [x] Use configured maximum RPM for legacy power migration and particle/sound intensity instead of a hard-coded `64`.
+- [ ] Manual test direct and pipe-fed engines at low, quarter, half, three-quarter, and full output; confirm RPM changes progressively while SU remains proportional.
+- [ ] Manual test an admission valve at signals `0`, `5`, `10`, and `15`; expect approximately `64`, `42.7`, `21.3`, and `0 RPM` at rated pressure.
+- [ ] Manual test adjacent engines on one shaft at equal and unequal admission settings; confirm stable kinetic-network behavior and passive linkage animation.
 
 ---
 
@@ -902,6 +919,7 @@ changing engine balance.
 | Create pipe pressure internals are brittle | Keep steam-port pressure code isolated; fallback to bounded `IFluidHandler` push |
 | Steam storage becomes an exploit | Steam ports only generate from valid active boilers and never auto-pump stored steam |
 | Pipe-fed mode loses burner-count metadata | Store network steam mass, weighted temperature, and volume; piston derives RPM/SU from pressure and fair delivered flow (`SteamPhysics`) |
+| Linear generators on one shaft request different speeds | Use matching admission commands for normal engine banks and explicitly verify mixed-command kinetic behavior before treating it as supported control practice |
 | Cylinder ring scan too expensive | Run only on placement/removal, not every tick; cache result |
 | Piston animation desync | Drive animation entirely from linked shaft rotation angle on client |
 | Sable assembly splits engine parts | Register Create and Simulated movement checks early |

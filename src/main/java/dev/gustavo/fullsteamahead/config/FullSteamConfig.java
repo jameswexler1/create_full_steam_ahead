@@ -187,7 +187,7 @@ public final class FullSteamConfig {
                 .defineInRange("fullEngineFlowMb", DEFAULT_STEAM_FULL_ENGINE_FLOW_MB, 1, 1_000_000);
 
         STEAM_MAX_RPM = builder
-                .comment("Maximum engine RPM (top tier). RPM snaps to 0/0.25/0.5/0.75/1.0 of this by output factor.")
+                .comment("Maximum engine RPM. Positive engine output scales linearly from a 1 RPM minimum to this value.")
                 .defineInRange("maxRpm", DEFAULT_STEAM_MAX_RPM, 1.0D, 256.0D);
 
         STEAM_VENT_COEFFICIENT = builder

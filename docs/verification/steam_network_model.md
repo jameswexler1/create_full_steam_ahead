@@ -7,10 +7,10 @@ output, venting, and bursting. Units are pN/m^2 (P_RATED = 1.0 MpN/m^2).
 
 ## What changed
 
-- `SteamPressure` — pN/m^2 unit + format (pN/kpN/MpN), pressure factor, RPM tiers.
+- `SteamPressure` — pN/m^2 unit + format (pN/kpN/MpN) and pressure factor.
 - `SteamPhysics` — reworked: temperatureK, pressurePn = gasConstant*stored*T/volume, height-scaled
   productionMb(usableHeat, height), requestedFlowMb, outputFactor = min(pressureF, flowF), continuous
-  su, tiered rpm, ventMb, burstPower.
+  SU, linear RPM, ventMb, and burstPower.
 - `SteamNetworkManager` — server level-tick handler. Per tick: BFS each loaded boiler outlet over
   Create pipes (valve-aware, stops at closed FluidValveBlock), aggregates stored steam + volume +
   production + temperature across the network, computes one pressure, fairly allocates per-engine draw
@@ -23,7 +23,7 @@ output, venting, and bursting. Units are pN/m^2 (P_RATED = 1.0 MpN/m^2).
   engines/venting. No longer self-computes pressure or bursts.
 - `SteamInletBlockEntity` — receives network pressure + fair draw cap from the manager.
 - `PistonHeadBlockEntity` — piped engines draw up to the manager cap and output min(pressure, flow);
-  tiered RPM + continuous SU. Direct/compact mode is an implicit one-boiler network (steady-state
+  linear RPM + continuous SU. Direct/compact mode is an implicit one-boiler network (steady-state
   pressure from supply adequacy). Goggle shows pN/m^2.
 - `FullSteamConfig` — replaced the bar group with pN/m^2 knobs (gasConstant, ratedPressure,
   warnPressure, burstPressure, temperature, fullEngineSu/Flow, maxRpm, ventCoefficient, bufferCap).
