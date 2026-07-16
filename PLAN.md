@@ -1,6 +1,6 @@
 # Create: Full Steam Ahead — Design Plan
 
-Last updated: 2026-06-12
+Last updated: 2026-07-16
 
 ## Goal
 
@@ -872,11 +872,11 @@ changing engine balance.
 - [x] Prevent vertical valve orientation, clear up/down properties after placement and neighbour updates, and reject one-sided vertical connections initiated by adjacent Create pipes.
 - [x] Match selection and collision shapes to the raised controls, horizontal pipe arms, brass collars, and endpoint rims.
 - [x] Preserve normal Create fluid transport at full flow through non-controlled branches so the valve remains part of a shared steam main.
-- [x] Add two built-in Redstone Link frequency slots and receive an analogue `0..15` command without a separate Redstone Link block; signal `0` is fully open, signal `15` is fully closed, and an empty frequency pair is a full-open bypass.
+- [x] Add two built-in Redstone Link frequency slots and receive an analogue `0..15` command without a separate Redstone Link block; signal `0` is fully closed, signal `15` is fully open, and an empty frequency pair is a full-open bypass.
 - [x] Throttle only the uniquely linked active `steam_inlet`; a through-branch main remains open to downstream engines and network shortages preserve throttle ratios.
 - [x] Add Create-style adjustment sound and live goggle feedback, and persist receiver state through normal block-entity NBT without adding detached actuator geometry above the control platform.
 - [x] Add a survival recipe using a Create Fluid Pipe, Redstone Link, and brass plate.
-- [x] Manual static-world test: isolated, straight, elbow, tee, and cross layouts; vertical rejection; inlet-facing rotation; steam passthrough; collision; inventory rendering; frequency sizing; inverse signal control; and live goggle feedback.
+- [ ] Re-test direct signal control in a static world at strengths `0`, `5`, `10`, and `15`; all previously validated geometry, connectivity, collision, inventory rendering, frequency sizing, and live goggle feedback remain complete.
 - [ ] Manual simulated-contraption test: frequencies, received signal, inlet association, and throttle output survive assembly and disassembly.
 
 ---
@@ -895,7 +895,7 @@ changing engine balance.
 - [x] Hold the last linkage pose across Create's brief zero-speed propagation frame so piston, connecting rod, and crank visuals do not flash to their resting pose during a live RPM ramp.
 - [x] User validation (2026-07-14): normal-gameplay RPM transitions preserve piston, linkage, and shaft phase without restarting, flickering, or jumping.
 - [ ] Manual test direct and pipe-fed engines at low, quarter, half, three-quarter, and full output; confirm RPM changes progressively while SU remains proportional.
-- [ ] Manual test an admission valve at signals `0`, `5`, `10`, and `15`; expect approximately `64`, `42.7`, `21.3`, and `0 RPM` at rated pressure.
+- [ ] Manual test an admission valve at signals `0`, `5`, `10`, and `15`; expect approximately `0`, `21.3`, `42.7`, and `64 RPM` at rated pressure.
 - [ ] Manual test adjacent engines on one shaft at equal and unequal admission settings; confirm stable kinetic-network behavior and passive linkage animation.
 - [ ] Manual test slow and abrupt acceleration/deceleration with Flywheel enabled and disabled; piston/linkage and every attached shaft, gear, belt, and gauge must preserve phase without flicker or backward jumps.
 - [ ] Manual test world reload, chunk reload, and Sable simulated-contraption assembly while an engine is running; the first rendered frame may adopt the loaded phase, but subsequent RPM changes must remain continuous.

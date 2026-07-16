@@ -7,7 +7,7 @@
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` reached the main menu with the client phase mixin active
 
-Verified on 2026-07-14. Compilation reports only the pre-existing deprecated Sable burst compatibility API note.
+Verified on 2026-07-16. Compilation and the full build pass after restoring direct admission-valve signal scaling; the previous in-world animation-continuity validation remains recorded below.
 
 ## Animation Continuity
 
@@ -33,7 +33,7 @@ With the default `maxRpm = 64`, quarter, half, three-quarter, and full output ar
 
 - [ ] Direct compact engine: vary active burner/water-limited output and confirm RPM progresses instead of snapping to four plateaus.
 - [ ] Unrestricted pipe-fed engine: vary pressure or available flow and confirm RPM follows the displayed output continuously.
-- [ ] Admission-controlled engine at rated pressure: signals `0`, `5`, `10`, and `15` produce approximately `64`, `42.7`, `21.3`, and `0 RPM`.
+- [ ] Admission-controlled engine at rated pressure: signals `0`, `5`, `10`, and `15` produce approximately `0`, `21.3`, `42.7`, and `64 RPM`.
 - [ ] A positive output below `1/64` of full output runs at the `1 RPM` minimum; exactly zero output remains stopped.
 - [ ] SU remains `147,456 * outputFactor` and still reaches `147,456 SU` at full output.
 - [ ] Leaks, closed valves, boiler cooldown, and steam shortages lower RPM progressively with pressure/flow rather than stopping at old tier boundaries.

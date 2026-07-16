@@ -70,7 +70,7 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
     }
 
     public int getAdmissionStrength() {
-        return isFrequencyBypass() ? 15 : 15 - receivedSignal;
+        return isFrequencyBypass() ? 15 : receivedSignal;
     }
 
     public float getAdmissionFraction() {
