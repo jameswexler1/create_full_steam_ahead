@@ -16,10 +16,10 @@ import net.minecraft.world.level.block.state.BlockState;
 public class SteamPressureGaugeRenderer extends SafeBlockEntityRenderer<SteamPressureGaugeBlockEntity> {
     private static final float NEEDLE_X = 8.0F / 16.0F;
     private static final float NEEDLE_Y = 9.0F / 16.0F;
-    private static final float NEEDLE_Z = 2.88F / 16.0F;
+    private static final float NEEDLE_Z = 13.12F / 16.0F;
     // Viewed from the dial front: lower-left, clockwise through the top, then lower-right.
-    private static final float SWEEP_RADIANS = (float) Math.toRadians(-270.0D);
-    private static final float START_RADIANS = (float) Math.toRadians(135.0D);
+    private static final float SWEEP_RADIANS = (float) Math.toRadians(270.0D);
+    private static final float START_RADIANS = (float) Math.toRadians(-135.0D);
 
     public SteamPressureGaugeRenderer(BlockEntityRendererProvider.Context context) {
     }
@@ -40,7 +40,7 @@ public class SteamPressureGaugeRenderer extends SafeBlockEntityRenderer<SteamPre
         SuperByteBuffer needle = CachedBuffers.partial(FullSteamPartialModels.steamPressureGaugeNeedle(), state);
         orient(needle, state)
                 .translate(NEEDLE_X, NEEDLE_Y, NEEDLE_Z)
-                .rotate(Direction.SOUTH.getAxis(), angle)
+                .rotate(Direction.Axis.Z, angle)
                 .translate(-NEEDLE_X, -NEEDLE_Y, -NEEDLE_Z)
                 .light(light)
                 .overlay(overlay)
@@ -49,10 +49,11 @@ public class SteamPressureGaugeRenderer extends SafeBlockEntityRenderer<SteamPre
 
     private static SuperByteBuffer orient(SuperByteBuffer buffer, BlockState state) {
         Direction facing = state.getValue(SteamPressureGaugeBlock.FACING);
+        // Runtime JOML rotations use the opposite sign from baked blockstate Y rotations.
         float angle = switch (facing) {
-            case WEST -> (float) (Math.PI / 2.0D);
-            case NORTH -> (float) Math.PI;
             case EAST -> (float) (Math.PI * 1.5D);
+            case SOUTH -> (float) Math.PI;
+            case WEST -> (float) (Math.PI / 2.0D);
             default -> 0.0F;
         };
         return buffer.rotateCentered(angle, Direction.UP);

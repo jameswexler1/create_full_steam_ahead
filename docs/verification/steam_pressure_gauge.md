@@ -7,6 +7,7 @@
 - [x] `git diff --check`
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` completed mod initialization, model baking, texture-atlas creation, and shader loading with no Full Steam Ahead model/resource errors; the smoke client was then stopped intentionally.
+- [x] Coordinate audit confirms all 35 source elements match the centered item model, wall-shifted static model, and wall-shifted needle partial; all four saved facings preserve their pre-fix world geometry.
 
 Verified on 2026-07-16. Compilation, generated resources, JSON syntax, and the assembled mod jar pass; in-world rendering and interaction checks remain below.
 
@@ -18,7 +19,8 @@ Verified on 2026-07-16. Compilation, generated resources, JSON syntax, and the a
 - [x] Source chunks are never force-loaded; unavailable sources render toward zero.
 - [x] Client interpolation is independent of the server polling cadence.
 - [x] The needle's full 270-degree sweep represents zero through configured burst pressure.
-- [x] The static model, animated needle partial, item model, and three textures are compiled from `new_models/steam_pressure_gauge.bbmodel`; world models are translated toward their backing surface with a sub-pixel anti-flicker gap while the centered item model and all UVs remain unchanged.
+- [x] The editable source, static world model, animated needle partial, item model, blockstates, and hitboxes use one north-facing local coordinate system; the world geometry retains a sub-pixel anti-flicker gap against its backing surface.
+- [x] The needle rotates around its local model pivot before the complete posed partial is rotated into its north, south, east, or west world facing.
 - [x] The default dial art maps the 1.5 MpN/m^2 warning point to 60% of the sweep, the 2.2 MpN/m^2 relief point near 88%, and the 2.5 MpN/m^2 burst point to the final deep-red stop.
 
 ## Manual In-World Checks

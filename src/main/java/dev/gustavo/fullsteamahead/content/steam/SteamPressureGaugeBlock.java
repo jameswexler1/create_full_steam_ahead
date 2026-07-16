@@ -34,22 +34,22 @@ import java.util.Map;
 public class SteamPressureGaugeBlock extends HorizontalDirectionalBlock
         implements IBE<SteamPressureGaugeBlockEntity>, FullSteamWrenchable {
     public static final MapCodec<SteamPressureGaugeBlock> CODEC = simpleCodec(SteamPressureGaugeBlock::new);
-    // The source model faces south; keep its rear visually flush with the opposite block face.
-    private static final Box[] SOUTH_BOXES = new Box[] {
-            new Box(5, 15, 0.05, 11, 16, 3.2),
-            new Box(3, 14, 0.05, 13, 15, 3.2),
-            new Box(1, 4, 0.05, 15, 14, 3.2),
-            new Box(3, 3, 0.05, 13, 4, 3.2),
-            new Box(5, 2, 0.05, 11, 3, 3.2),
-            new Box(7, 1.75, 0.55, 9, 3.25, 2.05),
-            new Box(6.5, 0.75, 0.05, 9.5, 1.75, 2.55),
-            new Box(7, 0, 0.55, 9, 0.75, 2.05)
+    // The source model faces north, with its rear flush against the opposite (south) block face.
+    private static final Box[] NORTH_BOXES = new Box[] {
+            new Box(5, 15, 12.8, 11, 16, 15.95),
+            new Box(3, 14, 12.8, 13, 15, 15.95),
+            new Box(1, 4, 12.8, 15, 14, 15.95),
+            new Box(3, 3, 12.8, 13, 4, 15.95),
+            new Box(5, 2, 12.8, 11, 3, 15.95),
+            new Box(7, 1.75, 13.95, 9, 3.25, 15.45),
+            new Box(6.5, 0.75, 13.45, 9.5, 1.75, 15.95),
+            new Box(7, 0, 13.95, 9, 0.75, 15.45)
     };
     private static final Map<Direction, VoxelShape> SHAPES = buildShapes();
 
     public SteamPressureGaugeBlock(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.SOUTH));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 
     @Override
@@ -188,7 +188,7 @@ public class SteamPressureGaugeBlock extends HorizontalDirectionalBlock
         Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             VoxelShape shape = Shapes.empty();
-            for (Box box : SOUTH_BOXES) {
+            for (Box box : NORTH_BOXES) {
                 shape = Shapes.or(shape, rotate(box, direction).shape());
             }
             shapes.put(direction, shape.optimize());
@@ -198,17 +198,17 @@ public class SteamPressureGaugeBlock extends HorizontalDirectionalBlock
 
     private static Box rotate(Box box, Direction facing) {
         return switch (facing) {
-            case NORTH -> new Box(
+            case SOUTH -> new Box(
                     16 - box.maxX, box.minY, 16 - box.maxZ,
                     16 - box.minX, box.maxY, 16 - box.minZ
             );
             case EAST -> new Box(
-                    box.minZ, box.minY, 16 - box.maxX,
-                    box.maxZ, box.maxY, 16 - box.minX
-            );
-            case WEST -> new Box(
                     16 - box.maxZ, box.minY, box.minX,
                     16 - box.minZ, box.maxY, box.maxX
+            );
+            case WEST -> new Box(
+                    box.minZ, box.minY, 16 - box.maxX,
+                    box.maxZ, box.maxY, 16 - box.minX
             );
             default -> box;
         };

@@ -1,17 +1,17 @@
 {
   "variants": {
-    "facing=south": {
+    "facing=north": {
       "model": "full_steam_ahead:block/steam_pressure_gauge"
     },
-    "facing=west": {
+    "facing=east": {
       "model": "full_steam_ahead:block/steam_pressure_gauge",
       "y": 90
     },
-    "facing=north": {
+    "facing=south": {
       "model": "full_steam_ahead:block/steam_pressure_gauge",
       "y": 180
     },
-    "facing=east": {
+    "facing=west": {
       "model": "full_steam_ahead:block/steam_pressure_gauge",
       "y": 270
     }
