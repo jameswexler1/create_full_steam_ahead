@@ -2470,7 +2470,7 @@
     "gui": {
       "rotation": [
         15,
-        0,
+        180,
         0
       ],
       "translation": [
