@@ -8,7 +8,7 @@
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` completed mod initialization, model baking, texture-atlas creation, and shader loading with no Full Steam Ahead model/resource errors; the smoke client was then stopped intentionally.
 
-Verified on 2026-07-14. Compilation, generated resources, JSON syntax, and the assembled mod jar pass; in-world rendering and interaction checks remain below.
+Verified on 2026-07-16. Compilation, generated resources, JSON syntax, and the assembled mod jar pass; in-world rendering and interaction checks remain below.
 
 ## Implementation Contract
 
@@ -19,16 +19,18 @@ Verified on 2026-07-14. Compilation, generated resources, JSON syntax, and the a
 - [x] Client interpolation is independent of the server polling cadence.
 - [x] The needle's full 270-degree sweep represents zero through configured burst pressure.
 - [x] The static model, animated needle partial, item model, and three textures are compiled from `new_models/steam_pressure_gauge.bbmodel`; world models are translated toward their backing surface with a sub-pixel anti-flicker gap while the centered item model and all UVs remain unchanged.
+- [x] The default dial art maps the 1.5 MpN/m^2 warning point to 60% of the sweep, the 2.2 MpN/m^2 relief point near 88%, and the 2.5 MpN/m^2 burst point to the final deep-red stop.
 
 ## Manual In-World Checks
 
-- [ ] Confirm Steam Pressure Gauge appears in the Full Steam Ahead creative tab with a complete, correctly scaled inventory model.
+- [ ] Confirm Steam Pressure Gauge appears front-facing in the Full Steam Ahead creative tab, inventory, and hotbar with a complete, correctly scaled model.
 - [ ] Build and heat a valid boiler, then sneak-right-click any tank block with the gauge item; confirm the item shimmers and reports a selected source.
 - [ ] Place several gauges from that stack; confirm every gauge remains linked and the stack retains its selection.
 - [ ] Confirm ordinary right-click still places the gauge and sneak-use in air clears the selected source.
 - [ ] Confirm an ordinary unheated/non-boiler Fluid Tank is rejected as a new source.
 - [ ] Raise and lower boiler pressure; compare the needle and goggle value with the boiler and a Display Link.
 - [ ] Confirm zero pressure starts at the lower-left stop, increasing pressure moves clockwise through the top, burst pressure ends at the lower-right stop, and overpressure does not rotate beyond the dial.
+- [ ] Confirm the unused cream gap is at the bottom of the dial, amber begins near 1.5 MpN/m^2, orange appears near relief pressure, and the needle reaches deep red only at approximately 2.5 MpN/m^2.
 - [ ] Cut heat and drain residual pressure; confirm the gauge remains linked and follows pressure smoothly to zero.
 - [ ] Resize the boiler or cause Create to choose another controller while preserving the clicked tank; confirm the gauge continues reading it.
 - [ ] Break the selected tank or unload its chunk; confirm the needle eases to zero and goggles report the source unavailable.

@@ -2406,7 +2406,7 @@
     "gui": {
       "rotation": [
         15,
-        180,
+        0,
         0
       ],
       "translation": [

@@ -11,7 +11,7 @@
     1,
     0
   ],
-  "variable_placeholders": "Shallow Victorian brass pressure gauge authored facing south (+Z). The rear cap, main case, dial backing, and bezel overlap into one closed housing with no suspended texture planes. The bezel front uses one globally aligned Create brass texture at one pixel per model unit. The rear is a plain finished maintenance cover, and the inset dial and animated needle use dedicated textures. Rotate the needle group around local Z at [8,9,9.08], from -135 degrees at zero pressure to +135 degrees at burst pressure. The included animation is preview-only.",
+  "variable_placeholders": "Shallow Victorian brass pressure gauge authored facing south (+Z). The rear cap, main case, dial backing, and bezel overlap into one closed housing with no suspended texture planes. The bezel front uses one globally aligned Create brass texture at one pixel per model unit. The rear is a plain finished maintenance cover, and the inset dial and animated needle use dedicated textures. The dial arc is calibrated to the default pressure thresholds: teal normal range, amber warning from 1.5 MpN/m^2, orange near the 2.2 MpN/m^2 relief point, and deep red at the 2.5 MpN/m^2 burst point. Rotate the needle group around local Z at [8,9,9.08], from +135 degrees at zero pressure clockwise to -135 degrees at burst pressure. The included animation is preview-only.",
   "resolution": {
     "width": 16,
     "height": 16
@@ -2927,7 +2927,7 @@
       "use_as_default": false,
       "layers_enabled": false,
       "sync_to_project": "",
-      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAeUExURQAAADokEfbv2OffxXimoNeqXl+FiMR8Uqg/TP///zbh9UoAAAABdFJOUwBA5thmAAAAAWJLR0QJ8dml7AAAAAd0SU1FB+oHDhAhALlNj/QAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjYtMDctMTRUMTY6MzM6MDArMDA6MDAo+9NUAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDI2LTA3LTE0VDE2OjMzOjAwKzAwOjAwWaZr6AAAACh0RVh0ZGF0ZTp0aW1lc3RhbXAAMjAyNi0wNy0xNFQxNjozMzowMCswMDowMA6zSjcAAABPSURBVAjXY2BAAEZBQQEwLaSkZAhiCbo4mwYLAhkiLkbGpoZghrGxaSAyQwzIMAcz0oyNywuBDOE0Z+MOkGJBs5SOZkGwwcbGUKOhVuAEAPAbDPVb5fN2AAAAAElFTkSuQmCC",
+      "source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAeUExURQAAADokEXimoNeqXuffxfbv2F+FiMR8Uqg/TP///wrLRcIAAAABYktHRAnx2aXsAAAAB3RJTUUH6gcQBzUO2fTg/wAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyNi0wNy0xNlQwNzo1MzowMyswMDowMDafHhoAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjYtMDctMTZUMDc6NTM6MDMrMDA6MDBHwqamAAAAKHRFWHRkYXRlOnRpbWVzdGFtcAAyMDI2LTA3LTE2VDA3OjUzOjE0KzAwOjAwGdq5aQAAAEpJREFUCNdjYEAARkFBATAtpKRkCGIJKikpGQsCGUIqoS7OhmBGCIzhAmGIpSAzCoEMkTQXF3cQQzAtNLQCpJ1RxMXFUQDZCpwAANdCDO/EQ6fZAAAAAElFTkSuQmCC",
       "file_format": "png",
       "render_mode": "default",
       "render_sides": "auto",
@@ -3028,7 +3028,7 @@
                 {
                   "x": 0,
                   "y": 0,
-                  "z": -135
+                  "z": 135
                 }
               ],
               "uuid": "d4e51001-7d20-4f95-8f20-000000005101",
@@ -3042,7 +3042,7 @@
                 {
                   "x": 0,
                   "y": 0,
-                  "z": 135
+                  "z": -135
                 }
               ],
               "uuid": "d4e51002-7d20-4f95-8f20-000000005102",
@@ -3056,7 +3056,7 @@
                 {
                   "x": 0,
                   "y": 0,
-                  "z": -135
+                  "z": 135
                 }
               ],
               "uuid": "d4e51003-7d20-4f95-8f20-000000005103",
