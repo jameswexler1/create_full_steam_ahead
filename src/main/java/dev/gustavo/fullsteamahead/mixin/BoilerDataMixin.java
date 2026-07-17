@@ -27,6 +27,21 @@ public abstract class BoilerDataMixin {
     @Unique
     private boolean fullSteamAhead$compactBoiler;
 
+    @Unique
+    private int fullSteamAhead$previousAttachedEngines;
+
+    @Unique
+    private int fullSteamAhead$previousAttachedWhistles;
+
+    @Inject(method = "evaluate", at = @At("HEAD"))
+    private void fullSteamAhead$captureAttachedBoilerDevices(
+            FluidTankBlockEntity boiler,
+            CallbackInfoReturnable<Boolean> cir
+    ) {
+        fullSteamAhead$previousAttachedEngines = attachedEngines;
+        fullSteamAhead$previousAttachedWhistles = attachedWhistles;
+    }
+
     @Inject(method = "evaluate", at = @At("RETURN"), cancellable = true)
     private void fullSteamAhead$countFullSteamBoilerDevices(
             FluidTankBlockEntity boiler,
@@ -40,11 +55,11 @@ public abstract class BoilerDataMixin {
             needsHeatLevelUpdate = true;
         }
 
-        boolean changed = cir.getReturnValue() || fullSteamAhead$lastAttachedDevices != fullSteamDevices;
+        boolean changed = fullSteamAhead$previousAttachedEngines != attachedEngines
+                || fullSteamAhead$previousAttachedWhistles != attachedWhistles
+                || fullSteamAhead$lastAttachedDevices != fullSteamDevices;
         fullSteamAhead$lastAttachedDevices = fullSteamDevices;
-        if (changed) {
-            cir.setReturnValue(true);
-        }
+        cir.setReturnValue(changed);
     }
 
     @Inject(method = "getMaxHeatLevelForBoilerSize", at = @At("HEAD"), cancellable = true)

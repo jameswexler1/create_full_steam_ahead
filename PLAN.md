@@ -891,7 +891,8 @@ changing engine balance.
 - [x] Remove the obsolete tier helper and tier-specific config wording.
 - [x] Use configured maximum RPM for legacy power migration and particle/sound intensity instead of a hard-coded `64`.
 - [x] Preserve client animation phase when an FSA-powered kinetic network changes RPM by compensating Create's absolute-time rotation formula through the shared `getRotationAngleOffset` hook used by both Flywheel and fallback rendering.
-- [x] Avoid detaching and rebuilding the kinetic source for capacity-only changes, and ignore sub-`0.01 RPM` source jitter until it accumulates into a visible speed update.
+- [x] Avoid detaching and rebuilding the kinetic source for capacity-only changes; coalesce active RPM ramps into shared 10-tick propagation windows with a `0.5 RPM` accumulated deadband, then apply the exact final target after it settles. Starts, stops, reversals, ownership changes, SU updates, and animation phase continuity remain immediate.
+- [x] Prevent self-fed engine RPM ramps from repeatedly resetting Create pump fluid networks, and compare final post-FSA boiler device counts so stable boilers no longer report a false attachment change every tick.
 - [x] Hold the last linkage pose across Create's brief zero-speed propagation frame so piston, connecting rod, and crank visuals do not flash to their resting pose during a live RPM ramp.
 - [x] User validation (2026-07-14): normal-gameplay RPM transitions preserve piston, linkage, and shaft phase without restarting, flickering, or jumping.
 - [ ] Manual test direct and pipe-fed engines at low, quarter, half, three-quarter, and full output; confirm RPM changes progressively while SU remains proportional.

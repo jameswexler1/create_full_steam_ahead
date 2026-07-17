@@ -128,6 +128,10 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
     private boolean fullSteamAhead$networkWarn;
     @Unique
     private long fullSteamAhead$lastNetworkGameTime = Long.MIN_VALUE;
+    @Unique
+    private boolean fullSteamAhead$boilerSourceStateInitialized;
+    @Unique
+    private boolean fullSteamAhead$lastBoilerSourceActive;
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void fullSteamAhead$tickDirectSteamSource(CallbackInfo ci) {
@@ -140,11 +144,18 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
         if (!FullSteamConfig.directBoilerPipeOutputEnabled()) {
             fullSteamAhead$directPortStates.clear();
             fullSteamAhead$clearBoilerVessel();
+            fullSteamAhead$boilerSourceStateInitialized = false;
             return;
         }
 
         SteamNetworkManager.registerDirectBoiler(level, self.getBlockPos());
-        self.updateBoilerState();
+        boolean boilerSourceActive = FullSteamBoilerIntegration.isBoilerSteamSource(self);
+        if (!fullSteamAhead$boilerSourceStateInitialized
+                || fullSteamAhead$lastBoilerSourceActive != boilerSourceActive) {
+            fullSteamAhead$boilerSourceStateInitialized = true;
+            fullSteamAhead$lastBoilerSourceActive = boilerSourceActive;
+            self.updateBoilerState();
+        }
 
         List<BoilerSteamPort> ports = FullSteamBoilerIntegration.attachedDirectPipePorts(self);
         Set<BoilerSteamPort> activePorts = new HashSet<>(ports);

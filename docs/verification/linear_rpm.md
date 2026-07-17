@@ -3,20 +3,32 @@
 ## Automated
 
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava`
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test`
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` reached the main menu with the client phase mixin active
 
-Verified on 2026-07-16. Compilation and the full build pass after restoring direct admission-valve signal scaling; the previous in-world animation-continuity validation remains recorded below.
+Verified on 2026-07-17. Compilation and the full build pass after stabilizing self-fed pump networks; the previous in-world animation-continuity validation remains recorded below.
 
 ## Animation Continuity
 
 - [x] Apply a client-only phase correction through Create's `KineticBlockEntity.getRotationAngleOffset` hook, which is consumed by both Flywheel instances and fallback kinetic rendering.
 - [x] Track phase independently for each FSA-driven kinetic block so shafts, gears, and other speed-ratio components retain their own continuous angle as source RPM changes.
-- [x] Update generated rotation only for owner changes, starts/stops, reversals, or accumulated speed changes of at least `0.01 RPM`.
+- [x] Keep target RPM and SU continuous while coalescing Create kinetic-source propagation into shared 10-tick windows during active ramps.
+- [x] Require `0.5 RPM` of accumulated active-ramp change before propagation, then apply the exact target after 20 stable ticks so steady-state RPM remains exact.
+- [x] Keep starts, stops, reversals, ownership changes, and initial shaft synchronization immediate.
 - [x] Refresh stress capacity without rebuilding the rotational network when only generated SU changes.
 - [x] Hold the piston linkage's last moving angle across a transient zero-speed propagation frame; genuine shutdown still returns to the existing rest pose.
 - [x] User validation on 2026-07-14: normal-gameplay RPM transitions remained visually continuous with no piston, linkage, or shaft restart/flicker.
+
+## Self-Feed Stability Regression
+
+- [x] Preserve per-tick thermodynamic target RPM, pressure, consumed steam, and generated SU calculations.
+- [x] Align deferred generator updates across engine banks so several engines do not reset one shared kinetic/fluid network on staggered ticks.
+- [x] Leave at least one complete five-tick Create boiler water-supply sample between deferred kinetic propagations.
+- [x] Compare Create boiler attachment changes after FSA devices are included, eliminating the false stable `1 -> 0 -> 1` whistle-count transition.
+- [x] Reevaluate Create boiler activation only when the FSA boiler source changes between inactive and active/residual-pressure states.
+- [x] Unit-test immediate transitions, update windows, quiet period, accumulated deadband, exact settling, and no-op matching speeds.
 
 ## Expected Mapping
 
@@ -46,3 +58,6 @@ With the default `maxRpm = 64`, quarter, half, three-quarter, and full output ar
 - [ ] Attach gears, belts, a speedometer, and at least one passive engine; all connected visuals preserve phase and their proper speed ratios during RPM changes.
 - [ ] Reload the world and unload/reload the engine chunk, then ramp RPM again; no stale client phase survives incorrectly.
 - [ ] Assemble the running setup as a Sable/Aeronautics simulated contraption, vary admission, disassemble it, and confirm continuity and synchronization in each state.
+- [ ] Self-feed regression: engine shaft network → speed controller at 256 RPM → pump directly into the boiler. Ramp pressure for at least 200 ticks and confirm water supply no longer cycles between full, partial, and empty.
+- [ ] Repeat the self-feed regression with a stopped starter pump still attached; it must neither consume water nor destabilize the active pump.
+- [ ] Repeat both self-feed checks in a normal world and on a Sable/Simulated contraption.

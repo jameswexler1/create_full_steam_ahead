@@ -105,10 +105,16 @@ dependencies {
     runtimeOnly("maven.modrinth:create-big-cannons:5.11.6")
     // JEI for the dev/test client so crafting recipes can be browsed in-game (not shipped).
     runtimeOnly("mezz.jei:jei-1.21.1-neoforge:19.27.0.340")
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
 }
 
 def resourceProperties = [
