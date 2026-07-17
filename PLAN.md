@@ -1,6 +1,6 @@
 # Create: Full Steam Ahead — Design Plan
 
-Last updated: 2026-07-16
+Last updated: 2026-07-17
 
 ## Goal
 
@@ -891,6 +891,7 @@ changing engine balance.
 - [x] Remove the obsolete tier helper and tier-specific config wording.
 - [x] Use configured maximum RPM for legacy power migration and particle/sound intensity instead of a hard-coded `64`.
 - [x] Preserve client animation phase when an FSA-powered kinetic network changes RPM by compensating Create's absolute-time rotation formula through the shared `getRotationAngleOffset` hook used by both Flywheel and fallback rendering.
+- [x] Own that phase correction once per connected kinetic network instead of once per rendered block entity; derive each component correction from its stable signed speed ratio so equal-speed engine shafts retain one common base phase and the ordered bank offset remains exactly `0°/180°/0°` through RPM changes and delayed rendering.
 - [x] Avoid detaching and rebuilding the kinetic source for capacity-only changes; coalesce active RPM ramps into shared 10-tick propagation windows with a `0.5 RPM` accumulated deadband, then apply the exact final target after it settles. Starts, stops, reversals, ownership changes, SU updates, and animation phase continuity remain immediate.
 - [x] Prevent self-fed engine RPM ramps from repeatedly resetting Create pump fluid networks, and compare final post-FSA boiler device counts so stable boilers no longer report a false attachment change every tick.
 - [x] Hold the last linkage pose across Create's brief zero-speed propagation frame so piston, connecting rod, and crank visuals do not flash to their resting pose during a live RPM ramp.
