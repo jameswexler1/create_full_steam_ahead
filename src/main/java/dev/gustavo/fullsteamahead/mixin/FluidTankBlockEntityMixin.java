@@ -86,6 +86,8 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
     private static final String fullSteamAhead$VESSEL_NETWORK_ENGINES_KEY = "NetworkEngines";
     @Unique
     private static final String fullSteamAhead$VESSEL_NETWORK_CONSUMED_KEY = "NetworkConsumed";
+    @Unique
+    private static final int fullSteamAhead$NON_STEAM_INPUT_GRACE_TICKS = 40;
 
     @Shadow
     public BoilerData boiler;
@@ -110,6 +112,8 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
 
     @Unique
     private final Map<BoilerSteamPort, DirectBoilerPortState> fullSteamAhead$directPortStates = new HashMap<>();
+    @Unique
+    private final Map<BoilerSteamPort, Long> fullSteamAhead$recentNonSteamInputs = new HashMap<>();
     @Unique
     private final DirectBoilerVesselState fullSteamAhead$boilerVesselState = new DirectBoilerVesselState();
     @Unique
@@ -143,6 +147,7 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
 
         if (!FullSteamConfig.directBoilerPipeOutputEnabled()) {
             fullSteamAhead$directPortStates.clear();
+            fullSteamAhead$recentNonSteamInputs.clear();
             fullSteamAhead$clearBoilerVessel();
             fullSteamAhead$boilerSourceStateInitialized = false;
             return;
@@ -395,6 +400,33 @@ public abstract class FluidTankBlockEntityMixin implements FullSteamDirectBoiler
             return fallback;
         }
         return new DirectBoilerSteamHandler(source, port, fallback);
+    }
+
+    @Override
+    public boolean fullSteamAhead$isRecentNonSteamInput(
+            BoilerSteamPort port,
+            boolean supplyingNonSteamNow
+    ) {
+        Level level = fullSteamAhead$self().getLevel();
+        if (level == null) {
+            return supplyingNonSteamNow;
+        }
+
+        long gameTime = level.getGameTime();
+        if (supplyingNonSteamNow) {
+            fullSteamAhead$recentNonSteamInputs.put(port, gameTime);
+            return true;
+        }
+
+        Long lastObserved = fullSteamAhead$recentNonSteamInputs.get(port);
+        if (lastObserved == null) {
+            return false;
+        }
+        if (gameTime < lastObserved || gameTime - lastObserved > fullSteamAhead$NON_STEAM_INPUT_GRACE_TICKS) {
+            fullSteamAhead$recentNonSteamInputs.remove(port);
+            return false;
+        }
+        return true;
     }
 
     @Override

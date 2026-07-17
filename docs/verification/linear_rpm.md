@@ -6,7 +6,7 @@
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew test`
 - [x] `find src/main/resources -name '*.json' -exec jq empty {} +`
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`
-- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` reached the title screen on 2026-07-17 with the network-shared client phase mixin active
+- [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` completed mod initialization and resource loading on 2026-07-17 with the network-shared client phase mixin and active-network retiming accessor applied
 
 Verified on 2026-07-17. Unit tests and the full build pass after moving phase ownership from individual rendered blocks to the connected kinetic network; the previous in-world animation-continuity validation remains recorded below.
 
@@ -31,7 +31,11 @@ Verified on 2026-07-17. Unit tests and the full build pass after moving phase ow
 - [x] Leave at least one complete five-tick Create boiler water-supply sample between deferred kinetic propagations.
 - [x] Compare Create boiler attachment changes after FSA devices are included, eliminating the false stable `1 -> 0 -> 1` whistle-count transition.
 - [x] Reevaluate Create boiler activation only when the FSA boiler source changes between inactive and active/residual-pressure states.
-- [x] Unit-test immediate transitions, update windows, quiet period, accumulated deadband, exact settling, and no-op matching speeds.
+- [x] Retime established active, same-direction kinetic source trees without detaching them, using Create's conveyed-speed calculation for gears, belts, chain drives, and rotation speed controllers.
+- [x] Notify downstream kinetic block entities only when their final speed changed; a pump held at constant speed by a rotation speed controller no longer receives the transient zero-speed callback that resets its fluid network.
+- [x] Preserve Create's normal detach/attach behavior for starts, stops, reversals, missing networks, and generators following or competing with another source.
+- [x] Keep a recently observed non-steam boiler input classified as an input for 40 ticks while Create temporarily clears pipe flow during a legitimate rebuild.
+- [x] Unit-test immediate transitions, update windows, quiet period, accumulated deadband, exact settling, no-op matching speeds, and the in-place-retiming eligibility boundary.
 
 ## Expected Mapping
 

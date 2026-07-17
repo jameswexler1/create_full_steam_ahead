@@ -145,6 +145,14 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
         updateGeneratedRotation();
     }
 
+    @Override
+    public void applyNewSpeed(float previousSpeed, float speed) {
+        if (ActiveKineticNetworkRetimer.tryRetime(this, previousSpeed, speed)) {
+            return;
+        }
+        super.applyNewSpeed(previousSpeed, speed);
+    }
+
     private static float finiteOrZero(float value) {
         return Float.isFinite(value) ? value : 0.0F;
     }

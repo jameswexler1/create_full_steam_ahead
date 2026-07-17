@@ -254,10 +254,16 @@ public final class FullSteamBoilerIntegration {
         // inlet, not a steam outlet. This matters most on 1-tall boilers, where the only faces are the
         // top layer that also feeds water in: steam must not flow back out against the pump and mix
         // water and steam in that same pipe.
-        if (pipeSuppliesNonSteamToward(pipe, outputDirection)) {
+        BoilerSteamPort port = BoilerSteamPort.directPipe(tankPos, outputDirection);
+        boolean supplyingNonSteam = pipeSuppliesNonSteamToward(pipe, outputDirection);
+        if (controller instanceof FullSteamDirectBoilerSource source
+                && source.fullSteamAhead$isRecentNonSteamInput(port, supplyingNonSteam)) {
             return null;
         }
-        return BoilerSteamPort.directPipe(tankPos, outputDirection);
+        if (supplyingNonSteam) {
+            return null;
+        }
+        return port;
     }
 
     public static BlockPos resolveDirectPortController(Level level, BoilerSteamPort port) {

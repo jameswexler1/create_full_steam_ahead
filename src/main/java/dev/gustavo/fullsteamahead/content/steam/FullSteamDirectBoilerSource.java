@@ -12,6 +12,8 @@ public interface FullSteamDirectBoilerSource extends SteamNetworkReadout {
 
     IFluidHandler fullSteamAhead$getDirectSteamFluidHandler(BlockPos tankPos, Direction side, IFluidHandler fallback);
 
+    boolean fullSteamAhead$isRecentNonSteamInput(BoilerSteamPort port, boolean supplyingNonSteamNow);
+
     int fullSteamAhead$getDirectStoredSteamMb(BoilerSteamPort port);
 
     int fullSteamAhead$getDirectProductionMb(BoilerSteamPort port);

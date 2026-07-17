@@ -8,7 +8,8 @@
     "FluidTankBlockEntityMixin",
     "FluidTankProjectileHitMixin",
     "FluidPipeConnectionMixin",
-    "FluidPipeWrenchMixin"
+    "FluidPipeWrenchMixin",
+    "accessor.RotationPropagatorAccessor"
   ],
   "client": [
     "client.KineticBlockEntityPhaseMixin"

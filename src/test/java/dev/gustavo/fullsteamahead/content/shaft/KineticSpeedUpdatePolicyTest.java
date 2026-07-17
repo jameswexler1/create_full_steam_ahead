@@ -60,4 +60,33 @@ class KineticSpeedUpdatePolicyTest {
                 32.0F, 32.0F, 100L, 0L, 0L
         ));
     }
+
+    @Test
+    void activeRootSpeedChangesCanRetimeWithoutNetworkDetachment() {
+        assertTrue(KineticSpeedUpdatePolicy.canRetimeActiveNetworkInPlace(
+                16.0F, 32.0F, false, true
+        ));
+        assertTrue(KineticSpeedUpdatePolicy.canRetimeActiveNetworkInPlace(
+                -16.0F, -32.0F, false, true
+        ));
+    }
+
+    @Test
+    void topologyChangingTransitionsKeepCreateDefaultPropagation() {
+        assertFalse(KineticSpeedUpdatePolicy.canRetimeActiveNetworkInPlace(
+                0.0F, 16.0F, false, true
+        ));
+        assertFalse(KineticSpeedUpdatePolicy.canRetimeActiveNetworkInPlace(
+                16.0F, 0.0F, false, true
+        ));
+        assertFalse(KineticSpeedUpdatePolicy.canRetimeActiveNetworkInPlace(
+                16.0F, -16.0F, false, true
+        ));
+        assertFalse(KineticSpeedUpdatePolicy.canRetimeActiveNetworkInPlace(
+                16.0F, 32.0F, true, true
+        ));
+        assertFalse(KineticSpeedUpdatePolicy.canRetimeActiveNetworkInPlace(
+                16.0F, 32.0F, false, false
+        ));
+    }
 }
