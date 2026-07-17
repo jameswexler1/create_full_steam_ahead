@@ -39,10 +39,14 @@ Verified on 2026-07-17. Unit tests and the full build pass after moving phase ow
 - [x] Preserve independent per-engine capacity accounting: shared RPM never duplicates SU, and a stopped engine contributes zero.
 - [x] Notify downstream kinetic block entities only when their final speed changed; a pump held at constant speed by a rotation speed controller no longer receives the transient zero-speed callback that resets its fluid network.
 - [x] Treat Create Rotation Speed Controllers as client phase boundaries. Their output is independently commanded, so downstream shafts and gauges use Create's phase instead of inheriting a changing FSA source correction.
+- [x] Resolve each kinetic child's source to a specific block-entity identity before retiming. Simulated's real Analog Transmission and synthetic cogwheel may occupy the same coordinates, so coordinates only index candidates and never identify the parent by themselves.
+- [x] Require the selected parent's Create-conveyed speed to match the child's live speed; prefer an exact source-position object or explicit position subtype only as a tie-breaker, and use Create's normal propagation when the source remains ambiguous.
 - [x] Preserve Create's normal detach/attach behavior for starts, stops, reversals, missing networks, and generators following or competing with another source.
 - [x] Keep a recently observed non-steam boiler input classified as an input for 40 ticks while Create temporarily clears pipe flow during a legitimate rebuild.
 - [x] Unit-test immediate transitions, update windows, quiet period, accumulated deadband, exact settling, no-op matching speeds, and the in-place-retiming eligibility boundary.
 - [x] Unit-test strongest-source selection, temporary owner dropout, geared local-to-owner speed conversion, all-stopped fallback, invalid ratios, and direction conflicts.
+- [x] Unit-test ordinary source resolution, overlapping same-coordinate synthetic sources, identity/subtype tie-breaking, ambiguity, and invalid conveyed speeds.
+- [x] Copied-world runtime regression on 2026-07-17: the affected engine -> Analog Transmission -> Rotation Speed Controller network retimed all 131 loaded members in place from `1 RPM` through `61.67 RPM`; every active fractional-RPM update succeeded without a fallback detach/attach rebuild.
 
 ## Expected Mapping
 

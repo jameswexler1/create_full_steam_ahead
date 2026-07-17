@@ -42,6 +42,7 @@ Implemented:
 - Multiple FSA generators on one shaft now retain one stable network owner during fractional RPM ramps. The strongest compatible engine command sets shared shaft speed, each engine keeps independent SU capacity, and a temporary owner-engine dropout no longer stops a bank that still has another active engine.
 - Same-tick FSA generator changes now flush as one final kinetic-network command at level tick end. Rotation Speed Controllers also terminate FSA client phase inheritance, keeping their fixed-speed output shafts independent from upstream engine RPM corrections.
 - Direct boiler faces that are observed receiving water or another non-steam fluid retain their input classification for 40 ticks across transient Create pipe-flow resets.
+- Active kinetic retiming now preserves same-coordinate block-entity identities used by Simulated Analog Transmissions. Parent selection validates Create's conveyed speed, so fractional engine ramps no longer rebuild the fixed-speed pump network behind an Analog Transmission and Rotation Speed Controller.
 
 Automated checks run:
 
@@ -78,6 +79,7 @@ Results:
 - Latest automated/runtime run on 2026-07-17 after non-destructive active kinetic retiming and transient water-input classification: `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava test`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`, `find src/main/resources -name '*.json' -exec jq empty {} +`, and `git diff --check` passed; `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` completed mod initialization/resource loading without a mixin error.
 - Latest automated run on 2026-07-17 after stable multi-engine shaft coordination: `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`, `find src/main/resources -name '*.json' -exec jq empty {} +`, and `git diff --check` passed.
 - Latest automated/runtime run on 2026-07-17 after end-of-tick generator batching and Rotation Speed Controller phase isolation: `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava test`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`, `find src/main/resources -name '*.json' -exec jq empty {} +`, and `git diff --check` passed; `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` reached Full Steam Ahead initialization without mixin or event-registration errors before deliberate shutdown.
+- Latest automated/runtime run on 2026-07-17 after identity-aware kinetic source resolution: `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava test`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`, `find src/main/resources -name '*.json' -exec jq empty {} +`, and `git diff --check` passed. In the copied affected world, the 131-member engine/Analog Transmission/Rotation Speed Controller network retimed continuously from `1 RPM` through `61.67 RPM` with no active-ramp fallback network rebuild.
 
 Manual runtime checklist:
 

@@ -74,14 +74,16 @@ final class ActiveKineticNetworkRetimer {
         Set<KineticBlockEntity> networkEntities = coordination.networkEntities();
         FullSteamPoweredShaftBlockEntity owner = coordination.owner();
 
-        Map<BlockPos, List<KineticBlockEntity>> childrenBySource = new HashMap<>();
         Map<KineticBlockEntity, Float> previousSpeeds = new IdentityHashMap<>();
         for (KineticBlockEntity blockEntity : networkEntities) {
             previousSpeeds.put(blockEntity, blockEntity.getTheoreticalSpeed());
-            if (blockEntity.source != null) {
-                childrenBySource.computeIfAbsent(blockEntity.source, ignored -> new ArrayList<>())
-                        .add(blockEntity);
-            }
+        }
+        Map<KineticBlockEntity, List<KineticBlockEntity>> childrenBySource = resolveChildrenBySource(
+                networkEntities,
+                previousSpeeds
+        );
+        if (childrenBySource == null) {
+            return false;
         }
 
         Set<KineticBlockEntity> visited = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -94,7 +96,7 @@ final class ActiveKineticNetworkRetimer {
 
         while (!pending.isEmpty()) {
             KineticBlockEntity parent = pending.removeFirst();
-            List<KineticBlockEntity> children = childrenBySource.get(parent.getBlockPos());
+            List<KineticBlockEntity> children = childrenBySource.get(parent);
             if (children == null) {
                 continue;
             }
@@ -147,6 +149,67 @@ final class ActiveKineticNetworkRetimer {
             blockEntity.sendData();
         }
         return true;
+    }
+
+    private static Map<KineticBlockEntity, List<KineticBlockEntity>> resolveChildrenBySource(
+            Set<KineticBlockEntity> networkEntities,
+            Map<KineticBlockEntity, Float> currentSpeeds
+    ) {
+        Map<SourceCoordinate, List<KineticBlockEntity>> candidatesByCoordinate = new HashMap<>();
+        for (KineticBlockEntity blockEntity : networkEntities) {
+            candidatesByCoordinate
+                    .computeIfAbsent(SourceCoordinate.of(blockEntity.getBlockPos()), ignored -> new ArrayList<>())
+                    .add(blockEntity);
+        }
+
+        Map<KineticBlockEntity, List<KineticBlockEntity>> childrenBySource = new IdentityHashMap<>();
+        for (KineticBlockEntity child : networkEntities) {
+            if (child.source == null) {
+                continue;
+            }
+
+            List<KineticBlockEntity> candidates = candidatesByCoordinate.get(SourceCoordinate.of(child.source));
+            KineticBlockEntity parent = resolveSource(child, candidates, currentSpeeds.get(child));
+            if (parent == null) {
+                return null;
+            }
+            childrenBySource.computeIfAbsent(parent, ignored -> new ArrayList<>()).add(child);
+        }
+        return childrenBySource;
+    }
+
+    private static KineticBlockEntity resolveSource(
+            KineticBlockEntity child,
+            List<KineticBlockEntity> possibleSources,
+            float currentChildSpeed
+    ) {
+        if (possibleSources == null) {
+            return null;
+        }
+
+        List<KineticSourceResolver.Candidate<KineticBlockEntity>> candidates = new ArrayList<>();
+        for (KineticBlockEntity candidate : possibleSources) {
+            if (candidate == child) {
+                continue;
+            }
+
+            BlockPos candidatePos = candidate.getBlockPos();
+            boolean explicitPositionType = child.source.getClass() != BlockPos.class
+                    && candidatePos.getClass() == child.source.getClass();
+            candidates.add(new KineticSourceResolver.Candidate<>(
+                    candidate,
+                    candidatePos == child.source,
+                    explicitPositionType,
+                    RotationPropagatorAccessor.fullSteamAhead$getConveyedSpeed(candidate, child)
+            ));
+        }
+        return KineticSourceResolver.resolve(currentChildSpeed, candidates);
+    }
+
+    private record SourceCoordinate(int x, int y, int z) {
+        private static SourceCoordinate of(BlockPos pos) {
+            return new SourceCoordinate(pos.getX(), pos.getY(), pos.getZ());
+        }
     }
 
     private static Coordination resolveCoordination(FullSteamPoweredShaftBlockEntity source) {
