@@ -31,6 +31,7 @@ public class SteamReliefValveBlockEntity extends SmartBlockEntity implements IHa
     private static final String FORCED_OPEN_KEY = "ForcedOpen";
     private static final String VENTED_LAST_TICK_KEY = "VentedLastTick";
     private static final String MAX_PRESSURE_KEY = "MaxPressure";
+    private static final float SOUND_VOLUME_SCALE = 0.1F;
 
     private final LerpedFloat clientOpen = LerpedFloat.linear();
 
@@ -228,7 +229,8 @@ public class SteamReliefValveBlockEntity extends SmartBlockEntity implements IHa
         }
         if (level.getGameTime() % 8L == 0L) {
             float intensity = (float) Math.min(1.0D, amount / (double) Math.max(1, FullSteamConfig.reliefValveVentRateMb()));
-            AllSoundEvents.STEAM.playAt(level, origin, 0.55F + 0.35F * intensity, 0.68F, false);
+            float volume = (0.55F + 0.35F * intensity) * SOUND_VOLUME_SCALE;
+            AllSoundEvents.STEAM.playAt(level, origin, volume, 0.68F, false);
         }
     }
 

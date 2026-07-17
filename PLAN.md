@@ -811,7 +811,7 @@ changing engine balance.
 - [x] Relief valves attach by Create Fluid Tank boiler controller, not by pipe network position, so one valve protects all steam-port-fed networks on that physical boiler.
 - [x] Automatic relief opens at `2.2 MpN/m²`, closes below `1.7 MpN/m²`, and uses `720 mB/t` as the baseline per-valve vent rate while scaling effective safety relief with active boiler production.
 - [x] Redstone-powered relief valves force open and drain toward the configured open-pipe atmospheric target.
-- [x] Relief valve venting uses Create-style cap lift, handwheel spin, steam particles, scald hazard, and steam sound.
+- [x] Relief valve venting uses Create-style cap lift, handwheel spin, steam particles, scald hazard, and a restrained steam sound at 10% of its original event volume.
 - [x] Relief valves support top and horizontal side placement; bottom placement remains unsupported to avoid Blaze Burner/floor conflicts.
 - [ ] Follow-up: local Sable crater pass should skip fluid-only blocks without making waterlogged solid blocks immune.
 
