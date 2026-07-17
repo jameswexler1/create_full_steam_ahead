@@ -23,6 +23,7 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
     private float targetSpeed;
     private float generatedSpeed;
     private float generatedCapacitySu;
+    private float coordinatedOwnerSpeed;
     private float lastNotifiedCapacitySu;
     private int initialTicks = INITIAL_SYNC_TICKS;
     private long lastAppliedGameTime = Long.MIN_VALUE;
@@ -34,6 +35,12 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
 
     @Override
     public void tick() {
+        // Restore a coordinated owner command before Create's first post-load kinetic validation.
+        // This matters when the saved topology owner has no personal steam but another loaded engine
+        // in the same bank is still an active capacity source.
+        if (level != null && !level.isClientSide() && initialTicks > 0 && getTheoreticalSpeed() != 0.0F) {
+            ActiveKineticNetworkRetimer.prepareNetworkCommand(this);
+        }
         super.tick();
         if (level == null || level.isClientSide()) {
             return;
@@ -146,8 +153,16 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
     }
 
     @Override
+    public void updateGeneratedRotation() {
+        if (level != null && !level.isClientSide()) {
+            ActiveKineticNetworkRetimer.prepareNetworkCommand(this);
+        }
+        super.updateGeneratedRotation();
+    }
+
+    @Override
     public void applyNewSpeed(float previousSpeed, float speed) {
-        if (ActiveKineticNetworkRetimer.tryRetime(this, previousSpeed, speed)) {
+        if (ActiveKineticNetworkRetimer.tryRetime(this, previousSpeed)) {
             return;
         }
         super.applyNewSpeed(previousSpeed, speed);
@@ -163,7 +178,20 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
 
     @Override
     public float getGeneratedSpeed() {
-        return generatedCapacitySu > 0 ? generatedSpeed : 0;
+        if (coordinatedOwnerSpeed != 0.0F
+                && network != null
+                && network.longValue() == worldPosition.asLong()) {
+            return coordinatedOwnerSpeed;
+        }
+        return getIndividualGeneratedSpeed();
+    }
+
+    float getIndividualGeneratedSpeed() {
+        return generatedCapacitySu > 0.0F ? generatedSpeed : 0.0F;
+    }
+
+    void setCoordinatedOwnerSpeed(float speed) {
+        coordinatedOwnerSpeed = finiteOrZero(speed);
     }
 
     @Override
@@ -206,6 +234,7 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
         generatedCapacitySu = tag.getFloat(GENERATED_CAPACITY_KEY);
         if (!clientPacket) {
             lastNotifiedCapacitySu = generatedCapacitySu;
+            coordinatedOwnerSpeed = 0.0F;
             initialTicks = INITIAL_SYNC_TICKS;
             lastAppliedGameTime = Long.MIN_VALUE;
             lastTargetChangeGameTime = Long.MIN_VALUE;

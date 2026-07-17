@@ -8,7 +8,7 @@
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` completed mod initialization and resource loading on 2026-07-17 with the network-shared client phase mixin and active-network retiming accessor applied
 
-Verified on 2026-07-17. Unit tests and the full build pass after moving phase ownership from individual rendered blocks to the connected kinetic network; the previous in-world animation-continuity validation remains recorded below.
+Verified on 2026-07-17. Unit tests and the full build pass after moving phase ownership from individual rendered blocks to the connected kinetic network and coordinating multiple FSA generators through one stable shaft command; the previous in-world animation-continuity validation remains recorded below.
 
 ## Animation Continuity
 
@@ -32,10 +32,15 @@ Verified on 2026-07-17. Unit tests and the full build pass after moving phase ow
 - [x] Compare Create boiler attachment changes after FSA devices are included, eliminating the false stable `1 -> 0 -> 1` whistle-count transition.
 - [x] Reevaluate Create boiler activation only when the FSA boiler source changes between inactive and active/residual-pressure states.
 - [x] Retime established active, same-direction kinetic source trees without detaching them, using Create's conveyed-speed calculation for gears, belts, chain drives, and rotation speed controllers.
+- [x] Keep the existing FSA kinetic-network owner stable while connected FSA followers change fractional RPM; followers can raise the common command without detaching and taking ownership.
+- [x] Convert each FSA generator's local target through its live speed ratio before selecting the strongest compatible command, preserving geared and reversed branch ratios.
+- [x] Let an owner engine with zero personal output carry the common shaft command at zero personal capacity while another connected FSA engine remains active; a genuinely all-stopped bank still uses Create's normal stop propagation.
+- [x] Preserve independent per-engine capacity accounting: shared RPM never duplicates SU, and a stopped engine contributes zero.
 - [x] Notify downstream kinetic block entities only when their final speed changed; a pump held at constant speed by a rotation speed controller no longer receives the transient zero-speed callback that resets its fluid network.
 - [x] Preserve Create's normal detach/attach behavior for starts, stops, reversals, missing networks, and generators following or competing with another source.
 - [x] Keep a recently observed non-steam boiler input classified as an input for 40 ticks while Create temporarily clears pipe flow during a legitimate rebuild.
 - [x] Unit-test immediate transitions, update windows, quiet period, accumulated deadband, exact settling, no-op matching speeds, and the in-place-retiming eligibility boundary.
+- [x] Unit-test strongest-source selection, temporary owner dropout, geared local-to-owner speed conversion, all-stopped fallback, invalid ratios, and direction conflicts.
 
 ## Expected Mapping
 
@@ -66,5 +71,7 @@ With the default `maxRpm = 64`, quarter, half, three-quarter, and full output ar
 - [ ] Reload the world and unload/reload the engine chunk, then ramp RPM again; no stale client phase survives incorrectly.
 - [ ] Assemble the running setup as a Sable/Aeronautics simulated contraption, vary admission, disassemble it, and confirm continuity and synchronization in each state.
 - [ ] Self-feed regression: engine shaft network → speed controller at 256 RPM → pump directly into the boiler. Ramp pressure for at least 200 ticks and confirm water supply no longer cycles between full, partial, and empty.
+- [ ] Repeat the cold self-feed startup with three FSA cylinders on the same shaft. Confirm the speed-controller output remains exactly 256 RPM while engine RPM rises fractionally and no cylinder repeatedly takes over the kinetic network.
+- [ ] During the same startup, temporarily starve whichever cylinder currently owns the network while at least one adjacent cylinder remains powered. The pump and common shaft must continue without a zero-speed frame; total capacity must fall only by the starved cylinder's SU.
 - [ ] Repeat the self-feed regression with a stopped starter pump still attached; it must neither consume water nor destabilize the active pump.
 - [ ] Repeat both self-feed checks in a normal world and on a Sable/Simulated contraption.

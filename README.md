@@ -33,6 +33,7 @@ Use a Java 21 runtime. The first build downloads and prepares the NeoForge Minec
 - Cylinder construction visuals: straight-only wall runs stay fence-like; once a local corner implies a ring, the existing assembled partial section models are assigned from that stable corner origin
 - Visual direction: close to base Create's copper, andesite, brass, shafts, gauges, and steam engine style
 - Engine speed: linear from `1` to `64 RPM` for positive output; `0 RPM` with no output
+- Connected Full Steam Ahead generators use one stable shared-shaft command: the strongest compatible engine sets shaft RPM while every engine contributes only its own available SU capacity
 
 ## Steam Power Model
 

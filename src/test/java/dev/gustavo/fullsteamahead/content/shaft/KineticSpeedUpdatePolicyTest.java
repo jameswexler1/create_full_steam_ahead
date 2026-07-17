@@ -62,31 +62,15 @@ class KineticSpeedUpdatePolicyTest {
     }
 
     @Test
-    void activeRootSpeedChangesCanRetimeWithoutNetworkDetachment() {
-        assertTrue(KineticSpeedUpdatePolicy.canRetimeActiveNetworkInPlace(
-                16.0F, 32.0F, false, true
-        ));
-        assertTrue(KineticSpeedUpdatePolicy.canRetimeActiveNetworkInPlace(
-                -16.0F, -32.0F, false, true
-        ));
+    void activeConnectedSourcesCanCoordinateWithoutNetworkDetachment() {
+        assertTrue(KineticSpeedUpdatePolicy.canCoordinateActiveNetwork(16.0F, true));
+        assertTrue(KineticSpeedUpdatePolicy.canCoordinateActiveNetwork(-16.0F, true));
     }
 
     @Test
-    void topologyChangingTransitionsKeepCreateDefaultPropagation() {
-        assertFalse(KineticSpeedUpdatePolicy.canRetimeActiveNetworkInPlace(
-                0.0F, 16.0F, false, true
-        ));
-        assertFalse(KineticSpeedUpdatePolicy.canRetimeActiveNetworkInPlace(
-                16.0F, 0.0F, false, true
-        ));
-        assertFalse(KineticSpeedUpdatePolicy.canRetimeActiveNetworkInPlace(
-                16.0F, -16.0F, false, true
-        ));
-        assertFalse(KineticSpeedUpdatePolicy.canRetimeActiveNetworkInPlace(
-                16.0F, 32.0F, true, true
-        ));
-        assertFalse(KineticSpeedUpdatePolicy.canRetimeActiveNetworkInPlace(
-                16.0F, 32.0F, false, false
-        ));
+    void inactiveOrDetachedSourcesKeepCreateDefaultPropagation() {
+        assertFalse(KineticSpeedUpdatePolicy.canCoordinateActiveNetwork(0.0F, true));
+        assertFalse(KineticSpeedUpdatePolicy.canCoordinateActiveNetwork(Float.NaN, true));
+        assertFalse(KineticSpeedUpdatePolicy.canCoordinateActiveNetwork(16.0F, false));
     }
 }

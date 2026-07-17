@@ -41,16 +41,8 @@ final class KineticSpeedUpdatePolicy {
         return Float.floatToIntBits(first) == Float.floatToIntBits(second);
     }
 
-    static boolean canRetimeActiveNetworkInPlace(
-            float appliedSpeed,
-            float targetSpeed,
-            boolean hasSource,
-            boolean hasNetwork
-    ) {
-        return hasNetwork
-                && !hasSource
-                && !sameSpeed(appliedSpeed, targetSpeed)
-                && !requiresImmediateUpdate(appliedSpeed, targetSpeed);
+    static boolean canCoordinateActiveNetwork(float appliedSpeed, boolean hasNetwork) {
+        return hasNetwork && Float.isFinite(appliedSpeed) && appliedSpeed != 0.0F;
     }
 
     private static boolean elapsedAtLeast(long gameTime, long previousGameTime, int requiredTicks) {
