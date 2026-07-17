@@ -76,7 +76,7 @@ With the default `maxRpm = 64`, quarter, half, three-quarter, and full output ar
 - [ ] Attach gears, belts, a speedometer, and at least one passive engine; all connected visuals preserve phase and their proper speed ratios during RPM changes.
 - [ ] Reload the world and unload/reload the engine chunk, then ramp RPM again; no stale client phase survives incorrectly.
 - [ ] Assemble the running setup as a Sable/Aeronautics simulated contraption, vary admission, disassemble it, and confirm continuity and synchronization in each state.
-- [ ] Self-feed regression: engine shaft network → speed controller at 256 RPM → pump directly into the boiler. Start cold and ramp pressure for at least 200 ticks; confirm water supply no longer cycles between full, partial, and empty, the controller output shaft does not flicker, and a downstream speedometer remains stable at 256 RPM.
+- [x] Self-feed regression: engine shaft network → speed controller at 256 RPM → pump directly into the boiler. User validation on 2026-07-18 confirmed the water-supply cycle and kinetic flicker are fixed in the normal Prism instance.
 - [ ] Repeat the cold self-feed startup with three FSA cylinders on the same shaft. Confirm the speed-controller output remains exactly 256 RPM while engine RPM rises fractionally and no cylinder repeatedly takes over the kinetic network.
 - [ ] During the same startup, temporarily starve whichever cylinder currently owns the network while at least one adjacent cylinder remains powered. The pump and common shaft must continue without a zero-speed frame; total capacity must fall only by the starved cylinder's SU.
 - [ ] Repeat the self-feed regression with a stopped starter pump still attached; it must neither consume water nor destabilize the active pump.

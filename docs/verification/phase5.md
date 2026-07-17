@@ -80,6 +80,7 @@ Results:
 - Latest automated run on 2026-07-17 after stable multi-engine shaft coordination: `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`, `find src/main/resources -name '*.json' -exec jq empty {} +`, and `git diff --check` passed.
 - Latest automated/runtime run on 2026-07-17 after end-of-tick generator batching and Rotation Speed Controller phase isolation: `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava test`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`, `find src/main/resources -name '*.json' -exec jq empty {} +`, and `git diff --check` passed; `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` reached Full Steam Ahead initialization without mixin or event-registration errors before deliberate shutdown.
 - Latest automated/runtime run on 2026-07-17 after identity-aware kinetic source resolution: `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava test`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`, `find src/main/resources -name '*.json' -exec jq empty {} +`, and `git diff --check` passed. In the copied affected world, the 131-member engine/Analog Transmission/Rotation Speed Controller network retimed continuously from `1 RPM` through `61.67 RPM` with no active-ramp fallback network rebuild.
+- User validation on 2026-07-18 in the normal Prism instance confirmed the self-fed pump network no longer flickers and the boiler water supply remains stable during startup.
 
 Manual runtime checklist:
 
