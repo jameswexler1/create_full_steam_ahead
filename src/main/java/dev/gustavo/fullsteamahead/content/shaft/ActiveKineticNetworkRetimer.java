@@ -17,6 +17,14 @@ import java.util.Objects;
 import java.util.Set;
 
 final class ActiveKineticNetworkRetimer {
+    static FullSteamPoweredShaftBlockEntity coordinatedOwner(FullSteamPoweredShaftBlockEntity source) {
+        Coordination coordination = resolveCoordination(source);
+        if (coordination == null || !coordination.selection().compatible()) {
+            return null;
+        }
+        return coordination.owner();
+    }
+
     static void prepareNetworkCommand(FullSteamPoweredShaftBlockEntity source) {
         Coordination coordination = resolveCoordination(source);
         if (coordination == null || !coordination.selection().compatible()) {

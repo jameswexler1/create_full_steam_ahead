@@ -2,6 +2,7 @@ package dev.gustavo.fullsteamahead.client.render;
 
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
+import com.simibubi.create.content.kinetics.speedController.SpeedControllerBlockEntity;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlockEntity;
 import net.createmod.catnip.animation.AnimationTickHolder;
@@ -158,17 +159,23 @@ public final class KineticPhaseContinuity {
 
         Long networkId = blockEntity.network;
         KineticBlockEntity networkOwner = kineticEntityAt(level, networkId == null ? null : BlockPos.of(networkId));
-        if (networkOwner instanceof FullSteamPoweredShaftBlockEntity) {
-            return new NetworkContext(networkId, networkOwner);
-        }
         if (blockEntity instanceof FullSteamPoweredShaftBlockEntity) {
             return new NetworkContext(networkId, networkOwner == null ? blockEntity : networkOwner);
         }
 
+        // Follow the actual source path even when the network owner is an FSA shaft. A Rotation
+        // Speed Controller can share that network owner while establishing an independently
+        // commanded downstream speed, so owner identity alone cannot establish phase inheritance.
         KineticBlockEntity cursor = blockEntity;
         for (int depth = 0; depth < SOURCE_SCAN_LIMIT; depth++) {
             if (cursor instanceof FullSteamPoweredShaftBlockEntity) {
                 return new NetworkContext(networkId, networkOwner == null ? cursor : networkOwner);
+            }
+            // A Rotation Speed Controller establishes an independently commanded output phase.
+            // Carrying the upstream FSA correction through it makes an otherwise fixed output jump
+            // whenever the engine RPM changes.
+            if (cursor instanceof SpeedControllerBlockEntity) {
+                return null;
             }
             BlockPos sourcePos = cursor.source;
             if (sourcePos == null || !level.isLoaded(sourcePos)) {

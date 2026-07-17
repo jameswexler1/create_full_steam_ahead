@@ -1,5 +1,6 @@
 package dev.gustavo.fullsteamahead.content.shaft;
 
+import com.simibubi.create.content.kinetics.KineticNetwork;
 import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -149,7 +150,17 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
         lastAppliedGameTime = gameTime;
         lastNotifiedCapacitySu = generatedCapacitySu;
         setChanged();
+        KineticNetworkUpdateCoordinator.schedule(this);
+    }
+
+    void flushScheduledRotation() {
+        lastNotifiedCapacitySu = generatedCapacitySu;
         updateGeneratedRotation();
+    }
+
+    void refreshGeneratedCapacity(KineticNetwork network) {
+        lastNotifiedCapacitySu = generatedCapacitySu;
+        network.updateCapacityFor(this, calculateAddedStressCapacity());
     }
 
     @Override

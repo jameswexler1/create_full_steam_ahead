@@ -40,6 +40,7 @@ Implemented:
 - Powered `steam_relief_valve` blocks force-open and drain toward the same atmospheric target as open pipe ends, even below the automatic open threshold.
 - Active same-direction FSA generator speed changes now retime the established Create kinetic source tree in place; fixed-speed pumps behind rotation speed controllers no longer see a false zero-speed transition and rebuild their water network.
 - Multiple FSA generators on one shaft now retain one stable network owner during fractional RPM ramps. The strongest compatible engine command sets shared shaft speed, each engine keeps independent SU capacity, and a temporary owner-engine dropout no longer stops a bank that still has another active engine.
+- Same-tick FSA generator changes now flush as one final kinetic-network command at level tick end. Rotation Speed Controllers also terminate FSA client phase inheritance, keeping their fixed-speed output shafts independent from upstream engine RPM corrections.
 - Direct boiler faces that are observed receiving water or another non-steam fluid retain their input classification for 40 ticks across transient Create pipe-flow resets.
 
 Automated checks run:
@@ -76,6 +77,7 @@ Results:
 - Latest automated run on 2026-06-13 after letting cooled zero-pressure boilers return to normal tanks and verifying redstone-forced relief valve support: `find src/main/resources -name '*.json' -exec jq empty {} +`, `git diff --check`, and `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build` passed.
 - Latest automated/runtime run on 2026-07-17 after non-destructive active kinetic retiming and transient water-input classification: `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava test`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`, `find src/main/resources -name '*.json' -exec jq empty {} +`, and `git diff --check` passed; `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` completed mod initialization/resource loading without a mixin error.
 - Latest automated run on 2026-07-17 after stable multi-engine shaft coordination: `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`, `find src/main/resources -name '*.json' -exec jq empty {} +`, and `git diff --check` passed.
+- Latest automated/runtime run on 2026-07-17 after end-of-tick generator batching and Rotation Speed Controller phase isolation: `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew compileJava test`, `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`, `find src/main/resources -name '*.json' -exec jq empty {} +`, and `git diff --check` passed; `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew runClient` reached Full Steam Ahead initialization without mixin or event-registration errors before deliberate shutdown.
 
 Manual runtime checklist:
 
