@@ -9,8 +9,12 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
 import com.simibubi.create.foundation.utility.CreateLang;
 import dev.engine_room.flywheel.lib.transform.TransformStack;
+import dev.gustavo.fullsteamahead.content.redstone.TelegraphLinkable;
+import dev.gustavo.fullsteamahead.content.redstone.TelegraphLinks;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import net.createmod.catnip.data.Couple;
+import net.createmod.catnip.animation.LerpedFloat;
+import net.createmod.catnip.math.AngleHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -24,18 +28,31 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
-public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity implements IHaveGoggleInformation {
+public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity
+        implements IHaveGoggleInformation, TelegraphLinkable {
     private static final String RECEIVED_SIGNAL_KEY = "ReceivedSignal";
+    private static final String MANUAL_STRENGTH_KEY = "ManualStrength";
+    private static final String TELEGRAPH_LINK_KEY = "TelegraphLink";
+    private static final String CONTROL_MODE_KEY = "ControlMode";
 
     private LinkBehaviour link;
     private int receivedSignal;
+    private int manualStrength = 15;
+    private SteamAdmissionControlMode controlMode = SteamAdmissionControlMode.MANUAL;
+    private UUID telegraphLinkId;
+    private boolean telegraphRegistered;
     private double networkPressurePn;
     private int requestedSteamMb;
     private int allocatedSteamMb;
     private int deliveredSteamMb;
     private long networkGameTime = Long.MIN_VALUE;
     private int lastAudibleAdmission = -1;
+    private boolean clientLeverInitialized;
+
+    private final LerpedFloat clientManualStrength = LerpedFloat.linear().startWithValue(15.0D);
 
     public SteamAdmissionValveBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.STEAM_ADMISSION_VALVE.get(), pos, state);
@@ -55,6 +72,17 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
     @Override
     public void tick() {
         super.tick();
+        if (level == null) {
+            return;
+        }
+        if (!telegraphRegistered && telegraphLinkId != null) {
+            TelegraphLinks.add(level, telegraphLinkId, worldPosition);
+            telegraphRegistered = true;
+        }
+        if (level.isClientSide) {
+            clientManualStrength.tickChaser();
+            return;
+        }
         if (level instanceof ServerLevel serverLevel) {
             int admission = getAdmissionStrength();
             if (lastAudibleAdmission >= 0 && lastAudibleAdmission != admission) {
@@ -70,11 +98,111 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
     }
 
     public int getAdmissionStrength() {
+        if (isManualMode()) {
+            return manualStrength;
+        }
         return isFrequencyBypass() ? 15 : receivedSignal;
     }
 
     public float getAdmissionFraction() {
         return getAdmissionStrength() / 15.0F;
+    }
+
+    public boolean isManualMode() {
+        return controlMode == SteamAdmissionControlMode.MANUAL;
+    }
+
+    public SteamAdmissionControlMode getControlMode() {
+        return controlMode;
+    }
+
+    public SteamAdmissionControlMode cycleControlMode() {
+        controlMode = controlMode.next();
+        setChanged();
+        sendData();
+        return controlMode;
+    }
+
+    public int getManualStrength() {
+        return manualStrength;
+    }
+
+    public float getRenderedManualStrength(float partialTicks) {
+        return clientManualStrength.getValue(partialTicks);
+    }
+
+    public boolean changeManualStrength(boolean decrease) {
+        int next = Mth.clamp(manualStrength + (decrease ? -1 : 1), 0, 15);
+        if (next == manualStrength) {
+            return false;
+        }
+        manualStrength = next;
+        lastAudibleAdmission = next;
+        markManualChanged();
+        if (level != null && !level.isClientSide && telegraphLinkId != null) {
+            for (TelegraphLinkable device : TelegraphLinks.devices(level, telegraphLinkId, worldPosition)) {
+                device.receiveTelegraphState(next);
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public UUID getLinkId() {
+        return telegraphLinkId;
+    }
+
+    @Override
+    public int getTelegraphState() {
+        return manualStrength;
+    }
+
+    @Override
+    public void receiveTelegraphState(int state) {
+        if (level == null || level.isClientSide) {
+            return;
+        }
+        int clamped = Mth.clamp(state, 0, 15);
+        if (manualStrength == clamped) {
+            return;
+        }
+        manualStrength = clamped;
+        markManualChanged();
+    }
+
+    public void setTelegraphLinkId(UUID id) {
+        if (level == null || level.isClientSide || Objects.equals(telegraphLinkId, id)) {
+            return;
+        }
+        if (telegraphLinkId != null) {
+            TelegraphLinks.remove(level, telegraphLinkId, worldPosition);
+        }
+        telegraphLinkId = id;
+        telegraphRegistered = false;
+        if (telegraphLinkId != null) {
+            TelegraphLinks.add(level, telegraphLinkId, worldPosition);
+            telegraphRegistered = true;
+            for (TelegraphLinkable device : TelegraphLinks.devices(level, telegraphLinkId, worldPosition)) {
+                manualStrength = device.getTelegraphState();
+                break;
+            }
+        }
+        markManualChanged();
+    }
+
+    private void markManualChanged() {
+        clientManualStrength.chase(manualStrength, 0.25D, LerpedFloat.Chaser.EXP);
+        setChanged();
+        sendData();
+    }
+
+    @Override
+    public void invalidate() {
+        if (level != null && telegraphLinkId != null) {
+            TelegraphLinks.remove(level, telegraphLinkId, worldPosition);
+        }
+        telegraphRegistered = false;
+        super.invalidate();
     }
 
     public SteamInletBlockEntity getControlledInlet() {
@@ -154,17 +282,28 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
         CreateLang.text(inlet == null ? "No active inlet linked" : "Active inlet linked")
                 .style(inlet == null ? ChatFormatting.YELLOW : ChatFormatting.GREEN)
                 .forGoggles(tooltip, 1);
-        if (isFrequencyBypass()) {
-            CreateLang.text("Admission: Bypass (100%)").forGoggles(tooltip, 1);
-        } else {
-            int strength = getAdmissionStrength();
+        if (isManualMode()) {
+            CreateLang.text("Control: Manual / Telegraph").forGoggles(tooltip, 1);
             int percent = Math.round(getAdmissionFraction() * 100.0F);
-            CreateLang.text("Signal: " + receivedSignal + "/15")
+            CreateLang.text("Admission: " + manualStrength + "/15 (" + percent + "%)")
                     .forGoggles(tooltip, 1);
-            CreateLang.text("Admission: " + strength + "/15 (" + percent + "%)")
+            CreateLang.text(telegraphLinkId == null ? "Telegraph: Local" : "Telegraph: Linked")
+                    .style(telegraphLinkId == null ? ChatFormatting.GRAY : ChatFormatting.GREEN)
                     .forGoggles(tooltip, 1);
+        } else {
+            CreateLang.text("Control: Redstone Link").forGoggles(tooltip, 1);
+            if (isFrequencyBypass()) {
+                CreateLang.text("Admission: Bypass (100%)").forGoggles(tooltip, 1);
+            } else {
+                int strength = getAdmissionStrength();
+                int percent = Math.round(getAdmissionFraction() * 100.0F);
+                CreateLang.text("Signal: " + receivedSignal + "/15")
+                        .forGoggles(tooltip, 1);
+                CreateLang.text("Admission: " + strength + "/15 (" + percent + "%)")
+                        .forGoggles(tooltip, 1);
+            }
         }
-        String state = isFrequencyBypass()
+        String state = !isManualMode() && isFrequencyBypass()
                 ? "Bypass"
                 : getAdmissionStrength() == 0
                         ? "Closed"
@@ -186,6 +325,11 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
         tag.putInt(RECEIVED_SIGNAL_KEY, receivedSignal);
+        tag.putInt(MANUAL_STRENGTH_KEY, manualStrength);
+        tag.putString(CONTROL_MODE_KEY, controlMode.getSerializedName());
+        if (telegraphLinkId != null) {
+            tag.putUUID(TELEGRAPH_LINK_KEY, telegraphLinkId);
+        }
         if (clientPacket) {
             tag.putDouble("NetworkPressure", networkPressurePn);
             tag.putInt("RequestedSteam", requestedSteamMb);
@@ -198,7 +342,26 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
     @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
+        UUID previousLink = telegraphLinkId;
         receivedSignal = Mth.clamp(tag.getInt(RECEIVED_SIGNAL_KEY), 0, 15);
+        if (tag.contains(MANUAL_STRENGTH_KEY)) {
+            manualStrength = Mth.clamp(tag.getInt(MANUAL_STRENGTH_KEY), 0, 15);
+        }
+        // Old Phase 17 block entities have no mode key and retain their receiver behavior.
+        controlMode = tag.contains(CONTROL_MODE_KEY)
+                ? SteamAdmissionControlMode.fromSerializedName(tag.getString(CONTROL_MODE_KEY))
+                : SteamAdmissionControlMode.REDSTONE_LINK;
+        telegraphLinkId = tag.hasUUID(TELEGRAPH_LINK_KEY) ? tag.getUUID(TELEGRAPH_LINK_KEY) : null;
+        if (level != null && telegraphRegistered && !Objects.equals(previousLink, telegraphLinkId)) {
+            TelegraphLinks.remove(level, previousLink, worldPosition);
+            telegraphRegistered = false;
+        }
+        if (!clientLeverInitialized) {
+            clientManualStrength.setValueNoUpdate(manualStrength);
+            clientLeverInitialized = true;
+        } else {
+            clientManualStrength.chase(manualStrength, 0.25D, LerpedFloat.Chaser.EXP);
+        }
         if (clientPacket) {
             networkPressurePn = SteamPressure.zeroIfNegligible(tag.getDouble("NetworkPressure"));
             requestedSteamMb = Math.max(0, tag.getInt("RequestedSteam"));
@@ -215,21 +378,34 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
 
         @Override
         public Vec3 getLocalOffset(LevelAccessor level, BlockPos pos, BlockState state) {
+            if (!isRemoteMode(level, pos)) {
+                return null;
+            }
             double x = isFirst() ? 5.5D : 10.5D;
-            Vec3 offset = new Vec3(x / 16.0D, 14.51D / 16.0D, 0.5D);
+            Vec3 offset = new Vec3(x / 16.0D, 24.0D / 16.0D, 10.51D / 16.0D);
             return rotateForFacing(offset, state.getValue(SteamAdmissionValveBlock.FACING));
         }
 
         @Override
         public void rotate(LevelAccessor level, BlockPos pos, BlockState state, PoseStack poseStack) {
             TransformStack.of(poseStack)
-                    .rotateYDegrees(rotationDegrees(state.getValue(SteamAdmissionValveBlock.FACING)))
-                    .rotateXDegrees(90.0F);
+                    .rotateYDegrees(AngleHelper.horizontalAngle(
+                            state.getValue(SteamAdmissionValveBlock.FACING)));
         }
 
         @Override
         public float getScale() {
-            return 0.44F;
+            return 0.4975F;
+        }
+
+        @Override
+        public boolean shouldRender(LevelAccessor level, BlockPos pos, BlockState state) {
+            return isRemoteMode(level, pos) && super.shouldRender(level, pos, state);
+        }
+
+        private static boolean isRemoteMode(LevelAccessor level, BlockPos pos) {
+            return level.getBlockEntity(pos) instanceof SteamAdmissionValveBlockEntity valve
+                    && !valve.isManualMode();
         }
 
         private static Vec3 rotateForFacing(Vec3 offset, Direction facing) {
@@ -243,13 +419,5 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity impleme
             };
         }
 
-        private static float rotationDegrees(Direction facing) {
-            return switch (facing) {
-                case EAST -> 90.0F;
-                case SOUTH -> 180.0F;
-                case WEST -> 270.0F;
-                default -> 0.0F;
-            };
-        }
     }
 }

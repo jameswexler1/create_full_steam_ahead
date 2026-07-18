@@ -1,0 +1,149 @@
+{
+  "credit": "Create: Full Steam Ahead",
+  "parent": "block/block",
+  "render_type": "minecraft:cutout_mipped",
+  "textures": {
+    "link": "create:block/redstone_bridge",
+    "particle": "create:block/redstone_bridge"
+  },
+  "elements": [
+    {
+      "name": "First frequency pad",
+      "from": [
+        3.5,
+        22,
+        10
+      ],
+      "to": [
+        7.5,
+        26,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": "#link"
+        },
+        "east": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": "#link"
+        },
+        "south": {
+          "uv": [
+            11,
+            0,
+            13,
+            2
+          ],
+          "texture": "#link"
+        },
+        "west": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": "#link"
+        },
+        "up": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": "#link"
+        },
+        "down": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": "#link"
+        }
+      }
+    },
+    {
+      "name": "Second frequency pad",
+      "from": [
+        8.5,
+        22,
+        10
+      ],
+      "to": [
+        12.5,
+        26,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": "#link"
+        },
+        "east": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": "#link"
+        },
+        "south": {
+          "uv": [
+            13,
+            0,
+            15,
+            2
+          ],
+          "texture": "#link"
+        },
+        "west": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": "#link"
+        },
+        "up": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": "#link"
+        },
+        "down": {
+          "uv": [
+            11,
+            2,
+            13,
+            2.5
+          ],
+          "texture": "#link"
+        }
+      }
+    }
+  ]
+}

@@ -3,103 +3,1112 @@
   "parent": "block/block",
   "render_type": "minecraft:cutout_mipped",
   "textures": {
-    "iron": "create:block/industrial_iron_block",
-    "brass": "create:block/brass_casing",
-    "link": "create:block/redstone_bridge",
-    "particle": "create:block/pipes"
+    "texture": "full_steam_ahead:block/steam_admission_valve",
+    "particle": "full_steam_ahead:block/steam_admission_valve"
   },
   "elements": [
     {
-      "name": "Control platform pedestal",
-      "from": [4, 12, 5],
-      "to": [12, 13, 11],
+      "name": "valve_body_lower_band",
+      "from": [
+        1,
+        3,
+        3
+      ],
+      "to": [
+        15,
+        5,
+        13
+      ],
       "faces": {
-        "north": { "uv": [0, 0, 8, 1], "texture": "#iron" },
-        "east": { "uv": [0, 0, 6, 1], "texture": "#iron" },
-        "south": { "uv": [0, 0, 8, 1], "texture": "#iron" },
-        "west": { "uv": [0, 0, 6, 1], "texture": "#iron" },
-        "up": { "uv": [4, 5, 12, 11], "texture": "#iron" }
+        "north": {
+          "uv": [
+            6.75,
+            9.375,
+            8.5,
+            9.625
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            0.25,
+            10.375,
+            1.5,
+            10.625
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            9,
+            9.375,
+            10.75,
+            9.625
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            2,
+            10.375,
+            3.25,
+            10.625
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            2.5,
+            0.25,
+            4.25,
+            1.5
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            0.25,
+            0.25,
+            2,
+            1.5
+          ],
+          "texture": "#texture"
+        }
       }
     },
     {
-      "name": "Raised control platform",
-      "from": [2, 13.01, 4],
-      "to": [14, 14, 12],
+      "name": "valve_body_main_casing",
+      "from": [
+        1,
+        5,
+        3
+      ],
+      "to": [
+        15,
+        11,
+        13
+      ],
       "faces": {
-        "north": { "uv": [0, 0, 12, 1], "texture": "#iron" },
-        "east": { "uv": [0, 0, 8, 1], "texture": "#iron" },
-        "south": { "uv": [0, 0, 12, 1], "texture": "#iron" },
-        "west": { "uv": [0, 0, 8, 1], "texture": "#iron" },
-        "up": { "uv": [2, 4, 14, 12], "texture": "#iron" },
-        "down": { "uv": [2, 4, 14, 12], "texture": "#iron" }
+        "north": {
+          "uv": [
+            0.25,
+            7,
+            2,
+            7.75
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            4.75,
+            7,
+            6,
+            7.75
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            7,
+            4.25,
+            7.75
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            6.5,
+            7,
+            7.75,
+            7.75
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            7,
+            0.25,
+            8.75,
+            1.5
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            4.75,
+            0.25,
+            6.5,
+            1.5
+          ],
+          "texture": "#texture"
+        }
       }
     },
     {
-      "name": "North brass platform trim",
-      "from": [2, 14, 4],
-      "to": [14, 14.5, 5],
+      "name": "valve_body_upper_band",
+      "from": [
+        1,
+        11,
+        3
+      ],
+      "to": [
+        15,
+        13,
+        13
+      ],
       "faces": {
-        "north": { "uv": [0, 0, 12, 0.5], "texture": "#brass" },
-        "east": { "uv": [0, 0, 1, 0.5], "texture": "#brass" },
-        "south": { "uv": [0, 0, 12, 0.5], "texture": "#brass" },
-        "west": { "uv": [0, 0, 1, 0.5], "texture": "#brass" },
-        "up": { "uv": [0, 0, 12, 1], "texture": "#brass" }
+        "north": {
+          "uv": [
+            11.25,
+            9.375,
+            13,
+            9.625
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            3.75,
+            10.375,
+            5,
+            10.625
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            13.5,
+            9.375,
+            15.25,
+            9.625
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            5.5,
+            10.375,
+            6.75,
+            10.625
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            11.5,
+            0.25,
+            13.25,
+            1.5
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            9.25,
+            0.25,
+            11,
+            1.5
+          ],
+          "texture": "#texture"
+        }
       }
     },
     {
-      "name": "South brass platform trim",
-      "from": [2, 14, 11],
-      "to": [14, 14.5, 12],
+      "name": "connecting_base",
+      "from": [
+        4,
+        4,
+        2
+      ],
+      "to": [
+        12,
+        12,
+        3
+      ],
       "faces": {
-        "north": { "uv": [0, 0, 12, 0.5], "texture": "#brass" },
-        "east": { "uv": [0, 0, 1, 0.5], "texture": "#brass" },
-        "south": { "uv": [0, 0, 12, 0.5], "texture": "#brass" },
-        "west": { "uv": [0, 0, 1, 0.5], "texture": "#brass" },
-        "up": { "uv": [0, 0, 12, 1], "texture": "#brass" }
+        "north": {
+          "uv": [
+            12,
+            3.75,
+            13,
+            4.75
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            8.5,
+            5.5,
+            8.625,
+            6.5
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            13.5,
+            3.75,
+            14.5,
+            4.75
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            9.125,
+            5.5,
+            9.25,
+            6.5
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            9.5,
+            11.875,
+            10.5,
+            12
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            8,
+            11.875,
+            9,
+            12
+          ],
+          "texture": "#texture"
+        }
       }
     },
     {
-      "name": "West brass platform trim",
-      "from": [2, 14, 5],
-      "to": [3, 14.5, 11],
+      "name": "inlet_connector",
+      "from": [
+        3,
+        3,
+        -1
+      ],
+      "to": [
+        13,
+        13,
+        2
+      ],
       "faces": {
-        "east": { "uv": [0, 0, 6, 0.5], "texture": "#brass" },
-        "west": { "uv": [0, 0, 6, 0.5], "texture": "#brass" },
-        "up": { "uv": [0, 0, 1, 6], "texture": "#brass" }
+        "north": {
+          "uv": [
+            13.75,
+            0.25,
+            15,
+            1.5
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            8.5,
+            2,
+            8.875,
+            3.25
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            0.25,
+            2,
+            1.5,
+            3.25
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            9.375,
+            2,
+            9.75,
+            3.25
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            5,
+            9.375,
+            6.25,
+            9.75
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            3.25,
+            9.375,
+            4.5,
+            9.75
+          ],
+          "texture": "#texture"
+        }
       }
     },
     {
-      "name": "East brass platform trim",
-      "from": [13, 14, 5],
-      "to": [14, 14.5, 11],
+      "name": "controller_plinth_lower",
+      "from": [
+        2,
+        13,
+        4
+      ],
+      "to": [
+        14,
+        17,
+        12
+      ],
       "faces": {
-        "east": { "uv": [0, 0, 6, 0.5], "texture": "#brass" },
-        "west": { "uv": [0, 0, 6, 0.5], "texture": "#brass" },
-        "up": { "uv": [0, 0, 1, 6], "texture": "#brass" }
+        "north": {
+          "uv": [
+            11.75,
+            8.25,
+            13.25,
+            8.75
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            0.25,
+            9.375,
+            1.25,
+            9.875
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            13.75,
+            8.25,
+            15.25,
+            8.75
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            1.75,
+            9.375,
+            2.75,
+            9.875
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            6,
+            3.75,
+            7.5,
+            4.75
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            4,
+            3.75,
+            5.5,
+            4.75
+          ],
+          "texture": "#texture"
+        }
       }
     },
     {
-      "name": "Frequency slot A",
-      "from": [3.5, 13.5, 6],
-      "to": [7.5, 14.5, 10],
+      "name": "controller_plinth_upper_band",
+      "from": [
+        2,
+        17,
+        4
+      ],
+      "to": [
+        14,
+        18,
+        12
+      ],
       "faces": {
-        "north": { "uv": [11, 2, 13, 2.5], "texture": "#link" },
-        "east": { "uv": [11, 2, 13, 2.5], "texture": "#link" },
-        "south": { "uv": [11, 2, 13, 2.5], "texture": "#link" },
-        "west": { "uv": [11, 2, 13, 2.5], "texture": "#link" },
-        "up": { "uv": [11, 0, 13, 2], "texture": "#link" }
+        "north": {
+          "uv": [
+            0.25,
+            11.875,
+            1.75,
+            12
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            14,
+            11.875,
+            15,
+            12
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            2.25,
+            11.875,
+            3.75,
+            12
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            0.25,
+            12.5,
+            1.25,
+            12.625
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            10,
+            3.75,
+            11.5,
+            4.75
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            8,
+            3.75,
+            9.5,
+            4.75
+          ],
+          "texture": "#texture"
+        }
       }
     },
     {
-      "name": "Frequency slot B",
-      "from": [8.5, 13.5, 6],
-      "to": [12.5, 14.5, 10],
+      "name": "controller_tower_core",
+      "from": [
+        4,
+        19,
+        5
+      ],
+      "to": [
+        12,
+        27,
+        10
+      ],
       "faces": {
-        "north": { "uv": [11, 2, 13, 2.5], "texture": "#link" },
-        "east": { "uv": [11, 2, 13, 2.5], "texture": "#link" },
-        "south": { "uv": [11, 2, 13, 2.5], "texture": "#link" },
-        "west": { "uv": [11, 2, 13, 2.5], "texture": "#link" },
-        "up": { "uv": [13, 0, 15, 2], "texture": "#link" }
+        "north": {
+          "uv": [
+            3.25,
+            5.5,
+            4.25,
+            6.5
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            6.25,
+            5.5,
+            6.875,
+            6.5
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            4.75,
+            5.5,
+            5.75,
+            6.5
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            7.375,
+            5.5,
+            8,
+            6.5
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            4.75,
+            8.25,
+            5.75,
+            8.875
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            3.25,
+            8.25,
+            4.25,
+            8.875
+          ],
+          "texture": "#texture"
+        }
+      }
+    },
+    {
+      "name": "controller_left_frame",
+      "from": [
+        3,
+        18,
+        5
+      ],
+      "to": [
+        4,
+        28,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            14.5,
+            2,
+            14.625,
+            3.25
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            2,
+            2,
+            2.625,
+            3.25
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            15.125,
+            2,
+            15.25,
+            3.25
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            3.125,
+            2,
+            3.75,
+            3.25
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            9.875,
+            8.25,
+            10,
+            8.875
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            9.25,
+            8.25,
+            9.375,
+            8.875
+          ],
+          "texture": "#texture"
+        }
+      }
+    },
+    {
+      "name": "controller_right_frame",
+      "from": [
+        12,
+        18,
+        5
+      ],
+      "to": [
+        13,
+        28,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1.5,
+            3.75,
+            1.625,
+            5
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            4.25,
+            2,
+            4.875,
+            3.25
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            2.125,
+            3.75,
+            2.25,
+            5
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            5.375,
+            2,
+            6,
+            3.25
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            11.125,
+            8.25,
+            11.25,
+            8.875
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            10.5,
+            8.25,
+            10.625,
+            8.875
+          ],
+          "texture": "#texture"
+        }
+      }
+    },
+    {
+      "name": "controller_lower_frame",
+      "from": [
+        4,
+        18,
+        5
+      ],
+      "to": [
+        12,
+        19,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            11,
+            11.875,
+            12,
+            12
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            2.75,
+            13.125,
+            3.375,
+            13.25
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            12.5,
+            11.875,
+            13.5,
+            12
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            3.875,
+            13.125,
+            4.5,
+            13.25
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            13.5,
+            7,
+            14.5,
+            7.625
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            12,
+            7,
+            13,
+            7.625
+          ],
+          "texture": "#texture"
+        }
+      }
+    },
+    {
+      "name": "controller_upper_frame",
+      "from": [
+        4,
+        27,
+        5
+      ],
+      "to": [
+        12,
+        28,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7.75,
+            12.5,
+            8.75,
+            12.625
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            7.25,
+            13.125,
+            7.875,
+            13.25
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            9.25,
+            12.5,
+            10.25,
+            12.625
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            8.375,
+            13.125,
+            9,
+            13.25
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            7.75,
+            8.25,
+            8.75,
+            8.875
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            6.25,
+            8.25,
+            7.25,
+            8.875
+          ],
+          "texture": "#texture"
+        }
+      }
+    },
+    {
+      "name": "controller_top_cap",
+      "from": [
+        2.5,
+        28,
+        4.5
+      ],
+      "to": [
+        13.5,
+        29,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4.25,
+            11.875,
+            5.625,
+            12
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            10.75,
+            12.5,
+            11.625,
+            12.625
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            6.125,
+            11.875,
+            7.5,
+            12
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            12.125,
+            12.5,
+            13,
+            12.625
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            12.875,
+            5.5,
+            14.25,
+            6.375
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            11,
+            5.5,
+            12.375,
+            6.375
+          ],
+          "texture": "#texture"
+        }
+      }
+    },
+    {
+      "name": "controller_top_ridge",
+      "from": [
+        4,
+        29,
+        5.5
+      ],
+      "to": [
+        12,
+        29.5,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4.75,
+            12.5,
+            5.75,
+            12.625
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            5,
+            13.125,
+            5.625,
+            13.25
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            6.25,
+            12.5,
+            7.25,
+            12.625
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            6.125,
+            13.125,
+            6.75,
+            13.25
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            1.75,
+            8.25,
+            2.75,
+            8.875
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            0.25,
+            8.25,
+            1.25,
+            8.875
+          ],
+          "texture": "#texture"
+        }
+      }
+    },
+    {
+      "name": "controller_rear_plate",
+      "from": [
+        4,
+        19,
+        4.5
+      ],
+      "to": [
+        12,
+        27,
+        5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0.25,
+            5.5,
+            1.25,
+            6.5
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            9.75,
+            5.5,
+            9.875,
+            6.5
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            1.75,
+            5.5,
+            2.75,
+            6.5
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            10.375,
+            5.5,
+            10.5,
+            6.5
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            3.25,
+            12.5,
+            4.25,
+            12.625
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            1.75,
+            12.5,
+            2.75,
+            12.625
+          ],
+          "texture": "#texture"
+        }
+      }
+    },
+    {
+      "name": "controller_rear_hatch",
+      "from": [
+        5,
+        20,
+        4.125
+      ],
+      "to": [
+        11,
+        26,
+        4.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8.25,
+            7,
+            9,
+            7.75
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            10.75,
+            7,
+            10.875,
+            7.75
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            9.5,
+            7,
+            10.25,
+            7.75
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            11.375,
+            7,
+            11.5,
+            7.75
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            14.75,
+            12.5,
+            15.5,
+            12.625
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            13.5,
+            12.5,
+            14.25,
+            12.625
+          ],
+          "texture": "#texture"
+        }
       }
     }
   ]

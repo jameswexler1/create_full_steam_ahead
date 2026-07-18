@@ -1,0 +1,356 @@
+{
+  "credit": "Create: Full Steam Ahead",
+  "parent": "block/block",
+  "render_type": "minecraft:cutout_mipped",
+  "textures": {
+    "texture": "full_steam_ahead:block/steam_admission_valve",
+    "particle": "full_steam_ahead:block/steam_admission_valve"
+  },
+  "elements": [
+    {
+      "name": "manual_lever_left_slider",
+      "from": [
+        5.125,
+        20.25,
+        10.125
+      ],
+      "to": [
+        5.875,
+        21.75,
+        11.125
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6.5,
+            11.125,
+            6.625,
+            11.375
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            5.875,
+            11.125,
+            6,
+            11.375
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            7.125,
+            11.125,
+            7.25,
+            11.375
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            7.75,
+            11.125,
+            7.875,
+            11.375
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            4.875,
+            13.75,
+            5,
+            13.875
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            4.25,
+            13.75,
+            4.375,
+            13.875
+          ],
+          "texture": "#texture"
+        }
+      }
+    },
+    {
+      "name": "manual_lever_right_slider",
+      "from": [
+        10.125,
+        20.25,
+        10.125
+      ],
+      "to": [
+        10.875,
+        21.75,
+        11.125
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9,
+            11.125,
+            9.125,
+            11.375
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            8.375,
+            11.125,
+            8.5,
+            11.375
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            9.625,
+            11.125,
+            9.75,
+            11.375
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            10.25,
+            11.125,
+            10.375,
+            11.375
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            6.125,
+            13.75,
+            6.25,
+            13.875
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            5.5,
+            13.75,
+            5.625,
+            13.875
+          ],
+          "texture": "#texture"
+        }
+      }
+    },
+    {
+      "name": "manual_lever_crossbar",
+      "from": [
+        5.125,
+        20.375,
+        11.125
+      ],
+      "to": [
+        10.875,
+        21.625,
+        11.875
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7.25,
+            10.375,
+            8,
+            10.625
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            2.125,
+            11.125,
+            2.25,
+            11.375
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            8.5,
+            10.375,
+            9.25,
+            10.625
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            2.75,
+            11.125,
+            2.875,
+            11.375
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            1.5,
+            13.125,
+            2.25,
+            13.25
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            0.25,
+            13.125,
+            1,
+            13.25
+          ],
+          "texture": "#texture"
+        }
+      }
+    },
+    {
+      "name": "manual_lever_grip",
+      "from": [
+        6.5,
+        20.125,
+        11.875
+      ],
+      "to": [
+        9.5,
+        21.875,
+        12.625
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9.75,
+            10.375,
+            10.125,
+            10.625
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            3.375,
+            11.125,
+            3.5,
+            11.375
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            10.625,
+            10.375,
+            11,
+            10.625
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            4,
+            11.125,
+            4.125,
+            11.375
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            12.375,
+            13.125,
+            12.75,
+            13.25
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            11.5,
+            13.125,
+            11.875,
+            13.25
+          ],
+          "texture": "#texture"
+        }
+      }
+    },
+    {
+      "name": "manual_lever_grip_face",
+      "from": [
+        7,
+        20.375,
+        12.625
+      ],
+      "to": [
+        9,
+        21.625,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            11.5,
+            10.375,
+            11.75,
+            10.625
+          ],
+          "texture": "#texture"
+        },
+        "east": {
+          "uv": [
+            4.625,
+            11.125,
+            4.75,
+            11.375
+          ],
+          "texture": "#texture"
+        },
+        "south": {
+          "uv": [
+            12.25,
+            10.375,
+            12.5,
+            10.625
+          ],
+          "texture": "#texture"
+        },
+        "west": {
+          "uv": [
+            5.25,
+            11.125,
+            5.375,
+            11.375
+          ],
+          "texture": "#texture"
+        },
+        "up": {
+          "uv": [
+            1,
+            13.75,
+            1.25,
+            13.875
+          ],
+          "texture": "#texture"
+        },
+        "down": {
+          "uv": [
+            0.25,
+            13.75,
+            0.5,
+            13.875
+          ],
+          "texture": "#texture"
+        }
+      }
+    }
+  ]
+}

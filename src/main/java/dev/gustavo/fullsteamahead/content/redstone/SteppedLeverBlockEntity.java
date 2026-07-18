@@ -24,7 +24,8 @@ import java.util.UUID;
  * Engine Order Telegraph. Telegraphs sharing a {@link #linkId} channel stay <b>synchronized</b>:
  * moving one handle sets every linked unit to the same position and rings the telegraph bell on each.
  */
-public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation {
+public class SteppedLeverBlockEntity extends SmartBlockEntity
+        implements IHaveGoggleInformation, TelegraphLinkable {
     private static final String STATE_KEY = "State";
     private static final String CHANGE_TIMER_KEY = "ChangeTimer";
     private static final String LINK_ID_KEY = "LinkId";
@@ -131,19 +132,21 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
         }
         markChanged();
         if (level != null && !level.isClientSide && linkId != null) {
-            for (SteppedLeverBlockEntity partner : TelegraphLinks.partners(level, linkId, worldPosition)) {
-                partner.syncTo(state);
+            for (TelegraphLinkable device : TelegraphLinks.devices(level, linkId, worldPosition)) {
+                device.receiveTelegraphState(state);
             }
             startBell();
         }
     }
 
     /** Adopt a synchronized position pushed by a partner (no re-propagation), ringing the bell. */
-    private void syncTo(int newState) {
-        if (level == null || level.isClientSide || state == newState) {
+    @Override
+    public void receiveTelegraphState(int newState) {
+        int clamped = Mth.clamp(newState, 0, 15);
+        if (level == null || level.isClientSide || state == clamped) {
             return;
         }
-        state = newState;
+        state = clamped;
         markChanged();
         startBell();
     }
@@ -172,8 +175,8 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
             TelegraphLinks.add(level, linkId, worldPosition);
             registered = true;
             // Match the rest of the channel quietly so a freshly linked unit lines up immediately.
-            for (SteppedLeverBlockEntity partner : TelegraphLinks.partners(level, linkId, worldPosition)) {
-                state = partner.getState();
+            for (TelegraphLinkable device : TelegraphLinks.devices(level, linkId, worldPosition)) {
+                state = device.getTelegraphState();
                 break;
             }
         }
@@ -202,6 +205,11 @@ public class SteppedLeverBlockEntity extends SmartBlockEntity implements IHaveGo
     }
 
     public int getState() {
+        return state;
+    }
+
+    @Override
+    public int getTelegraphState() {
         return state;
     }
 

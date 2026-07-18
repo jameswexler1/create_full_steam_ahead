@@ -21,6 +21,12 @@ public final class FullSteamPartialModels {
     private static final ResourceLocation STEAM_RELIEF_VALVE_CAP_LOCATION = location("steam_relief_valve_cap");
     private static final ResourceLocation STEAM_RELIEF_VALVE_HANDWHEEL_LOCATION = location("steam_relief_valve_handwheel");
     private static final ResourceLocation STEAM_PRESSURE_GAUGE_NEEDLE_LOCATION = location("steam_pressure_gauge_needle");
+    private static final ResourceLocation STEAM_ADMISSION_VALVE_MANUAL_MECHANISM_LOCATION =
+            location("steam_admission_valve_manual_mechanism");
+    private static final ResourceLocation STEAM_ADMISSION_VALVE_MANUAL_LEVER_LOCATION =
+            location("steam_admission_valve_manual_lever");
+    private static final ResourceLocation STEAM_ADMISSION_VALVE_RECEIVER_PANEL_LOCATION =
+            location("steam_admission_valve_receiver_panel");
 
     public static void registerAdditional(ModelEvent.RegisterAdditional event) {
         event.register(ModelResourceLocation.standalone(PISTON_BODY_LOCATION));
@@ -37,6 +43,9 @@ public final class FullSteamPartialModels {
         event.register(ModelResourceLocation.standalone(STEAM_RELIEF_VALVE_CAP_LOCATION));
         event.register(ModelResourceLocation.standalone(STEAM_RELIEF_VALVE_HANDWHEEL_LOCATION));
         event.register(ModelResourceLocation.standalone(STEAM_PRESSURE_GAUGE_NEEDLE_LOCATION));
+        event.register(ModelResourceLocation.standalone(STEAM_ADMISSION_VALVE_MANUAL_MECHANISM_LOCATION));
+        event.register(ModelResourceLocation.standalone(STEAM_ADMISSION_VALVE_MANUAL_LEVER_LOCATION));
+        event.register(ModelResourceLocation.standalone(STEAM_ADMISSION_VALVE_RECEIVER_PANEL_LOCATION));
     }
 
     public static PartialModel pistonBody() {
@@ -93,6 +102,18 @@ public final class FullSteamPartialModels {
 
     public static PartialModel steamPressureGaugeNeedle() {
         return PartialModel.of(STEAM_PRESSURE_GAUGE_NEEDLE_LOCATION);
+    }
+
+    public static PartialModel steamAdmissionValveManualMechanism() {
+        return PartialModel.of(STEAM_ADMISSION_VALVE_MANUAL_MECHANISM_LOCATION);
+    }
+
+    public static PartialModel steamAdmissionValveManualLever() {
+        return PartialModel.of(STEAM_ADMISSION_VALVE_MANUAL_LEVER_LOCATION);
+    }
+
+    public static PartialModel steamAdmissionValveReceiverPanel() {
+        return PartialModel.of(STEAM_ADMISSION_VALVE_RECEIVER_PANEL_LOCATION);
     }
 
     private static ResourceLocation location(String path) {

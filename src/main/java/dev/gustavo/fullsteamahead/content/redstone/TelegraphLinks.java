@@ -15,10 +15,10 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 
 /**
- * Server-side registry pairing {@link SteppedLeverBlockEntity Engine Order Telegraphs} that share a
- * link id, modelled on Create's {@code RedstoneLinkNetworkHandler}: a per-level map keyed by the
- * shared {@link UUID}. Keyed by the live {@link LevelAccessor} instance (via {@link WeakHashMap}) so
- * a reloaded world gets a fresh map and unloaded levels are garbage-collected — no cross-save leak.
+ * Registry pairing loaded {@link TelegraphLinkable telegraph devices} that share a link id,
+ * modelled on Create's {@code RedstoneLinkNetworkHandler}: a per-level map keyed by the shared
+ * {@link UUID}. Keyed by the live {@link LevelAccessor} instance (via {@link WeakHashMap}) so a
+ * reloaded world gets a fresh map and unloaded levels are garbage-collected.
  *
  * <p>The map only tracks block positions; partner block entities are resolved lazily and only when
  * their chunk is loaded, so the registry never forces chunk loading. Stale loaded positions (a
@@ -59,12 +59,11 @@ public final class TelegraphLinks {
     }
 
     /**
-     * Returns the loaded telegraphs sharing {@code linkId}, excluding {@code self}. Skips positions in
-     * unloaded chunks (without loading them) and prunes loaded positions that no longer hold a
-     * matching telegraph.
+     * Returns loaded devices sharing {@code linkId}, excluding {@code self}. Unloaded chunks are
+     * skipped without being loaded and stale positions are pruned.
      */
-    public static List<SteppedLeverBlockEntity> partners(Level level, UUID linkId, BlockPos self) {
-        List<SteppedLeverBlockEntity> result = new ArrayList<>();
+    public static List<TelegraphLinkable> devices(Level level, UUID linkId, BlockPos self) {
+        List<TelegraphLinkable> result = new ArrayList<>();
         if (linkId == null) {
             return result;
         }
@@ -85,9 +84,9 @@ public final class TelegraphLinks {
             if (!level.isLoaded(pos)) {
                 continue;
             }
-            if (level.getBlockEntity(pos) instanceof SteppedLeverBlockEntity lever
-                    && linkId.equals(lever.getLinkId())) {
-                result.add(lever);
+            if (level.getBlockEntity(pos) instanceof TelegraphLinkable device
+                    && linkId.equals(device.getLinkId())) {
+                result.add(device);
             } else {
                 it.remove();
             }
@@ -96,8 +95,8 @@ public final class TelegraphLinks {
     }
 
     /**
-     * Positions of every loaded telegraph on {@code linkId} (including any at {@code self}). Used by
-     * the client outliner to highlight a whole channel while the matching item is held.
+     * Positions of every loaded device on {@code linkId}. Used by the client outliner while the
+     * matching telegraph item is held.
      */
     public static List<BlockPos> loadedPositions(Level level, UUID linkId) {
         List<BlockPos> result = new ArrayList<>();
@@ -118,8 +117,8 @@ public final class TelegraphLinks {
             if (!level.isLoaded(pos)) {
                 continue;
             }
-            if (level.getBlockEntity(pos) instanceof SteppedLeverBlockEntity lever
-                    && linkId.equals(lever.getLinkId())) {
+            if (level.getBlockEntity(pos) instanceof TelegraphLinkable device
+                    && linkId.equals(device.getLinkId())) {
                 result.add(pos);
             } else {
                 it.remove();

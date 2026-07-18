@@ -84,9 +84,27 @@ Steam remains visible in Create tanks and pipes through a high-visibility tinted
 
 ## Steam Admission Control
 
-The horizontal `steam_admission_valve` throttles one active engine inlet without restricting the shared pipe main. Its two built-in frequency slots use Create's Redstone Link network and accept an analogue `0..15` command. Signal `0` fully closes admission and signal `15` passes full steam. An empty frequency pair remains a full-open bypass so an unconfigured valve does not disable an engine.
+The horizontal `steam_admission_valve` throttles one active engine inlet without restricting the
+shared pipe main. Newly placed valves start fully open in Manual / Telegraph mode. Right-click the
+controller to increase its `0..15` admission step and sneak-right-click to decrease it. A normal
+Create-wrench click switches between Manual / Telegraph and Redstone Link modes without rotating or
+disconnecting the pipe.
 
-The valve must be directly beside exactly one active `steam_inlet`, with the inlet nozzle facing the valve. Its requested engine flow is the normal pressure-dependent request multiplied by `signal / 15`. If the network cannot satisfy every consumer, the normal proportional allocator preserves the requested throttle ratios. Delivered flow scales both SU and RPM continuously through the global engine physics. Other valve pipe branches remain normal bidirectional steam paths.
+In manual mode, use an Engine Order Telegraph item on the valve to create, copy, or bind a telegraph
+channel. The built-in lever and every loaded telegraph on that channel synchronize in both
+directions without loading distant chunks. Sneak-use a telegraph item on the valve to clear its
+channel.
+
+In Redstone Link mode, the controller exposes two built-in frequency slots and accepts an analogue
+`0..15` command. Signal `0` fully closes admission and signal `15` passes full steam. An empty
+frequency pair remains a full-open bypass. Existing valves saved before the dual-mode remodel load
+in this mode to preserve their prior behavior.
+
+The valve must be directly beside exactly one active `steam_inlet`, with the inlet nozzle facing the
+valve. Its requested engine flow is the normal pressure-dependent request multiplied by the active
+control value divided by `15`. If the network cannot satisfy every consumer, the normal
+proportional allocator preserves requested throttle ratios. Delivered flow scales both SU and RPM
+continuously; other valve branches remain normal bidirectional steam paths.
 
 ## Display Link Readout
 

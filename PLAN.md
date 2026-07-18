@@ -879,6 +879,35 @@ changing engine balance.
 - [ ] Re-test direct signal control in a static world at strengths `0`, `5`, `10`, and `15`; all previously validated geometry, connectivity, collision, inventory rendering, frequency sizing, and live goggle feedback remain complete.
 - [ ] Manual simulated-contraption test: frequencies, received signal, inlet association, and throttle output survive assembly and disassembly.
 
+#### Phase 17B: Dual-Mode Admission Valve Remodel
+
+**Goal**: replace the compact prototype art with the tall integrated controller while preserving the
+working shared-main throttle and adding a local/telegraph-operated stepped lever.
+
+- [x] Replace the prototype baked model with the authored
+  `attempt_at_admission_valve_manual_lever_v1` body, model-derived collision shape, and matching
+  inventory presentation. Keep the current texture as a provisional implementation asset.
+- [x] Split client presentation into a static body, manual mechanism bed, vertically sliding lever,
+  and Redstone Link receiver panel. Never render the lever and receiver panel simultaneously.
+- [x] Add `manual` and `redstone_link` control modes, cycled by a normal Create-wrench click without
+  changing pipe topology. Sneak-wrench removal retains Create's normal behavior.
+- [x] Make newly placed valves start in full-open manual mode. Preserve old saved Phase 17 valves in
+  Redstone Link mode so existing builds retain their previous behavior after migration.
+- [x] In manual mode, right-click increases admission and sneak-right-click decreases it across the
+  same `0..15` range used by engine RPM/SU allocation.
+- [x] Let a tuned Engine Order Telegraph item bind the valve to its telegraph channel. The valve's
+  built-in lever and every loaded telegraph on that channel synchronize bidirectionally without
+  force-loading chunks.
+- [x] In Redstone Link mode, retain the existing two frequency slots, `0 = closed`, `15 = fully open`,
+  and empty-frequency full-open bypass behavior.
+- [x] Keep `SteamNetworkManager` unchanged: both control modes must feed the existing
+  `getAdmissionStrength()` contract and throttle only the uniquely controlled active steam inlet.
+- [ ] Re-test topology changes, all four facings, manual steps, telegraph synchronization, receiver
+  strengths `0/5/10/15`, save/reload, and simulated-contraption assembly/disassembly.
+- [ ] **Art reminder**: return to the admission-valve texture after functional validation and replace
+  the provisional atlas with the final hand-polished Create-style texture without changing geometry,
+  UV ownership, animation groups, or control behavior.
+
 ---
 
 ### Phase 18: Linear Steam Engine RPM — Implemented (manual verification pending)

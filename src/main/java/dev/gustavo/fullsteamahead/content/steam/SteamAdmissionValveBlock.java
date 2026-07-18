@@ -1,12 +1,18 @@
 package dev.gustavo.fullsteamahead.content.steam;
 
 import com.mojang.serialization.MapCodec;
+import com.simibubi.create.content.equipment.wrench.IWrenchable;
+import com.simibubi.create.content.equipment.wrench.WrenchItem;
 import com.simibubi.create.content.fluids.pipes.FluidPipeBlock;
 import com.simibubi.create.content.fluids.pipes.FluidPipeBlockEntity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import dev.gustavo.fullsteamahead.registry.ModBlocks;
+import dev.gustavo.fullsteamahead.registry.ModDataComponents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
@@ -35,27 +41,42 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class SteamAdmissionValveBlock extends FluidPipeBlock {
     public static final MapCodec<SteamAdmissionValveBlock> CODEC = simpleCodec(SteamAdmissionValveBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
     public static final EnumProperty<SteamAdmissionValveMode> MODE =
             EnumProperty.create("mode", SteamAdmissionValveMode.class);
-
     private static final Box[] BODY_BOXES = new Box[] {
-            new Box(4, 4, 4, 12, 12, 12),
-            new Box(4, 12, 5, 12, 13, 11),
-            new Box(2, 13, 4, 14, 14, 12),
-            new Box(2, 14, 4, 14, 14.5, 5),
-            new Box(2, 14, 11, 14, 14.5, 12),
-            new Box(2, 14, 5, 3, 14.5, 11),
-            new Box(13, 14, 5, 14, 14.5, 11),
-            new Box(3.5, 13.5, 6, 7.5, 14.5, 10),
-            new Box(8.5, 13.5, 6, 12.5, 14.5, 10),
+            new Box(1, 3, 3, 15, 5, 13),
+            new Box(1, 5, 3, 15, 11, 13),
+            new Box(1, 11, 3, 15, 13, 13),
+            new Box(4, 4, 2, 12, 12, 3),
+            new Box(3, 3, -1, 13, 13, 2),
+            new Box(2, 13, 4, 14, 17, 12),
+            new Box(2, 17, 4, 14, 18, 12),
+            new Box(4, 19, 5, 12, 27, 10),
+            new Box(3, 18, 5, 4, 28, 10),
+            new Box(12, 18, 5, 13, 28, 10),
+            new Box(4, 18, 5, 12, 19, 10),
+            new Box(4, 27, 5, 12, 28, 10),
+            new Box(2.5, 28, 4.5, 13.5, 29, 11.5),
+            new Box(4, 29, 5.5, 12, 29.5, 10.5),
+            new Box(4, 19, 4.5, 12, 27, 5),
+            new Box(5, 20, 4.125, 11, 26, 4.5),
+            new Box(3, 18, 10, 5, 28, 11),
+            new Box(11, 18, 10, 13, 28, 11),
+            new Box(6, 18, 10, 10, 28, 11),
+            new Box(5, 18, 10, 6, 20, 11),
+            new Box(10, 18, 10, 11, 20, 11),
+            new Box(5, 26, 10, 6, 28, 11),
+            new Box(10, 26, 10, 11, 28, 11),
+            // Full travel envelope of the moving manual lever.
+            new Box(5.125, 20.125, 10.125, 10.875, 25.875, 13),
     };
     private static final Map<Direction, VoxelShape> BODY_SHAPES = buildBodyShapes();
     private static final Map<Direction, VoxelShape> CONNECTION_SHAPES = buildConnectionShapes();
-    private static final Map<Direction, VoxelShape> COLLAR_SHAPES = buildCollarShapes();
     private static final Map<Direction, VoxelShape> RIM_SHAPES = buildRimShapes();
 
     public SteamAdmissionValveBlock(Properties properties) {
@@ -79,7 +100,7 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
 
         Direction facing = context.getHorizontalDirection().getOpposite();
         state = state.setValue(FACING, facing);
-        state = enforceHorizontalConnections(state, facing.getAxis());
+        state = enforceHorizontalConnections(state, facing);
         return resolveTopology(context.getLevel(), context.getClickedPos(), state);
     }
 
@@ -93,13 +114,30 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
             BlockPos neighborPos
     ) {
         BlockState updated = super.updateShape(state, direction, neighborState, level, pos, neighborPos);
-        updated = enforceHorizontalConnections(updated, state.getValue(FACING).getAxis());
+        updated = enforceHorizontalConnections(updated, state.getValue(FACING));
         return resolveTopology(level, pos, updated);
     }
 
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
-        return InteractionResult.PASS;
+        Level level = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
+        }
+        if (!(level.getBlockEntity(pos) instanceof SteamAdmissionValveBlockEntity valve)) {
+            return InteractionResult.PASS;
+        }
+        SteamAdmissionControlMode next = valve.cycleControlMode();
+        IWrenchable.playRotateSound(level, pos);
+        Player player = context.getPlayer();
+        if (player != null) {
+            player.displayClientMessage(Component.translatable(
+                    next == SteamAdmissionControlMode.MANUAL
+                            ? "message.full_steam_ahead.admission_mode_manual"
+                            : "message.full_steam_ahead.admission_mode_redstone_link"), true);
+        }
+        return InteractionResult.SUCCESS;
     }
 
     @Override
@@ -112,7 +150,64 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
             InteractionHand hand,
             BlockHitResult hitResult
     ) {
+        if (stack.getItem() instanceof WrenchItem) {
+            return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+        }
+        if (level.getBlockEntity(pos) instanceof SteamAdmissionValveBlockEntity valve
+                && valve.isManualMode()
+                && stack.is(ModBlocks.STEPPED_LEVER.get().asItem())) {
+            if (!level.isClientSide) {
+                linkWithTelegraphItem(valve, stack, player);
+            }
+            return level.isClientSide ? ItemInteractionResult.SUCCESS : ItemInteractionResult.CONSUME;
+        }
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            Player player,
+            BlockHitResult hitResult
+    ) {
+        if (!(level.getBlockEntity(pos) instanceof SteamAdmissionValveBlockEntity valve)
+                || !valve.isManualMode()) {
+            return InteractionResult.PASS;
+        }
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
+        }
+        if (valve.changeManualStrength(player.isShiftKeyDown())) {
+            float pitch = 0.45F + valve.getManualStrength() / 15.0F * 0.5F;
+            level.playSound(null, pos, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.25F, pitch);
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    private static void linkWithTelegraphItem(
+            SteamAdmissionValveBlockEntity valve,
+            ItemStack stack,
+            Player player
+    ) {
+        String message;
+        if (player.isShiftKeyDown()) {
+            valve.setTelegraphLinkId(null);
+            message = "message.full_steam_ahead.telegraph_unlinked";
+        } else if (valve.getLinkId() != null) {
+            stack.set(ModDataComponents.TELEGRAPH_LINK.get(), valve.getLinkId());
+            message = "message.full_steam_ahead.telegraph_copied";
+        } else if (stack.has(ModDataComponents.TELEGRAPH_LINK.get())) {
+            valve.setTelegraphLinkId(stack.get(ModDataComponents.TELEGRAPH_LINK.get()));
+            message = "message.full_steam_ahead.telegraph_bound";
+        } else {
+            UUID id = UUID.randomUUID();
+            valve.setTelegraphLinkId(id);
+            stack.set(ModDataComponents.TELEGRAPH_LINK.get(), id);
+            message = "message.full_steam_ahead.telegraph_started";
+        }
+        player.displayClientMessage(Component.translatable(message), true);
     }
 
     @Override
@@ -253,7 +348,6 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
             }
 
             shape = Shapes.or(shape, CONNECTION_SHAPES.get(direction));
-            shape = Shapes.or(shape, COLLAR_SHAPES.get(direction));
             if (level instanceof BlockAndTintGetter tintGetter
                     && FluidPipeBlock.shouldDrawRim(tintGetter, pos, state, direction)) {
                 shape = Shapes.or(shape, RIM_SHAPES.get(direction));
@@ -285,15 +379,6 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
         return shapes;
     }
 
-    private static Map<Direction, VoxelShape> buildCollarShapes() {
-        Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
-        shapes.put(Direction.NORTH, Block.box(3, 3, 2, 13, 13, 3));
-        shapes.put(Direction.SOUTH, Block.box(3, 3, 13, 13, 13, 14));
-        shapes.put(Direction.EAST, Block.box(13, 3, 3, 14, 13, 13));
-        shapes.put(Direction.WEST, Block.box(2, 3, 3, 3, 13, 13));
-        return shapes;
-    }
-
     private static Map<Direction, VoxelShape> buildRimShapes() {
         Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
         shapes.put(Direction.NORTH, Block.box(3, 3, 0, 13, 13, 2));
@@ -317,7 +402,7 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
         };
     }
 
-    private static BlockState enforceHorizontalConnections(BlockState state, Direction.Axis fallbackAxis) {
+    private static BlockState enforceHorizontalConnections(BlockState state, Direction fallbackFacing) {
         state = state
                 .setValue(PROPERTY_BY_DIRECTION.get(Direction.UP), false)
                 .setValue(PROPERTY_BY_DIRECTION.get(Direction.DOWN), false);
@@ -333,7 +418,7 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             state = state.setValue(
                     PROPERTY_BY_DIRECTION.get(direction),
-                    direction.getAxis() == fallbackAxis
+                    direction == fallbackFacing.getOpposite()
             );
         }
         return state;

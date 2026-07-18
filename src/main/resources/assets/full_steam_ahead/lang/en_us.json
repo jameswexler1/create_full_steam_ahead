@@ -22,6 +22,8 @@
   "message.full_steam_ahead.telegraph_bound": "Linked to telegraph channel",
   "message.full_steam_ahead.telegraph_started": "Started a new telegraph channel",
   "message.full_steam_ahead.telegraph_unlinked": "Cleared telegraph channel",
+  "message.full_steam_ahead.admission_mode_manual": "Admission control: Manual / Telegraph",
+  "message.full_steam_ahead.admission_mode_redstone_link": "Admission control: Redstone Link",
   "tooltip.full_steam_ahead.steam_gauge_linked": "Boiler source selected",
   "tooltip.full_steam_ahead.steam_gauge_source": "Source: %s, %s, %s",
   "tooltip.full_steam_ahead.steam_gauge_link_hint": "Sneak-right-click an active boiler to link",
