@@ -2,6 +2,7 @@ package dev.gustavo.fullsteamahead.content.shaft;
 
 import com.simibubi.create.content.kinetics.KineticNetwork;
 import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
+import dev.gustavo.fullsteamahead.content.piston.EngineLinkageContinuity;
 import dev.gustavo.fullsteamahead.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -32,6 +33,21 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
 
     public FullSteamPoweredShaftBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.POWERED_SHAFT.get(), pos, state);
+    }
+
+    @Override
+    public void onLoad() {
+        super.onLoad();
+        BlockPos engineWorldPos = getEngineWorldPos();
+        if (level != null && engineWorldPos != null) {
+            EngineLinkageContinuity.restoreDuringInitialLoad(level, engineWorldPos, worldPosition);
+        }
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+        restoreLinkageContinuity();
     }
 
     @Override
@@ -82,6 +98,9 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
         }
 
         enginePos = relativeEnginePos;
+        if (ownerChanged) {
+            restoreLinkageContinuity();
+        }
         targetSpeed = speed;
         generatedCapacitySu = capacitySu;
         long gameTime = level == null ? 0L : level.getGameTime();
@@ -185,6 +204,17 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
 
     public BlockPos getEngineWorldPos() {
         return enginePos == null ? null : worldPosition.subtract(enginePos);
+    }
+
+    private void restoreLinkageContinuity() {
+        if (level == null || level.isClientSide()) {
+            return;
+        }
+
+        BlockPos engineWorldPos = getEngineWorldPos();
+        if (engineWorldPos != null) {
+            EngineLinkageContinuity.restoreFromPoweredShaft(level, engineWorldPos, worldPosition);
+        }
     }
 
     @Override

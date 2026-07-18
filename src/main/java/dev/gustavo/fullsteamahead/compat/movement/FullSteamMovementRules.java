@@ -166,6 +166,7 @@ public final class FullSteamMovementRules {
                 || state.is(ModBlocks.STEAM_INLET.get())
                 || state.is(ModBlocks.PISTON.get())
                 || state.is(ModBlocks.PISTON_HEAD.get())
+                || state.is(ModBlocks.ENGINE_LINKAGE.get())
                 || FullSteamPoweredShaftBlock.isPoweredShaft(state)
                 || state.is(ModBlocks.BOILER_OUTLET.get())
                 || state.is(ModBlocks.STEAM_RELIEF_VALVE.get())

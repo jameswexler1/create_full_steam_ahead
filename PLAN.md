@@ -939,6 +939,21 @@ changing engine balance.
 
 ---
 
+### Reliability Hardening: Engine Shaft Reload Continuity
+
+**Goal**: keep the piston column and its claimed Create shaft in one stable engine assembly across ordinary world reloads and Sable/Simulated sublevel restoration.
+
+- [x] Distinguish definitive validation failures from temporarily unloaded blocks, missing block entities, and ring ownership that is still synchronizing; retry temporary states without disassembling the engine.
+- [x] Resolve hidden powered-shaft survival through its persisted relative piston-head owner before falling back to a surrounding structure scan.
+- [x] Register an internal, invisible, non-colliding `engine_linkage` block that occupies only validated connecting-rod stroke cells and gives Sable a continuous non-air heat-map path from piston to shaft.
+- [x] Install linkage continuity on assembly, restore it from saved powered-shaft ownership, accept it as reserved stroke space, and remove it on definitive disassembly.
+- [x] Include linkage continuity in Create and Simulated movement rules without exposing an item, loot, collision, or rendered model.
+- [ ] Manual static-world reload matrix: upright and inverted engines, one to three piston bodies, one to three shaft gaps, powered and unpowered.
+- [ ] Manual Sable/Simulated reload matrix: upright and inverted engines on saved contraptions, including an isolated shaft line and a shaft line touching the hull.
+- [ ] Manual destruction regression: remove the shaft, piston, piston head, and one ring block separately; each engine must disassemble normally and leave no reserved stroke cells.
+
+---
+
 ## Risks and Mitigations
 
 | Risk | Mitigation |
@@ -950,7 +965,7 @@ changing engine balance.
 | Linear generators on one shaft request different speeds | Keep one stable FSA network owner, convert local source commands into its speed frame, use the strongest compatible command for shaft RPM, and sum each engine's independent SU capacity |
 | Cylinder ring scan too expensive | Run only on placement/removal, not every tick; cache result |
 | Piston animation desync | Drive animation from linked shaft rotation and compensate Create's absolute-time angle offset whenever an FSA-driven kinetic speed changes; cover both Flywheel and fallback rendering |
-| Sable assembly splits engine parts | Register Create and Simulated movement checks early |
+| Sable assembly splits engine parts | Register movement checks and maintain an invisible, non-colliding linkage path through the animated stroke gap |
 
 ---
 

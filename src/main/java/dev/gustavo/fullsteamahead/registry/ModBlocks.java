@@ -3,6 +3,7 @@ package dev.gustavo.fullsteamahead.registry;
 import dev.gustavo.fullsteamahead.FullSteamAhead;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlock;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlockItem;
+import dev.gustavo.fullsteamahead.content.piston.EngineLinkageBlock;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlock;
 import dev.gustavo.fullsteamahead.content.piston.SteamPistonBlock;
 import dev.gustavo.fullsteamahead.content.redstone.SteppedLeverBlock;
@@ -20,6 +21,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -47,6 +49,18 @@ public final class ModBlocks {
                     "powered_girder_encased_shaft",
                     FullSteamPoweredGirderEncasedShaftBlock::new,
                     metalProperties().noOcclusion()
+            );
+    public static final DeferredBlock<EngineLinkageBlock> ENGINE_LINKAGE =
+            registerBlockOnly(
+                    "engine_linkage",
+                    EngineLinkageBlock::new,
+                    BlockBehaviour.Properties.of()
+                            .noCollission()
+                            .noOcclusion()
+                            .noLootTable()
+                            .strength(-1.0F, 3_600_000.0F)
+                            .pushReaction(PushReaction.BLOCK)
+                            .forceSolidOff()
             );
     public static final DeferredBlock<BoilerOutletBlock> BOILER_OUTLET =
             registerBlock("boiler_outlet", BoilerOutletBlock::new, copperProperties());

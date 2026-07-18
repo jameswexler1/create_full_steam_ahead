@@ -190,6 +190,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         status = result.message();
         validationRetryTicks = 0;
 
+        EngineLinkageContinuity.install(level, result);
         setPistonsAssembled(result);
 
         FluidTankBlockEntity boiler = getBoiler();
@@ -226,6 +227,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
                 || sourceMode != SourceMode.NONE
                 || !Objects.equals(status, reason);
 
+        EngineLinkageContinuity.clear(level, worldPosition, pistonBodyCount, shaftGap);
         clearShaftPower();
         clearPistonStates(skippedPistonPos);
 

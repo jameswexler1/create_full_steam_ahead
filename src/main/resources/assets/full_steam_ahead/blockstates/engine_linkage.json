@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "full_steam_ahead:block/engine_linkage"
+    },
+    "facing=up": {
+      "model": "full_steam_ahead:block/engine_linkage"
+    }
+  }
+}

@@ -71,7 +71,7 @@ public final class EngineValidator {
             if (!level.isLoaded(strokeSpace)) {
                 return Result.pending("Stroke space is loading");
             }
-            if (!isEmpty(level, strokeSpace)) {
+            if (!isStrokeSpaceAvailable(level, strokeSpace, strokeDirection)) {
                 return Result.invalid("Stroke space must be empty");
             }
         }
@@ -316,6 +316,14 @@ public final class EngineValidator {
     }
 
     public static boolean matchesShaftGeometry(Level level, BlockPos pistonHeadPos, BlockPos shaftPos) {
+        return pistonPositionsForShaft(level, pistonHeadPos, shaftPos).isPresent();
+    }
+
+    public static Optional<PistonPositions> pistonPositionsForShaft(
+            Level level,
+            BlockPos pistonHeadPos,
+            BlockPos shaftPos
+    ) {
         if (pistonHeadPos == null
                 || shaftPos == null
                 || pistonHeadPos.getX() != shaftPos.getX()
@@ -324,16 +332,16 @@ public final class EngineValidator {
                 || !level.isLoaded(shaftPos)
                 || !isPistonHead(level, pistonHeadPos)
                 || !isValidShaft(level, shaftPos)) {
-            return false;
+            return Optional.empty();
         }
 
         int verticalOffset = shaftPos.getY() - pistonHeadPos.getY();
         if (verticalOffset == 0) {
-            return false;
+            return Optional.empty();
         }
         Direction strokeDirection = verticalOffset > 0 ? Direction.UP : Direction.DOWN;
         if (pistonHeadFacing(level.getBlockState(pistonHeadPos)) != strokeDirection) {
-            return false;
+            return Optional.empty();
         }
 
         int shaftDistance = Math.abs(verticalOffset);
@@ -355,9 +363,11 @@ public final class EngineValidator {
                 continue;
             }
 
-            return candidate.shaft().equals(shaftPos);
+            if (candidate.shaft().equals(shaftPos)) {
+                return Optional.of(candidate);
+            }
         }
-        return false;
+        return Optional.empty();
     }
 
     private static boolean isPiston(Level level, BlockPos pos) {
@@ -368,8 +378,12 @@ public final class EngineValidator {
         return level.isLoaded(pos) && level.getBlockState(pos).is(ModBlocks.PISTON_HEAD.get());
     }
 
-    private static boolean isEmpty(Level level, BlockPos pos) {
-        return level.isLoaded(pos) && level.getBlockState(pos).isAir();
+    private static boolean isStrokeSpaceAvailable(Level level, BlockPos pos, Direction strokeDirection) {
+        if (!level.isLoaded(pos)) {
+            return false;
+        }
+        BlockState state = level.getBlockState(pos);
+        return state.isAir() || EngineLinkageContinuity.isForDirection(state, strokeDirection);
     }
 
     private static boolean isPoweredShaft(Level level, BlockPos pos) {
@@ -453,8 +467,9 @@ public final class EngineValidator {
     }
 
     private static boolean hasEmptyStrokeSpaces(Level level, PistonPositions positions) {
+        Direction strokeDirection = strokeDirectionFor(positions);
         for (BlockPos strokeSpace : positions.emptyStrokeSpaces()) {
-            if (!isEmpty(level, strokeSpace)) {
+            if (!isStrokeSpaceAvailable(level, strokeSpace, strokeDirection)) {
                 return false;
             }
         }
