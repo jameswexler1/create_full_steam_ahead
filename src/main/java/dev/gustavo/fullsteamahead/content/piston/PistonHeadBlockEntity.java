@@ -67,6 +67,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private static final float DEGREES_PER_TICK_PER_RPM = 0.3F;
     private static final float EXHAUST_PHASE_DEGREES = 180.0F;
     private static final double OUTER_BORE_OFFSET = 2.05D;
+    private static final int VALIDATION_RETRY_TICKS = 5;
 
     private boolean assembled;
     private BlockPos ringOrigin;
@@ -89,6 +90,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private float exhaustPhaseDegrees = Float.NaN;
     private float previousSoundAngle = Float.NaN;
     private int steamSoundCooldown;
+    private int validationRetryTicks;
 
     public PistonHeadBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.PISTON_HEAD.get(), pos, state);
@@ -119,6 +121,10 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
             return;
         }
 
+        if (validationRetryTicks > 0 && --validationRetryTicks == 0) {
+            revalidateStructure();
+        }
+
         if (!assembled) {
             return;
         }
@@ -145,11 +151,20 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
 
         EngineValidator.Result result = EngineValidator.validate(level, worldPosition);
+        if (result.pending()) {
+            requestValidationRetry();
+            return;
+        }
         if (!result.valid()) {
             markInvalid(result.message(), null);
             return;
         }
-        if (!ensurePoweredShaft(result.shaft())) {
+        ShaftClaimResult shaftClaim = ensurePoweredShaft(result.shaft());
+        if (shaftClaim == ShaftClaimResult.PENDING) {
+            requestValidationRetry();
+            return;
+        }
+        if (shaftClaim == ShaftClaimResult.INVALID) {
             markInvalid("Could not claim shaft", null);
             return;
         }
@@ -173,6 +188,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         pistonBodyCount = result.pistonBodyCount();
         shaftGap = result.shaftGap();
         status = result.message();
+        validationRetryTicks = 0;
 
         setPistonsAssembled(result);
 
@@ -233,6 +249,7 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         exhaustPhaseDegrees = Float.NaN;
         previousSoundAngle = Float.NaN;
         steamSoundCooldown = 0;
+        validationRetryTicks = 0;
 
         refreshBoilerState(previousBoiler);
 
@@ -654,27 +671,35 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
     }
 
-    private boolean ensurePoweredShaft(BlockPos targetShaftPos) {
+    private ShaftClaimResult ensurePoweredShaft(BlockPos targetShaftPos) {
         if (level == null || targetShaftPos == null || !level.isLoaded(targetShaftPos)) {
-            return false;
+            return ShaftClaimResult.PENDING;
         }
 
         BlockState state = level.getBlockState(targetShaftPos);
         if (FullSteamPoweredShaftBlock.isPoweredShaft(state)) {
-            return level.getBlockEntity(targetShaftPos) instanceof FullSteamPoweredShaftBlockEntity;
+            return level.getBlockEntity(targetShaftPos) instanceof FullSteamPoweredShaftBlockEntity
+                    ? ShaftClaimResult.CLAIMED
+                    : ShaftClaimResult.PENDING;
         }
         if (!FullSteamPoweredShaftBlock.isClaimableShaft(state)) {
-            return false;
+            return ShaftClaimResult.INVALID;
         }
 
         level.setBlock(targetShaftPos, FullSteamPoweredShaftBlock.equivalentOf(state), Block.UPDATE_ALL);
-        return level.getBlockEntity(targetShaftPos) instanceof FullSteamPoweredShaftBlockEntity;
+        return level.getBlockEntity(targetShaftPos) instanceof FullSteamPoweredShaftBlockEntity
+                ? ShaftClaimResult.CLAIMED
+                : ShaftClaimResult.PENDING;
     }
 
     private void updateShaftOutput() {
         FullSteamPoweredShaftBlockEntity shaft = getShaft();
         if (shaft == null) {
-            if (assembled) {
+            BlockPos expectedShaftPos = worldPosition.relative(getStrokeDirection(), getShaftDistance());
+            if (!level.isLoaded(expectedShaftPos)
+                    || FullSteamPoweredShaftBlock.isPoweredShaft(level.getBlockState(expectedShaftPos))) {
+                requestValidationRetry();
+            } else if (assembled) {
                 markInvalid("Missing shaft", null);
             }
             return;
@@ -795,6 +820,12 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         forNearbyEngines(level, changedPos, PistonHeadBlockEntity::revalidateStructure);
     }
 
+    private void requestValidationRetry() {
+        if (validationRetryTicks == 0) {
+            validationRetryTicks = VALIDATION_RETRY_TICKS;
+        }
+    }
+
     public static void revalidateAt(Level level, BlockPos pos) {
         if (level.isClientSide() || !level.isLoaded(pos) || !level.getBlockState(pos).is(ModBlocks.PISTON_HEAD.get())) {
             return;
@@ -889,6 +920,15 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
             sourceMode = SourceMode.DIRECT_BOILER;
         }
         status = tag.contains(STATUS_KEY) ? tag.getString(STATUS_KEY) : "Incomplete structure";
+        if (!clientPacket && assembled) {
+            validationRetryTicks = 1;
+        }
+    }
+
+    private enum ShaftClaimResult {
+        CLAIMED,
+        PENDING,
+        INVALID
     }
 
     private void tickServerExhaust() {

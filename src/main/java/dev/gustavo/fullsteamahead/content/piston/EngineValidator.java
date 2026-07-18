@@ -30,6 +30,9 @@ public final class EngineValidator {
             .thenComparingInt(pos -> pos.getZ());
 
     public static Result validate(Level level, BlockPos pistonHeadPos) {
+        if (!level.isLoaded(pistonHeadPos)) {
+            return Result.pending("Piston head is loading");
+        }
         if (!isPistonHead(level, pistonHeadPos)) {
             return Result.invalid("Missing piston head");
         }
@@ -41,10 +44,22 @@ public final class EngineValidator {
         }
 
         Result opposite = validate(level, pistonHeadPos, preferredDirection.getOpposite());
-        return opposite.valid() ? opposite : preferred;
+        if (opposite.valid()) {
+            return opposite;
+        }
+        if (preferred.pending()) {
+            return preferred;
+        }
+        return opposite.pending() ? opposite : preferred;
     }
 
     private static Result validate(Level level, BlockPos pistonHeadPos, Direction strokeDirection) {
+        for (int offset = 1; offset <= MAX_PISTON_BODIES + 1; offset++) {
+            if (!level.isLoaded(pistonHeadPos.relative(strokeDirection, offset))) {
+                return Result.pending("Piston column is loading");
+            }
+        }
+
         PistonPositions pistons = pistonPositions(level, pistonHeadPos, strokeDirection);
         if (pistons.pistonBodyCount() < MIN_PISTON_BODIES) {
             return Result.invalid("Missing piston body");
@@ -53,9 +68,15 @@ public final class EngineValidator {
             return Result.invalid("Too many piston bodies");
         }
         for (BlockPos strokeSpace : pistons.emptyStrokeSpaces()) {
+            if (!level.isLoaded(strokeSpace)) {
+                return Result.pending("Stroke space is loading");
+            }
             if (!isEmpty(level, strokeSpace)) {
                 return Result.invalid("Stroke space must be empty");
             }
+        }
+        if (!level.isLoaded(pistons.shaft())) {
+            return Result.pending("Shaft is loading");
         }
         if (!isValidShaft(level, pistons.shaft())) {
             return Result.invalid("Missing horizontal Create shaft");
@@ -67,13 +88,20 @@ public final class EngineValidator {
         List<BlockPos> inletPositions = new ArrayList<>(CylinderConnectivity.MAX_INLETS_PER_RING);
         for (BlockPos pos : ringPositions) {
             if (!level.isLoaded(pos)) {
-                return Result.invalid("Cylinder ring is unloaded");
+                return Result.pending("Cylinder ring is loading");
             }
 
             BlockState state = level.getBlockState(pos);
             if (state.is(ModBlocks.STEAM_CYLINDER.get())) {
-                if (!isCylinderAssembledFor(level, pos, state, ringOrigin)) {
+                if (!isAssembled(state, SteamCylinderBlock.ASSEMBLED)) {
                     return Result.invalid("Cylinder ring is not assembled");
+                }
+                BlockEntity blockEntity = level.getBlockEntity(pos);
+                if (!(blockEntity instanceof SteamCylinderBlockEntity cylinder)) {
+                    return Result.pending("Cylinder block entities are loading");
+                }
+                if (!cylinder.belongsToRingOrigin(ringOrigin)) {
+                    return Result.pending("Cylinder ring ownership is synchronizing");
                 }
                 cylinderPositions.add(pos);
                 continue;
@@ -108,6 +136,7 @@ public final class EngineValidator {
 
         return new Result(
                 true,
+                false,
                 "Structure assembled",
                 ringOrigin,
                 cylinderRoot,
@@ -284,6 +313,51 @@ public final class EngineValidator {
             }
         }
         return candidates;
+    }
+
+    public static boolean matchesShaftGeometry(Level level, BlockPos pistonHeadPos, BlockPos shaftPos) {
+        if (pistonHeadPos == null
+                || shaftPos == null
+                || pistonHeadPos.getX() != shaftPos.getX()
+                || pistonHeadPos.getZ() != shaftPos.getZ()
+                || !level.isLoaded(pistonHeadPos)
+                || !level.isLoaded(shaftPos)
+                || !isPistonHead(level, pistonHeadPos)
+                || !isValidShaft(level, shaftPos)) {
+            return false;
+        }
+
+        int verticalOffset = shaftPos.getY() - pistonHeadPos.getY();
+        if (verticalOffset == 0) {
+            return false;
+        }
+        Direction strokeDirection = verticalOffset > 0 ? Direction.UP : Direction.DOWN;
+        if (pistonHeadFacing(level.getBlockState(pistonHeadPos)) != strokeDirection) {
+            return false;
+        }
+
+        int shaftDistance = Math.abs(verticalOffset);
+        for (int bodyCount = MIN_PISTON_BODIES; bodyCount <= MAX_PISTON_BODIES; bodyCount++) {
+            int shaftGap = shaftDistance - bodyCount - 1;
+            if (shaftGap < MIN_SHAFT_GAP || shaftGap > MAX_SHAFT_GAP) {
+                continue;
+            }
+
+            PistonPositions candidate = pistonPositions(
+                    pistonHeadPos,
+                    strokeDirection,
+                    bodyCount,
+                    shaftGap
+            );
+            boolean pistonsMatch = candidate.pistons().stream().allMatch(pos -> isPiston(level, pos));
+            BlockPos nextBodyPos = pistonHeadPos.relative(strokeDirection, bodyCount + 1);
+            if (!pistonsMatch || isPiston(level, nextBodyPos) || !hasEmptyStrokeSpaces(level, candidate)) {
+                continue;
+            }
+
+            return candidate.shaft().equals(shaftPos);
+        }
+        return false;
     }
 
     private static boolean isPiston(Level level, BlockPos pos) {
@@ -506,6 +580,7 @@ public final class EngineValidator {
 
     public record Result(
             boolean valid,
+            boolean pending,
             String message,
             BlockPos ringOrigin,
             BlockPos cylinderRoot,
@@ -520,7 +595,12 @@ public final class EngineValidator {
             BlockPos shaft
     ) {
         public static Result invalid(String message) {
-            return new Result(false, message, null, null, null, null,
+            return new Result(false, false, message, null, null, null, null,
+                    Direction.UP, null, List.of(), 0, MIN_SHAFT_GAP, List.of(), null);
+        }
+
+        public static Result pending(String message) {
+            return new Result(false, true, message, null, null, null, null,
                     Direction.UP, null, List.of(), 0, MIN_SHAFT_GAP, List.of(), null);
         }
     }

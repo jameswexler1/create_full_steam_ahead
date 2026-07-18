@@ -22,6 +22,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
@@ -92,23 +93,48 @@ public class FullSteamPoweredShaftBlock extends PoweredShaftBlock {
     }
 
     public static boolean stillValid(BlockState state, LevelReader level, BlockPos shaftPos) {
+        if (!(level instanceof Level loadedLevel) || !loadedLevel.isLoaded(shaftPos)) {
+            return true;
+        }
+
+        BlockEntity blockEntity = loadedLevel.getBlockEntity(shaftPos);
+        if (blockEntity instanceof FullSteamPoweredShaftBlockEntity poweredShaft) {
+            BlockPos ownerPos = poweredShaft.getEngineWorldPos();
+            if (ownerPos != null) {
+                if (!loadedLevel.isLoaded(ownerPos)) {
+                    return true;
+                }
+
+                EngineValidator.Result ownerResult = EngineValidator.validate(loadedLevel, ownerPos);
+                if (ownerResult.valid()) {
+                    return shaftPos.equals(ownerResult.shaft());
+                }
+                if (ownerResult.pending()
+                        && EngineValidator.matchesShaftGeometry(loadedLevel, ownerPos, shaftPos)) {
+                    return true;
+                }
+                return false;
+            }
+        }
+
         int maxDistance = EngineValidator.shaftDistanceForPistonBodies(
                 EngineValidator.MAX_PISTON_BODIES,
                 EngineValidator.MAX_SHAFT_GAP
         );
         for (int dy = -maxDistance; dy <= maxDistance; dy++) {
             BlockPos headPos = shaftPos.offset(0, dy, 0);
-            if (level instanceof Level loadedLevel && !loadedLevel.isLoaded(headPos)) {
+            if (!loadedLevel.isLoaded(headPos)) {
                 continue;
             }
             if (!level.getBlockState(headPos).is(ModBlocks.PISTON_HEAD.get())) {
                 continue;
             }
-            if (level instanceof Level loadedLevel) {
-                EngineValidator.Result result = EngineValidator.validate(loadedLevel, headPos);
-                if (result.valid() && shaftPos.equals(result.shaft())) {
-                    return true;
-                }
+            EngineValidator.Result result = EngineValidator.validate(loadedLevel, headPos);
+            if (result.valid() && shaftPos.equals(result.shaft())) {
+                return true;
+            }
+            if (result.pending() && EngineValidator.matchesShaftGeometry(loadedLevel, headPos, shaftPos)) {
+                return true;
             }
         }
         return false;
