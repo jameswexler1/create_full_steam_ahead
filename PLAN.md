@@ -921,6 +921,9 @@ working shared-main throttle and adding a local/telegraph-operated stepped lever
 - [x] Keep the invisible controller cell neutral to skylight, block light, and shade sampling. Disable
   baked ambient occlusion on the authored two-cell body and use the renderer-provided light for
   animated controls so dark atlas colors do not collapse to black in-world or on contraptions.
+- [x] Keep Create's `PipeAttachmentModel` in explicit no-AO mode and suppress its generated
+  `DRAIN` attachment only on the authored Steam Inlet face. The valve keeps Create endpoint
+  attachments on its other ports without rendering a second, coplanar inlet connector.
 - [ ] Re-test topology changes, all four facings, manual steps, telegraph synchronization, receiver
   strengths `0/5/10/15`, upright/inverted rings, save/reload, and simulated-contraption
   assembly/disassembly.

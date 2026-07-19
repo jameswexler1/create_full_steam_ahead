@@ -64,7 +64,7 @@ public final class FullSteamAheadClient {
                     || location.getVariant().equals(ModelResourceLocation.INVENTORY_VARIANT)) {
                 return model;
             }
-            return PipeAttachmentModel.withAO(model);
+            return PipeAttachmentModel.withoutAO(model);
         });
     }
 

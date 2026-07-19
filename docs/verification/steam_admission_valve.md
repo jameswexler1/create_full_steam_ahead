@@ -23,9 +23,18 @@
   shade brightness, and has an empty occlusion shape. The two-cell baked body disables ambient
   occlusion, while moving controls use the renderer-provided light supplied by the world or
   simulated contraption.
-- [ ] Post-lighting-fix client visual check. The automated `runClient` attempt reached Minecraft
-  window creation but NeoForge could not hand off the early-display window in the current desktop
-  session, so it stopped before resource/model baking; the full build and resource validation pass.
+- [x] The world-model wrapper now uses Create's explicit `PipeAttachmentModel.withoutAO()` path;
+  the previous `withAO()` call overrode the body's `ambientocclusion: false` declaration during
+  model baking.
+- [x] Create's generated north-facing `DRAIN` attachment was measured at approximately
+  `x/y 2.95..13.05, z -1.1..2`, directly overlapping the authored inlet connector at
+  `x/y 3..13, z -1..2`. A valve-only attachment filter now returns `NONE` for its authored inlet
+  direction while retaining normal Create attachment rendering on all other connected ports.
+- [x] Post-rendering-fix `runClient` smoke test completed mixin application, FSA initialization,
+  model baking, texture-atlas stitching, and shader loading without an admission-valve error; the
+  client was then intentionally stopped at the main menu.
+- [ ] Post-rendering-fix in-world visual check remains required because automated model loading
+  cannot prove the absence of angle-dependent shading or depth-buffer flicker.
 
 Dual-mode remodel automated verification completed on 2026-07-19. The valve still exposes one final
 `0..15` admission value to the unchanged steam allocator. Manual/telegraph state, receiver state,
@@ -73,6 +82,9 @@ adjacent inverted Steam Inlet changes its orientation.
   drops, both occupied cells disappear, and no invisible controller block remains.
 - [ ] Connect the inlet plus one, two, and three additional horizontal pipes; confirm no old straight
   or elbow center mesh intersects, flickers through, or duplicates the authored pressure-body base.
+- [ ] Move the camera around the authored Steam Inlet connector with and without a connected inlet.
+  Confirm Create's copper `DRAIN` attachment no longer occupies the same connector, while endpoint
+  rims and pipe attachments still appear normally on every non-inlet port.
 - [ ] Assemble/disassemble a Sable simulated contraption in both modes and confirm controls, channel, topology, and throttle recover.
 - [ ] Inspect the v2 atlas on the static body, moving lever, and receiver-mode partials in all four
   facings and both upright/inverted orientations; confirm there are no stale v1 pixels, missing
