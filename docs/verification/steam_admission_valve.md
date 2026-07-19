@@ -19,6 +19,13 @@
 - [x] The authored v2 Blockbench source retains all 28 v1 elements, the same outliner hierarchy,
   128x128 UV space, animation groups, and pivots. Only its embedded PNG differs, and that atlas was
   copied to the runtime texture without regenerating any model or blockstate JSON.
+- [x] The reserved controller cell explicitly propagates skylight, blocks zero light, reports full
+  shade brightness, and has an empty occlusion shape. The two-cell baked body disables ambient
+  occlusion, while moving controls use the renderer-provided light supplied by the world or
+  simulated contraption.
+- [ ] Post-lighting-fix client visual check. The automated `runClient` attempt reached Minecraft
+  window creation but NeoForge could not hand off the early-display window in the current desktop
+  session, so it stopped before resource/model baking; the full build and resource validation pass.
 
 Dual-mode remodel automated verification completed on 2026-07-19. The valve still exposes one final
 `0..15` admission value to the unchanged steam allocator. Manual/telegraph state, receiver state,
@@ -69,7 +76,8 @@ adjacent inverted Steam Inlet changes its orientation.
 - [ ] Assemble/disassemble a Sable simulated contraption in both modes and confirm controls, channel, topology, and throttle recover.
 - [ ] Inspect the v2 atlas on the static body, moving lever, and receiver-mode partials in all four
   facings and both upright/inverted orientations; confirm there are no stale v1 pixels, missing
-  faces, UV shifts, seams, or texture flicker.
+  faces, UV shifts, seams, texture flicker, or angle-dependent black shading. Repeat once in the
+  static world and once on a simulated contraption.
 
 ### Original Throttle Regression
 

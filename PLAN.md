@@ -918,6 +918,9 @@ working shared-main throttle and adding a local/telegraph-operated stepped lever
   Its local tower shape resolves targeting to the owning valve base for outlines, goggles/overlays,
   wrenching, frequency controls, and manual lever steps; it follows upright/inverted topology and
   cannot create a second fluid node, item, drop, renderer, or block entity.
+- [x] Keep the invisible controller cell neutral to skylight, block light, and shade sampling. Disable
+  baked ambient occlusion on the authored two-cell body and use the renderer-provided light for
+  animated controls so dark atlas colors do not collapse to black in-world or on contraptions.
 - [ ] Re-test topology changes, all four facings, manual steps, telegraph synchronization, receiver
   strengths `0/5/10/15`, upright/inverted rings, save/reload, and simulated-contraption
   assembly/disassembly.

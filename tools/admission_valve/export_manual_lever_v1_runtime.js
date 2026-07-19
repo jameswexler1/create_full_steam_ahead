@@ -6,11 +6,7 @@ const path = require("path");
 const ROOT = path.resolve(__dirname, "../..");
 const SOURCE_MODEL = path.join(
     ROOT,
-    "new_models/attempt_at_admission_valve_manual_lever_v1.bbmodel"
-);
-const SOURCE_TEXTURE = path.join(
-    ROOT,
-    "new_models/attempt_at_admission_valve_manual_lever_v1.png"
+    "new_models/attempt_at_admission_valve_manual_lever_v2.bbmodel"
 );
 const ASSET_ROOT = path.join(ROOT, "src/main/resources/assets/full_steam_ahead");
 const MODEL_ROOT = path.join(ASSET_ROOT, "models");
@@ -66,7 +62,7 @@ function runtimeElement(element, textureSize) {
     return converted;
 }
 
-function model(elements, display) {
+function model(elements, display, ambientOcclusion) {
     const result = {
         credit: "Create: Full Steam Ahead",
         parent: "block/block",
@@ -77,6 +73,9 @@ function model(elements, display) {
         },
         elements
     };
+    if (ambientOcclusion !== undefined) {
+        result.ambientocclusion = ambientOcclusion;
+    }
     if (display) {
         result.display = display;
     }
@@ -166,7 +165,7 @@ const itemDisplay = {
     firstperson_lefthand: {rotation: [0, 225, 0], translation: [0, -2, 0], scale: [0.3, 0.3, 0.3]}
 };
 
-writeJson(path.join(VALVE_MODEL_ROOT, "body.json"), model(staticElements));
+writeJson(path.join(VALVE_MODEL_ROOT, "body.json"), model(staticElements, undefined, false));
 writeJson(
     path.join(PARTIAL_ROOT, "steam_admission_valve_manual_mechanism.json"),
     model(mechanismElements)
@@ -204,7 +203,12 @@ writeJson(BLOCKSTATE_TARGET, {
 });
 
 fs.mkdirSync(path.dirname(TEXTURE_TARGET), {recursive: true});
-fs.copyFileSync(SOURCE_TEXTURE, TEXTURE_TARGET);
+const embeddedTexture = source.textures?.[0]?.source;
+const textureMatch = /^data:image\/png;base64,(.+)$/.exec(embeddedTexture || "");
+if (!textureMatch) {
+    throw new Error("Admission valve source must contain one embedded PNG texture");
+}
+fs.writeFileSync(TEXTURE_TARGET, Buffer.from(textureMatch[1], "base64"));
 
 console.log(`Exported ${staticElements.length} static cuboids`);
 console.log(`Exported ${mechanismElements.length} manual mechanism cuboids`);

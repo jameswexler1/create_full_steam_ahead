@@ -67,6 +67,21 @@ public class SteamAdmissionValveControllerBlock extends Block {
     }
 
     @Override
+    protected boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
+        return true;
+    }
+
+    @Override
+    protected int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+        return 0;
+    }
+
+    @Override
+    protected float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
+        return 1.0F;
+    }
+
+    @Override
     protected BlockState updateShape(
             BlockState state,
             Direction direction,

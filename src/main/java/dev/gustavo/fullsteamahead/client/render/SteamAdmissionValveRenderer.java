@@ -8,7 +8,6 @@ import dev.gustavo.fullsteamahead.content.steam.SteamAdmissionValveBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamAdmissionValveBlockEntity;
 import net.createmod.catnip.render.CachedBuffers;
 import net.createmod.catnip.render.SuperByteBuffer;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -36,25 +35,17 @@ public class SteamAdmissionValveRenderer extends SmartBlockEntityRenderer<SteamA
         super.renderSafe(valve, partialTicks, poseStack, bufferSource, light, overlay);
 
         BlockState state = valve.getBlockState();
-        int controllerLight = valve.getLevel() == null
-                ? light
-                : LevelRenderer.getLightColor(
-                        valve.getLevel(),
-                        state.getValue(SteamAdmissionValveBlock.INVERTED)
-                                ? valve.getBlockPos().below()
-                                : valve.getBlockPos().above()
-                );
         VertexConsumer consumer = bufferSource.getBuffer(RenderType.cutoutMipped());
 
         if (valve.getControlMode() == SteamAdmissionControlMode.MANUAL) {
             render(FullSteamPartialModels.steamAdmissionValveManualMechanism(), state, 0.0F,
-                    poseStack, consumer, controllerLight, overlay);
+                    poseStack, consumer, light, overlay);
             float leverOffset = valve.getRenderedManualStrength(partialTicks) / 15.0F * LEVER_TRAVEL;
             render(FullSteamPartialModels.steamAdmissionValveManualLever(), state, leverOffset,
-                    poseStack, consumer, controllerLight, overlay);
+                    poseStack, consumer, light, overlay);
         } else {
             render(FullSteamPartialModels.steamAdmissionValveReceiverPanel(), state, 0.0F,
-                    poseStack, consumer, controllerLight, overlay);
+                    poseStack, consumer, light, overlay);
         }
     }
 
