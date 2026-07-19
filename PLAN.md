@@ -886,7 +886,7 @@ working shared-main throttle and adding a local/telegraph-operated stepped lever
 
 - [x] Replace the prototype baked model with the authored
   `attempt_at_admission_valve_manual_lever_v1` body, model-derived collision shape, and matching
-  inventory presentation. Keep the current texture as a provisional implementation asset.
+  inventory presentation.
 - [x] Split client presentation into a static body, manual mechanism bed, vertically sliding lever,
   and Redstone Link receiver panel. Never render the lever and receiver panel simultaneously.
 - [x] Add `manual` and `redstone_link` control modes, cycled by a normal Create-wrench click without
@@ -921,9 +921,9 @@ working shared-main throttle and adding a local/telegraph-operated stepped lever
 - [ ] Re-test topology changes, all four facings, manual steps, telegraph synchronization, receiver
   strengths `0/5/10/15`, upright/inverted rings, save/reload, and simulated-contraption
   assembly/disassembly.
-- [ ] **Art reminder**: return to the admission-valve texture after functional validation and replace
-  the provisional atlas with the final hand-polished Create-style texture without changing geometry,
-  UV ownership, animation groups, or control behavior.
+- [x] Replace the provisional atlas with the authored
+  `attempt_at_admission_valve_manual_lever_v2` texture. The v1/v2 element hierarchy, UV ownership,
+  animation groups, and pivots are unchanged, so this update does not alter geometry or behavior.
 
 ---
 

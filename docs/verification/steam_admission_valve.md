@@ -16,6 +16,9 @@
   validation, completes a full build, and reaches client model/texture loading without registry,
   blockstate, model-bake, or mixin errors. Controller-cell hits map to the owning valve within
   vanilla's server-accepted use-packet bounds; the smoke-test client was then intentionally stopped.
+- [x] The authored v2 Blockbench source retains all 28 v1 elements, the same outliner hierarchy,
+  128x128 UV space, animation groups, and pivots. Only its embedded PNG differs, and that atlas was
+  copied to the runtime texture without regenerating any model or blockstate JSON.
 
 Dual-mode remodel automated verification completed on 2026-07-19. The valve still exposes one final
 `0..15` admission value to the unchanged steam allocator. Manual/telegraph state, receiver state,
@@ -64,7 +67,9 @@ adjacent inverted Steam Inlet changes its orientation.
 - [ ] Connect the inlet plus one, two, and three additional horizontal pipes; confirm no old straight
   or elbow center mesh intersects, flickers through, or duplicates the authored pressure-body base.
 - [ ] Assemble/disassemble a Sable simulated contraption in both modes and confirm controls, channel, topology, and throttle recover.
-- [ ] Repaint the provisional admission-valve texture after functional validation without changing the UV islands or model groups.
+- [ ] Inspect the v2 atlas on the static body, moving lever, and receiver-mode partials in all four
+  facings and both upright/inverted orientations; confirm there are no stale v1 pixels, missing
+  faces, UV shifts, seams, or texture flicker.
 
 ### Original Throttle Regression
 
