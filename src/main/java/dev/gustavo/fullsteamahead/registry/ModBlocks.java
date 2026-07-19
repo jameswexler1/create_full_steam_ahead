@@ -12,6 +12,7 @@ import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredGirderEncasedSha
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamAdmissionValveBlock;
+import dev.gustavo.fullsteamahead.content.steam.SteamAdmissionValveControllerBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamReliefValveBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlock;
 import dev.gustavo.fullsteamahead.content.steam.SteamPressureGaugeBlock;
@@ -73,6 +74,18 @@ public final class ModBlocks {
                     "steam_admission_valve",
                     SteamAdmissionValveBlock::new,
                     copperProperties().noOcclusion().dynamicShape()
+            );
+    public static final DeferredBlock<SteamAdmissionValveControllerBlock> STEAM_ADMISSION_VALVE_CONTROLLER =
+            registerBlockOnly(
+                    "steam_admission_valve_controller",
+                    SteamAdmissionValveControllerBlock::new,
+                    BlockBehaviour.Properties.of()
+                            .strength(3.0F, 6.0F)
+                            .sound(SoundType.COPPER)
+                            .noOcclusion()
+                            .noLootTable()
+                            .dynamicShape()
+                            .pushReaction(PushReaction.BLOCK)
             );
     public static final DeferredBlock<SteamPressureGaugeBlock> STEAM_PRESSURE_GAUGE =
             registerBlock(

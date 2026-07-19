@@ -92,11 +92,21 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity
                         worldPosition,
                         currentState
                 );
+                if (resolvedState.getValue(SteamAdmissionValveBlock.INVERTED)
+                        != currentState.getValue(SteamAdmissionValveBlock.INVERTED)
+                        && !SteamAdmissionValveController.canOccupy(level, worldPosition, resolvedState)) {
+                    resolvedState = resolvedState.setValue(
+                            SteamAdmissionValveBlock.INVERTED,
+                            currentState.getValue(SteamAdmissionValveBlock.INVERTED));
+                }
                 if (resolvedState != currentState) {
-                    // INVERTED changes geometry outside the base block space, so publish the new
-                    // shape to collision, selection, and neighboring pipe caches as well as clients.
                     level.setBlock(worldPosition, resolvedState, Block.UPDATE_ALL);
                 }
+                SteamAdmissionValveController.sync(
+                        level,
+                        worldPosition,
+                        level.getBlockState(worldPosition)
+                );
             }
             int admission = getAdmissionStrength();
             if (lastAudibleAdmission >= 0 && lastAudibleAdmission != admission) {

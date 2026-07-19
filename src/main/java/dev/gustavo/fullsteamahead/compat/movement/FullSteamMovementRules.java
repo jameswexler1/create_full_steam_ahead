@@ -170,7 +170,9 @@ public final class FullSteamMovementRules {
                 || FullSteamPoweredShaftBlock.isPoweredShaft(state)
                 || state.is(ModBlocks.BOILER_OUTLET.get())
                 || state.is(ModBlocks.STEAM_RELIEF_VALVE.get())
-                || state.is(ModBlocks.STEAM_PRESSURE_GAUGE.get());
+                || state.is(ModBlocks.STEAM_PRESSURE_GAUGE.get())
+                || state.is(ModBlocks.STEAM_ADMISSION_VALVE.get())
+                || state.is(ModBlocks.STEAM_ADMISSION_VALVE_CONTROLLER.get());
     }
 
     private static boolean attachesToCompactBoiler(

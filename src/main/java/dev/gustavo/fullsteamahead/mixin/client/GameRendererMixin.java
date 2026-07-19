@@ -3,9 +3,7 @@ package dev.gustavo.fullsteamahead.mixin.client;
 import dev.gustavo.fullsteamahead.client.AdmissionValveTargeting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,18 +19,12 @@ public abstract class GameRendererMixin {
 
     @Inject(method = "pick(F)V", at = @At("TAIL"))
     private void fullSteamAhead$pickAdmissionValveController(float partialTick, CallbackInfo ci) {
-        Entity camera = minecraft.getCameraEntity();
-        if (camera == null || minecraft.level == null || minecraft.player == null) {
+        if (minecraft.level == null) {
             return;
         }
 
-        Vec3 start = camera.getEyePosition(partialTick);
-        Vec3 end = start.add(camera.getViewVector(partialTick)
-                .scale(minecraft.player.blockInteractionRange()));
-        BlockHitResult towerHit = AdmissionValveTargeting.findCloserTowerHit(
+        BlockHitResult towerHit = AdmissionValveTargeting.redirectControllerHit(
                 minecraft.level,
-                start,
-                end,
                 minecraft.hitResult
         );
         if (towerHit == null) {

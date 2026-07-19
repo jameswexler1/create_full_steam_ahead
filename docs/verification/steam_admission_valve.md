@@ -12,9 +12,10 @@
   and zero complete Create Fluid Pipe center models.
 - [x] `runClient` completed FSA model baking and reached the main menu without admission-valve model
   or blockstate errors; the smoke-test client was then intentionally stopped.
-- [x] The extended-controller `GameRenderer` targeting mixin applied and reached the main menu without
-  injection or FSA runtime errors; closer vanilla block/entity hits retain priority and redirected
-  tower interactions remain inside vanilla's server-accepted use-packet bounds.
+- [x] The real two-cell controller-half implementation compiles, passes all 24 tests and JSON
+  validation, completes a full build, and reaches client model/texture loading without registry,
+  blockstate, model-bake, or mixin errors. Controller-cell hits map to the owning valve within
+  vanilla's server-accepted use-packet bounds; the smoke-test client was then intentionally stopped.
 
 Dual-mode remodel automated verification completed on 2026-07-19. The valve still exposes one final
 `0..15` admission value to the unchanged steam allocator. Manual/telegraph state, receiver state,
@@ -47,10 +48,19 @@ adjacent inverted Steam Inlet changes its orientation.
 - [ ] Attach valves to upright and inverted cylinder rings; confirm the entire body, control mode
   partials, frequency items, lighting, and hitbox stay together and the controller points away from
   the ring in both orientations.
-- [ ] Aim only at the controller tower, without crossing the base block. Confirm the full valve
+- [ ] Aim only at the controller tower's real second block cell, without crossing the base block.
+  Confirm the full valve
   outline and information overlay appear, normal right-click changes the manual lever, sneak-use
   lowers it, the wrench changes mode, and receiver frequency pads remain selectable. Repeat upright
   and inverted in all four horizontal facings.
+- [ ] Confirm a newly placed valve reserves the controller cell above it when upright and below it
+  when inverted. A valve from an older save must create the same controller cell within five ticks
+  without requiring replacement.
+- [ ] Change an inlet between upright and inverted. Confirm the controller hitbox moves to the other
+  side, the old cell becomes empty, and an occupied destination prevents overlap without destroying
+  the unrelated block.
+- [ ] Break the admission valve while aiming only at its controller tower. Confirm one valve item
+  drops, both occupied cells disappear, and no invisible controller block remains.
 - [ ] Connect the inlet plus one, two, and three additional horizontal pipes; confirm no old straight
   or elbow center mesh intersects, flickers through, or duplicates the authored pressure-body base.
 - [ ] Assemble/disassemble a Sable simulated contraption in both modes and confirm controls, channel, topology, and throttle recover.

@@ -16,6 +16,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -74,8 +75,17 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
             // Full travel envelope of the moving manual lever.
             new Box(5.125, 20.125, 10.125, 10.875, 25.875, 13),
     };
-    private static final Map<Direction, VoxelShape> BODY_SHAPES = buildBodyShapes(false);
-    private static final Map<Direction, VoxelShape> INVERTED_BODY_SHAPES = buildBodyShapes(true);
+    private static final Map<Direction, VoxelShape> BODY_SHAPES = buildBodyShapes(false, ShapeSection.FULL);
+    private static final Map<Direction, VoxelShape> INVERTED_BODY_SHAPES =
+            buildBodyShapes(true, ShapeSection.FULL);
+    private static final Map<Direction, VoxelShape> BASE_COLLISION_SHAPES =
+            buildBodyShapes(false, ShapeSection.BASE);
+    private static final Map<Direction, VoxelShape> INVERTED_BASE_COLLISION_SHAPES =
+            buildBodyShapes(true, ShapeSection.BASE);
+    private static final Map<Direction, VoxelShape> CONTROLLER_SHAPES =
+            buildBodyShapes(false, ShapeSection.CONTROLLER);
+    private static final Map<Direction, VoxelShape> INVERTED_CONTROLLER_SHAPES =
+            buildBodyShapes(true, ShapeSection.CONTROLLER);
     private static final Map<Direction, VoxelShape> CONNECTION_SHAPES = buildConnectionShapes();
     private static final Map<Direction, VoxelShape> RIM_SHAPES = buildRimShapes();
 
@@ -101,7 +111,9 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
         Direction facing = context.getHorizontalDirection().getOpposite();
         state = state.setValue(FACING, facing);
         state = enforceHorizontalConnections(state, facing);
-        return resolveTopology(context.getLevel(), context.getClickedPos(), state);
+        state = resolveTopology(context.getLevel(), context.getClickedPos(), state);
+        return SteamAdmissionValveController.canOccupy(
+                context.getLevel(), context.getClickedPos(), state, context) ? state : null;
     }
 
     @Override
@@ -115,7 +127,38 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
     ) {
         BlockState updated = super.updateShape(state, direction, neighborState, level, pos, neighborPos);
         updated = enforceHorizontalConnections(updated, state.getValue(FACING));
-        return resolveTopology(level, pos, updated);
+        BlockState resolved = resolveTopology(level, pos, updated);
+        if (resolved.getValue(INVERTED) != state.getValue(INVERTED)
+                && !SteamAdmissionValveController.canOccupy(level, pos, resolved)) {
+            resolved = resolved.setValue(INVERTED, state.getValue(INVERTED));
+        }
+        return resolved;
+    }
+
+    @Override
+    public void setPlacedBy(
+            Level level,
+            BlockPos pos,
+            BlockState state,
+            LivingEntity placer,
+            ItemStack stack
+    ) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        SteamAdmissionValveController.sync(level, pos, state);
+    }
+
+    @Override
+    public void onRemove(
+            BlockState state,
+            Level level,
+            BlockPos pos,
+            BlockState newState,
+            boolean movedByPiston
+    ) {
+        if (!state.is(newState.getBlock())) {
+            SteamAdmissionValveController.removeOwned(level, pos);
+        }
+        super.onRemove(state, level, pos, newState, movedByPiston);
     }
 
     @Override
@@ -238,7 +281,7 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
             BlockPos pos,
             CollisionContext context
     ) {
-        return getValveShape(state, level, pos);
+        return getValveCollisionShape(state, level, pos);
     }
 
     @Override
@@ -334,13 +377,45 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
         return shape.optimize();
     }
 
-    private static Map<Direction, VoxelShape> buildBodyShapes(boolean inverted) {
+    private static VoxelShape getValveCollisionShape(BlockState state, BlockGetter level, BlockPos pos) {
+        Map<Direction, VoxelShape> bodyShapes = state.getValue(INVERTED)
+                ? INVERTED_BASE_COLLISION_SHAPES
+                : BASE_COLLISION_SHAPES;
+        VoxelShape shape = bodyShapes.get(state.getValue(FACING));
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            if (!state.getValue(PROPERTY_BY_DIRECTION.get(direction))) {
+                continue;
+            }
+
+            shape = Shapes.or(shape, CONNECTION_SHAPES.get(direction));
+            if (level instanceof BlockAndTintGetter tintGetter
+                    && FluidPipeBlock.shouldDrawRim(tintGetter, pos, state, direction)) {
+                shape = Shapes.or(shape, RIM_SHAPES.get(direction));
+            }
+        }
+        return shape.optimize();
+    }
+
+    static VoxelShape getControllerShape(BlockState baseState) {
+        Map<Direction, VoxelShape> shapes = baseState.getValue(INVERTED)
+                ? INVERTED_CONTROLLER_SHAPES
+                : CONTROLLER_SHAPES;
+        return shapes.get(baseState.getValue(FACING));
+    }
+
+    private static Map<Direction, VoxelShape> buildBodyShapes(
+            boolean inverted,
+            ShapeSection section
+    ) {
         Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             VoxelShape shape = Shapes.empty();
             for (Box box : BODY_BOXES) {
                 Box oriented = inverted ? invertAroundLocalInletAxis(box) : box;
-                shape = Shapes.or(shape, rotate(oriented, direction).shape());
+                Box sectionBox = section.clip(oriented, inverted);
+                if (sectionBox != null) {
+                    shape = Shapes.or(shape, rotate(sectionBox, direction).shape());
+                }
             }
             shapes.put(direction, shape.optimize());
         }
@@ -417,6 +492,47 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
     private record Box(double minX, double minY, double minZ, double maxX, double maxY, double maxZ) {
         private VoxelShape shape() {
             return Block.box(minX, minY, minZ, maxX, maxY, maxZ);
+        }
+    }
+
+    private enum ShapeSection {
+        FULL {
+            @Override
+            Box clip(Box box, boolean inverted) {
+                return box;
+            }
+        },
+        BASE {
+            @Override
+            Box clip(Box box, boolean inverted) {
+                return clipY(box, 0.0D, 16.0D, 0.0D);
+            }
+        },
+        CONTROLLER {
+            @Override
+            Box clip(Box box, boolean inverted) {
+                return inverted
+                        ? clipY(box, -16.0D, 0.0D, 16.0D)
+                        : clipY(box, 16.0D, 32.0D, -16.0D);
+            }
+        };
+
+        abstract Box clip(Box box, boolean inverted);
+
+        private static Box clipY(Box box, double cellMinY, double cellMaxY, double offsetY) {
+            double minY = Math.max(box.minY, cellMinY);
+            double maxY = Math.min(box.maxY, cellMaxY);
+            if (minY >= maxY) {
+                return null;
+            }
+            return new Box(
+                    box.minX,
+                    minY + offsetY,
+                    box.minZ,
+                    box.maxX,
+                    maxY + offsetY,
+                    box.maxZ
+            );
         }
     }
 }
