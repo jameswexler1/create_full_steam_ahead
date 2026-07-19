@@ -914,6 +914,9 @@ working shared-main throttle and adding a local/telegraph-operated stepped lever
 - [x] Treat the valve as a dynamic-shape block and publish inlet-derived inversion with full block
   updates so selection, collision, neighboring pipes, and rendering use the same upright/inverted
   state in every horizontal facing.
+- [x] Extend client block picking into the adjacent cell occupied by the tall controller. Tower hits
+  resolve to the real valve base for outlines, goggles/overlays, wrenching, frequency controls, and
+  manual lever steps without overriding a nearer vanilla block or entity.
 - [ ] Re-test topology changes, all four facings, manual steps, telegraph synchronization, receiver
   strengths `0/5/10/15`, upright/inverted rings, save/reload, and simulated-contraption
   assembly/disassembly.
