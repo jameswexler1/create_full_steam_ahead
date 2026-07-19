@@ -18,6 +18,12 @@ Dual-mode remodel automated verification completed on 2026-07-19. The valve stil
 block-entity-backed mode migration, model parts, collision, tests, and the distributable build pass;
 gameplay and simulated-contraption behavior still require the checks below.
 
+The 2026-07-19 junction regression was traced from `demonstration.mp4`: Create automatically adds its
+full Fluid Pipe casing whenever three perpendicular ports are open. For this custom valve only, that
+casing is now suppressed while `PipeAttachmentModel` still supplies endpoint rims and attachment
+rendering. The valve also uses dynamic collision/selection shapes and full state updates when an
+adjacent inverted Steam Inlet changes its orientation.
+
 ## Manual In-World Checks
 
 ### Dual-Mode Remodel

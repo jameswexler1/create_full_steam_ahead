@@ -908,6 +908,12 @@ working shared-main throttle and adding a local/telegraph-operated stepped lever
 - [x] Let the authored valve body exclusively own the center/base geometry. Render only short Create
   connection arms on other live horizontal faces so no complete Fluid Pipe center model intersects
   the new pressure body.
+- [x] Suppress Create's automatic full Fluid Pipe junction casing for this custom body. An inlet plus
+  two or three pipe branches keeps Create's attachment rims without baking a second casing through
+  the authored pressure body.
+- [x] Treat the valve as a dynamic-shape block and publish inlet-derived inversion with full block
+  updates so selection, collision, neighboring pipes, and rendering use the same upright/inverted
+  state in every horizontal facing.
 - [ ] Re-test topology changes, all four facings, manual steps, telegraph synchronization, receiver
   strengths `0/5/10/15`, upright/inverted rings, save/reload, and simulated-contraption
   assembly/disassembly.
@@ -933,6 +939,11 @@ working shared-main throttle and adding a local/telegraph-operated stepped lever
 - [x] Coalesce all changed FSA generators on each connected network into one end-of-tick owner update after every engine has published its final target. Refresh follower SU capacity without issuing additional RPM passes, and stop FSA client phase correction at Rotation Speed Controllers so their independently commanded output shafts retain Create's own stable phase.
 - [x] Prevent self-fed engine RPM ramps from repeatedly resetting Create pump fluid networks: fixed-speed descendants are not sent false stop/start callbacks, actual downstream speed changes remain observable, and known non-steam boiler input faces retain that role across brief Create pipe-flow resets. Compare final post-FSA boiler device counts so stable boilers no longer report a false attachment change every tick.
 - [x] Hold the last linkage pose across Create's brief zero-speed propagation frame so piston, connecting rod, and crank visuals do not flash to their resting pose during a live RPM ramp.
+- [x] Reconcile each claimed powered shaft from its piston head after every successful validation,
+  including unchanged zero-output reloads, and perform one delayed post-load reconciliation against
+  Create's independently saved kinetic-network speed. A stale target, capacity, applied command, or
+  inherited network snapshot can no longer keep an otherwise steamless shaft powered; externally
+  driven engines still rotate passively.
 - [x] User validation (2026-07-14): normal-gameplay RPM transitions preserve piston, linkage, and shaft phase without restarting, flickering, or jumping.
 - [ ] Manual test direct and pipe-fed engines at low, quarter, half, three-quarter, and full output; confirm RPM changes progressively while SU remains proportional.
 - [ ] Manual test an admission valve at signals `0`, `5`, `10`, and `15`; expect approximately `0`, `21.3`, `42.7`, and `64 RPM` at rated pressure.

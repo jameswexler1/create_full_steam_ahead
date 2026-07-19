@@ -198,8 +198,11 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
         SteamOutput output = calculateBestSteamOutput(false);
         boolean outputChanged = applySteamOutput(output);
+        // The piston is authoritative. Reconcile the shaft even when both saved piston values are
+        // already zero, because an older/stale shaft NBT snapshot may still claim generation after
+        // a reload. FullSteamPoweredShaftBlockEntity.update() is a no-op when already synchronized.
+        updateShaftOutput();
         if (changed || outputChanged) {
-            updateShaftOutput();
             notifyUpdate();
         }
     }

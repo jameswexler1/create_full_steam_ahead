@@ -69,7 +69,11 @@ public final class ModBlocks {
     public static final DeferredBlock<SteamInletBlock> STEAM_INLET =
             registerBlock("steam_inlet", SteamInletBlock::new, copperProperties().noOcclusion());
     public static final DeferredBlock<SteamAdmissionValveBlock> STEAM_ADMISSION_VALVE =
-            registerBlock("steam_admission_valve", SteamAdmissionValveBlock::new, copperProperties().noOcclusion());
+            registerBlock(
+                    "steam_admission_valve",
+                    SteamAdmissionValveBlock::new,
+                    copperProperties().noOcclusion().dynamicShape()
+            );
     public static final DeferredBlock<SteamPressureGaugeBlock> STEAM_PRESSURE_GAUGE =
             registerBlock(
                     "steam_pressure_gauge",

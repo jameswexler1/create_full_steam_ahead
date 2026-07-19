@@ -47,6 +47,11 @@ Verified on 2026-07-17. Unit tests and the full build pass after moving phase ow
 - [x] Unit-test strongest-source selection, temporary owner dropout, geared local-to-owner speed conversion, all-stopped fallback, invalid ratios, and direction conflicts.
 - [x] Unit-test ordinary source resolution, overlapping same-coordinate synthetic sources, identity/subtype tie-breaking, ambiguity, and invalid conveyed speeds.
 - [x] Copied-world runtime regression on 2026-07-17: the affected engine -> Analog Transmission -> Rotation Speed Controller network retimed all 131 loaded members in place from `1 RPM` through `61.67 RPM`; every active fractional-RPM update succeeded without a fallback detach/attach rebuild.
+- [x] Reconcile a valid engine's powered shaft on every structure validation even when the piston
+  output fields did not change. This repairs reload states where the authoritative piston is already
+  at zero but the shaft retained an older target, capacity, applied command, or independently saved
+  Create kinetic-network speed. A delayed one-time post-load source update clears the latter without
+  suppressing legitimate passive rotation from another loaded source.
 
 ## Expected Mapping
 
@@ -70,6 +75,10 @@ With the default `maxRpm = 64`, quarter, half, three-quarter, and full output ar
 - [ ] Three equal-output engines on one straight shaft remain synchronized as A/B/A: the first and third reach maximum stroke together while the middle reaches minimum stroke, including during pressure-driven RPM ramps.
 - [ ] Differently throttled generators on one shaft do not break, oscillate, or repeatedly rebuild the kinetic network; record the observed Create behavior.
 - [ ] A steamless engine connected to a powered shaft continues animating passively at the shaft's actual speed.
+- [ ] Fully isolate a single engine from steam, wait for displayed RPM and SU to reach zero, and
+  confirm its shaft network stops and can no longer drive a load. Save/reload once while steamless
+  and repeat; then connect a separately powered engine and confirm the steamless linkage rotates only
+  passively without contributing SU.
 - [ ] Slowly ramp pressure from zero to rated and back down; piston, connecting rod, crank, powered shaft, and attached shafts never restart, reverse, or flash to rest.
 - [ ] Cause a sharp pressure change with a valve or leak; phase remains continuous even while the displayed RPM changes quickly.
 - [ ] Repeat both ramp tests with Flywheel enabled and with its backend disabled to exercise fallback rendering.

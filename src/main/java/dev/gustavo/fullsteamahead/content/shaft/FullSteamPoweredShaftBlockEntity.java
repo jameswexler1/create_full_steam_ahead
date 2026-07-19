@@ -71,6 +71,14 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
             // network. Re-assert fresh non-zero output until Create has picked it up.
             if (getGeneratedSpeed() != 0 && getSpeed() == 0) {
                 propagateGeneratedRotation(gameTime);
+            } else if (initialTicks == 0
+                    && getGeneratedSpeed() == 0.0F
+                    && getTheoreticalSpeed() != 0.0F) {
+                // Saved Create network speed and FSA generator NBT are separate snapshots. Re-run
+                // Create's source update once after load so a zero-output source cannot retain an
+                // old free-running network. A legitimately driven shaft has a source and remains
+                // passive through GeneratingKineticBlockEntity.applyNewSpeed().
+                propagateGeneratedRotation(gameTime);
             }
         }
 
@@ -93,7 +101,12 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
         boolean targetSpeedChanged = !KineticSpeedUpdatePolicy.sameSpeed(targetSpeed, speed);
         boolean capacityChanged = ownerChanged
                 || meaningfullyChanged(lastNotifiedCapacitySu, capacitySu, MIN_CAPACITY_UPDATE_SU);
-        if (!ownerChanged && !targetSpeedChanged && !capacityChanged) {
+        boolean appliedSpeedRequiresReconciliation =
+                KineticSpeedUpdatePolicy.requiresImmediateUpdate(generatedSpeed, speed);
+        if (!ownerChanged
+                && !targetSpeedChanged
+                && !capacityChanged
+                && !appliedSpeedRequiresReconciliation) {
             return;
         }
 
@@ -109,7 +122,7 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
         }
 
         boolean immediateSpeedUpdate = ownerChanged
-                || KineticSpeedUpdatePolicy.requiresImmediateUpdate(generatedSpeed, targetSpeed);
+                || appliedSpeedRequiresReconciliation;
         boolean propagated = immediateSpeedUpdate && applyTargetSpeed(gameTime);
         if (!propagated && capacityChanged) {
             // Keep SU responsive while the applied RPM is coalesced. Updating network capacity does
