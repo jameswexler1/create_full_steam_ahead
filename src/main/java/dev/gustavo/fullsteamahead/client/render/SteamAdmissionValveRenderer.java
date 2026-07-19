@@ -38,7 +38,12 @@ public class SteamAdmissionValveRenderer extends SmartBlockEntityRenderer<SteamA
         BlockState state = valve.getBlockState();
         int controllerLight = valve.getLevel() == null
                 ? light
-                : LevelRenderer.getLightColor(valve.getLevel(), valve.getBlockPos().above());
+                : LevelRenderer.getLightColor(
+                        valve.getLevel(),
+                        state.getValue(SteamAdmissionValveBlock.INVERTED)
+                                ? valve.getBlockPos().below()
+                                : valve.getBlockPos().above()
+                );
         VertexConsumer consumer = bufferSource.getBuffer(RenderType.cutoutMipped());
 
         if (valve.getControlMode() == SteamAdmissionControlMode.MANUAL) {
@@ -55,7 +60,10 @@ public class SteamAdmissionValveRenderer extends SmartBlockEntityRenderer<SteamA
 
     @Override
     public AABB getRenderBoundingBox(SteamAdmissionValveBlockEntity valve) {
-        return new AABB(valve.getBlockPos()).inflate(1.0D, 0.0D, 1.0D).expandTowards(0.0D, 2.0D, 0.0D);
+        AABB base = new AABB(valve.getBlockPos()).inflate(1.0D, 0.0D, 1.0D);
+        return valve.getBlockState().getValue(SteamAdmissionValveBlock.INVERTED)
+                ? base.expandTowards(0.0D, -2.0D, 0.0D)
+                : base.expandTowards(0.0D, 2.0D, 0.0D);
     }
 
     private static void render(
@@ -76,6 +84,11 @@ public class SteamAdmissionValveRenderer extends SmartBlockEntityRenderer<SteamA
     }
 
     private static void orient(SuperByteBuffer buffer, BlockState state) {
+        if (state.getValue(SteamAdmissionValveBlock.INVERTED)) {
+            buffer.center();
+            buffer.rotateZ((float) Math.PI);
+            buffer.uncenter();
+        }
         Direction facing = state.getValue(SteamAdmissionValveBlock.FACING);
         float angle = switch (facing) {
             case EAST -> (float) (Math.PI * 1.5D);

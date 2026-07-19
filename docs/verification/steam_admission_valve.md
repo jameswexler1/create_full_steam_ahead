@@ -8,6 +8,10 @@
 - [x] `env GRADLE_USER_HOME=/tmp/gradle-home ./gradlew build`
 - [x] `node tools/admission_valve/export_manual_lever_v1_runtime.js`
 - [x] Static face-plane audit reports zero coplanar overlaps in both the item model and a four-port runtime composition.
+- [x] Blockstate audit reports eight upright/inverted body variants, twelve connection-only pipe arms,
+  and zero complete Create Fluid Pipe center models.
+- [x] `runClient` completed FSA model baking and reached the main menu without admission-valve model
+  or blockstate errors; the smoke-test client was then intentionally stopped.
 
 Dual-mode remodel automated verification completed on 2026-07-19. The valve still exposes one final
 `0..15` admission value to the unchanged steam allocator. Manual/telegraph state, receiver state,
@@ -18,19 +22,24 @@ gameplay and simulated-contraption behavior still require the checks below.
 
 ### Dual-Mode Remodel
 
-- [ ] A newly placed valve shows the tall controller, manual track, and lever at the fully open top position.
-- [ ] Right-click steps the manual lever upward; sneak-right-click steps it downward; both stop at `0` and `15`.
-- [ ] Admission, engine RPM, and engine SU follow every manual step without affecting the through-main.
-- [ ] A normal wrench click swaps the track/lever for two Redstone Link pads and back without rotating the valve or changing its pipe connections.
+- [x] A newly placed valve shows the tall controller, manual track, and lever at the fully open top position.
+- [x] Right-click steps the manual lever upward; sneak-right-click steps it downward; both stop at `0` and `15`.
+- [x] Admission, engine RPM, and engine SU follow every manual step without affecting the through-main.
+- [x] A normal wrench click swaps the track/lever for two Redstone Link pads and back without rotating the valve or changing its pipe connections.
 - [ ] Frequency item miniatures render centered on the two receiver pads in all four valve facings and cannot be selected in manual mode.
 - [ ] In receiver mode, empty frequencies remain a full-open bypass and signals `0`, `5`, `10`, and `15` produce the expected admission.
-- [ ] Use an untuned Engine Order Telegraph item on an unlinked manual valve, then place the tuned telegraph; both adopt one channel and matching position.
-- [ ] Moving the telegraph moves the built-in lever and engine admission; moving the built-in lever moves and rings the telegraph.
+- [x] Use an untuned Engine Order Telegraph item on an unlinked manual valve, then place the tuned telegraph; both adopt one channel and matching position.
+- [x] Moving the telegraph moves the built-in lever and engine admission; moving the built-in lever moves and rings the telegraph.
 - [ ] A second loaded telegraph or valve on the channel synchronizes without duplicate feedback; an unloaded chunk is not force-loaded.
 - [ ] Sneak-use a telegraph item on the valve to clear the valve channel without clearing the item.
 - [ ] Save/reload in both modes and confirm mode, manual step, telegraph channel, frequencies, and receiver signal persist.
 - [ ] Existing pre-remodel valves load in Redstone Link mode; newly broken/replaced valves start manual and fully open.
 - [ ] The model, moving lever, receiver pads, item miniatures, and extended hitbox align in north, south, east, and west facings.
+- [ ] Attach valves to upright and inverted cylinder rings; confirm the entire body, control mode
+  partials, frequency items, lighting, and hitbox stay together and the controller points away from
+  the ring in both orientations.
+- [ ] Connect the inlet plus one, two, and three additional horizontal pipes; confirm no old straight
+  or elbow center mesh intersects, flickers through, or duplicates the authored pressure-body base.
 - [ ] Assemble/disassemble a Sable simulated contraption in both modes and confirm controls, channel, topology, and throttle recover.
 - [ ] Repaint the provisional admission-valve texture after functional validation without changing the UV islands or model groups.
 

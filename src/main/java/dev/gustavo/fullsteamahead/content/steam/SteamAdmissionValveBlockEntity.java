@@ -24,6 +24,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -84,6 +85,17 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity
             return;
         }
         if (level instanceof ServerLevel serverLevel) {
+            if (level.getGameTime() % 5L == 0L) {
+                BlockState currentState = getBlockState();
+                BlockState resolvedState = SteamAdmissionValveBlock.resolveTopology(
+                        level,
+                        worldPosition,
+                        currentState
+                );
+                if (resolvedState != currentState) {
+                    level.setBlock(worldPosition, resolvedState, Block.UPDATE_CLIENTS);
+                }
+            }
             int admission = getAdmissionStrength();
             if (lastAudibleAdmission >= 0 && lastAudibleAdmission != admission) {
                 float pitch = 0.85F + admission / 15.0F * 0.3F;
@@ -383,14 +395,20 @@ public class SteamAdmissionValveBlockEntity extends FluidPipeBlockEntity
             }
             double x = isFirst() ? 5.5D : 10.5D;
             Vec3 offset = new Vec3(x / 16.0D, 24.0D / 16.0D, 10.51D / 16.0D);
+            if (state.getValue(SteamAdmissionValveBlock.INVERTED)) {
+                offset = new Vec3(1.0D - offset.x, 1.0D - offset.y, offset.z);
+            }
             return rotateForFacing(offset, state.getValue(SteamAdmissionValveBlock.FACING));
         }
 
         @Override
         public void rotate(LevelAccessor level, BlockPos pos, BlockState state, PoseStack poseStack) {
-            TransformStack.of(poseStack)
-                    .rotateYDegrees(AngleHelper.horizontalAngle(
-                            state.getValue(SteamAdmissionValveBlock.FACING)));
+            TransformStack transform = TransformStack.of(poseStack);
+            if (state.getValue(SteamAdmissionValveBlock.INVERTED)) {
+                transform.rotateZDegrees(180.0F);
+            }
+            transform.rotateYDegrees(AngleHelper.horizontalAngle(
+                    state.getValue(SteamAdmissionValveBlock.FACING)));
         }
 
         @Override

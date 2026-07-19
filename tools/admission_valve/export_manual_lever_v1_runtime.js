@@ -99,12 +99,34 @@ function receiverPad(name, fromX, toX, faceUv) {
     };
 }
 
-function bodyBlockstateEntry(facing, y) {
+const HORIZONTAL_DIRECTIONS = [
+    {name: "north", y: 0},
+    {name: "east", y: 90},
+    {name: "south", y: 180},
+    {name: "west", y: 270}
+];
+
+function bodyBlockstateEntry(facing, y, inverted) {
     const apply = {model: "full_steam_ahead:block/steam_admission_valve/body"};
-    if (y !== 0) {
-        apply.y = y;
+    if (inverted) {
+        apply.x = 180;
     }
-    return {when: {facing}, apply};
+    const effectiveY = (y + (inverted ? 180 : 0)) % 360;
+    if (effectiveY !== 0) {
+        apply.y = effectiveY;
+    }
+    return {when: {facing, inverted: String(inverted)}, apply};
+}
+
+function pipeArmEntries() {
+    return HORIZONTAL_DIRECTIONS.flatMap(({name: facing}) =>
+        HORIZONTAL_DIRECTIONS
+            .filter(({name: direction}) => direction !== facing)
+            .map(({name: direction}) => ({
+                when: {facing, [direction]: "true"},
+                apply: {model: `create:block/fluid_pipe/connection/${direction}`}
+            }))
+    );
 }
 
 const source = JSON.parse(fs.readFileSync(SOURCE_MODEL, "utf8"));
@@ -171,18 +193,13 @@ writeJson(
     model([...staticElements, ...mechanismElements, ...leverElements], itemDisplay)
 );
 
-const previousBlockstate = JSON.parse(fs.readFileSync(BLOCKSTATE_TARGET, "utf8"));
-const nativePipeParts = previousBlockstate.multipart.filter(part => {
-    const modelName = part.apply?.model;
-    return !modelName?.startsWith("full_steam_ahead:block/steam_admission_valve/");
-});
 writeJson(BLOCKSTATE_TARGET, {
     multipart: [
-        bodyBlockstateEntry("north", 0),
-        bodyBlockstateEntry("east", 90),
-        bodyBlockstateEntry("south", 180),
-        bodyBlockstateEntry("west", 270),
-        ...nativePipeParts
+        ...HORIZONTAL_DIRECTIONS.flatMap(({name, y}) => [
+            bodyBlockstateEntry(name, y, false),
+            bodyBlockstateEntry(name, y, true)
+        ]),
+        ...pipeArmEntries()
     ]
 });
 
@@ -192,4 +209,4 @@ fs.copyFileSync(SOURCE_TEXTURE, TEXTURE_TARGET);
 console.log(`Exported ${staticElements.length} static cuboids`);
 console.log(`Exported ${mechanismElements.length} manual mechanism cuboids`);
 console.log(`Exported ${leverElements.length} animated lever cuboids`);
-console.log("Preserved native Create pipe multipart entries");
+console.log("Exported connection-only Create pipe arms without center-pipe overlap");

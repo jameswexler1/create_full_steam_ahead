@@ -32,8 +32,8 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -46,8 +46,7 @@ import java.util.UUID;
 public class SteamAdmissionValveBlock extends FluidPipeBlock {
     public static final MapCodec<SteamAdmissionValveBlock> CODEC = simpleCodec(SteamAdmissionValveBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
-    public static final EnumProperty<SteamAdmissionValveMode> MODE =
-            EnumProperty.create("mode", SteamAdmissionValveMode.class);
+    public static final BooleanProperty INVERTED = BooleanProperty.create("inverted");
     private static final Box[] BODY_BOXES = new Box[] {
             new Box(1, 3, 3, 15, 5, 13),
             new Box(1, 5, 3, 15, 11, 13),
@@ -75,7 +74,8 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
             // Full travel envelope of the moving manual lever.
             new Box(5.125, 20.125, 10.125, 10.875, 25.875, 13),
     };
-    private static final Map<Direction, VoxelShape> BODY_SHAPES = buildBodyShapes();
+    private static final Map<Direction, VoxelShape> BODY_SHAPES = buildBodyShapes(false);
+    private static final Map<Direction, VoxelShape> INVERTED_BODY_SHAPES = buildBodyShapes(true);
     private static final Map<Direction, VoxelShape> CONNECTION_SHAPES = buildConnectionShapes();
     private static final Map<Direction, VoxelShape> RIM_SHAPES = buildRimShapes();
 
@@ -83,7 +83,7 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
         super(properties);
         registerDefaultState(defaultBlockState()
                 .setValue(FACING, Direction.NORTH)
-                .setValue(MODE, SteamAdmissionValveMode.UNLINKED));
+                .setValue(INVERTED, false));
     }
 
     @Override
@@ -218,11 +218,7 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
 
     @Override
     public BlockState mirror(BlockState state, Mirror mirror) {
-        BlockState mirrored = rotate(state, mirror.getRotation(state.getValue(FACING)));
-        if (mirror != Mirror.NONE) {
-            mirrored = mirrored.setValue(MODE, mirrored.getValue(MODE).mirrored());
-        }
-        return mirrored;
+        return rotate(state, mirror.getRotation(state.getValue(FACING)));
     }
 
     @Override
@@ -253,7 +249,7 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
-        builder.add(FACING, MODE);
+        builder.add(FACING, INVERTED);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -267,42 +263,25 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
         return ModBlockEntities.STEAM_ADMISSION_VALVE.get();
     }
 
-    private static BlockState resolveTopology(BlockGetter level, BlockPos pos, BlockState state) {
+    static BlockState resolveTopology(BlockGetter level, BlockPos pos, BlockState state) {
         Direction inletDirection = null;
+        boolean inletInverted = false;
         int inletCount = 0;
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             BlockState inletState = level.getBlockState(pos.relative(direction));
             if (inletState.is(ModBlocks.STEAM_INLET.get())
                     && SteamInletBlock.getPortFacing(inletState) == direction.getOpposite()) {
                 inletDirection = direction;
+                inletInverted = inletState.getValue(SteamInletBlock.FACING) == Direction.DOWN;
                 inletCount++;
             }
         }
 
         if (inletCount != 1) {
-            return alignFacingToPipeAxis(state).setValue(MODE, SteamAdmissionValveMode.UNLINKED);
+            return alignFacingToPipeAxis(state).setValue(INVERTED, false);
         }
 
-        Direction facing = inletDirection;
-        Direction back = facing.getOpposite();
-        Direction clockwise = facing.getClockWise();
-        Direction counterClockwise = facing.getCounterClockWise();
-        boolean hasBack = hasPipe(level, pos, back);
-        boolean hasClockwise = hasPipe(level, pos, clockwise);
-        boolean hasCounterClockwise = hasPipe(level, pos, counterClockwise);
-
-        SteamAdmissionValveMode mode = SteamAdmissionValveMode.UNLINKED;
-        if (hasClockwise && hasCounterClockwise && !hasBack) {
-            mode = SteamAdmissionValveMode.THROUGH_BRANCH;
-        } else if (hasBack && !hasClockwise && !hasCounterClockwise) {
-            mode = SteamAdmissionValveMode.TERMINAL_STRAIGHT;
-        } else if (!hasBack && hasClockwise && !hasCounterClockwise) {
-            mode = SteamAdmissionValveMode.TERMINAL_CLOCKWISE;
-        } else if (!hasBack && !hasClockwise && hasCounterClockwise) {
-            mode = SteamAdmissionValveMode.TERMINAL_COUNTERCLOCKWISE;
-        }
-
-        return state.setValue(FACING, facing).setValue(MODE, mode);
+        return state.setValue(FACING, inletDirection).setValue(INVERTED, inletInverted);
     }
 
     private static BlockState alignFacingToPipeAxis(BlockState state) {
@@ -336,12 +315,11 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
         return state.setValue(FACING, alignedFacing);
     }
 
-    private static boolean hasPipe(BlockGetter level, BlockPos pos, Direction direction) {
-        return FluidPipeBlock.isPipe(level.getBlockState(pos.relative(direction)));
-    }
-
     private static VoxelShape getValveShape(BlockState state, BlockGetter level, BlockPos pos) {
-        VoxelShape shape = BODY_SHAPES.get(state.getValue(FACING));
+        Map<Direction, VoxelShape> bodyShapes = state.getValue(INVERTED)
+                ? INVERTED_BODY_SHAPES
+                : BODY_SHAPES;
+        VoxelShape shape = bodyShapes.get(state.getValue(FACING));
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             if (!state.getValue(PROPERTY_BY_DIRECTION.get(direction))) {
                 continue;
@@ -356,16 +334,28 @@ public class SteamAdmissionValveBlock extends FluidPipeBlock {
         return shape.optimize();
     }
 
-    private static Map<Direction, VoxelShape> buildBodyShapes() {
+    private static Map<Direction, VoxelShape> buildBodyShapes(boolean inverted) {
         Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             VoxelShape shape = Shapes.empty();
             for (Box box : BODY_BOXES) {
-                shape = Shapes.or(shape, rotate(box, direction).shape());
+                Box oriented = inverted ? invertAroundLocalInletAxis(box) : box;
+                shape = Shapes.or(shape, rotate(oriented, direction).shape());
             }
             shapes.put(direction, shape.optimize());
         }
         return shapes;
+    }
+
+    private static Box invertAroundLocalInletAxis(Box box) {
+        return new Box(
+                16 - box.maxX,
+                16 - box.maxY,
+                box.minZ,
+                16 - box.minX,
+                16 - box.minY,
+                box.maxZ
+        );
     }
 
     private static Map<Direction, VoxelShape> buildConnectionShapes() {

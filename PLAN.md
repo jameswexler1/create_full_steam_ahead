@@ -902,8 +902,15 @@ working shared-main throttle and adding a local/telegraph-operated stepped lever
   and empty-frequency full-open bypass behavior.
 - [x] Keep `SteamNetworkManager` unchanged: both control modes must feed the existing
   `getAdmissionStrength()` contract and throttle only the uniquely controlled active steam inlet.
+- [x] Replace the obsolete visual-only topology enum with an inlet-derived `inverted` state. Follow
+  the adjacent cylinder ring's `UP`/`DOWN` orientation and rotate the body, animated controls,
+  frequency slots, lighting sample, render bounds, and collision around the local inlet axis.
+- [x] Let the authored valve body exclusively own the center/base geometry. Render only short Create
+  connection arms on other live horizontal faces so no complete Fluid Pipe center model intersects
+  the new pressure body.
 - [ ] Re-test topology changes, all four facings, manual steps, telegraph synchronization, receiver
-  strengths `0/5/10/15`, save/reload, and simulated-contraption assembly/disassembly.
+  strengths `0/5/10/15`, upright/inverted rings, save/reload, and simulated-contraption
+  assembly/disassembly.
 - [ ] **Art reminder**: return to the admission-valve texture after functional validation and replace
   the provisional atlas with the final hand-polished Create-style texture without changing geometry,
   UV ownership, animation groups, or control behavior.

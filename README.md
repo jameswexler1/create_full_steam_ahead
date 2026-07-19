@@ -104,7 +104,10 @@ The valve must be directly beside exactly one active `steam_inlet`, with the inl
 valve. Its requested engine flow is the normal pressure-dependent request multiplied by the active
 control value divided by `15`. If the network cannot satisfy every consumer, the normal
 proportional allocator preserves requested throttle ratios. Delivered flow scales both SU and RPM
-continuously; other valve branches remain normal bidirectional steam paths.
+continuously; other valve branches remain normal bidirectional steam paths. The controller follows
+the linked cylinder ring orientation automatically: it extends upward on upright engines and below
+the pipe body on inverted engines. The authored pressure body owns the valve center while short
+Create pipe arms render only on its other connected horizontal faces.
 
 ## Display Link Readout
 

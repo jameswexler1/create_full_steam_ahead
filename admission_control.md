@@ -9,7 +9,9 @@ main pipe run feeding later cylinders.
 The implemented valve has a copper pressure body and a controller tower taller than one block. The
 authored north face connects to the engine inlet. Other horizontal faces accept Create Fluid Pipes
 according to the detected terminal or through-branch topology. Vertical pipe connections remain
-disabled.
+disabled. An adjacent assembled Steam Inlet also supplies the ring's vertical orientation: upright
+rings place the controller above the pressure body, while inverted rings rotate the complete valve
+around its local inlet axis and place the controller below it.
 
 ## Control Modes
 
@@ -69,7 +71,9 @@ No valid active steam inlet is attached, or the neighbouring layout is ambiguous
 
 More complex junctions remain ordinary Create pipework. The authored model uses local north as the
 fixed steam-inlet face; native Create pipe attachments provide every other live horizontal arm and
-rim. Vertical connections are always disabled.
+rim. Only Create's short directional connection meshes are baked on those faces; its complete
+straight/elbow center meshes must never render inside the authored pressure body. Vertical
+connections are always disabled.
 
 ## Telegraph Linking
 
@@ -109,8 +113,8 @@ the current UV islands and animation groups.
 
 The collision/selection shape follows every static source cuboid, the manual lever's complete travel
 envelope, and Create's live pipe arms/rims. It deliberately extends above the base block to cover the
-controller tower. Source cuboids must remain non-overlapping because mode and topology changes are
-live.
+controller tower, or below it when linked to an inverted cylinder. Source cuboids must remain
+non-overlapping because mode, topology, and cylinder orientation changes are live.
 
 ## In-Game Readability
 
