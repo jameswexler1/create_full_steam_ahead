@@ -981,6 +981,22 @@ working shared-main throttle and adding a local/telegraph-operated stepped lever
 
 ---
 
+### Optional Future Phase: Steam Nozzle Propulsion
+
+**Goal**: add a compact, pipe-fed `steam_nozzle` for direct manoeuvring thrust on Sable/Aeronautics simulated contraptions. The normal large-engine → Create shaft → Aeronautics propeller route remains the primary, more efficient propulsion path.
+
+- [ ] Add an FSA-owned directional `steam_nozzle` block with a Create-pipe steam input, local steam buffer, redstone enable/throttle, and goggle information for pressure, flow, and current thrust.
+- [ ] Treat `FACING` as the visible exhaust direction: particles and sound leave that face while force is applied in the opposite direction.
+- [ ] Register the nozzle as a pressure-limited fair steam consumer. Its delivered steam and thrust must fall gradually with the same network pressure and allocation rules used by pipe-fed engines and Aeronautics steam vents.
+- [ ] Keep the nozzle deliberately less steam-efficient than a steam engine driving Aeronautics propellers. Its intended uses are steering, reverse/braking, compact emergency thrust, and attitude control rather than replacing ship machinery.
+- [ ] Add server config for maximum steam draw, maximum thrust, minimum operating pressure, particle density, and optional exhaust hazard.
+- [ ] When Sable is absent, retain normal pipe input, vent visuals, and tooltip state but apply no world force.
+- [ ] Keep Sable optional: use a separate optional Sable mixin that makes the nozzle block entity a `BlockEntitySubLevelActor` only when Sable is present. Apply contraption force through Sable's `PROPULSION` force group at the nozzle position.
+- [ ] Add Create/Simulated movement checks and safe NBT handling so nozzle orientation, buffer, and enabled state survive contraption assembly and disassembly.
+- [ ] Verify a static-world nozzle vents without moving terrain; verify a Sable/Aeronautics contraption accelerates opposite its exhaust; verify low pressure, closed valves, leaks, and fair sharing reduce thrust predictably.
+
+---
+
 ### Optional Phase: Volumetric Steam Clouds
 
 **Goal**: upgrade current leak/exhaust particles from instant local effects into a sparse gas simulation for enclosed spaces.
