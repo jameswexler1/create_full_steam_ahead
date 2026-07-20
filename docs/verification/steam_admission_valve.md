@@ -19,6 +19,9 @@
 - [x] The authored v2 Blockbench source retains all 28 v1 elements, the same outliner hierarchy,
   128x128 UV space, animation groups, and pivots. Only its embedded PNG differs, and that atlas was
   copied to the runtime texture without regenerating any model or blockstate JSON.
+- [x] The 2026-07-20 v2 repaint was exported from the updated embedded 128x128 PNG. The runtime PNG
+  matches it byte-for-byte; baked geometry, blockstates, manual-control partials, and the separate
+  Create `redstone_bridge` receiver-panel partial remain unchanged.
 - [x] The reserved controller cell explicitly propagates skylight, blocks zero light, reports full
   shade brightness, and has an empty occlusion shape. The two-cell baked body disables ambient
   occlusion, while moving controls use the renderer-provided light supplied by the world or

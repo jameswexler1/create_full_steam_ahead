@@ -930,6 +930,8 @@ working shared-main throttle and adding a local/telegraph-operated stepped lever
 - [x] Replace the provisional atlas with the authored
   `attempt_at_admission_valve_manual_lever_v2` texture. The v1/v2 element hierarchy, UV ownership,
   animation groups, and pivots are unchanged, so this update does not alter geometry or behavior.
+- [x] Re-export the latest hand-painted v2 atlas revision without changing the baked geometry,
+  animated controls, or the separately rendered Create Redstone Link receiver panel.
 
 ---
 
