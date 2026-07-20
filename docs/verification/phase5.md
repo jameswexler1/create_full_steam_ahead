@@ -91,7 +91,7 @@ Manual runtime checklist:
 - [x] Fire the boiler with water supply and confirm the outlet buffer fills with `steam`.
 - [x] Connect Create fluid pipes from the outlet to a Create Fluid Tank and confirm steam arrives without a mechanical pump.
 - [x] Confirm a normal tank containing stored steam does not auto-pump steam without a valid boiler outlet.
-- [x] Confirm the existing direct compact crankshaft engine still follows the Phase 4 output table.
+- [x] Historical direct compact output was verified at the time; Phase 20 later removed that engine mode.
 
 User report after initial Phase 5 runtime test: all checklist items above work as expected; only pipe fluid visibility and open-pipe leaking needed follow-up.
 

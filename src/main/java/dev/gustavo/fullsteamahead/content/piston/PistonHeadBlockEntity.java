@@ -2,17 +2,13 @@ package dev.gustavo.fullsteamahead.content.piston;
 
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
-import com.simibubi.create.content.fluids.tank.BoilerData;
-import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
-import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
 import dev.gustavo.fullsteamahead.config.FullSteamConfig;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlockEntity;
-import dev.gustavo.fullsteamahead.compat.create.FullSteamBoilerIntegration;
 import dev.gustavo.fullsteamahead.content.steam.SteamCloudEffects;
 import dev.gustavo.fullsteamahead.content.steam.SteamInletBlockEntity;
 import dev.gustavo.fullsteamahead.content.steam.SteamPhysics;
@@ -41,25 +37,18 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private static final String ASSEMBLED_KEY = "Assembled";
     private static final String RING_ORIGIN_KEY = "RingOrigin";
     private static final String CYLINDER_ROOT_KEY = "CylinderRoot";
-    private static final String BOILER_POS_KEY = "BoilerPos";
     private static final String INLET_POS_KEY = "InletPos";
     private static final String SHAFT_POS_KEY = "ShaftPos";
     private static final String PISTON_BODY_COUNT_KEY = "PistonBodyCount";
     private static final String SHAFT_GAP_KEY = "ShaftGap";
-    private static final String ACTIVE_BURNERS_KEY = "ActiveBurners";
     private static final String HEAT_UNITS_KEY = "HeatUnits";
     private static final String GENERATED_SPEED_KEY = "GeneratedSpeed";
     private static final String GENERATED_CAPACITY_KEY = "GeneratedCapacity";
     private static final String PRESSURE_PN_KEY = "PressurePn";
-    private static final String EFFECTIVE_HEAT_KEY = "EffectiveHeat";
-    private static final String WATER_SUPPLY_KEY = "WaterSupply";
     private static final String SOURCE_MODE_KEY = "SourceMode";
     private static final String STEAM_CONSUMED_KEY = "SteamConsumed";
-    private static final String LEGACY_STEAM_POWER_KEY = "SteamPower";
     private static final String STATUS_KEY = "Status";
 
-    private static final int MAX_ACTIVE_BURNERS = 9;
-    private static final int MAX_HEAT_UNITS = 18;
     private static final int MAX_PIPED_HEAT_UNITS = 9;
     private static final int MIN_STEAM_SOUND_INTERVAL_TICKS = 5;
     private static final int MAX_PHASE_SHAFT_SCAN = 128;
@@ -72,18 +61,14 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private boolean assembled;
     private BlockPos ringOrigin;
     private BlockPos cylinderRootPos;
-    private BlockPos boilerPos;
     private BlockPos inletPos;
     private BlockPos shaftPos;
     private int pistonBodyCount = EngineValidator.MIN_PISTON_BODIES;
     private int shaftGap = EngineValidator.MIN_SHAFT_GAP;
-    private int activeBurners;
     private int heatUnits;
     private float generatedSpeed;
     private float generatedCapacitySu;
     private float pressurePn;
-    private double effectiveHeat;
-    private boolean hasWaterSupply;
     private SourceMode sourceMode = SourceMode.NONE;
     private int steamConsumedRate;
     private String status = "Incomplete structure";
@@ -105,6 +90,11 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     public void initialize() {
         super.initialize();
         if (level != null && !level.isClientSide()) {
+            // Legacy direct engines can load before every nearby block entity is ready. Stop their
+            // saved shaft output immediately; normal validation restores the shaft once loaded.
+            if (assembled && inletPos == null) {
+                updateShaftOutput();
+            }
             revalidateStructure();
         }
     }
@@ -172,7 +162,6 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         boolean changed = !assembled
                 || !Objects.equals(ringOrigin, result.ringOrigin())
                 || !Objects.equals(cylinderRootPos, result.cylinderRoot())
-                || !Objects.equals(boilerPos, result.boilerPos())
                 || !Objects.equals(inletPos, result.inletPos())
                 || !Objects.equals(shaftPos, result.shaft())
                 || pistonBodyCount != result.pistonBodyCount()
@@ -182,7 +171,6 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         assembled = true;
         ringOrigin = result.ringOrigin();
         cylinderRootPos = result.cylinderRoot();
-        boilerPos = result.boilerPos();
         inletPos = result.inletPos();
         shaftPos = result.shaft();
         pistonBodyCount = result.pistonBodyCount();
@@ -192,9 +180,6 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
         EngineLinkageContinuity.install(level, result);
         setPistonsAssembled(result);
-
-        FluidTankBlockEntity boiler = getBoiler();
-        refreshBoilerState(boiler);
 
         SteamOutput output = calculateBestSteamOutput(false);
         boolean outputChanged = applySteamOutput(output);
@@ -212,16 +197,12 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     private void markInvalid(String reason, BlockPos skippedPistonPos) {
-        FluidTankBlockEntity previousBoiler = getBoiler();
         boolean changed = assembled
-                || activeBurners != 0
                 || heatUnits != 0
                 || generatedSpeed != 0
                 || generatedCapacitySu != 0
-                || hasWaterSupply
                 || ringOrigin != null
                 || cylinderRootPos != null
-                || boilerPos != null
                 || inletPos != null
                 || shaftPos != null
                 || pistonBodyCount != EngineValidator.MIN_PISTON_BODIES
@@ -237,17 +218,14 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         assembled = false;
         ringOrigin = null;
         cylinderRootPos = null;
-        boilerPos = null;
         inletPos = null;
         shaftPos = null;
         pistonBodyCount = EngineValidator.MIN_PISTON_BODIES;
         shaftGap = EngineValidator.MIN_SHAFT_GAP;
-        activeBurners = 0;
         heatUnits = 0;
         generatedSpeed = 0;
         generatedCapacitySu = 0;
         pressurePn = 0;
-        hasWaterSupply = false;
         sourceMode = SourceMode.NONE;
         steamConsumedRate = 0;
         status = reason;
@@ -255,8 +233,6 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         previousSoundAngle = Float.NaN;
         steamSoundCooldown = 0;
         validationRetryTicks = 0;
-
-        refreshBoilerState(previousBoiler);
 
         if (changed) {
             notifyUpdate();
@@ -454,24 +430,12 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         CreateLang.text("Source: " + sourceMode.displayName())
                 .style(sourceMode == SourceMode.NONE ? ChatFormatting.YELLOW : ChatFormatting.AQUA)
                 .forGoggles(tooltip, 1);
-        if (sourceMode == SourceMode.PIPED_STEAM) {
-            CreateLang.text("Steam consumed: " + steamConsumedRate + " mB/t")
-                    .style(steamConsumedRate > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
-                    .forGoggles(tooltip, 1);
-            CreateLang.text("Steam units: " + heatUnits + "/" + MAX_PIPED_HEAT_UNITS)
-                    .style(heatUnits > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
-                    .forGoggles(tooltip, 1);
-        } else {
-            CreateLang.text("Active burners: " + activeBurners + "/" + MAX_ACTIVE_BURNERS)
-                    .style(activeBurners > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
-                    .forGoggles(tooltip, 1);
-            CreateLang.text("Heat units: " + heatUnits + "/" + MAX_HEAT_UNITS)
-                    .style(heatUnits > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
-                    .forGoggles(tooltip, 1);
-            CreateLang.text("Water supply: " + (hasWaterSupply ? "available" : "missing"))
-                    .style(hasWaterSupply ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
-                    .forGoggles(tooltip, 1);
-        }
+        CreateLang.text("Steam consumed: " + steamConsumedRate + " mB/t")
+                .style(steamConsumedRate > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
+                .forGoggles(tooltip, 1);
+        CreateLang.text("Steam units: " + heatUnits + "/" + MAX_PIPED_HEAT_UNITS)
+                .style(heatUnits > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
+                .forGoggles(tooltip, 1);
         CreateLang.text("Pressure: " + SteamPressure.format(pressurePn))
                 .style(pressurePn > 0 ? ChatFormatting.AQUA : ChatFormatting.YELLOW)
                 .forGoggles(tooltip, 1);
@@ -489,73 +453,13 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
     private SteamOutput calculateBestSteamOutput(boolean executePiped) {
         SteamInletBlockEntity inlet = getInlet();
-        if (inlet != null && inlet.isActiveInlet()) {
-            SteamOutput piped = calculatePipedSteamOutput(inlet, executePiped);
-            if (piped.canRun() || boilerPos == null || getStrokeDirection() == Direction.DOWN) {
-                return piped;
-            }
-        }
-
-        if (getStrokeDirection() == Direction.DOWN) {
-            return SteamOutput.none(inlet == null ? SourceMode.NONE : SourceMode.PIPED_STEAM);
-        }
-
-        if (FullSteamConfig.directCompactModeEnabled()) {
-            FluidTankBlockEntity boiler = getBoiler();
-            if (boiler != null && boiler.boiler != null) {
-                return calculateDirectSteamOutput(boiler, executePiped);
-            }
-        }
-
-        return SteamOutput.none(inlet == null ? SourceMode.NONE : SourceMode.PIPED_STEAM);
-    }
-
-    private SteamOutput calculateDirectSteamOutput(FluidTankBlockEntity boiler, boolean execute) {
-        if (boiler == null || boiler.boiler == null) {
+        if (inlet == null) {
             return SteamOutput.none(SourceMode.NONE);
         }
-
-        BoilerData data = boiler.boiler;
-        boiler.updateBoilerTemperature();
-        if (data.needsHeatLevelUpdate) {
-            data.updateTemperature(boiler);
+        if (!inlet.isActiveInlet()) {
+            return SteamOutput.none(SourceMode.PIPED_STEAM);
         }
-
-        BurnerHeat burnerHeat = scanBurners();
-        boolean hasWater = data.getMaxHeatLevelForWaterSupply() > 0;
-
-        // Direct/compact mode is an implicit one-boiler network: supply = production, demand = one engine.
-        int targetHeat = FullSteamBoilerIntegration.usableHeatUnits(boiler);
-        // Boiler thermal inertia (only advanced on the real tick, not on revalidation).
-        if (FullSteamConfig.thermalInertiaEnabled()) {
-            if (execute) {
-                boolean dry = data.getMaxHeatLevelForWaterSupply() <= 0;
-                double tau = targetHeat >= effectiveHeat
-                        ? FullSteamConfig.heatUpTauTicks()
-                        : dry ? FullSteamConfig.dryBoilerCoolDownTauTicks() : FullSteamConfig.coolDownTauTicks();
-                effectiveHeat = SteamPhysics.approachExp(effectiveHeat, targetHeat, tau);
-            }
-        } else {
-            effectiveHeat = targetHeat;
-        }
-        int height = Math.max(1, boiler.getHeight());
-        int production = SteamPhysics.productionMb(effectiveHeat, height);
-        int fullFlow = FullSteamConfig.steamFullEngineFlowMb();
-        int consumed = Math.min(fullFlow, production);
-        // Steady-state pressure: rated when the boiler can fully supply one engine, scaling down below that.
-        double supplyFactor = Mth.clamp(production / (double) Math.max(1, fullFlow), 0.0D, 1.0D);
-        double pressure = SteamPressure.rated() * supplyFactor;
-        float of = SteamPhysics.outputFactor(pressure, consumed);
-        return new SteamOutput(
-                SourceMode.DIRECT_BOILER,
-                burnerHeat.activeBurners(),
-                Math.max(targetHeat, burnerHeat.heatUnits()),
-                hasWater,
-                consumed,
-                SteamPhysics.su(of),
-                SteamPhysics.rpm(of),
-                (float) pressure
-        );
+        return calculatePipedSteamOutput(inlet, executePiped);
     }
 
     private SteamOutput calculatePipedSteamOutput(SteamInletBlockEntity inlet, boolean execute) {
@@ -576,47 +480,14 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         }
 
         int heat = Mth.clamp(Mth.ceil(consumed / (float) FullSteamConfig.steamPerHeatUnit()), 1, MAX_PIPED_HEAT_UNITS);
-        int activeEquivalent = Math.min(MAX_ACTIVE_BURNERS, heat);
         float of = SteamPhysics.outputFactor(pressure, consumed);
         return new SteamOutput(
                 SourceMode.PIPED_STEAM,
-                activeEquivalent,
                 heat,
-                true,
                 consumed,
                 SteamPhysics.su(of),
                 SteamPhysics.rpm(of),
                 (float) pressure
-        );
-    }
-
-    private BurnerHeat scanBurners() {
-        if (level == null || ringOrigin == null) {
-            return BurnerHeat.NONE;
-        }
-
-        int active = 0;
-        int units = 0;
-        for (int x = 0; x <= 2; x++) {
-            for (int z = 0; z <= 2; z++) {
-                BlockPos burnerPos = ringOrigin.offset(x, -2, z);
-                if (!level.isLoaded(burnerPos)) {
-                    continue;
-                }
-
-                BlazeBurnerBlock.HeatLevel heat = BlazeBurnerBlock.getHeatLevelOf(level.getBlockState(burnerPos));
-                if (!heat.isAtLeast(BlazeBurnerBlock.HeatLevel.FADING)) {
-                    continue;
-                }
-
-                active++;
-                units += heat.isAtLeast(BlazeBurnerBlock.HeatLevel.SEETHING) ? 2 : 1;
-            }
-        }
-
-        return new BurnerHeat(
-                Math.min(active, MAX_ACTIVE_BURNERS),
-                Math.min(units, MAX_HEAT_UNITS)
         );
     }
 
@@ -625,18 +496,14 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         float capacity = output.capacitySu();
         float pressure = output.canRun() ? output.pressurePn() : 0.0F;
         boolean changed = sourceMode != output.sourceMode()
-                || activeBurners != output.activeBurners()
                 || heatUnits != output.heatUnits()
-                || hasWaterSupply != output.hasWaterSupply()
                 || steamConsumedRate != output.steamConsumedRate()
                 || !Mth.equal(generatedSpeed, speed)
                 || !Mth.equal(generatedCapacitySu, capacity)
                 || !Mth.equal(pressurePn, pressure);
 
         sourceMode = output.sourceMode();
-        activeBurners = output.activeBurners();
         heatUnits = output.heatUnits();
-        hasWaterSupply = output.hasWaterSupply();
         steamConsumedRate = output.steamConsumedRate();
         generatedSpeed = speed;
         generatedCapacitySu = capacity;
@@ -648,19 +515,6 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         return assembled ? generatedCapacitySu : 0;
     }
 
-    private FluidTankBlockEntity getBoiler() {
-        if (level == null || boilerPos == null || !level.isLoaded(boilerPos)) {
-            return null;
-        }
-
-        BlockEntity blockEntity = level.getBlockEntity(boilerPos);
-        if (blockEntity instanceof FluidTankBlockEntity tank) {
-            FluidTankBlockEntity controller = tank.getControllerBE();
-            return controller == null ? tank : controller;
-        }
-        return null;
-    }
-
     private SteamInletBlockEntity getInlet() {
         if (level == null || inletPos == null || !level.isLoaded(inletPos)) {
             return null;
@@ -668,12 +522,6 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
         BlockEntity blockEntity = level.getBlockEntity(inletPos);
         return blockEntity instanceof SteamInletBlockEntity inlet ? inlet : null;
-    }
-
-    private void refreshBoilerState(FluidTankBlockEntity boiler) {
-        if (boiler != null && !boiler.isRemoved()) {
-            boiler.updateBoilerState();
-        }
     }
 
     private ShaftClaimResult ensurePoweredShaft(BlockPos targetShaftPos) {
@@ -873,18 +721,14 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         tag.putBoolean(ASSEMBLED_KEY, assembled);
         writePos(tag, RING_ORIGIN_KEY, ringOrigin);
         writePos(tag, CYLINDER_ROOT_KEY, cylinderRootPos);
-        writePos(tag, BOILER_POS_KEY, boilerPos);
         writePos(tag, INLET_POS_KEY, inletPos);
         writePos(tag, SHAFT_POS_KEY, shaftPos);
         tag.putInt(PISTON_BODY_COUNT_KEY, pistonBodyCount);
         tag.putInt(SHAFT_GAP_KEY, shaftGap);
-        tag.putInt(ACTIVE_BURNERS_KEY, activeBurners);
         tag.putInt(HEAT_UNITS_KEY, heatUnits);
         tag.putFloat(GENERATED_SPEED_KEY, generatedSpeed);
         tag.putFloat(GENERATED_CAPACITY_KEY, generatedCapacitySu);
         tag.putFloat(PRESSURE_PN_KEY, pressurePn);
-        tag.putDouble(EFFECTIVE_HEAT_KEY, effectiveHeat);
-        tag.putBoolean(WATER_SUPPLY_KEY, hasWaterSupply);
         tag.putString(SOURCE_MODE_KEY, sourceMode.name());
         tag.putInt(STEAM_CONSUMED_KEY, steamConsumedRate);
         tag.putString(STATUS_KEY, status);
@@ -896,7 +740,6 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         assembled = tag.getBoolean(ASSEMBLED_KEY);
         ringOrigin = readPos(tag, RING_ORIGIN_KEY);
         cylinderRootPos = readPos(tag, CYLINDER_ROOT_KEY);
-        boilerPos = readPos(tag, BOILER_POS_KEY);
         inletPos = readPos(tag, INLET_POS_KEY);
         shaftPos = readPos(tag, SHAFT_POS_KEY);
         pistonBodyCount = tag.contains(PISTON_BODY_COUNT_KEY)
@@ -909,20 +752,18 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         shaftGap = tag.contains(SHAFT_GAP_KEY)
                 ? EngineValidator.clampShaftGap(tag.getInt(SHAFT_GAP_KEY))
                 : EngineValidator.defaultShaftGapForPistonBodies(pistonBodyCount);
-        activeBurners = tag.getInt(ACTIVE_BURNERS_KEY);
         heatUnits = tag.getInt(HEAT_UNITS_KEY);
         generatedSpeed = tag.getFloat(GENERATED_SPEED_KEY);
         generatedCapacitySu = tag.getFloat(GENERATED_CAPACITY_KEY);
         pressurePn = tag.getFloat(PRESSURE_PN_KEY);
-        effectiveHeat = tag.getDouble(EFFECTIVE_HEAT_KEY);
-        hasWaterSupply = tag.getBoolean(WATER_SUPPLY_KEY);
         sourceMode = SourceMode.byName(tag.getString(SOURCE_MODE_KEY));
         steamConsumedRate = tag.getInt(STEAM_CONSUMED_KEY);
-        if (generatedSpeed == 0 && generatedCapacitySu == 0 && tag.contains(LEGACY_STEAM_POWER_KEY)) {
-            float legacySteamPower = Mth.clamp(tag.getFloat(LEGACY_STEAM_POWER_KEY), 0.0F, 1.0F);
-            generatedSpeed = SteamPhysics.rpm(legacySteamPower);
-            generatedCapacitySu = FullSteamConfig.baseEngineCapacity() * legacySteamPower;
-            sourceMode = SourceMode.DIRECT_BOILER;
+        if (sourceMode != SourceMode.PIPED_STEAM) {
+            heatUnits = 0;
+            generatedSpeed = 0;
+            generatedCapacitySu = 0;
+            pressurePn = 0;
+            steamConsumedRate = 0;
         }
         status = tag.contains(STATUS_KEY) ? tag.getString(STATUS_KEY) : "Incomplete structure";
         if (!clientPacket && assembled) {
@@ -1033,18 +874,12 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
     private float getEffectIntensity() {
         float speedFactor = Math.abs(getGeneratedSpeed())
                 / Math.max(1.0F, (float) FullSteamConfig.steamMaxRpm());
-        float heatFactor = heatUnits / (float) MAX_HEAT_UNITS;
+        float heatFactor = heatUnits / (float) MAX_PIPED_HEAT_UNITS;
         return Mth.clamp(Math.max(speedFactor, heatFactor), 0.25F, 1.0F);
     }
 
     private int getExhaustSteamAmount() {
-        if (sourceMode == SourceMode.PIPED_STEAM) {
-            return steamConsumedRate;
-        }
-        if (sourceMode == SourceMode.DIRECT_BOILER) {
-            return heatUnits * FullSteamConfig.steamPerHeatUnit();
-        }
-        return 0;
+        return sourceMode == SourceMode.PIPED_STEAM ? steamConsumedRate : 0;
     }
 
     private static void writePos(CompoundTag tag, String key, BlockPos pos) {
@@ -1059,22 +894,16 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
         return tag.contains(key) ? BlockPos.of(tag.getLong(key)) : null;
     }
 
-    private record BurnerHeat(int activeBurners, int heatUnits) {
-        private static final BurnerHeat NONE = new BurnerHeat(0, 0);
-    }
-
     private record SteamOutput(
             SourceMode sourceMode,
-            int activeBurners,
             int heatUnits,
-            boolean hasWaterSupply,
             int steamConsumedRate,
             float targetCapacitySu,
             float targetSpeed,
             float pressurePn
     ) {
         private static SteamOutput none(SourceMode sourceMode) {
-            return new SteamOutput(sourceMode, 0, 0, false, 0, 0, 0, 0);
+            return new SteamOutput(sourceMode, 0, 0, 0, 0, 0);
         }
 
         private float generatedSpeed() {
@@ -1087,7 +916,6 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
         private boolean canRun() {
             return switch (sourceMode) {
-                case DIRECT_BOILER -> hasWaterSupply && activeBurners > 0 && heatUnits > 0 && targetCapacitySu > 0;
                 case PIPED_STEAM -> steamConsumedRate > 0 && targetCapacitySu > 0;
                 case NONE -> false;
             };
@@ -1096,7 +924,6 @@ public class PistonHeadBlockEntity extends SmartBlockEntity implements IHaveGogg
 
     private enum SourceMode {
         NONE("No steam"),
-        DIRECT_BOILER("Direct boiler"),
         PIPED_STEAM("Piped steam");
 
         private final String displayName;

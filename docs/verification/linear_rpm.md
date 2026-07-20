@@ -74,7 +74,6 @@ With the default `maxRpm = 64`, quarter, half, three-quarter, and full output ar
 
 ## Manual In-World Checks
 
-- [ ] Direct compact engine: vary active burner/water-limited output and confirm RPM progresses instead of snapping to four plateaus.
 - [ ] Unrestricted pipe-fed engine: vary pressure or available flow and confirm RPM follows the displayed output continuously.
 - [ ] Admission-controlled engine at rated pressure: signals `0`, `5`, `10`, and `15` produce approximately `0`, `21.3`, `42.7`, and `64 RPM`.
 - [ ] A positive output below `1/64` of full output runs at the `1 RPM` minimum; exactly zero output remains stopped.

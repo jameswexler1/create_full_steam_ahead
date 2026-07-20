@@ -34,7 +34,7 @@ Implementation notes:
 - Optional dependency metadata accepts Aeronautics/Simulated `1.2.1` through `<1.4.0` and Sable `1.2.1` through `<3.0.0`, covering the tested Aeronautics `1.3.0`, Simulated `1.3.0`, and Sable `2.0.2` profile without making those mods required.
 - Full Steam Ahead registers Create `BlockMovementChecks` during common setup.
 - Engine blocks are marked movable, movement-necessary, non-brittle, supportive, and attached to adjacent Full Steam Ahead engine blocks.
-- Bottom cylinder and inlet shell blocks attach downward to Create Fluid Tank boilers.
+- Boiler outlets and relief valves attach to their boiler faces; Phase 20 removed the obsolete cylinder-shell attachment to tanks below.
 - `boiler_outlet` attaches to its boiler tank side and output pipe side.
 - `steam_inlet` attaches to adjacent Create pipes.
 - Create Fluid Tank and Create pipe checks are symmetric for these Full Steam Ahead connections, so assembly can discover the link from either side.
@@ -62,9 +62,9 @@ Manual runtime checklist:
 
 - [ ] Run without Aeronautics, Simulated, or Sable installed and confirm the game still opens.
 - [ ] Run in the Prism Aeronautics 4 profile with Aeronautics `1.3.0`, Simulated `1.3.0`, and Sable `2.0.2` and confirm the dependency gate no longer blocks startup.
-- [ ] Confirm direct compact and pipe-fed engines still assemble and run normally.
+- [ ] Confirm upright and inverted pipe-fed engines still assemble and run normally.
 - [x] In an Aeronautics/Sable test profile, assemble a ship/sublevel containing a Full Steam Ahead engine.
-- [x] Confirm cylinder, inlet, piston, piston head, powered shaft, boiler outlet, and attached boiler/pipe connections move together.
+- [x] Confirm cylinder, inlet, piston, piston head, powered shaft, boiler outlet, and intended pipe/boiler-device connections move together.
 - [x] Confirm engine NBT/state survives assembly, disassembly, world reload, and sublevel reload.
 - [x] Confirm Create shafts linked to the engine output can power Aeronautics propellers while assembled on the sublevel.
 - [ ] With Aeronautics installed, place a powered steam vent on an FSA-fed boiler and confirm outlet/display flow consumption rises by the configured amount.

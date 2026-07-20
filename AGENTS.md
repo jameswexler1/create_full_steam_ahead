@@ -36,7 +36,7 @@ Implement steam output using the unit rules in `PLAN.md` and `README.md`:
 3. Water supply gates the scaled budget by Create's boiler water heat level multiplied by boiler height.
 4. Multiple outlets attached to one boiler split one shared budget and must not duplicate steam.
 5. One pipe-fed engine consumes at most 9 steam units; surplus steam powers additional engines.
-6. Preserve direct compact engine mode and current piston/cylinder validation.
+6. All engines are pipe-fed and require one active assembled `steam_inlet`; do not restore direct compact boiler reads.
 
 Record automated and manual results in `docs/verification/phase5.md`.
 

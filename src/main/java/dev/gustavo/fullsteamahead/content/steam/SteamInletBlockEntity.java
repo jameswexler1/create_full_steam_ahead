@@ -29,7 +29,6 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
     private static final String ASSEMBLED_KEY = "Assembled";
     private static final String ROOT_POS_KEY = "RootPos";
     private static final String RING_ORIGIN_KEY = "RingOrigin";
-    private static final String BOILER_POS_KEY = "BoilerPos";
     private static final String ACTIVE_KEY = "Active";
     private static final String BUFFER_KEY = "SteamBuffer";
     private static final String ACCEPTED_LAST_TICK_KEY = "AcceptedLastTick";
@@ -48,7 +47,6 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
     private boolean active;
     private BlockPos rootPos;
     private BlockPos ringOrigin;
-    private BlockPos boilerPos;
     private int acceptedLastTick;
     private int consumedLastTick;
     private int acceptedThisTick;
@@ -96,18 +94,16 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         consumedThisTick = 0;
     }
 
-    public void applyRingState(BlockPos ringOrigin, BlockPos rootPos, BlockPos boilerPos, boolean active) {
+    public void applyRingState(BlockPos ringOrigin, BlockPos rootPos, boolean active) {
         boolean changed = !assembled
                 || this.active != active
                 || !Objects.equals(this.rootPos, rootPos)
-                || !Objects.equals(this.ringOrigin, ringOrigin)
-                || !Objects.equals(this.boilerPos, boilerPos);
+                || !Objects.equals(this.ringOrigin, ringOrigin);
 
         assembled = true;
         this.active = active;
         this.rootPos = rootPos;
         this.ringOrigin = ringOrigin;
-        this.boilerPos = boilerPos;
 
         if (!active) {
             clearPassiveSteamState();
@@ -120,7 +116,7 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
     }
 
     public void clearRingState() {
-        if (!assembled && rootPos == null && ringOrigin == null && boilerPos == null) {
+        if (!assembled && rootPos == null && ringOrigin == null) {
             return;
         }
 
@@ -128,7 +124,6 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         active = false;
         rootPos = null;
         ringOrigin = null;
-        boilerPos = null;
         networkPressurePn = 0.0D;
         networkDrawCap = 0;
         networkGameTime = Long.MIN_VALUE;
@@ -313,7 +308,6 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         tag.putBoolean(ASSEMBLED_KEY, assembled);
         writePos(tag, ROOT_POS_KEY, rootPos);
         writePos(tag, RING_ORIGIN_KEY, ringOrigin);
-        writePos(tag, BOILER_POS_KEY, boilerPos);
         tag.putBoolean(ACTIVE_KEY, active);
         tag.put(BUFFER_KEY, steamBuffer.writeToNBT(registries, new CompoundTag()));
         tag.putInt(ACCEPTED_LAST_TICK_KEY, acceptedLastTick);
@@ -327,7 +321,6 @@ public class SteamInletBlockEntity extends SmartBlockEntity implements IHaveGogg
         active = assembled && (!tag.contains(ACTIVE_KEY) || tag.getBoolean(ACTIVE_KEY));
         rootPos = readPos(tag, ROOT_POS_KEY);
         ringOrigin = readPos(tag, RING_ORIGIN_KEY);
-        boilerPos = readPos(tag, BOILER_POS_KEY);
         steamBuffer.readFromNBT(registries, tag.getCompound(BUFFER_KEY));
         int overflow = steamBuffer.getFluidAmount() - BUFFER_CAPACITY;
         if (overflow > 0) {

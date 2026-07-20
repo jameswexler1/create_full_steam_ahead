@@ -1,9 +1,10 @@
 # Idea: pressure/volume/temperature steam physics
 
-Living scratchpad for redesigning steam from a flow-only model into a
-pressure/heat/volume model. Read + edit freely as we go. Nothing here is committed to yet.
+Historical scratchpad for redesigning steam from a flow-only model into a
+pressure/heat/volume model. `PLAN.md` and `README.md` are authoritative. Phase 20 removed the
+direct compact engine path; every current engine is pipe-fed through an active steam inlet.
 
-Status: **IMPLEMENTED (v3 — unified ideal-gas).** One real pressure (bar) drives everything.
+Status: **HISTORICAL DESIGN RECORD.** Units, defaults, and direct-engine notes below may be obsolete.
 
 ## v3 unified model (current)
 

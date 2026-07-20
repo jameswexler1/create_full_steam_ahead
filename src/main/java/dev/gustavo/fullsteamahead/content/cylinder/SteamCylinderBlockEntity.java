@@ -1,7 +1,6 @@
 package dev.gustavo.fullsteamahead.content.cylinder;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
-import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.utility.CreateLang;
@@ -13,7 +12,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
@@ -26,7 +24,6 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
     private static final String ROOT_POS_KEY = "RootPos";
     private static final String RING_ORIGIN_KEY = "RingOrigin";
     private static final String SECONDARY_RING_ORIGIN_KEY = "SecondaryRingOrigin";
-    private static final String BOILER_POS_KEY = "BoilerPos";
     private static final String INLET_POS_KEY = "InletPos";
 
     private boolean assembled;
@@ -34,7 +31,6 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
     private BlockPos rootPos;
     private BlockPos ringOrigin;
     private BlockPos secondaryRingOrigin;
-    private BlockPos boilerPos;
     private BlockPos inletPos;
 
     public SteamCylinderBlockEntity(BlockPos pos, BlockState state) {
@@ -56,18 +52,16 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
     public void applyRingState(
             BlockPos ringOrigin,
             BlockPos rootPos,
-            BlockPos boilerPos,
             BlockPos inletPos,
             boolean root
     ) {
-        applyRingState(ringOrigin, null, rootPos, boilerPos, inletPos, root);
+        applyRingState(ringOrigin, null, rootPos, inletPos, root);
     }
 
     public void applyRingState(
             BlockPos ringOrigin,
             BlockPos secondaryRingOrigin,
             BlockPos rootPos,
-            BlockPos boilerPos,
             BlockPos inletPos,
             boolean root
     ) {
@@ -76,7 +70,6 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
                 || !Objects.equals(this.rootPos, rootPos)
                 || !Objects.equals(this.ringOrigin, ringOrigin)
                 || !Objects.equals(this.secondaryRingOrigin, secondaryRingOrigin)
-                || !Objects.equals(this.boilerPos, boilerPos)
                 || !Objects.equals(this.inletPos, inletPos);
 
         this.assembled = true;
@@ -84,7 +77,6 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         this.rootPos = rootPos;
         this.ringOrigin = ringOrigin;
         this.secondaryRingOrigin = secondaryRingOrigin;
-        this.boilerPos = boilerPos;
         this.inletPos = inletPos;
 
         if (changed) {
@@ -98,7 +90,6 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
                 && rootPos == null
                 && ringOrigin == null
                 && secondaryRingOrigin == null
-                && boilerPos == null
                 && inletPos == null) {
             return;
         }
@@ -108,7 +99,6 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         rootPos = null;
         ringOrigin = null;
         secondaryRingOrigin = null;
-        boilerPos = null;
         inletPos = null;
         notifyUpdate();
     }
@@ -147,10 +137,6 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         return origin != null && (origin.equals(ringOrigin) || origin.equals(secondaryRingOrigin));
     }
 
-    public BlockPos getBoilerPos() {
-        return boilerPos;
-    }
-
     public BlockPos getInletPos() {
         return inletPos;
     }
@@ -173,19 +159,9 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         }
 
         appendEngineReadout(tooltip);
-
-        FluidTankBlockEntity boiler = getBoiler();
-        if (boiler == null || boiler.boiler == null) {
-            if (inletPos == null) {
-                CreateLang.text("No steam source").style(ChatFormatting.YELLOW).forGoggles(tooltip, 1);
-            } else {
-                CreateLang.text("Steam inlet linked").style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
-            }
-            return true;
-        }
-
-        CreateLang.text("Boiler linked").style(ChatFormatting.AQUA).forGoggles(tooltip, 1);
-        boiler.boiler.addToGoggleTooltip(tooltip, isPlayerSneaking, boiler.getTotalTankSize());
+        CreateLang.text(inletPos == null ? "No steam inlet" : "Steam inlet linked")
+                .style(inletPos == null ? ChatFormatting.YELLOW : ChatFormatting.AQUA)
+                .forGoggles(tooltip, 1);
         return true;
     }
 
@@ -227,18 +203,6 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         return null;
     }
 
-    private FluidTankBlockEntity getBoiler() {
-        if (level == null || boilerPos == null) {
-            return null;
-        }
-
-        BlockEntity blockEntity = level.getBlockEntity(boilerPos);
-        if (blockEntity instanceof FluidTankBlockEntity tank) {
-            return tank.getControllerBE() == null ? tank : tank.getControllerBE();
-        }
-        return null;
-    }
-
     @Override
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
@@ -247,7 +211,6 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         writePos(tag, ROOT_POS_KEY, rootPos);
         writePos(tag, RING_ORIGIN_KEY, ringOrigin);
         writePos(tag, SECONDARY_RING_ORIGIN_KEY, secondaryRingOrigin);
-        writePos(tag, BOILER_POS_KEY, boilerPos);
         writePos(tag, INLET_POS_KEY, inletPos);
     }
 
@@ -259,7 +222,6 @@ public class SteamCylinderBlockEntity extends SmartBlockEntity implements IHaveG
         rootPos = readPos(tag, ROOT_POS_KEY);
         ringOrigin = readPos(tag, RING_ORIGIN_KEY);
         secondaryRingOrigin = readPos(tag, SECONDARY_RING_ORIGIN_KEY);
-        boilerPos = readPos(tag, BOILER_POS_KEY);
         inletPos = readPos(tag, INLET_POS_KEY);
     }
 

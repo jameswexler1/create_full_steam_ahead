@@ -123,6 +123,6 @@ adjacent inverted Steam Inlet changes its orientation.
 - [ ] Inspect with goggles and confirm linked state, command, percentage, state, pressure, requested flow, and delivered flow update live.
 - [ ] Save/reload and break/replace neighbouring pipes; confirm frequencies and command recover without a stale inlet association.
 - [ ] Assemble and disassemble a simulated contraption; confirm both frequencies, receiver operation, displayed command, and inlet association survive.
-- [ ] Confirm direct compact engines and pipe-fed engines without an admission valve retain their existing output.
+- [ ] Confirm pipe-fed engines without an admission valve retain their existing output.
 - [ ] Selection and collision outlines follow the raised controls, brass collars, live pipe arms, and visible endpoint rims in every horizontal rotation.
 - [ ] Breaking the valve drops itself and does not leave a stale pipe connection.

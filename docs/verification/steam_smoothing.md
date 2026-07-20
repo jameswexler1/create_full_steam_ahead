@@ -20,9 +20,8 @@ order). See `smoothing.md`.
   curve, so the physical buffers do not empty instantly while engines still display nonzero pressure.
   After a burst, members'
   effective pressure is cleared to 0 (`clearEffectivePressure`).
-- **Boiler thermal inertia** (`BoilerOutletBlockEntity.calculateSteamBudget` and
-  `PistonHeadBlockEntity.calculateDirectSteamOutput`): pipe-fed boilers use shared manager state keyed
-  by boiler controller position, while direct compact mode keeps piston-local compatibility state.
+- **Boiler thermal inertia**: pipe-fed boilers use shared manager state keyed by boiler controller
+  position.
   Heat eases toward the water-gated target heat (heat-up 80 / cool-down 160 / dry 20 ticks).
   Production and temperature derive from effective heat. `SteamPhysics.temperatureK/productionMb` now take a double.
 - New `steamSmoothing` config group: enabled, pressureRise/FallTauTicks, maxPressureDeltaPerTick,

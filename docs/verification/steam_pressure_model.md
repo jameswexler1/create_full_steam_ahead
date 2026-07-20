@@ -2,6 +2,9 @@
 
 Date: 2026-06-05
 
+> Historical verification record. The formulas below describe an earlier pressure-model iteration.
+> Phase 20 removed direct compact engines; current engines always require an active `steam_inlet`.
+
 Implemented (v2 — consumption-limited / volume-tiered):
 
 - `content/steam/SteamPhysics` derives from boiler volume `V` (`getTotalTankSize`) and a heat ratio
@@ -10,9 +13,8 @@ Implemented (v2 — consumption-limited / volume-tiered):
   - pressure `p = h * maxVolumeReference / V` (1.0 at a full-heat 3x3x3),
   - RPM `= clamp(rpmAtMaxVolume * p, 0, maxRpm)`,
   - SU `= min(cylinderMaxSu, consumed * suPerSteamMb)`, consumed <= cylinderMaxIntakeMb.
-- Both direct (compact, reads its boiler locally) and piped (outlet reports pressure to inlets;
-  SU from steam consumed) use the same model. Boiler's finite production splits across the engines
-  drawing it (no duplication).
+- At the time, both direct compact and piped engines used this model. Direct compact boiler reads
+  were removed in Phase 20; the current shared network model supplies engines only through inlets.
 - Config (`steamPhysics`, all tunable): cylinderMaxIntakeMb (90), cylinderMaxSu (147456), steamPerBlock
   (90/27), maxVolumeReference (27), rpmAtMaxVolume (16), maxRpm (64), heatRatioMax (2.0).
 - Full-heat tiers: 1x1x1 -> 64 RPM / ~5.5k SU; 3x3x1 -> 48 / 49152; 3x3x2 -> 24 / 98304;
@@ -27,7 +29,7 @@ Automated checks:
 
 Manual runtime checklist:
 
-- [ ] Compact engine on a full-heat 3x3x1 boiler: ~48 RPM, ~49152 SU (mid tier).
+- [ ] A cylinder ring mounted directly on a boiler, without an inlet, produces no RPM or SU.
 - [ ] Piped engine off a 3x3x3 boiler maxes: ~16 RPM, 147456 SU. Off 3x3x2: ~24 RPM, ~98304 SU.
       Off 3x3x1: ~48 RPM, ~49152 SU. Off 1x1x1: ~64 RPM, low SU (~5.5k).
 - [ ] SU now DIFFERS across 3x3x1/2/3 (was flat) and RPM drops as the boiler grows.

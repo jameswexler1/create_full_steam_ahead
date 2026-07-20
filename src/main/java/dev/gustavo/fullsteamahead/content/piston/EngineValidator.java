@@ -1,6 +1,5 @@
 package dev.gustavo.fullsteamahead.content.piston;
 
-import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import dev.gustavo.fullsteamahead.content.cylinder.CylinderConnectivity;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlock;
 import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlockEntity;
@@ -122,13 +121,9 @@ public final class EngineValidator {
         }
 
         BlockPos inletPos = CylinderConnectivity.selectActiveInlet(level, ringOrigin, ringPositions).orElse(null);
-        if (strokeDirection == Direction.DOWN && inletPos == null) {
-            return Result.invalid("Upside-down engines need a steam inlet");
+        if (inletPos == null) {
+            return Result.invalid("Steam inlet required");
         }
-
-        BoilerScan boiler = strokeDirection == Direction.UP
-                ? findDirectBoiler(level, ringOrigin)
-                : BoilerScan.invalid("Upside-down engines are pipe-fed only");
 
         BlockPos cylinderRoot = cylinderPositions.stream()
                 .min(ROOT_ORDER)
@@ -140,7 +135,6 @@ public final class EngineValidator {
                 "Structure assembled",
                 ringOrigin,
                 cylinderRoot,
-                boiler.boilerPos(),
                 inletPos,
                 strokeDirection,
                 pistons.pistonHead(),
@@ -281,7 +275,7 @@ public final class EngineValidator {
 
         Direction strokeDirection = strokeDirectionFor(pistons);
         BlockPos ringOrigin = ringOriginFor(pistons.pistonHead(), strokeDirection);
-        if (!isRingReady(level, ringOrigin, strokeDirection)) {
+        if (!isRingReady(level, ringOrigin)) {
             return Optional.empty();
         }
 
@@ -522,7 +516,7 @@ public final class EngineValidator {
         return positions;
     }
 
-    private static boolean isRingReady(Level level, BlockPos origin, Direction strokeDirection) {
+    private static boolean isRingReady(Level level, BlockPos origin) {
         int inlets = 0;
         for (BlockPos pos : ringPositions(origin)) {
             if (!level.isLoaded(pos)) {
@@ -543,40 +537,7 @@ public final class EngineValidator {
 
             return false;
         }
-        return strokeDirection == Direction.UP || inlets >= 1;
-    }
-
-    private static List<BlockPos> boilerShellPositions(BlockPos ringOrigin) {
-        List<BlockPos> positions = new ArrayList<>(8);
-        for (int x = 0; x <= 2; x++) {
-            for (int z = 0; z <= 2; z++) {
-                if (!isCenter(x, z)) {
-                    positions.add(ringOrigin.offset(x, -1, z));
-                }
-            }
-        }
-        return positions;
-    }
-
-    private static BoilerScan findDirectBoiler(Level level, BlockPos ringOrigin) {
-        BlockPos boilerPos = null;
-        for (BlockPos pos : boilerShellPositions(ringOrigin)) {
-            if (!level.isLoaded(pos)) {
-                return BoilerScan.invalid("Boiler layer is unloaded");
-            }
-
-            BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (!(blockEntity instanceof FluidTankBlockEntity tank)) {
-                return BoilerScan.invalid("Missing Create fluid tank boiler");
-            }
-
-            if (boilerPos == null) {
-                FluidTankBlockEntity controller = tank.getControllerBE();
-                boilerPos = controller == null ? pos : controller.getBlockPos();
-            }
-        }
-
-        return BoilerScan.valid(boilerPos);
+        return inlets >= 1;
     }
 
     private static boolean isCenter(int x, int z) {
@@ -599,7 +560,6 @@ public final class EngineValidator {
             String message,
             BlockPos ringOrigin,
             BlockPos cylinderRoot,
-            BlockPos boilerPos,
             BlockPos inletPos,
             Direction strokeDirection,
             BlockPos pistonHead,
@@ -610,23 +570,13 @@ public final class EngineValidator {
             BlockPos shaft
     ) {
         public static Result invalid(String message) {
-            return new Result(false, false, message, null, null, null, null,
+            return new Result(false, false, message, null, null, null,
                     Direction.UP, null, List.of(), 0, MIN_SHAFT_GAP, List.of(), null);
         }
 
         public static Result pending(String message) {
-            return new Result(false, true, message, null, null, null, null,
+            return new Result(false, true, message, null, null, null,
                     Direction.UP, null, List.of(), 0, MIN_SHAFT_GAP, List.of(), null);
-        }
-    }
-
-    private record BoilerScan(boolean valid, String message, BlockPos boilerPos) {
-        private static BoilerScan valid(BlockPos boilerPos) {
-            return new BoilerScan(true, "Direct boiler linked", boilerPos);
-        }
-
-        private static BoilerScan invalid(String message) {
-            return new BoilerScan(false, message, null);
         }
     }
 

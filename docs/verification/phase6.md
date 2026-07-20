@@ -5,9 +5,9 @@ Date: 2026-05-20
 Planned scope:
 
 - Add `steam_inlet` as a block entity that occupies a cylinder shell slot.
-- Allow assembled rings with either 16 cylinder blocks, 15 cylinder blocks plus 1 active inlet, or 14 cylinder blocks plus 1 active inlet and 1 passive visual inlet.
+- Allow cylinder-only rings to assemble visually, but require 15 cylinder blocks plus 1 active inlet or 14 cylinder blocks plus 1 active inlet and 1 passive visual inlet for a working engine.
 - Accept only `steam` into the active inlet while the ring is assembled.
-- Let the crankshaft consume inlet steam for pipe-fed output while preserving direct compact mode.
+- Let the piston head consume inlet steam for pressure-driven output.
 - Keep more than two inlets invalid for v1.
 
 Automated checks to run:
@@ -43,10 +43,10 @@ Pipe animation follow-up:
 Implementation notes:
 
 - `steam_inlet` is registered as a shell-slot block entity and appears in the creative tab.
-- Cylinder assembly now accepts 16 cylinders, 15 cylinders plus 1 inlet, or 14 cylinders plus 2 inlets. More than two inlets are invalid.
+- Cylinder casing assembly accepts 16 cylinders, 15 cylinders plus 1 inlet, or 14 cylinders plus 2 inlets. More than two inlets are invalid; engine validation requires an active inlet.
 - The active inlet exposes an input-only steam capability only while assembled; a passive inlet exposes an inert no-fill handler for visual pipe connections. Capabilities are invalidated when assembly or active/passive role changes.
-- Crankshafts prefer usable inlet steam, consuming 10 mB/t per heat unit up to 180 mB/t. If no usable inlet steam exists and a direct boiler is present, direct compact mode remains the fallback.
-- Crankshaft goggles now show direct boiler vs piped steam source mode.
+- Piston heads consume usable inlet steam up to the configured 90 mB/t full-engine flow.
+- Engine goggles show piped steam consumption, pressure, RPM, and SU.
 
 Dual-inlet symmetry update:
 
@@ -65,6 +65,6 @@ Manual runtime checklist:
 - [ ] The passive inlet connects visually to a pipe but accepts 0 mB/t and does not increase engine demand.
 - [x] Remote boiler outlet -> pipes -> inlet runs the crankshaft without a direct boiler below.
 - [x] Stored steam in the inlet buffer runs the engine briefly after boiler output stops.
-- [x] Direct compact boiler mode still works without an inlet.
+- [x] Historical direct compact verification completed at the time; Phase 20 later removed that mode.
 
 User report after Phase 6 runtime testing: all inlet behaviours work as expected.

@@ -274,7 +274,7 @@ Automated results:
 
 Manual runtime checklist:
 
-- [x] Existing direct compact engines still assemble and run.
+- [x] Historical direct compact engines assembled and ran at the time; Phase 20 later removed that mode.
 - [x] `piston_head` appears in the creative tab and is placeable.
 - [x] Previous stack assembled as `piston_head -> piston -> piston -> crankshaft`.
 - [ ] New stack assembles as `piston_head -> piston -> empty stroke -> Create shaft`.
@@ -330,7 +330,7 @@ Manual runtime checklist:
 - [x] Resource reload (`F3+T`) keeps partial models and textures intact.
 - [ ] Dedicated server starts without client-class loading errors.
 - [x] Aeronautics/Sable assembled sublevel still moves and powers propellers with visuals active.
-- [ ] Ponder entries appear and teach direct compact and pipe-fed setups.
+- [ ] Ponder entries appear and teach current pipe-fed setups only.
 
 Manual result reported by Gustavo on 2026-05-21: after the axial crankshaft fix, the engine still worked and the crankshaft output behaved correctly.
 

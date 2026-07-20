@@ -1,6 +1,5 @@
 package dev.gustavo.fullsteamahead.content.cylinder;
 
-import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
 import com.simibubi.create.content.fluids.FluidPropagator;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlock;
 import dev.gustavo.fullsteamahead.content.piston.PistonHeadBlockEntity;
@@ -247,9 +246,8 @@ public final class CylinderConnectivity {
 
             List<BlockPos> positions = ringPositions(origin);
             Direction facing = ringFacing(level, origin);
-            BlockPos boilerPos = facing == Direction.UP ? findBoiler(level, origin).orElse(null) : null;
             BlockPos inletPos = selectActiveInlet(level, origin, positions).orElse(null);
-            rings.put(origin, new RingData(origin, positions, facing, boilerPos, inletPos));
+            rings.put(origin, new RingData(origin, positions, facing, inletPos));
         }
         return rings;
     }
@@ -448,7 +446,7 @@ public final class CylinderConnectivity {
             if (state.is(ModBlocks.STEAM_INLET.get())) {
                 boolean active = pos.equals(primary.inletPos());
                 withInletBlockEntity(level, pos,
-                        be -> be.applyRingState(primary.origin(), roots.get(primary.origin()), primary.boilerPos(), active));
+                        be -> be.applyRingState(primary.origin(), roots.get(primary.origin()), active));
                 setRingState(
                         level,
                         pos,
@@ -476,7 +474,6 @@ public final class CylinderConnectivity {
                                 primary.origin(),
                                 secondary == null ? null : secondary.origin(),
                                 roots.get(primary.origin()),
-                                primary.boilerPos(),
                                 primary.inletPos(),
                                 pos.equals(roots.get(primary.origin()))
                         ));
@@ -702,8 +699,8 @@ public final class CylinderConnectivity {
 
     private static Set<BlockPos> sharedStripPositionsBetween(BlockPos origin, BlockPos neighborOrigin) {
         List<RingData> owners = orderedSharedOwners(
-                new RingData(origin, List.of(), Direction.UP, null, null),
-                new RingData(neighborOrigin, List.of(), Direction.UP, null, null)
+                new RingData(origin, List.of(), Direction.UP, null),
+                new RingData(neighborOrigin, List.of(), Direction.UP, null)
         );
         CylinderSharedWall sharedWall = sharedWallFor(owners);
         if (sharedWall == CylinderSharedWall.NONE) {
@@ -833,35 +830,6 @@ public final class CylinderConnectivity {
         return section.xOffset() == 0 ? Direction.WEST : Direction.EAST;
     }
 
-    private static Optional<BlockPos> findBoiler(Level level, BlockPos origin) {
-        BlockPos linkedBoiler = null;
-
-        for (int x = 0; x <= 2; x++) {
-            for (int z = 0; z <= 2; z++) {
-                if (isCenter(x, z)) {
-                    continue;
-                }
-
-                BlockPos tankPos = origin.offset(x, -1, z);
-                if (!level.isLoaded(tankPos)) {
-                    return Optional.empty();
-                }
-
-                BlockEntity blockEntity = level.getBlockEntity(tankPos);
-                if (!(blockEntity instanceof FluidTankBlockEntity tank)) {
-                    return Optional.empty();
-                }
-
-                if (linkedBoiler == null) {
-                    FluidTankBlockEntity controller = tank.getControllerBE();
-                    linkedBoiler = controller == null ? tankPos : controller.getBlockPos();
-                }
-            }
-        }
-
-        return Optional.ofNullable(linkedBoiler);
-    }
-
     private static CylinderSection sectionFor(BlockPos origin, BlockPos pos) {
         return CylinderSection.fromOffsets(
                 pos.getX() - origin.getX(),
@@ -941,7 +909,7 @@ public final class CylinderConnectivity {
                     continue;
                 }
                 int score = partialRingScore(level, origin, positions, members);
-                RingData ring = new RingData(origin, positions, partialFacing(level, origin), null, null);
+                RingData ring = new RingData(origin, positions, partialFacing(level, origin), null);
                 candidates.merge(origin, new PartialRingCandidate(ring, score), CylinderConnectivity::bestPartialCandidate);
             }
         }
@@ -1403,7 +1371,6 @@ public final class CylinderConnectivity {
             BlockPos origin,
             List<BlockPos> positions,
             Direction facing,
-            BlockPos boilerPos,
             BlockPos inletPos
     ) {
     }

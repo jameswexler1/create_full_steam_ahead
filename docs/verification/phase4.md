@@ -5,7 +5,7 @@ Date: 2026-05-20
 Implemented:
 
 - `crankshaft` now has a `CrankshaftBlockEntity` extending Create `GeneratingKineticBlockEntity`.
-- The crankshaft validates the fixed vertical v1 engine shape: four pistons, assembled 3x3x2 cylinder ring, and Create fluid tanks below the ring.
+- Historical Phase 4 validated the original direct boiler stack. Phase 20 superseded it: current engines validate the piston/ring/active-inlet/shaft structure and do not inspect tanks below the ring.
 - Valid structures mark all four piston blocks as assembled and assign `piston_section` values.
 - Invalid structures clear piston assembly states and stop generated rotation.
 - Steam output is gated by the linked Create `FluidTankBlockEntity` boiler and its water supply.

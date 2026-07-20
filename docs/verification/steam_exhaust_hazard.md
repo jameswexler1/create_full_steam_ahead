@@ -22,7 +22,6 @@ Automated checks:
 
 Manual runtime checklist:
 
-- [ ] Running direct compact engines puff custom steam from the outer bore once per cycle.
 - [ ] Running pipe-fed engines puff custom steam from the outer bore once per cycle.
 - [ ] Upside-down pipe-fed engines emit the puff downward from the inverted bore.
 - [ ] Passive shaft-driven engines with no generated steam do not emit harmful steam.

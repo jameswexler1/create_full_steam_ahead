@@ -11,8 +11,6 @@ Date: 2026-06-02
     intake cap, pipe pressure flow reserve, and piped engine SU together via derived accessors
     (`suPerSteamMb()`, `maxPipedSteamPerTick()`).
   - `balance.boilerOutletPressureRange` (default 30) — pipe pressurization range in blocks.
-  - `balance.enableDirectCompactMode` (default true) — when false, `PistonHeadBlockEntity`
-    skips the direct compact-boiler path so engines require piped steam.
   - Accessors guard on `SPEC.isLoaded()` and fall back to the defaults; all reads occur in
     block-entity ticks (after the world's server config loads). Defaults reproduce the prior
     hardcoded values exactly, so out-of-the-box balance is unchanged.
@@ -40,6 +38,5 @@ Date: 2026-06-02
 - [ ] With default config, build a boiler + pipe-fed engine; confirm goggle readouts (outlet
   production mB/t, engine SU/RPM, inlet accepted/consumed) match pre-config behavior.
 - [ ] Edit `runs/client/saves/<world>/serverconfig/full_steam_ahead-server.toml`: set
-  `steamPerHeatUnit=20`, lower `boilerOutletPressureRange`, set `enableDirectCompactMode=false`;
-  reload the world and confirm production scales, pipe pressure range shortens, and an upright
-  compact-boiler engine no longer runs without piped steam.
+  `steamPerHeatUnit=20` and lower `boilerOutletPressureRange`; reload the world and confirm
+  production scales and pipe pressure range shortens.

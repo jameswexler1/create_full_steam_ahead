@@ -3,7 +3,6 @@ package dev.gustavo.fullsteamahead.compat.movement;
 import com.simibubi.create.api.contraption.BlockMovementChecks;
 import com.simibubi.create.content.fluids.FluidPropagator;
 import com.simibubi.create.content.fluids.tank.FluidTankBlockEntity;
-import dev.gustavo.fullsteamahead.content.cylinder.SteamCylinderBlock;
 import dev.gustavo.fullsteamahead.content.piston.EngineValidator;
 import dev.gustavo.fullsteamahead.content.shaft.FullSteamPoweredShaftBlock;
 import dev.gustavo.fullsteamahead.content.steam.BoilerOutletBlock;
@@ -82,8 +81,7 @@ public final class FullSteamMovementRules {
             return BlockMovementChecks.CheckResult.PASS;
         }
 
-        if (attachesToCompactBoiler(state, level, neighborPos, direction)
-                || attachesToBoilerOutletConnection(state, level, neighborPos, direction)
+        if (attachesToBoilerOutletConnection(state, level, neighborPos, direction)
                 || attachesToReliefValveBoiler(state, level, neighborPos, direction)
                 || attachesToSteamPipe(state, level, neighborPos)) {
             return BlockMovementChecks.CheckResult.SUCCESS;
@@ -108,8 +106,7 @@ public final class FullSteamMovementRules {
         }
 
         BlockState neighborState = level.getBlockState(neighborPos);
-        if (isCompactBoilerAttachedToCylinder(level, pos, neighborState, direction)
-                || isBoilerTankAttachedToOutlet(level, pos, neighborPos, neighborState)
+        if (isBoilerTankAttachedToOutlet(level, pos, neighborPos, neighborState)
                 || isBoilerTankAttachedToReliefValve(level, pos, neighborPos, neighborState)
                 || isPipeAttachedToInletOrOutlet(level, pos, neighborPos, neighborState)) {
             return BlockMovementChecks.CheckResult.SUCCESS;
@@ -175,19 +172,6 @@ public final class FullSteamMovementRules {
                 || state.is(ModBlocks.STEAM_ADMISSION_VALVE_CONTROLLER.get());
     }
 
-    private static boolean attachesToCompactBoiler(
-            BlockState state,
-            Level level,
-            BlockPos neighborPos,
-            Direction direction
-    ) {
-        if (direction != Direction.DOWN || !isCylinderShellBlock(state) || isCylinderShellFacingDown(state)) {
-            return false;
-        }
-
-        return level.getBlockEntity(neighborPos) instanceof FluidTankBlockEntity;
-    }
-
     private static boolean attachesToBoilerOutletConnection(
             BlockState state,
             Level level,
@@ -219,18 +203,6 @@ public final class FullSteamMovementRules {
         return state.is(ModBlocks.STEAM_RELIEF_VALVE.get())
                 && direction == SteamReliefValveBlock.getAttachedFace(state).getOpposite()
                 && level.getBlockEntity(neighborPos) instanceof FluidTankBlockEntity;
-    }
-
-    private static boolean isCompactBoilerAttachedToCylinder(
-            Level level,
-            BlockPos pos,
-            BlockState neighborState,
-            Direction direction
-    ) {
-        return direction == Direction.UP
-                && isCylinderShellBlock(neighborState)
-                && !isCylinderShellFacingDown(neighborState)
-                && level.getBlockEntity(pos) instanceof FluidTankBlockEntity;
     }
 
     private static boolean isBoilerTankAttachedToOutlet(
@@ -268,20 +240,6 @@ public final class FullSteamMovementRules {
         return neighborState.is(ModBlocks.STEAM_INLET.get())
                 || neighborState.is(ModBlocks.BOILER_OUTLET.get())
                 && BoilerOutletBlock.getOutputPipePos(neighborPos, neighborState).equals(pos);
-    }
-
-    private static boolean isCylinderShellBlock(BlockState state) {
-        return state.is(ModBlocks.STEAM_CYLINDER.get()) || state.is(ModBlocks.STEAM_INLET.get());
-    }
-
-    private static boolean isCylinderShellFacingDown(BlockState state) {
-        if (state.hasProperty(SteamCylinderBlock.FACING)) {
-            return state.getValue(SteamCylinderBlock.FACING) == Direction.DOWN;
-        }
-        if (state.hasProperty(SteamInletBlock.FACING)) {
-            return state.getValue(SteamInletBlock.FACING) == Direction.DOWN;
-        }
-        return false;
     }
 
     private static Direction unitDirection(BlockPos offset) {

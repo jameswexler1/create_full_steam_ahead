@@ -73,7 +73,6 @@ public final class FullSteamConfig {
     private static final ModConfigSpec.IntValue BASE_ENGINE_CAPACITY;
     private static final ModConfigSpec.IntValue STEAM_PER_HEAT_UNIT;
     private static final ModConfigSpec.IntValue BOILER_OUTLET_PRESSURE_RANGE;
-    private static final ModConfigSpec.BooleanValue ENABLE_DIRECT_COMPACT_MODE;
     private static final ModConfigSpec.BooleanValue DIRECT_BOILER_PIPE_OUTPUT_ENABLED;
     private static final ModConfigSpec.DoubleValue STEAM_GAS_CONSTANT;
     private static final ModConfigSpec.DoubleValue STEAM_RATED_PRESSURE;
@@ -139,11 +138,6 @@ public final class FullSteamConfig {
                 .comment("Allow active Create Fluid Tank boilers to feed FSA steam directly into valid top-layer pipes.",
                         "Physical boiler_outlet blocks remain supported when this is false.")
                 .define("directBoilerPipeOutputEnabled", DEFAULT_DIRECT_BOILER_PIPE_OUTPUT_ENABLED);
-
-        ENABLE_DIRECT_COMPACT_MODE = builder
-                .comment("Allow upright engines to run directly from a compact boiler.",
-                        "When false, engines must be fed steam through pipes via a steam inlet.")
-                .define("enableDirectCompactMode", true);
 
         builder.pop();
 
@@ -384,10 +378,6 @@ public final class FullSteamConfig {
 
     public static boolean directBoilerPipeOutputEnabled() {
         return !loaded() || DIRECT_BOILER_PIPE_OUTPUT_ENABLED.get();
-    }
-
-    public static boolean directCompactModeEnabled() {
-        return !loaded() || ENABLE_DIRECT_COMPACT_MODE.get();
     }
 
     public static double steamGasConstant() {

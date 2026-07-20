@@ -22,9 +22,8 @@ output, venting, and bursting. Units are pN/m^2 (P_RATED = 1.0 MpN/m^2).
   steam), keeps the pipe-flow transport, and shows the manager-provided network pressure/volume/
   engines/venting. No longer self-computes pressure or bursts.
 - `SteamInletBlockEntity` — receives network pressure + fair draw cap from the manager.
-- `PistonHeadBlockEntity` — piped engines draw up to the manager cap and output min(pressure, flow);
-  linear RPM + continuous SU. Direct/compact mode is an implicit one-boiler network (steady-state
-  pressure from supply adequacy). Goggle shows pN/m^2.
+- `PistonHeadBlockEntity` — engines draw through their active inlet up to the manager cap and output
+  min(pressure, flow), with linear RPM and continuous SU. Goggles show pN/m^2.
 - `FullSteamConfig` — replaced the bar group with pN/m^2 knobs (gasConstant, ratedPressure,
   warnPressure, burstPressure, temperature, fullEngineSu/Flow, maxRpm, ventCoefficient, bufferCap).
 
@@ -52,5 +51,5 @@ much stored steam a pressure represents (buffer fill / burst timing), not the eq
 ## Known follow-ups (not in this pass)
 
 - Leak/exhaust particles + scald still scale from local steam amount, not network pressure.
-- Direct/compact mode does not burst (compact boilers are small); only piped networks overpressure.
+- Every engine uses a pressure network; boiler overpressure is independent of engine placement.
 - Calibration (gasConstant, ventCoefficient, burst timing) is first-pass; tune in-game.
