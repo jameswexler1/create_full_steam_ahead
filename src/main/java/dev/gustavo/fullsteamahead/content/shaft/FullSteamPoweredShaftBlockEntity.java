@@ -71,13 +71,12 @@ public class FullSteamPoweredShaftBlockEntity extends GeneratingKineticBlockEnti
             // network. Re-assert fresh non-zero output until Create has picked it up.
             if (getGeneratedSpeed() != 0 && getSpeed() == 0) {
                 propagateGeneratedRotation(gameTime);
-            } else if (initialTicks == 0
-                    && getGeneratedSpeed() == 0.0F
+            } else if (getGeneratedSpeed() == 0.0F
                     && getTheoreticalSpeed() != 0.0F) {
-                // Saved Create network speed and FSA generator NBT are separate snapshots. Re-run
-                // Create's source update once after load so a zero-output source cannot retain an
-                // old free-running network. A legitimately driven shaft has a source and remains
-                // passive through GeneratingKineticBlockEntity.applyNewSpeed().
+                // Saved Create network speed and FSA generator NBT are separate snapshots. Retry
+                // reconciliation during the short load window so the end-of-tick coordinator can
+                // dismantle an all-zero cyclic source graph once every member is available. A real
+                // external generator remains on Create's normal passive-drive path.
                 propagateGeneratedRotation(gameTime);
             }
         }

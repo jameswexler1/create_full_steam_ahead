@@ -75,7 +75,13 @@ public final class KineticNetworkUpdateCoordinator {
 
     private static void flushNetwork(List<FullSteamPoweredShaftBlockEntity> changedSources) {
         FullSteamPoweredShaftBlockEntity representative = changedSources.getFirst();
-        FullSteamPoweredShaftBlockEntity owner = ActiveKineticNetworkRetimer.coordinatedOwner(representative);
+        ActiveKineticNetworkRetimer.NetworkUpdate update =
+                ActiveKineticNetworkRetimer.resolveNetworkUpdate(representative);
+        if (update.stopped()) {
+            return;
+        }
+
+        FullSteamPoweredShaftBlockEntity owner = update.owner();
         if (owner == null) {
             // Mixed-mod generators and malformed/stale topologies use Create's normal source rules.
             changedSources.forEach(FullSteamPoweredShaftBlockEntity::flushScheduledRotation);

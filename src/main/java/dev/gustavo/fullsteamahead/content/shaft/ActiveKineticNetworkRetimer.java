@@ -10,6 +10,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,29 +18,55 @@ import java.util.Objects;
 import java.util.Set;
 
 final class ActiveKineticNetworkRetimer {
-    static FullSteamPoweredShaftBlockEntity coordinatedOwner(FullSteamPoweredShaftBlockEntity source) {
+    static NetworkUpdate resolveNetworkUpdate(FullSteamPoweredShaftBlockEntity source) {
         Coordination coordination = resolveCoordination(source);
-        if (coordination == null || !coordination.selection().compatible()) {
-            return null;
+        if (coordination == null) {
+            return NetworkUpdate.DEFER_TO_CREATE;
         }
-        return coordination.owner();
+
+        return switch (decisionFor(coordination)) {
+            case COORDINATE -> NetworkUpdate.coordinate(coordination.owner());
+            case FORCE_STOP -> {
+                stopNetwork(coordination);
+                yield NetworkUpdate.STOPPED;
+            }
+            case DEFER_TO_CREATE -> NetworkUpdate.DEFER_TO_CREATE;
+        };
+    }
+
+    private static void stopNetwork(Coordination coordination) {
+        Map<KineticBlockEntity, Float> previousSpeeds = new IdentityHashMap<>();
+        for (KineticBlockEntity blockEntity : coordination.networkEntities()) {
+            previousSpeeds.put(blockEntity, blockEntity.getTheoreticalSpeed());
+            blockEntity.setSpeed(0.0F);
+            if (blockEntity instanceof FullSteamPoweredShaftBlockEntity fullSteamSource) {
+                fullSteamSource.setCoordinatedOwnerSpeed(0.0F);
+            }
+        }
+
+        // Create normally removes a source tree from its root. A stale all-FSA tree can instead
+        // contain a closed source cycle, so no member is recognized as the root. Clear the entire
+        // already-copied network in two passes so callbacks cannot observe another dead member as a
+        // still-running source. Unknown or externally rooted graphs never enter this path.
+        for (KineticBlockEntity blockEntity : coordination.networkEntities()) {
+            coordination.network().sources.remove(blockEntity);
+            blockEntity.source = null;
+            blockEntity.sequenceContext = null;
+        }
+        for (KineticBlockEntity blockEntity : coordination.networkEntities()) {
+            blockEntity.setNetwork(null);
+        }
+        for (KineticBlockEntity blockEntity : coordination.networkEntities()) {
+            blockEntity.onSpeedChanged(previousSpeeds.get(blockEntity));
+            blockEntity.sendData();
+        }
     }
 
     static void prepareNetworkCommand(FullSteamPoweredShaftBlockEntity source) {
         Coordination coordination = resolveCoordination(source);
-        if (coordination == null || !coordination.selection().compatible()) {
+        if (coordination == null
+                || decisionFor(coordination) != FsaKineticNetworkPolicy.Decision.COORDINATE) {
             clearNetworkCommand(source);
-            return;
-        }
-        if (!coordination.selection().active()) {
-            clearNetworkCommand(source);
-            // If the final active follower stopped, its normal Create update only removes its own
-            // capacity. Prompt the zero-output owner to perform the one real network stop now.
-            if (coordination.owner() != source
-                    && coordination.owner().getIndividualGeneratedSpeed() == 0.0F
-                    && coordination.owner().getTheoreticalSpeed() != 0.0F) {
-                coordination.owner().updateGeneratedRotation();
-            }
             return;
         }
 
@@ -64,8 +91,7 @@ final class ActiveKineticNetworkRetimer {
 
         Coordination coordination = resolveCoordination(source);
         if (coordination == null
-                || !coordination.selection().compatible()
-                || !coordination.selection().active()) {
+                || decisionFor(coordination) != FsaKineticNetworkPolicy.Decision.COORDINATE) {
             // A real stop, reversal, or source conflict still needs Create's topology propagation.
             return false;
         }
@@ -230,6 +256,7 @@ final class ActiveKineticNetworkRetimer {
         }
 
         List<SharedShaftSpeedPolicy.SourceSpeed> sourceSpeeds = new ArrayList<>();
+        boolean hasExternalSource = false;
         for (KineticBlockEntity blockEntity : networkEntities) {
             if (blockEntity instanceof FullSteamPoweredShaftBlockEntity fullSteamSource) {
                 sourceSpeeds.add(new SharedShaftSpeedPolicy.SourceSpeed(
@@ -237,8 +264,7 @@ final class ActiveKineticNetworkRetimer {
                         fullSteamSource.getIndividualGeneratedSpeed()
                 ));
             } else if (blockEntity.isSource()) {
-                // Let Create resolve networks containing another mod's generator.
-                return null;
+                hasExternalSource = true;
             }
         }
 
@@ -246,7 +272,7 @@ final class ActiveKineticNetworkRetimer {
                 owner.getTheoreticalSpeed(),
                 sourceSpeeds
         );
-        return new Coordination(network, networkEntities, owner, selection);
+        return new Coordination(network, networkEntities, owner, selection, hasExternalSource);
     }
 
     private static Set<KineticBlockEntity> networkEntities(
@@ -261,6 +287,29 @@ final class ActiveKineticNetworkRetimer {
                 || blockEntity.getLevel() != source.getLevel()
                 || !Objects.equals(blockEntity.network, source.network));
         return networkEntities;
+    }
+
+    private static boolean hasClosedSourceGraph(Set<KineticBlockEntity> networkEntities) {
+        Set<SourceCoordinate> memberCoordinates = new HashSet<>();
+        for (KineticBlockEntity blockEntity : networkEntities) {
+            memberCoordinates.add(SourceCoordinate.of(blockEntity.getBlockPos()));
+        }
+        for (KineticBlockEntity blockEntity : networkEntities) {
+            if (blockEntity.source != null
+                    && !memberCoordinates.contains(SourceCoordinate.of(blockEntity.source))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static FsaKineticNetworkPolicy.Decision decisionFor(Coordination coordination) {
+        return FsaKineticNetworkPolicy.decide(
+                coordination.selection().compatible(),
+                coordination.selection().active(),
+                coordination.hasExternalSource(),
+                hasClosedSourceGraph(coordination.networkEntities())
+        );
     }
 
     private static void clearNetworkCommand(FullSteamPoweredShaftBlockEntity source) {
@@ -299,8 +348,18 @@ final class ActiveKineticNetworkRetimer {
             KineticNetwork network,
             Set<KineticBlockEntity> networkEntities,
             FullSteamPoweredShaftBlockEntity owner,
-            SharedShaftSpeedPolicy.Selection selection
+            SharedShaftSpeedPolicy.Selection selection,
+            boolean hasExternalSource
     ) {
+    }
+
+    record NetworkUpdate(boolean stopped, FullSteamPoweredShaftBlockEntity owner) {
+        private static final NetworkUpdate STOPPED = new NetworkUpdate(true, null);
+        private static final NetworkUpdate DEFER_TO_CREATE = new NetworkUpdate(false, null);
+
+        private static NetworkUpdate coordinate(FullSteamPoweredShaftBlockEntity owner) {
+            return new NetworkUpdate(false, owner);
+        }
     }
 
     private ActiveKineticNetworkRetimer() {

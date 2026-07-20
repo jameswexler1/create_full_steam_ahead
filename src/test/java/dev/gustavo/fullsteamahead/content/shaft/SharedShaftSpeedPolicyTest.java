@@ -49,7 +49,7 @@ class SharedShaftSpeedPolicyTest {
     }
 
     @Test
-    void allStoppedSourcesRequestCreateTopologyPropagation() {
+    void allStoppedSourcesReportNoActiveFullSteamGenerator() {
         SharedShaftSpeedPolicy.Selection selection = SharedShaftSpeedPolicy.select(16.0F, List.of(
                 new SharedShaftSpeedPolicy.SourceSpeed(16.0F, 0.0F),
                 new SharedShaftSpeedPolicy.SourceSpeed(16.0F, 0.0F)

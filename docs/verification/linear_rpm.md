@@ -10,6 +10,11 @@
 
 Verified on 2026-07-17. Unit tests and the full build pass after moving phase ownership from individual rendered blocks to the connected kinetic network, coordinating multiple FSA generators through one stable shaft command, batching same-tick source changes, and isolating Rotation Speed Controller output phase; the previous in-world animation-continuity validation remains recorded below.
 
+Reverified on 2026-07-20 after adding cycle-safe shutdown for all-zero FSA-owned kinetic networks.
+The policy suite covers active FSA coordination, closed all-zero graph shutdown, external-generator
+passive drive, unresolved source edges, and incompatible topologies. In-world shutdown and reload
+checks remain pending below.
+
 ## Animation Continuity
 
 - [x] Apply a client-only phase correction through Create's `KineticBlockEntity.getRotationAngleOffset` hook, which is consumed by both Flywheel instances and fallback kinetic rendering.
@@ -35,7 +40,9 @@ Verified on 2026-07-17. Unit tests and the full build pass after moving phase ow
 - [x] Keep the existing FSA kinetic-network owner stable while connected FSA followers change fractional RPM; followers can raise the common command without detaching and taking ownership.
 - [x] Queue same-tick FSA source changes by level and kinetic network, then issue one final owner RPM command after all block entities have published their targets. Changed followers refresh only their independent SU capacity.
 - [x] Convert each FSA generator's local target through its live speed ratio before selecting the strongest compatible command, preserving geared and reversed branch ratios.
-- [x] Let an owner engine with zero personal output carry the common shaft command at zero personal capacity while another connected FSA engine remains active; a genuinely all-stopped bank still uses Create's normal stop propagation.
+- [x] Let an owner engine with zero personal output carry the common shaft command at zero personal capacity while another connected FSA engine remains active.
+- [x] Classify each end-of-tick FSA network update as coordinated generation, cycle-safe shutdown, or Create-owned propagation. When every FSA source is at zero and every saved source edge remains inside the same FSA-owned network, zero all member speeds together before clearing source and network links; this prevents circular saved links from supplying free rotation.
+- [x] Preserve Create's passive-drive behavior whenever a non-FSA generator is active, the network owner is external, the source graph has an unresolved external edge, or the topology is incompatible with FSA coordination.
 - [x] Preserve independent per-engine capacity accounting: shared RPM never duplicates SU, and a stopped engine contributes zero.
 - [x] Notify downstream kinetic block entities only when their final speed changed; a pump held at constant speed by a rotation speed controller no longer receives the transient zero-speed callback that resets its fluid network.
 - [x] Treat Create Rotation Speed Controllers as client phase boundaries. Their output is independently commanded, so downstream shafts and gauges use Create's phase instead of inheriting a changing FSA source correction.
@@ -50,8 +57,9 @@ Verified on 2026-07-17. Unit tests and the full build pass after moving phase ow
 - [x] Reconcile a valid engine's powered shaft on every structure validation even when the piston
   output fields did not change. This repairs reload states where the authoritative piston is already
   at zero but the shaft retained an older target, capacity, applied command, or independently saved
-  Create kinetic-network speed. A delayed one-time post-load source update clears the latter without
-  suppressing legitimate passive rotation from another loaded source.
+  Create kinetic-network speed. Retry the zero-output network reconciliation through the initial
+  load window so a circular graph is cleared after all of its loaded members settle, without
+  suppressing legitimate passive rotation from another source.
 
 ## Expected Mapping
 
